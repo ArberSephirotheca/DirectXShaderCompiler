@@ -33,7 +33,7 @@ add_subdirectory(dxopt)
 add_subdirectory(dxl)
 add_subdirectory(dxr)
 add_subdirectory(dxv)
-
+add_subdirectory(dxc-fuzzer)
 # These targets can currently only be built on Windows.
 if (MSVC)
 add_subdirectory(d3dcomp)
