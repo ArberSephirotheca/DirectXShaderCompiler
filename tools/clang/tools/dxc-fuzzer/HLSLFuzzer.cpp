@@ -1,10 +1,3 @@
-//===-- HLSLSemanticFuzzer.cpp - Enhanced Wave Intrinsic Semantic Fuzzer --===//
-//
-// Enhanced fuzzer for finding semantic bugs in HLSL wave intrinsics
-// Focuses on control flow, reconvergence, and correctness rather than crashes
-//
-//===----------------------------------------------------------------------===//
-
 #include "dxc/dxcapi.h"
 #include "dxc/Support/dxcapi.use.h"
 #include "dxc/Support/WinIncludes.h"
@@ -32,129 +25,6 @@ static void InitializeDXC() {
     g_initialized = true;
   }
 }
-
-// // wave intrinsics list
-// static const std::vector<std::string> g_waveIntrinsics = {
-//   "WaveActiveAllEqual", "WaveActiveAnyTrue", "WaveActiveAllTrue",
-//   "WaveActiveBallot", "WaveReadLaneAt", "WaveReadFirstLane", "WaveReadLaneFirst",
-//   "WaveActiveSum", "WaveActiveProduct", "WaveActiveMin", "WaveActiveMax",
-//   "WaveActiveCountBits", "WavePrefixSum", "WavePrefixProduct",
-//   "WaveGetLaneIndex", "WaveGetLaneCount", "WaveIsFirstLane",
-//   "WavePrefixCountBits", "WaveActiveAnd", "WaveActiveOr", "WaveActiveXor",
-//   "WavePrefixAnd", "WavePrefixOr", "WavePrefixXor"
-// };
-
-// // Helper function to check if shader contains wave intrinsics
-// static bool containsWaveIntrinsics(const std::string& hlslSource) {
-//   for (const auto& intrinsic : g_waveIntrinsics) {
-//     if (hlslSource.find(intrinsic) != std::string::npos) {
-//       return true;
-//     }
-//   }
-//   return false;
-// }
-
-// // Helper: locate the opening and matching closing brace of `void main(...)`
-// static std::pair<size_t, size_t> findMainBody(const std::string &src) {
-//   size_t mainPos  = src.find("void main(");
-//   if (mainPos == std::string::npos) return {std::string::npos, std::string::npos};
-
-//   size_t openBrace = src.find('{', mainPos);
-//   if (openBrace == std::string::npos) return {std::string::npos, std::string::npos};
-
-//   int depth = 1;
-//   for (size_t i = openBrace + 1; i < src.size(); ++i) {
-//     if (src[i] == '{') ++depth;
-//     else if (src[i] == '}') {
-//       --depth;
-//       if (depth == 0) return {openBrace, i};
-//     }
-//   }
-//   return {std::string::npos, std::string::npos}; // unmatched
-// }
-
-// // Generate maximal reconvergence test mutations for wave intrinsics
-// static std::vector<std::string> generateSemanticMutations(const std::string& originalSource) {
-//   std::vector<std::string> mutations;
-  
-//   auto [openBrace, closeBrace] = findMainBody(originalSource);
-//   if (openBrace == std::string::npos) return mutations;        // no main()
-//   // Locate insertion points -------------------------------------------------
-//   size_t mainPos  = originalSource.find("void main(");
-//   size_t openPos  = (mainPos != std::string::npos) ?
-//                     originalSource.find("{", mainPos) : std::string::npos;
-//   if (openPos == std::string::npos) return mutations; // no entry point
-//   size_t insertStart = openPos + 1;   // right after '{'
-//   size_t closePos    = originalSource.rfind('}'); // crude but works for HLSL one‑liner
-//   if (closePos == std::string::npos || closePos <= insertStart) return mutations;
-
-//   if (!containsWaveIntrinsics(originalSource)) return mutations; // nothing to fuzz
-
-  
-//   // Helper: push mutation at a chosen offset -------------------------------
-//   auto pushAt = [&](const char *snippet, size_t offset) {
-//     std::string m = originalSource;
-//     m.insert(offset, snippet);
-//     mutations.push_back(std::move(m));
-//   };
-
-//   auto pushFront = [&](const char *s) { pushAt(s, insertStart); };
-//   auto pushTail  = [&](const char *s) { pushAt(s, closePos);    };
-
-//   // ---------------- Original 7 patterns -----------------------------------
-//   pushFront("\n    // 1) Simple even/odd reconvergence\n"
-//        "    if (WaveGetLaneIndex() % 2 == 0) { int d1 = 1; } else { int d2 = 2; }\n");
-
-//   pushFront("\n    // 2) Nested if reconvergence\n"
-//        "    if (WaveGetLaneIndex() < 16) {\n"
-//        "      if ((WaveGetLaneIndex() & 1) == 0) int e = 1; else int o = 2;\n"
-//        "    } else {\n"
-//        "      if ((WaveGetLaneIndex() & 1) == 0) int E = 3; else int O = 4;\n"
-//        "    }\n");
-
-//   pushFront("\n    // 3) Switch‑case reconvergence\n"
-//        "    switch (WaveGetLaneIndex() & 3) {\n"
-//        "      case 0: { int a = 10; break; }\n"
-//        "      case 1: { int b = 20; break; }\n"
-//        "      case 2: { int c = 30; break; }\n"
-//        "      case 3: { int d = 40; break; }\n"
-//        "    }\n");
-
-//   pushFront("\n    // 4) Data‑dependent loop reconvergence\n"
-//        "    for (int i = 0; i < (WaveGetLaneIndex() % 3 + 1); ++i) { int tmp = i; }\n");
-
-//   pushFront("\n    // 5) Complex branched arithmetic\n"
-//        "    float v = 42.0f;\n"
-//        "    if (WaveGetLaneIndex() < 8) { v *= 2.0f; if ((WaveGetLaneIndex() & 1)==0) v+=1.0f; }\n"
-//        "    else if (WaveGetLaneIndex() < 16) { v *= 3.0f; }\n"
-//        "    else { for(int j=0;j<2;++j) v += 5.0f; }\n");
-
-//   pushFront("\n    // 6) Conditional execution around WaveActiveSum\n"
-//        "    if ((WaveGetLaneIndex() & 7) != 0) { float t=1.0f; float s=WaveActiveSum(t); }\n");
-
-//   pushFront("\n    // 7) Uniform vs lane‑varying branch\n"
-//        "    if (true) { if ((WaveGetLaneIndex() & 1)==0) int ev=100; else int od=200; }\n");
-
-//     const char *randSnippet = "    // 8) Random‑offset reconvergence (syntax‑aware)\n"
-//       "    uint idx = WaveGetLaneIndex();\n"
-//       "    if (idx & 4) { uint r = WaveActiveCountBits(true); }\n";
-
-//     // Collect candidate offsets: newline boundaries only, so we never split
-//     // tokens and we stay inside the function body. Avoid the very last line
-//     // to keep tail‑closing brace intact.
-//     std::vector<size_t> safe;
-//     for (size_t pos = insertStart; pos < closePos; ++pos) {
-//       if (originalSource[pos] == '\n') safe.push_back(pos + 1); // insert *after* EOL
-//     }
-
-//     if (!safe.empty()) {
-//       size_t offset = safe[static_cast<size_t>(rand()) % safe.size()];
-//       pushAt(randSnippet, offset);
-//     }
-    
-//   return mutations;
-// }
-
 
 using sv  = std::string_view;
 using str = std::string;
@@ -224,6 +94,23 @@ private:
 };
 
 
+struct DxContext {
+  ComPtr<ID3D12Device>          dev;
+  ComPtr<ID3D12CommandQueue>    q;
+  ComPtr<ID3D12CommandAllocator>alloc;
+  ComPtr<ID3D12GraphicsCommandList> cmd;
+  ComPtr<ID3D12Fence>           fence;
+  HANDLE                        fenceEvent{};
+  UINT64                        fenceVal = 0;
+
+  // 4 KB UAV for lane outputs + matching read-back buffer
+  ComPtr<ID3D12Resource>        gpuBuf, readbackBuf;
+  D3D12_GPU_DESCRIPTOR_HANDLE   uavHandle{};
+  // …descriptor heap + root-sig cached here…
+};
+
+static DxContext g_ctx;
+
 [[nodiscard]] inline std::optional<std::vector<str>> generate_semantic_mutations(sv original) {
   if (!contains_wave_intrinsics(original)) return std::nullopt; 
 
@@ -266,6 +153,8 @@ private:
                    "    if (idx & 4) { uint r = WaveActiveCountBits(true); }\n", rng)
       .freeze();
 }
+
+
 
 
 // Helper function to compile with specific flags
@@ -548,7 +437,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
           }
         }
         
-        // Removed cross-version check - focusing only on 6.7
 
         // If we found a working profile, break (avoid redundant testing)
         if (o0Success || o3Success) {
