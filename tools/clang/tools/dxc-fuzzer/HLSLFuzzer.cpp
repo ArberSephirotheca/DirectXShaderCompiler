@@ -2,6 +2,8 @@
 #include "dxc/Support/dxcapi.use.h"
 #include "dxc/Support/WinIncludes.h"
 #include "dxc/Support/microcom.h"
+#include "dxc/Support/d3dx12.h"
+#include <windows.h>
 #include <array>
 #include <string_view>
 #include <string>
@@ -13,6 +15,151 @@
 #include <optional>
 #include <cstring>
 using namespace dxc;
+
+using Microsoft::WRL::ComPtr;
+
+class DxContext {
+public:
+  DxContext() { init(); }
+
+  [[nodiscard]] bool valid() const noexcept { return m_device != nullptr; }
+
+  /// Wait until all submitted GPU work is finished.
+  void flush() {
+    if (!valid()) return;
+    m_queue->Signal(m_fence.Get(), ++m_fenceVal);
+    if (m_fence->GetCompletedValue() < m_fenceVal) {
+      m_fence->SetEventOnCompletion(m_fenceVal, m_fenceEvent);
+      ::WaitForSingleObject(m_fenceEvent, INFINITE);
+    }
+  }
+
+  /// Reset command allocator/list so the caller can record new work.
+  void begin() {
+    m_allocator->Reset();
+    m_cmdList->Reset(m_allocator.Get(), nullptr);
+  }
+
+  /// Close and submit the list, leaving context ready for `flush()`.
+  void end() {
+    m_cmdList->Close();
+    ID3D12CommandList* lists[] = { m_cmdList.Get() };
+    m_queue->ExecuteCommandLists(1, lists);
+  }
+
+  // Lightweight getters (add more as needed)
+  ID3D12Device*                   device()   const { return m_device.Get(); }
+  ID3D12GraphicsCommandList*      cmdList()  const { return m_cmdList.Get(); }
+  D3D12_GPU_DESCRIPTOR_HANDLE     uavHandle()const { return m_uavHandle; }
+
+private:
+  //--------------------------------------------------------------------
+  // One-time setup helpers
+  //--------------------------------------------------------------------
+  void init() {
+    createDeviceAndQueue();
+    createCommandObjects();
+    createFence();
+    createBuffers();
+    createDescriptorHeap();
+  }
+
+  void createDeviceAndQueue() {
+    ComPtr<IDXGIFactory4> factory;
+    ThrowIfFailed(CreateDXGIFactory1(IID_PPV_ARGS(&factory)));
+
+    ComPtr<IDXGIAdapter> warp;
+    ThrowIfFailed(factory->EnumWarpAdapter(IID_PPV_ARGS(&warp)));
+
+    ThrowIfFailed(D3D12CreateDevice(
+        warp.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_device)));
+
+    D3D12_COMMAND_QUEUE_DESC qdesc = {};
+    ThrowIfFailed(m_device->CreateCommandQueue(
+        &qdesc, IID_PPV_ARGS(&m_queue)));
+  }
+
+  void createCommandObjects() {
+    ThrowIfFailed(m_device->CreateCommandAllocator(
+        D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_allocator)));
+
+    ThrowIfFailed(m_device->CreateCommandList(
+        0, D3D12_COMMAND_LIST_TYPE_DIRECT,
+        m_allocator.Get(), nullptr, IID_PPV_ARGS(&m_cmdList)));
+  }
+
+  void createFence() {
+    ThrowIfFailed(m_device->CreateFence(
+        0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence)));
+    m_fenceEvent = ::CreateEvent(nullptr, FALSE, FALSE, nullptr);
+  }
+
+  void createBuffers() {
+    constexpr UINT kBufBytes = 4 * 1024;
+
+    auto defaultProps  = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+    auto readbackProps = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_READBACK);
+    auto bufDesc       = CD3DX12_RESOURCE_DESC::Buffer(
+                            kBufBytes,
+                            D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+
+    // GPU UAV buffer
+    ThrowIfFailed(m_device->CreateCommittedResource(
+        &defaultProps, D3D12_HEAP_FLAG_NONE, &bufDesc,
+        D3D12_RESOURCE_STATE_UNORDERED_ACCESS, nullptr,
+        IID_PPV_ARGS(&m_gpuBuf)));
+
+    // CPU-readable buffer
+    ThrowIfFailed(m_device->CreateCommittedResource(
+        &readbackProps, D3D12_HEAP_FLAG_NONE, &bufDesc,
+        D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
+        IID_PPV_ARGS(&m_readbackBuf)));
+  }
+
+  void createDescriptorHeap() {
+    D3D12_DESCRIPTOR_HEAP_DESC hdesc = {};
+    hdesc.NumDescriptors = 1;
+    hdesc.Type           = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+    hdesc.Flags          = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+
+    ThrowIfFailed(m_device->CreateDescriptorHeap(
+        &hdesc, IID_PPV_ARGS(&m_heapUav)));
+
+    m_uavHandle = m_heapUav->GetGPUDescriptorHandleForHeapStart();
+
+    // Create the UAV
+    m_device->CreateUnorderedAccessView(
+        m_gpuBuf.Get(), nullptr, nullptr,
+        m_heapUav->GetCPUDescriptorHandleForHeapStart());
+  }
+
+  // Simple HRESULT wrapper
+  static void ThrowIfFailed(HRESULT hr) {
+    if (FAILED(hr)) throw std::runtime_error("DxContext init failed");
+  }
+
+  //--------------------------------------------------------------------
+  // Data members (all private, `m_`-prefixed)
+  //--------------------------------------------------------------------
+  ComPtr<ID3D12Device>              m_device;
+  ComPtr<ID3D12CommandQueue>        m_queue;
+  ComPtr<ID3D12CommandAllocator>    m_allocator;
+  ComPtr<ID3D12GraphicsCommandList> m_cmdList;
+  ComPtr<ID3D12Fence>               m_fence;
+  HANDLE                            m_fenceEvent{};
+  UINT64                            m_fenceVal = 0;
+
+  // 4-KB UAV + read-back buffer
+  ComPtr<ID3D12Resource>            m_gpuBuf;
+  ComPtr<ID3D12Resource>            m_readbackBuf;
+
+  // Descriptors
+  ComPtr<ID3D12DescriptorHeap>      m_heapUav;
+  D3D12_GPU_DESCRIPTOR_HANDLE       m_uavHandle{};
+
+  // (root-sig / PSO caches can be added here later)
+};
+
 
 // Global DXC support instance
 static DxcDllSupport g_dxcSupport;
@@ -93,24 +240,6 @@ private:
   std::vector<str>   m_out;
 };
 
-
-struct DxContext {
-  ComPtr<ID3D12Device>          dev;
-  ComPtr<ID3D12CommandQueue>    q;
-  ComPtr<ID3D12CommandAllocator>alloc;
-  ComPtr<ID3D12GraphicsCommandList> cmd;
-  ComPtr<ID3D12Fence>           fence;
-  HANDLE                        fenceEvent{};
-  UINT64                        fenceVal = 0;
-
-  // 4 KB UAV for lane outputs + matching read-back buffer
-  ComPtr<ID3D12Resource>        gpuBuf, readbackBuf;
-  D3D12_GPU_DESCRIPTOR_HANDLE   uavHandle{};
-  // …descriptor heap + root-sig cached here…
-};
-
-static DxContext g_ctx;
-
 [[nodiscard]] inline std::optional<std::vector<str>> generate_semantic_mutations(sv original) {
   if (!contains_wave_intrinsics(original)) return std::nullopt; 
 
@@ -158,12 +287,12 @@ static DxContext g_ctx;
 
 
 // Helper function to compile with specific flags
-static CComPtr<IDxcResult> compileWithFlags(
+static ComPtr<IDxcResult> compileWithFlags(
     IDxcCompiler3* pCompiler,
     const DxcBuffer& sourceBuffer,
     const std::vector<LPCWSTR>& args) {
   
-  CComPtr<IDxcResult> pResult;
+  ComPtr<IDxcResult> pResult;
   HRESULT hr = pCompiler->Compile(
       &sourceBuffer,
       const_cast<LPCWSTR*>(args.data()),
@@ -183,7 +312,7 @@ static std::vector<uint8_t> extractBytecode(IDxcResult* pResult) {
   pResult->GetStatus(&status);
   if (FAILED(status)) return {};
   
-  CComPtr<IDxcBlob> pShader;
+  ComPtr<IDxcBlob> pShader;
   HRESULT hr = pResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&pShader), nullptr);
   if (FAILED(hr) || !pShader) return {};
   
@@ -201,7 +330,7 @@ static std::string extractDisassembly(IDxcResult* pResult) {
   pResult->GetStatus(&status);
   if (FAILED(status)) return "";
   
-  CComPtr<IDxcBlobUtf8> pDisasm;
+  ComPtr<IDxcBlobUtf8> pDisasm;
   HRESULT hr = pResult->GetOutput(DXC_OUT_DISASSEMBLY, IID_PPV_ARGS(&pDisasm), nullptr);
   if (FAILED(hr) || !pDisasm) return "";
   
@@ -306,7 +435,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
 
   try {
     // Create compiler instance
-    CComPtr<IDxcCompiler3> pCompiler;
+    ComPtr<IDxcCompiler3> pCompiler;
     HRESULT hr = g_dxcSupport.CreateInstance(CLSID_DxcCompiler, &pCompiler);
     if (FAILED(hr)) {
       return 0;
