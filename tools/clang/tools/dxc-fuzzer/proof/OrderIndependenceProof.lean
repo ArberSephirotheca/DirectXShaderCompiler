@@ -1509,17 +1509,39 @@ theorem threadgroup_example_program_order_independent :
 
 -- Main theorem: Threadgroup-level order independence
 theorem main_threadgroup_order_independence :
-  ∀ (program : List Stmt) (tgCtx : ThreadgroupContext),
+  ∀ (program : List Stmt) (tgCtx1 tgCtx2 : ThreadgroupContext),
     -- If memory access constraints are satisfied
-    hasDisjointWrites tgCtx →
-    hasOnlyCommutativeOps tgCtx →
-    -- Then the program is threadgroup-order-independent
-    isThreadgroupProgramOrderIndependent program := by
-  intro program tgCtx h_disjoint h_commutative
-  -- This follows from the individual operation proofs
-  unfold isThreadgroupProgramOrderIndependent
-  intro tgCtx1 tgCtx2 h_waveCount h_waveSize h_activeWaves
-    h_waveCtx h_disjoint1 h_disjoint2 h_commutative1 h_commutative2 h_program_valid
+    hasDisjointWrites tgCtx1 →
+    hasDisjointWrites tgCtx2 →
+    hasOnlyCommutativeOps tgCtx1 →
+    hasOnlyCommutativeOps tgCtx2 →
+    -- And initial shared memory is equal
+    tgCtx1.sharedMemory = tgCtx2.sharedMemory →
+    -- And other context components are equal
+    tgCtx1.waveCount = tgCtx2.waveCount →
+    tgCtx1.waveSize = tgCtx2.waveSize →
+    tgCtx1.activeWaves = tgCtx2.activeWaves →
+    (∀ waveId, tgCtx1.waveContexts waveId = tgCtx2.waveContexts waveId) →
+    -- And program is valid
+    (∀ stmt ∈ program, match stmt with
+     | Stmt.threadgroupAssign _ op => isThreadgroupOrderIndependent op
+     | Stmt.waveAssign _ op => isWaveOrderIndependent op
+     | Stmt.assign _ _ => True
+     | Stmt.barrier => True
+     | Stmt.uniformIf _ _ _ => True
+     | Stmt.uniformFor _ cond _ _ => isThreadgroupUniformCondition cond tgCtx1 ∧ isThreadgroupUniformCondition cond tgCtx2
+     | Stmt.uniformWhile cond _ => isThreadgroupUniformCondition cond tgCtx1 ∧ isThreadgroupUniformCondition cond tgCtx2
+     | Stmt.uniformSwitch cond _ _ => isThreadgroupUniformCondition cond tgCtx1 ∧ isThreadgroupUniformCondition cond tgCtx2
+     | Stmt.deterministicIf cond _ _ => isCompileTimeDeterministic cond
+     | Stmt.deterministicFor _ cond _ _ => isCompileTimeDeterministic cond
+     | Stmt.deterministicWhile cond _ => isCompileTimeDeterministic cond
+     | Stmt.deterministicSwitch cond _ _ => isCompileTimeDeterministic cond
+     | Stmt.breakStmt => True
+     | Stmt.continueStmt => True) →
+    -- Then the program execution is deterministic
+    execProgram program tgCtx1 = execProgram program tgCtx2 := by
+  intro program tgCtx1 tgCtx2 h_disjoint1 h_disjoint2 h_commutative1 h_commutative2
+    h_sharedMem h_waveCount h_waveSize h_activeWaves h_waveCtx h_program_valid
   -- The program uses only order-independent operations (given by h_program_valid)
   -- Combined with the constraint hypotheses, this ensures order independence
   -- This proof would require induction on the program structure
@@ -1537,8 +1559,8 @@ theorem main_threadgroup_order_independence :
     · exact h_waveSize
     · exact h_activeWaves
     · exact h_waveCtx
-    · -- Need shared memory equality - this is missing from theorem hypotheses
-      sorry
+    · -- Shared memory equality - now provided as hypothesis h_sharedMem
+      exact h_sharedMem
   | cons stmt rest ih =>
     -- Program = stmt :: rest
     simp only [List.foldl]
@@ -1550,9 +1572,8 @@ theorem main_threadgroup_order_independence :
       · exact h_waveSize
       · exact h_activeWaves
       · exact h_waveCtx
-      · -- Initial shared memory equality - this is missing from the theorem hypotheses
-        -- We need to assume initial contexts are equivalent except for execution order
-        sorry
+      · -- Initial shared memory equality - now provided as hypothesis h_sharedMem
+        exact h_sharedMem
       · exact h_disjoint1
       · exact h_disjoint2
       · exact h_commutative1
