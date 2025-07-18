@@ -6,13 +6,18 @@
 #include <unordered_map>
 #include <optional>
 
+// Forward declarations for Clang AST nodes (proper DXC integration)
+#include "clang/AST/Expr.h"
+#include "clang/AST/Stmt.h"
+#include "clang/AST/Decl.h"
+
 namespace minihlsl {
 
-// Forward declarations for AST nodes
-struct Expression;
-struct Statement;
-struct Function;
-struct Program;
+// Type aliases for cleaner API
+using Expression = clang::Expr;
+using Statement = clang::Stmt;
+using Function = clang::FunctionDecl;
+using Program = clang::TranslationUnitDecl;
 
 // Validation result types
 enum class ValidationError {
@@ -30,6 +35,11 @@ enum class ValidationError {
     UnsynchronizedWrite,
     DataRace,
     NonUniformMemoryAccess,
+    MemoryRaceCondition,           // Overlapping writes to shared memory
+    
+    // Threadgroup-level violations (NEW)
+    NonCommutativeOperation,       // Non-commutative ops on shared memory
+    MixedOperationScope,           // Mixed wave+threadgroup operations
     
     // Type/syntax violations
     UnsupportedType,
@@ -179,6 +189,10 @@ private:
     // Forbidden constructs in MiniHLSL
     static const std::unordered_set<std::string> forbiddenKeywords;
     static const std::unordered_set<std::string> forbiddenIntrinsics;
+    
+    // Threadgroup-level operation classification (NEW)
+    static const std::unordered_set<std::string> allowedThreadgroupOps;
+    static const std::unordered_set<std::string> sharedMemoryOps;
 };
 
 // Utility functions for order-independence verification
@@ -197,5 +211,14 @@ bool verifyReconvergence(const Function* func);
 
 // Generate order-independent test variants for fuzzing
 std::vector<std::string> generateOrderIndependentVariants(const std::string& baseProgram);
+
+// Threadgroup-level validation functions (NEW)
+// Based on formal safety constraints from OrderIndependenceProof.lean
+
+// Validate threadgroup-level safety constraints:
+// - Disjoint writes: Each wave writes to different memory addresses
+// - Commutative operations: Only commutative operations on shared memory
+// - Operation separation: Wave operations must be separated from shared memory operations
+class ThreadgroupValidator; // Forward declaration - implemented in .cpp
 
 } // namespace minihlsl
