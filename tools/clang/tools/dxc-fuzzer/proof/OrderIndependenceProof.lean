@@ -436,6 +436,77 @@ lemma evalPureExpr_deterministic (expr : PureExpr) (tgCtx1 tgCtx2 : ThreadgroupC
     simp [evalPureExpr]
     rw [ih1, ih2]
 
+-- Helper lemma: evalCompileTimeDeterministicExpr is deterministic
+lemma evalCompileTimeDeterministicExpr_deterministic 
+    (expr : CompileTimeDeterministicExpr) (tgCtx1 tgCtx2 : ThreadgroupContext)
+    (waveId : WaveId) (laneId : LaneId) :
+    tgCtx1.waveCount = tgCtx2.waveCount →
+    tgCtx1.waveSize = tgCtx2.waveSize →
+    (∀ waveId, tgCtx1.waveContexts waveId = tgCtx2.waveContexts waveId) →
+    evalCompileTimeDeterministicExpr expr tgCtx1 waveId laneId = 
+    evalCompileTimeDeterministicExpr expr tgCtx2 waveId laneId := by
+  intro h_waveCount h_waveSize h_waveCtx
+  induction expr with
+  | literal v => 
+    -- Literals are constants
+    simp [evalCompileTimeDeterministicExpr]
+  | laneIndex => 
+    -- Lane index is determined by the laneId parameter
+    simp [evalCompileTimeDeterministicExpr]
+  | waveIndex => 
+    -- Wave index is determined by the waveId parameter
+    simp [evalCompileTimeDeterministicExpr]
+  | threadIndex => 
+    -- Thread index = waveId * waveSize + laneId, depends only on structure
+    simp [evalCompileTimeDeterministicExpr, h_waveSize]
+  | waveSize => 
+    -- Wave size is given as equal
+    simp [evalCompileTimeDeterministicExpr, h_waveSize]
+  | add e1 e2 ih1 ih2 =>
+    -- Addition of deterministic expressions
+    simp [evalCompileTimeDeterministicExpr]
+    rw [ih1, ih2]
+  | sub e1 e2 ih1 ih2 =>
+    -- Subtraction of deterministic expressions
+    simp [evalCompileTimeDeterministicExpr]
+    rw [ih1, ih2]
+  | mul e1 e2 ih1 ih2 =>
+    -- Multiplication of deterministic expressions
+    simp [evalCompileTimeDeterministicExpr]
+    rw [ih1, ih2]
+  | div e1 e2 ih1 ih2 =>
+    -- Division of deterministic expressions
+    simp [evalCompileTimeDeterministicExpr]
+    rw [ih1, ih2]
+  | mod e1 e2 ih1 ih2 =>
+    -- Modulo of deterministic expressions
+    simp [evalCompileTimeDeterministicExpr]
+    rw [ih1, ih2]
+  | comparison e1 e2 ih1 ih2 =>
+    -- Comparison of deterministic expressions
+    simp [evalCompileTimeDeterministicExpr]
+    rw [ih1, ih2]
+  | lessThan e1 e2 ih1 ih2 =>
+    -- Less than comparison
+    simp [evalCompileTimeDeterministicExpr]
+    rw [ih1, ih2]
+  | greaterThan e1 e2 ih1 ih2 =>
+    -- Greater than comparison
+    simp [evalCompileTimeDeterministicExpr]
+    rw [ih1, ih2]
+  | equal e1 e2 ih1 ih2 =>
+    -- Equality comparison
+    simp [evalCompileTimeDeterministicExpr]
+    rw [ih1, ih2]
+  | logicalAnd e1 e2 ih1 ih2 =>
+    -- Logical AND
+    simp [evalCompileTimeDeterministicExpr]
+    rw [ih1, ih2]
+  | logicalOr e1 e2 ih1 ih2 =>
+    -- Logical OR
+    simp [evalCompileTimeDeterministicExpr]
+    rw [ih1, ih2]
+
 -- Helper lemma: ThreadgroupContext equality from component equalities
 lemma threadgroupContext_eq_of_components (tgCtx1 tgCtx2 : ThreadgroupContext) :
     tgCtx1.waveCount = tgCtx2.waveCount →
@@ -664,16 +735,119 @@ lemma execStmt_deterministic (stmt : Stmt) (tgCtx1 tgCtx2 : ThreadgroupContext) 
     · exact h_sharedMem
   | deterministicIf cond then_stmts else_stmts =>
     -- Deterministic if statement - condition is compile-time deterministic
-    sorry
+    simp only [execStmt]
+    -- Since condition is compile-time deterministic, it evaluates the same in both contexts
+    have h_cond_det : evalCompileTimeDeterministicExpr cond tgCtx1 0 0 =
+                     evalCompileTimeDeterministicExpr cond tgCtx2 0 0 := by
+      -- This follows from compile-time determinism property
+      -- All compile-time deterministic expressions depend only on lane/wave indices
+      -- which are the same in equivalent contexts
+      exact evalCompileTimeDeterministicExpr_deterministic cond tgCtx1 tgCtx2 0 0 h_waveCount h_waveSize h_waveCtx
+    rw [h_cond_det]
+    -- Both contexts execute the same branch
+    cases Classical.em (evalCompileTimeDeterministicExpr cond tgCtx2 0 0 ≠ 0) with
+    | inl h_nonzero =>
+      simp [h_nonzero]
+      -- Execute then branch - apply list determinism to then_stmts
+      have h_then_eq : then_stmts.foldl (fun ctx stmt => execStmt stmt ctx) tgCtx1 =
+                      then_stmts.foldl (fun ctx stmt => execStmt stmt ctx) tgCtx2 :=
+        execStmt_list_deterministic then_stmts tgCtx1 tgCtx2 h_waveCount h_waveSize h_activeWaves
+          h_waveCtx h_sharedMem h_disjoint1 h_disjoint2 h_commutative1 h_commutative2
+          (fun stmt h_stmt_in_then => by
+            -- Deterministic if is valid implies nested statements are valid
+            sorry)
+      exact h_then_eq
+    | inr h_zero =>
+      simp [h_zero]
+      -- Execute else branch - apply list determinism to else_stmts
+      have h_else_eq : else_stmts.foldl (fun ctx stmt => execStmt stmt ctx) tgCtx1 =
+                      else_stmts.foldl (fun ctx stmt => execStmt stmt ctx) tgCtx2 :=
+        execStmt_list_deterministic else_stmts tgCtx1 tgCtx2 h_waveCount h_waveSize h_activeWaves
+          h_waveCtx h_sharedMem h_disjoint1 h_disjoint2 h_commutative1 h_commutative2
+          (fun stmt h_stmt_in_else => by
+            -- Deterministic if is valid implies nested statements are valid
+            sorry)
+      exact h_else_eq
   | deterministicFor init cond incr body =>
     -- Deterministic for loop - bounds are compile-time deterministic
-    sorry
+    simp only [execStmt]
+    -- Since condition is compile-time deterministic, it evaluates the same in both contexts
+    have h_cond_det : evalCompileTimeDeterministicExpr cond tgCtx1 0 0 =
+                     evalCompileTimeDeterministicExpr cond tgCtx2 0 0 := by
+      -- Compile-time deterministic expressions are independent of context differences
+      exact evalCompileTimeDeterministicExpr_deterministic cond tgCtx1 tgCtx2 0 0 h_waveCount h_waveSize h_waveCtx
+    rw [h_cond_det]
+    -- Both contexts execute the same branch based on condition
+    cases Classical.em (evalCompileTimeDeterministicExpr cond tgCtx2 0 0 ≠ 0) with
+    | inl h_nonzero =>
+      simp [h_nonzero]
+      -- Execute loop body - apply list determinism
+      have h_body_eq : body.foldl (fun ctx stmt => execStmt stmt ctx) tgCtx1 =
+                      body.foldl (fun ctx stmt => execStmt stmt ctx) tgCtx2 :=
+        execStmt_list_deterministic body tgCtx1 tgCtx2 h_waveCount h_waveSize h_activeWaves
+          h_waveCtx h_sharedMem h_disjoint1 h_disjoint2 h_commutative1 h_commutative2
+          (fun stmt h_stmt_in_body => by
+            -- Deterministic for is valid implies nested statements are valid
+            sorry)
+      exact h_body_eq
+    | inr h_zero =>
+      simp [h_zero]
+      -- Don't execute loop body - contexts remain equal
+      apply threadgroupContext_eq_of_components
+      · exact h_waveCount
+      · exact h_waveSize
+      · exact h_activeWaves
+      · exact h_waveCtx
+      · exact h_sharedMem
   | deterministicWhile cond body =>
     -- Deterministic while loop - condition is compile-time deterministic
-    sorry
+    simp only [execStmt]
+    -- Since condition is compile-time deterministic, it evaluates the same in both contexts
+    have h_cond_det : evalCompileTimeDeterministicExpr cond tgCtx1 0 0 =
+                     evalCompileTimeDeterministicExpr cond tgCtx2 0 0 := by
+      -- Compile-time deterministic expressions depend only on compile-time values
+      exact evalCompileTimeDeterministicExpr_deterministic cond tgCtx1 tgCtx2 0 0 h_waveCount h_waveSize h_waveCtx
+    rw [h_cond_det]
+    -- Both contexts execute the same branch
+    cases Classical.em (evalCompileTimeDeterministicExpr cond tgCtx2 0 0 ≠ 0) with
+    | inl h_nonzero =>
+      simp [h_nonzero]
+      -- Execute loop body - apply list determinism
+      have h_body_eq : body.foldl (fun ctx stmt => execStmt stmt ctx) tgCtx1 =
+                      body.foldl (fun ctx stmt => execStmt stmt ctx) tgCtx2 :=
+        execStmt_list_deterministic body tgCtx1 tgCtx2 h_waveCount h_waveSize h_activeWaves
+          h_waveCtx h_sharedMem h_disjoint1 h_disjoint2 h_commutative1 h_commutative2
+          (fun stmt h_stmt_in_body => by
+            -- Deterministic while is valid implies nested statements are valid
+            sorry)
+      exact h_body_eq
+    | inr h_zero =>
+      simp [h_zero]
+      -- Don't execute loop body - contexts remain equal
+      apply threadgroupContext_eq_of_components
+      · exact h_waveCount
+      · exact h_waveSize
+      · exact h_activeWaves
+      · exact h_waveCtx
+      · exact h_sharedMem
   | deterministicSwitch cond cases default =>
     -- Deterministic switch statement - condition is compile-time deterministic
-    sorry
+    simp only [execStmt]
+    -- Since condition is compile-time deterministic, it evaluates the same in both contexts
+    have h_cond_det : evalCompileTimeDeterministicExpr cond tgCtx1 0 0 =
+                     evalCompileTimeDeterministicExpr cond tgCtx2 0 0 := by
+      -- Compile-time deterministic expressions are evaluation-order independent
+      exact evalCompileTimeDeterministicExpr_deterministic cond tgCtx1 tgCtx2 0 0 h_waveCount h_waveSize h_waveCtx
+    -- In our simplified model, we only execute the default case
+    -- A complete implementation would pattern match on case values
+    have h_default_eq : default.foldl (fun ctx stmt => execStmt stmt ctx) tgCtx1 =
+                       default.foldl (fun ctx stmt => execStmt stmt ctx) tgCtx2 :=
+      execStmt_list_deterministic default tgCtx1 tgCtx2 h_waveCount h_waveSize h_activeWaves
+        h_waveCtx h_sharedMem h_disjoint1 h_disjoint2 h_commutative1 h_commutative2
+        (fun stmt h_stmt_in_default => by
+          -- Deterministic switch is valid implies nested statements are valid
+          sorry)
+    exact h_default_eq
   | threadgroupAssign _ op =>
     -- Threadgroup operation - may change shared memory
     cases op with
@@ -1418,8 +1592,8 @@ theorem threadgroupExampleWithLoops_order_independent :
 -- ==========================================
 
 -- Theorem: Deterministic if statements are order-independent
-theorem deterministicIf_orderIndependent 
-    (cond : CompileTimeDeterministicExpr) (then_stmts else_stmts : List Stmt) 
+theorem deterministicIf_orderIndependent
+    (cond : CompileTimeDeterministicExpr) (then_stmts else_stmts : List Stmt)
     (tgCtx1 tgCtx2 : ThreadgroupContext) :
   -- Same threadgroup structure
   tgCtx1.waveCount = tgCtx2.waveCount →
@@ -1432,15 +1606,15 @@ theorem deterministicIf_orderIndependent
   -- All nested statements are order-independent
   (∀ stmt ∈ then_stmts ++ else_stmts, execStmt stmt tgCtx1 = execStmt stmt tgCtx2) →
   -- Then the deterministic if is order-independent
-  execStmt (Stmt.deterministicIf cond then_stmts else_stmts) tgCtx1 = 
+  execStmt (Stmt.deterministicIf cond then_stmts else_stmts) tgCtx1 =
   execStmt (Stmt.deterministicIf cond then_stmts else_stmts) tgCtx2 := by
   intro h_waveCount h_waveSize h_activeWaves h_waveCtx h_sharedMem h_cond_det h_stmts_oi
   simp only [execStmt]
   -- Since the condition is compile-time deterministic, it evaluates to the same value
   -- in both contexts (because they have the same lane structure)
-  have h_cond_eq : evalCompileTimeDeterministicExpr cond tgCtx1 0 0 = 
+  have h_cond_eq : evalCompileTimeDeterministicExpr cond tgCtx1 0 0 =
                    evalCompileTimeDeterministicExpr cond tgCtx2 0 0 := by
-    -- This follows from the fact that compile-time deterministic expressions 
+    -- This follows from the fact that compile-time deterministic expressions
     -- only depend on lane indices and other deterministic values
     sorry
   rw [h_cond_eq]
@@ -1448,12 +1622,12 @@ theorem deterministicIf_orderIndependent
   split_ifs with h
   · -- Then branch: apply h_stmts_oi to then_stmts
     sorry
-  · -- Else branch: apply h_stmts_oi to else_stmts  
+  · -- Else branch: apply h_stmts_oi to else_stmts
     sorry
 
 -- Theorem: Deterministic loops are order-independent
-theorem deterministicLoop_orderIndependent 
-    (cond : CompileTimeDeterministicExpr) (body : List Stmt) 
+theorem deterministicLoop_orderIndependent
+    (cond : CompileTimeDeterministicExpr) (body : List Stmt)
     (tgCtx1 tgCtx2 : ThreadgroupContext) :
   -- Same threadgroup structure
   tgCtx1.waveCount = tgCtx2.waveCount →
@@ -1466,12 +1640,12 @@ theorem deterministicLoop_orderIndependent
   -- All body statements are order-independent
   (∀ stmt ∈ body, execStmt stmt tgCtx1 = execStmt stmt tgCtx2) →
   -- Then deterministic while loops are order-independent
-  execStmt (Stmt.deterministicWhile cond body) tgCtx1 = 
+  execStmt (Stmt.deterministicWhile cond body) tgCtx1 =
   execStmt (Stmt.deterministicWhile cond body) tgCtx2 := by
   intro h_waveCount h_waveSize h_activeWaves h_waveCtx h_sharedMem h_cond_det h_body_oi
   simp only [execStmt]
   -- Similar reasoning: deterministic condition evaluates the same in both contexts
-  have h_cond_eq : evalCompileTimeDeterministicExpr cond tgCtx1 0 0 = 
+  have h_cond_eq : evalCompileTimeDeterministicExpr cond tgCtx1 0 0 =
                    evalCompileTimeDeterministicExpr cond tgCtx2 0 0 := by
     sorry
   rw [h_cond_eq]
@@ -1481,14 +1655,14 @@ theorem deterministicLoop_orderIndependent
   · -- Loop doesn't execute: contexts remain unchanged
     apply threadgroupContext_eq_of_components
     · exact h_waveCount
-    · exact h_waveSize  
+    · exact h_waveSize
     · exact h_activeWaves
     · exact h_waveCtx
     · exact h_sharedMem
 
 -- Main theorem: Programs with compile-time deterministic control flow are order-independent
 theorem compileTimeDeterministic_program_orderIndependent (program : List Stmt) :
-  -- All control flow conditions are compile-time deterministic  
+  -- All control flow conditions are compile-time deterministic
   (∀ stmt ∈ program, match stmt with
    | Stmt.deterministicIf cond _ _ => isCompileTimeDeterministic cond
    | Stmt.deterministicFor _ cond _ _ => isCompileTimeDeterministic cond
@@ -1520,7 +1694,7 @@ theorem compileTimeDeterministic_program_orderIndependent (program : List Stmt) 
   -- using the individual theorems for deterministic constructs
   unfold execProgram
   induction program with
-  | nil => 
+  | nil =>
     simp [List.foldl]
     apply threadgroupContext_eq_of_components
     · exact h_waveCount
@@ -1532,7 +1706,7 @@ theorem compileTimeDeterministic_program_orderIndependent (program : List Stmt) 
     simp [List.foldl]
     -- Apply the appropriate theorem for stmt, then use ih for rest
     sorry
-    
+
 -- Summary of what we've proven for threadgroup-level order independence:
 -- 1. Wave operations remain order-independent within each wave
 -- 2. Threadgroup operations (barriers, atomic adds) are order-independent across waves
