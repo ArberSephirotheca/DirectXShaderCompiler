@@ -3,6 +3,7 @@
 #include "dxc/Support/WinIncludes.h"
 #include "dxc/Support/microcom.h"
 #include "dxc/Support/d3dx12.h"
+#include "MiniHLSLValidator.h"
 #include <windows.h>
 #include <array>
 #include <string_view>
@@ -243,44 +244,76 @@ private:
 [[nodiscard]] inline std::optional<std::vector<str>> generate_semantic_mutations(sv original) {
   if (!contains_wave_intrinsics(original)) return std::nullopt; 
 
+  // First, validate the original shader with MiniHLSL
+  minihlsl::MiniHLSLValidator validator;
+  auto validationResult = validator.validateSource(std::string(original));
+  
+  // If original doesn't pass MiniHLSL validation, try to generate compliant variants
+  if (!validationResult.isValid) {
+    // Generate order-independent variants using miniHLSL generator
+    auto orderIndependentVariants = minihlsl::generateOrderIndependentVariants(std::string(original));
+    
+    // Validate each generated variant
+    std::vector<str> validVariants;
+    for (const auto& variant : orderIndependentVariants) {
+      auto variantValidation = validator.validateSource(variant);
+      if (variantValidation.isValid) {
+        validVariants.push_back(variant);
+      }
+    }
+    
+    if (!validVariants.empty()) {
+      return validVariants;
+    }
+    
+    // If no valid variants found, fall back to original method but filter results
+  }
+
   MutationBuilder mb{original};
   if (!mb.valid()) return std::nullopt;
 
   std::mt19937 rng{std::random_device{}()};
 
-  return std::move(mb)
-      .push_front("\n    // 1) Simple even/odd reconvergence\n"
-                  "    if (WaveGetLaneIndex() % 2 == 0) { int d1 = 1; } else { int d2 = 2; }\n")
-      .push_front("\n    // 2) Nested if reconvergence\n"
-                  "    if (WaveGetLaneIndex() < 16) {\n"
-                  "      if ((WaveGetLaneIndex() & 1) == 0) int e = 1; else int o = 2;\n"
-                  "    } else {\n"
-                  "      if ((WaveGetLaneIndex() & 1) == 0) int E = 3; else int O = 4;\n"
+  // Generate mutations using MiniHLSL-compliant patterns only
+  auto mutations = std::move(mb)
+      // MiniHLSL compliant: Uniform branching only
+      .push_front("\n    // 1) MiniHLSL: Uniform condition with wave operations\n"
+                  "    if (WaveGetLaneCount() >= 4) {\n"
+                  "      float uniformValue = WaveActiveSum(1.0f);\n"
                   "    }\n")
-      .push_front("\n    // 3) Switch‑case reconvergence\n"
-                  "    switch (WaveGetLaneIndex() & 3) {\n"
-                  "      case 0: { int a = 10; break; }\n"
-                  "      case 1: { int b = 20; break; }\n"
-                  "      case 2: { int c = 30; break; }\n"
-                  "      case 3: { int d = 40; break; }\n"
+      // MiniHLSL compliant: Order-independent arithmetic
+      .push_front("\n    // 2) MiniHLSL: Order-independent lane operations\n"
+                  "    uint lane = WaveGetLaneIndex();\n"
+                  "    float commutativeResult = float(lane) + float(lane * 2);\n"
+                  "    float sum = WaveActiveSum(commutativeResult);\n")
+      // MiniHLSL compliant: Associative reductions
+      .push_front("\n    // 3) MiniHLSL: Associative wave operations\n"
+                  "    uint idx = WaveGetLaneIndex();\n"
+                  "    uint product = WaveActiveProduct(idx + 1);\n"
+                  "    uint maxVal = WaveActiveMax(idx);\n")
+      // MiniHLSL compliant: Deterministic bit operations
+      .push_front("\n    // 4) MiniHLSL: Order-independent bit counting\n"
+                  "    bool condition = (WaveGetLaneIndex() & 1) == 0;\n"
+                  "    uint evenCount = WaveActiveCountBits(condition);\n")
+      // MiniHLSL compliant: Multiple uniform conditions
+      .push_front("\n    // 5) MiniHLSL: Multiple uniform wave queries\n"
+                  "    if (WaveActiveAllEqual(42)) {\n"
+                  "      if (WaveActiveAnyTrue(true)) {\n"
+                  "        float result = WaveActiveMin(float(WaveGetLaneIndex()));\n"
+                  "      }\n"
                   "    }\n")
-      .push_front("\n    // 4) Data‑dependent loop reconvergence\n"
-                  "    for (int i = 0; i < (WaveGetLaneIndex() % 3 + 1); ++i) { int tmp = i; }\n")
-      .push_front("\n    // 5) Complex branched arithmetic\n"
-                  "    float v = 42.0f;\n"
-                  "    if (WaveGetLaneIndex() < 8) { v *= 2.0f; if ((WaveGetLaneIndex() & 1)==0) v+=1.0f; }\n"
-                  "    else if (WaveGetLaneIndex() < 16) { v *= 3.0f; }\n"
-                  "    else { for(int j=0;j<2;++j) v += 5.0f; }\n")
-      .push_front("\n    // 6) Conditional execution around WaveActiveSum\n"
-                  "    if ((WaveGetLaneIndex() & 7) != 0) { float t=1.0f; float s=WaveActiveSum(t); }\n")
-      .push_front("\n    // 7) Uniform vs lane‑varying branch\n"
-                  "    if (true) { if ((WaveGetLaneIndex() & 1)==0) int ev=100; else int od=200; }\n")
-      .push_front("\n    // 8) Inline function wrapper\n"
-                  "    { int Inlined(int x) { return WaveActiveSum(x); } int res = Inlined(1); }\n")
-      .push_random("\n    // 9) Random‑offset reconvergence (syntax‑aware)\n"
-                   "    uint idx = WaveGetLaneIndex();\n"
-                   "    if (idx & 4) { uint r = WaveActiveCountBits(true); }\n", rng)
       .freeze();
+
+  // Filter mutations to ensure MiniHLSL compliance
+  std::vector<str> validMutations;
+  for (const auto& mutation : mutations) {
+    auto mutationValidation = validator.validateSource(mutation);
+    if (mutationValidation.isValid) {
+      validMutations.push_back(mutation);
+    }
+  }
+  
+  return validMutations.empty() ? std::nullopt : std::make_optional(validMutations);
 }
 
 
@@ -449,6 +482,30 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
       return 0;
     }
 
+    // MINIHLSL VALIDATION: Ensure order-independence before testing
+    minihlsl::MiniHLSLValidator validator;
+    auto validationResult = validator.validateSource(hlslSource);
+    
+    // If input violates MiniHLSL constraints, try to generate compliant version
+    if (!validationResult.isValid) {
+      auto compliantVariants = minihlsl::generateOrderIndependentVariants(hlslSource);
+      
+      bool foundCompliant = false;
+      for (const auto& variant : compliantVariants) {
+        auto variantValidation = validator.validateSource(variant);
+        if (variantValidation.isValid) {
+          hlslSource = variant;  // Use compliant variant
+          foundCompliant = true;
+          break;
+        }
+      }
+      
+      // Skip inputs that cannot be made order-independent
+      if (!foundCompliant) {
+        return 0;
+      }
+    }
+
     // Generate semantic-preserving mutations for differential testing
     std::vector<std::string> mutations = generate_semantic_mutations(hlslSource).has_value()
         ? generate_semantic_mutations(hlslSource).value()
@@ -591,16 +648,40 @@ extern "C" size_t LLVMFuzzerCustomMutator(uint8_t *Data, size_t Size, size_t Max
   }
   
   srand(Seed);
-  std::vector<std::string> mutations = generate_semantic_mutations(input).has_value()
+  
+  // MINIHLSL ENHANCED MUTATION: Generate order-independent mutations
+  minihlsl::MiniHLSLValidator validator;
+  auto validationResult = validator.validateSource(input);
+  
+  std::vector<std::string> candidates;
+  
+  // Generate MiniHLSL-compliant variants
+  auto orderIndependentVariants = minihlsl::generateOrderIndependentVariants(input);
+  for (const auto& variant : orderIndependentVariants) {
+    auto variantValidation = validator.validateSource(variant);
+    if (variantValidation.isValid && variant.size() <= MaxSize) {
+      candidates.push_back(variant);
+    }
+  }
+  
+  // Also try traditional mutations but filter for compliance
+  auto traditionalMutations = generate_semantic_mutations(input).has_value()
       ? generate_semantic_mutations(input).value()
       : std::vector<std::string>();
+      
+  for (const auto& mutation : traditionalMutations) {
+    auto mutationValidation = validator.validateSource(mutation);
+    if (mutationValidation.isValid && mutation.size() <= MaxSize) {
+      candidates.push_back(mutation);
+    }
+  }
   
-  if (mutations.empty()) {
+  if (candidates.empty()) {
     return 0;
   }
   
-  // Select a random mutation
-  const std::string& selected = mutations[rand() % mutations.size()];
+  // Select a random MiniHLSL-compliant mutation
+  const std::string& selected = candidates[rand() % candidates.size()];
   
   if (selected.size() <= MaxSize) {
     memcpy(Data, selected.c_str(), selected.size());
