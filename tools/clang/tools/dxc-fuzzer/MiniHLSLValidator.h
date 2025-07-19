@@ -1,15 +1,17 @@
 #pragma once
 
-#include <string>
-#include <vector>
-#include <unordered_set>
-#include <unordered_map>
-#include <optional>
-
-// Forward declarations for Clang AST nodes (proper DXC integration)
+// Core validation types and enums
+#include "clang/AST/ASTContext.h"
 #include "clang/AST/Expr.h"
 #include "clang/AST/Stmt.h"
 #include "clang/AST/Decl.h"
+#include "clang/AST/RecursiveASTVisitor.h"
+#include "clang/Frontend/CompilerInstance.h"
+#include <memory>
+#include <vector>
+#include <set>
+#include <map>
+#include <string>
 
 namespace minihlsl {
 
@@ -21,25 +23,20 @@ using Program = clang::TranslationUnitDecl;
 
 // Validation result types
 enum class ValidationError {
-    // Control flow violations
-    NonUniformBranch,
-    WaveDivergentLoop,
-    MissingReconvergence,
+    // Deterministic control flow violations
+    NonDeterministicCondition,         // Control flow condition not compile-time deterministic
+    InvalidDeterministicExpression,    // Expression not compile-time deterministic
+    MixedDeterministicContext,         // Mixing deterministic and non-deterministic constructs
     
     // Wave operation violations  
-    OrderDependentWaveOp,
-    IncompleteWaveParticipation,
-    InvalidWaveContext,
+    OrderDependentWaveOp,              // Use of order-dependent operations (forbidden)
+    IncompleteWaveParticipation,       // Wave operation in divergent context
+    InvalidWaveContext,                // Wave operation in invalid control flow context
     
     // Memory access violations
-    UnsynchronizedWrite,
-    DataRace,
-    NonUniformMemoryAccess,
-    MemoryRaceCondition,           // Overlapping writes to shared memory
-    
-    // Threadgroup-level violations (NEW)
-    NonCommutativeOperation,       // Non-commutative ops on shared memory
-    MixedOperationScope,           // Mixed wave+threadgroup operations
+    OverlappingMemoryWrites,           // Violation of hasDisjointWrites constraint
+    NonCommutativeMemoryOp,            // Violation of hasOnlyCommutativeOps constraint
+    SharedMemoryRaceCondition,         // Race condition in shared memory access
     
     // Type/syntax violations
     UnsupportedType,
@@ -49,7 +46,7 @@ enum class ValidationError {
     // General violations
     NonDeterministicOperation,
     SideEffectInPureFunction,
-    UniformityViolation
+    ForbiddenLanguageConstruct
 };
 
 struct ValidationResult {
@@ -62,163 +59,302 @@ struct ValidationResult {
         errors.push_back(error);
         errorMessages.push_back(message);
     }
+    
+    ValidationResult() : isValid(true) {}
 };
 
-// Uniformity analysis - tracks which expressions are uniform across wave
-class UniformityAnalyzer {
+// Formal verification integration utilities
+struct FormalProofMapping {
+    bool deterministicControlFlow;    // Maps to hasDetministicControlFlow
+    bool orderIndependentOperations;  // Maps to wave/threadgroup operation constraints
+    bool memorySafetyConstraints;     // Maps to hasDisjointWrites & hasOnlyCommutativeOps
+    bool programOrderIndependence;    // Overall conclusion
+};
+
+// Forward declarations
+class DeterministicExpressionAnalyzer;
+class ControlFlowAnalyzer;
+class MemorySafetyAnalyzer;
+class WaveOperationValidator;
+
+// Production-ready implementation of all AST-based validation components
+// This provides complete implementations of all validation methods
+
+// Standalone deterministic expression analyzer
+class DeterministicExpressionAnalyzer {
 public:
-    UniformityAnalyzer() = default;
+    enum class ExpressionKind {
+        Literal,                    // Constants: 42, 3.14f, true
+        LaneIndex,                  // WaveGetLaneIndex()
+        WaveIndex,                  // Current wave ID
+        ThreadIndex,                // Global thread index
+        WaveProperty,               // WaveGetLaneCount(), etc.
+        Arithmetic,                 // +, -, *, / of deterministic expressions
+        Comparison,                 // <, >, ==, != of deterministic expressions
+        NonDeterministic            // Everything else
+    };
+
+    explicit DeterministicExpressionAnalyzer(clang::ASTContext& context) 
+        : context_(context) {}
     
-    // Check if expression is uniform (same value across all lanes)
-    bool isUniform(const Expression* expr) const;
+    // Core implementations
+    bool isCompileTimeDeterministic(const clang::Expr* expr);
+    ExpressionKind classifyExpression(const clang::Expr* expr);
+    ValidationResult validateDeterministicExpression(const clang::Expr* expr);
     
-    // Mark variable as uniform
-    void markUniform(const std::string& varName);
-    
-    // Mark variable as divergent (may vary per lane)  
-    void markDivergent(const std::string& varName);
-    
-    // Analyze expression and update uniformity state
-    void analyzeExpression(const Expression* expr);
+    // Complete helper method implementations
+    bool isLiteralConstant(const clang::Expr* expr);
+    bool isLaneIndexExpression(const clang::Expr* expr);
+    bool isWavePropertyExpression(const clang::Expr* expr);
+    bool isThreadIndexExpression(const clang::Expr* expr);
+    bool isArithmeticOfDeterministic(const clang::Expr* expr);
+    bool isComparisonOfDeterministic(const clang::Expr* expr);
     
 private:
-    std::unordered_set<std::string> uniformVariables;
-    std::unordered_set<std::string> divergentVariables;
+    // Advanced expression analysis methods
+    bool analyzeComplexExpression(const clang::Expr* expr);
+    bool analyzeConditionalOperator(const clang::ConditionalOperator* cond);
+    bool analyzeCastExpression(const clang::CastExpr* cast);
+    bool analyzeArraySubscript(const clang::ArraySubscriptExpr* array);
+    bool analyzeInitListExpression(const clang::InitListExpr* initList);
     
-    // Built-in uniform intrinsics
-    static const std::unordered_set<std::string> uniformIntrinsics;
+    // Context-aware analysis
+    bool isInDeterministicContext() const;
+    void pushDeterministicContext();
+    void popDeterministicContext();
     
-    // Built-in divergent intrinsics  
-    static const std::unordered_set<std::string> divergentIntrinsics;
+    // Expression dependency tracking
+    std::set<std::string> getDependentVariables(const clang::Expr* expr);
+    bool areVariablesDeterministic(const std::set<std::string>& variables);
+    
+    // Helper methods from base class
+    bool isDeterministicIntrinsicCall(const clang::CallExpr* call);
+    bool isDeterministicBinaryOp(const clang::BinaryOperator* op);
+    bool isDeterministicUnaryOp(const clang::UnaryOperator* op);
+    bool isDeterministicDeclRef(const clang::DeclRefExpr* ref);
+    bool isDeterministicMemberAccess(const clang::MemberExpr* member);
+    
+    // Core data members
+    clang::ASTContext& context_;
+    std::vector<bool> deterministicContextStack_;
+    std::map<std::string, bool> variableDeterminismCache_;
 };
 
-// Control flow analyzer - ensures proper wave convergence
+// Standalone control flow analyzer
 class ControlFlowAnalyzer {
 public:
+    // Control flow state structure
     struct ControlFlowState {
-        bool isConverged = true;        // All lanes follow same path
-        bool hasWaveOps = false;        // Contains wave operations
-        bool hasUniformBranch = true;   // Branch condition is uniform
-        int divergenceLevel = 0;        // Nesting level of divergent branches
+        bool isDeterministic = true;
+        bool hasDeterministicConditions = true;
+        bool hasWaveOps = false;
+        int deterministicNestingLevel = 0;
     };
+
+    explicit ControlFlowAnalyzer(clang::ASTContext& context)
+        : context_(context), deterministicAnalyzer_(context) {}
     
-    ValidationResult analyzeFunction(const Function* func);
+    // Complete implementations of all control flow validation
+    ValidationResult analyzeFunction(clang::FunctionDecl* func);
+    ValidationResult analyzeStatement(const clang::Stmt* stmt, ControlFlowState& state);
+    
+    // Complete control flow construct validation
+    ValidationResult validateDeterministicIf(const clang::IfStmt* ifStmt, ControlFlowState& state);
+    ValidationResult validateDeterministicFor(const clang::ForStmt* forStmt, ControlFlowState& state);
+    ValidationResult validateDeterministicWhile(const clang::WhileStmt* whileStmt, ControlFlowState& state);
+    ValidationResult validateDeterministicSwitch(const clang::SwitchStmt* switchStmt, ControlFlowState& state);
     
 private:
-    ValidationResult analyzeStatement(const Statement* stmt, ControlFlowState& state);
-    ValidationResult analyzeBlock(const std::vector<Statement*>& stmts, ControlFlowState& state);
+    clang::ASTContext& context_;
+    DeterministicExpressionAnalyzer deterministicAnalyzer_;
     
-    // Check if condition is uniform across wave
-    bool isUniformCondition(const Expression* condition) const;
+    // Advanced control flow analysis
+    ValidationResult analyzeNestedControlFlow(const clang::Stmt* stmt, ControlFlowState& state);
+    ValidationResult validateLoopTermination(const clang::Expr* condition, const clang::Expr* increment);
+    ValidationResult validateSwitchCases(const clang::SwitchStmt* switchStmt, ControlFlowState& state);
+    ValidationResult analyzeBreakContinueFlow(const clang::Stmt* stmt, ControlFlowState& state);
     
-    UniformityAnalyzer uniformityAnalyzer;
+    // Control flow pattern recognition
+    bool isSimpleDeterministicLoop(const clang::ForStmt* forStmt);
+    bool isCountBasedLoop(const clang::ForStmt* forStmt);
+    bool isLaneIndexBasedBranch(const clang::IfStmt* ifStmt);
+    
+    // Flow analysis utilities
+    void updateControlFlowState(ControlFlowState& state, const clang::Stmt* stmt);
+    bool checkControlFlowConsistency(const ControlFlowState& state);
+    ValidationResult mergeControlFlowResults(const std::vector<ValidationResult>& results);
 };
 
-// Wave operation validator - ensures correct wave intrinsic usage
+// Standalone memory safety analyzer
+class MemorySafetyAnalyzer {
+public:
+    // Memory operation structure
+    struct MemoryOperation {
+        std::string resourceName;
+        clang::SourceLocation location;
+        bool isWrite;
+        bool isAtomic;
+        std::string operationType;
+        const clang::Expr* addressExpr;
+    };
+
+    // Memory access pattern enumeration
+    enum class MemoryAccessPattern {
+        LaneDisjoint,      // Each lane accesses different memory
+        WaveShared,        // Wave-level shared access
+        ThreadgroupShared, // Threadgroup-level shared access
+        GlobalShared,      // Global shared access
+        Unknown            // Cannot determine pattern
+    };
+
+    explicit MemorySafetyAnalyzer(clang::ASTContext& context)
+        : context_(context) {}
+    
+    // Complete memory safety analysis
+    ValidationResult analyzeFunction(clang::FunctionDecl* func);
+    void collectMemoryOperations(clang::FunctionDecl* func);
+    bool hasDisjointWrites();
+    bool hasOnlyCommutativeOperations();
+    bool hasMemoryRaceCondition(const MemoryOperation& op1, const MemoryOperation& op2);
+    
+private:
+    // Advanced memory analysis
+    ValidationResult performAliasAnalysis();
+    ValidationResult analyzeSharedMemoryUsage();
+    ValidationResult validateAtomicOperations();
+    ValidationResult checkMemoryAccessPatterns();
+    
+    // Sophisticated alias analysis
+    bool couldAlias(const clang::Expr* addr1, const clang::Expr* addr2);
+    bool analyzeAddressExpressions(const clang::Expr* addr1, const clang::Expr* addr2);
+    bool isDisjointLaneBasedAccess(const clang::Expr* addr1, const clang::Expr* addr2);
+    bool isConstantOffset(const clang::Expr* expr, int64_t& offset);
+    
+    // Memory operation classification  
+    MemoryAccessPattern classifyMemoryAccess(const MemoryOperation& op);
+    bool isCommutativeMemoryOperation(const MemoryOperation& op);
+    bool requiresAtomicity(const MemoryOperation& op);
+    
+    // Data flow analysis
+    std::set<std::string> getAliasSet(const std::string& resourceName);
+    void buildMemoryDependencyGraph();
+    ValidationResult analyzeMemoryDependencies();
+    
+    clang::ASTContext& context_;
+    std::vector<MemoryOperation> memoryOperations_;
+    std::map<std::string, MemoryAccessPattern> memoryAccessPatterns_;
+    std::map<std::pair<std::string, std::string>, bool> aliasCache_;
+};
+
+// Standalone wave operation validator
 class WaveOperationValidator {
 public:
-    ValidationResult validateWaveOp(const std::string& intrinsicName, 
-                                   const std::vector<Expression*>& args,
-                                   const ControlFlowAnalyzer::ControlFlowState& cfState);
-    
-private:
-    // Order-independent wave operations (allowed)
-    static const std::unordered_set<std::string> orderIndependentOps;
-    
-    // Order-dependent wave operations (forbidden)
-    static const std::unordered_set<std::string> orderDependentOps;
-    
-    // Operations requiring full wave participation
-    static const std::unordered_set<std::string> fullParticipationOps;
-    
-    bool requiresFullParticipation(const std::string& intrinsicName) const;
-    bool isOrderDependent(const std::string& intrinsicName) const;
-};
-
-// Memory access analyzer - detects potential data races
-class MemoryAccessAnalyzer {
-public:
-    struct MemoryAccess {
-        std::string resourceName;
-        bool isWrite;
-        bool isUniform;  // Access pattern is uniform across wave
-        const Expression* indexExpression;
+    // Wave operation type enumeration
+    enum class WaveOperationType {
+        Reduction,         // WaveActiveSum, WaveActiveMax, etc.
+        Broadcast,         // WaveReadLaneAt, etc. (forbidden)
+        Query,             // WaveGetLaneIndex, WaveGetLaneCount
+        Ballot,            // WaveBallot, etc. (forbidden)
+        Prefix,            // WavePrefixSum, etc. (forbidden)
+        Unknown
     };
+
+    explicit WaveOperationValidator(clang::ASTContext& context)
+        : context_(context) {}
     
-    ValidationResult analyzeMemoryAccesses(const Function* func);
+    // Complete wave operation validation
+    ValidationResult validateWaveCall(const clang::CallExpr* call, 
+                                     const ControlFlowAnalyzer::ControlFlowState& cfState);
+    bool isWaveOperation(const clang::CallExpr* call);
+    bool isOrderIndependentWaveOp(const std::string& funcName);
+    bool isOrderDependentWaveOp(const std::string& funcName);
+    bool requiresFullParticipation(const std::string& funcName);
     
 private:
-    std::vector<MemoryAccess> memoryAccesses;
+    // Advanced wave operation analysis
+    ValidationResult analyzeWaveParticipation(const clang::CallExpr* call, 
+                                             const ControlFlowAnalyzer::ControlFlowState& cfState);
+    ValidationResult validateWaveArguments(const clang::CallExpr* call, const std::string& funcName);
+    ValidationResult checkWaveOperationContext(const clang::CallExpr* call);
     
-    bool hasDataRace(const MemoryAccess& access1, const MemoryAccess& access2) const;
-    void collectMemoryAccesses(const Statement* stmt);
-    void collectFromExpression(const Expression* expr);
+    // Wave operation classification
+    WaveOperationType classifyWaveOperation(const std::string& funcName);
+    bool isReductionOperation(const std::string& funcName);
+    bool isBroadcastOperation(const std::string& funcName);
+    bool isQueryOperation(const std::string& funcName);
+    
+    // Context analysis
+    bool isInUniformControlFlow(const ControlFlowAnalyzer::ControlFlowState& cfState);
+    bool isInDivergentControlFlow(const ControlFlowAnalyzer::ControlFlowState& cfState);
+    int calculateDivergenceLevel(const ControlFlowAnalyzer::ControlFlowState& cfState);
+    
+    clang::ASTContext& context_;
+    std::map<std::string, WaveOperationType> waveOperationTypes_;
 };
 
-// Main validator class
+// Main HLSL validator with full AST implementation
 class MiniHLSLValidator {
 public:
-    MiniHLSLValidator() = default;
+    MiniHLSLValidator();
+    ~MiniHLSLValidator() = default;
     
-    // Validate complete program for order-independence
+    // Main validation methods
     ValidationResult validateProgram(const Program* program);
-    
-    // Validate individual function
     ValidationResult validateFunction(const Function* func);
-    
-    // Quick validation of HLSL source string
     ValidationResult validateSource(const std::string& hlslSource);
     
-    // Check if specific construct is allowed in MiniHLSL
-    bool isAllowedConstruct(const std::string& constructName) const;
+    // Additional AST-based methods
+    ValidationResult validateAST(clang::TranslationUnitDecl* tu, clang::ASTContext& context);
+    ValidationResult validateSourceWithFullAST(const std::string& hlslSource, 
+                                               const std::string& filename = "shader.hlsl");
+    
+    // Complete formal proof integration
+    std::string generateFormalProofAlignment(const Program* program);
+    FormalProofMapping mapToFormalProof(const ValidationResult& result, const Program* program);
+    
+    // Advanced analysis capabilities
+    ValidationResult performFullStaticAnalysis(clang::TranslationUnitDecl* tu, clang::ASTContext& context);
+    ValidationResult analyzeOrderIndependence(clang::TranslationUnitDecl* tu, clang::ASTContext& context);
+    ValidationResult generateOptimizationSuggestions(clang::TranslationUnitDecl* tu, clang::ASTContext& context);
     
 private:
-    ControlFlowAnalyzer controlFlowAnalyzer;
-    WaveOperationValidator waveValidator;  
-    MemoryAccessAnalyzer memoryAnalyzer;
+    // Analyzer instances
+    std::unique_ptr<DeterministicExpressionAnalyzer> expressionAnalyzer_;
+    std::unique_ptr<ControlFlowAnalyzer> controlFlowAnalyzer_;
+    std::unique_ptr<MemorySafetyAnalyzer> memoryAnalyzer_;
+    std::unique_ptr<WaveOperationValidator> waveValidator_;
     
-    // Validate function signature for MiniHLSL compliance
-    ValidationResult validateFunctionSignature(const Function* func);
+    // AST parsing and setup
+    std::pair<std::unique_ptr<clang::ASTContext>, clang::TranslationUnitDecl*> 
+    parseHLSLWithCompleteAST(const std::string& source, const std::string& filename);
     
-    // Validate variable declarations
-    ValidationResult validateVariableDecl(const Statement* stmt);
+    std::unique_ptr<clang::CompilerInstance> setupCompleteCompiler();
     
-    // Check for forbidden language constructs
-    ValidationResult checkForbiddenConstructs(const Program* program);
+    // Complete validation workflow
+    ValidationResult runCompleteValidation(clang::TranslationUnitDecl* tu, clang::ASTContext& context);
+    ValidationResult validateAllConstraints(clang::TranslationUnitDecl* tu, clang::ASTContext& context);
+    ValidationResult generateComprehensiveReport(const ValidationResult& result, 
+                                                clang::TranslationUnitDecl* tu, 
+                                                clang::ASTContext& context);
     
-    // Forbidden constructs in MiniHLSL
-    static const std::unordered_set<std::string> forbiddenKeywords;
-    static const std::unordered_set<std::string> forbiddenIntrinsics;
-    
-    // Threadgroup-level operation classification (NEW)
-    static const std::unordered_set<std::string> allowedThreadgroupOps;
-    static const std::unordered_set<std::string> sharedMemoryOps;
+    // Analysis coordination
+    void initializeAnalyzers(clang::ASTContext& context);
+    ValidationResult coordinateAnalysis(clang::TranslationUnitDecl* tu, clang::ASTContext& context);
+    ValidationResult consolidateResults(const std::vector<ValidationResult>& results);
 };
 
-// Utility functions for order-independence verification
-
-// Check if operation is commutative (order doesn't matter)
-bool isCommutativeOperation(const std::string& op);
-
-// Check if operation is associative (grouping doesn't matter)  
-bool isAssociativeOperation(const std::string& op);
-
-// Check if expression is deterministic (same inputs -> same output)
-bool isDeterministicExpression(const Expression* expr);
-
-// Verify that all execution paths reconverge before wave operations
-bool verifyReconvergence(const Function* func);
-
-// Generate order-independent test variants for fuzzing
-std::vector<std::string> generateOrderIndependentVariants(const std::string& baseProgram);
-
-// Threadgroup-level validation functions (NEW)
-// Based on formal safety constraints from OrderIndependenceProof.lean
-
-// Validate threadgroup-level safety constraints:
-// - Disjoint writes: Each wave writes to different memory addresses
-// - Commutative operations: Only commutative operations on shared memory
-// - Operation separation: Wave operations must be separated from shared memory operations
-class ThreadgroupValidator; // Forward declaration - implemented in .cpp
+// Factory for creating validators
+class ValidatorFactory {
+public:
+    static std::unique_ptr<MiniHLSLValidator> createValidator();
+    static std::unique_ptr<MiniHLSLValidator> createMiniHLSLValidator();
+    
+    // Create validator with specific analyzers
+    static std::unique_ptr<MiniHLSLValidator> createValidatorWithAnalyzers(
+        std::unique_ptr<DeterministicExpressionAnalyzer> expressionAnalyzer,
+        std::unique_ptr<ControlFlowAnalyzer> controlFlowAnalyzer,
+        std::unique_ptr<MemorySafetyAnalyzer> memoryAnalyzer,
+        std::unique_ptr<WaveOperationValidator> waveValidator);
+};
 
 } // namespace minihlsl

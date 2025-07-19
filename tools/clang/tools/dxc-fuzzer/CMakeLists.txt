@@ -1,5 +1,6 @@
 add_executable(dxc-fuzzer
   HLSLFuzzer.cpp
+  MiniHLSLValidatorV2.cpp
   MiniHLSLValidator.cpp
 )
 target_link_libraries(dxc-fuzzer
