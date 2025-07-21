@@ -101,7 +101,7 @@ Operations that involve shared memory or synchronization across waves.
 ThreadgroupOp ::= barrier                              // GroupMemoryBarrierWithGroupSync
                 | sharedRead(MemoryAddress)            // Read from shared memory
                 | sharedWrite(MemoryAddress, PureExpr) // Write to shared memory
-                | sharedAtomicAdd(MemoryAddress, PureExpr) // Atomic add
+                | InterlockedAdd(MemoryAddress, PureExpr) // Atomic add
 ```
 
 ### 4.3 Statements
@@ -237,7 +237,7 @@ A program has a **data race** if it contains two conflicting memory accesses tha
 2. At least one access is a write
 3. The accesses are not synchronized by:
    - A barrier operation (`GroupMemoryBarrierWithGroupSync`)
-   - Atomic operations (`sharedAtomicAdd`)
+   - Atomic operations (`InterlockedAdd`)
    - Happens-before relationships established by synchronization
 
 **Undefined Behavior**:
@@ -249,7 +249,7 @@ For order independence and data-race freedom, shared memory accesses must follow
 1. **Read-Only**: All threads only read from an address (no data race possible)
 2. **Disjoint Writes**: Each thread writes to different addresses (no conflicting accesses)
 3. **Synchronized Access**: Accesses are ordered by barriers or atomic operations
-4. **Commutative Atomic Operations**: All writes use commutative atomic operations (e.g., `sharedAtomicAdd`)
+4. **Commutative Atomic Operations**: All writes use commutative atomic operations (e.g., `InterlockedAdd`)
 
 #### 5.4.3 Hybrid Approach for Compound Read-Modify-Write Operations
 
@@ -258,8 +258,8 @@ MiniHLSL uses a **hybrid approach** to handle compound operations that both read
 **Simple RMW Constraint** (`simpleRMWRequiresAtomic`):
 - **Scope**: Same-thread operations to the same address
 - **Rule**: If a thread performs both a read and write to the same address, then either:
-  1. The operations are synchronized by barriers (`synchronizedByBarriers`), OR
-  2. They must be replaced by atomic operations (`sharedAtomicAdd`, etc.)
+  1. The operations are synchronized by barriers, OR
+  2. They must be replaced by atomic operations (`InterlockedAdd`, etc.)
 - **Rationale**: Prevents intra-thread races in compound expressions like `x = x + 1`
 
 **Complex Operations Constraint** (`complexOperationsAreSynchronized`):
@@ -296,7 +296,7 @@ g_data[0] += threadId;  // Multiple threads, same address, no synchronization
 - All threads in the threadgroup must reach the barrier (a happens-before edge is established)
 
 **Atomic Operations**:
-- `sharedAtomicAdd` and similar operations provide atomic read-modify-write semantics
+- `InterlockedAdd` and similar operations provide atomic read-modify-write semantics
 - Multiple concurrent atomic operations to the same location are serialized
 
 #### 5.4.5 Control Flow Constraints
@@ -474,24 +474,23 @@ Programs following the hybrid approach for compound read-modify-write operations
 A MiniHLSL validator must check:
 1. All control flow conditions are compile-time deterministic
 2. Memory access patterns follow safety constraints
-3. Wave operations occur only in converged control flow
-4. No data races in shared memory accesses
+<!-- 3. Wave operations occur only in converged control flow -->
+3. No data races in shared memory accesses
 
 ### 9.2 Runtime Guarantees
 Valid MiniHLSL programs guarantee:
 1. Deterministic results regardless of thread scheduling
 2. No deadlocks or race conditions
 3. Portable execution across different GPU architectures
-4. Optimization opportunities for parallel execution
+<!-- 4. Optimization opportunities for parallel execution -->
 
-## 10. Future Extensions
+<!-- ## 10. Future Extensions
 
 Planned extensions to MiniHLSL include:
-1. Uniform loop constructs (maintaining order independence)
-2. Additional atomic operations
-3. Texture and buffer operations
-4. Extended type system (vectors, matrices)
-5. Function definitions and calls
+1. Additional atomic operations
+2. Texture and buffer operations
+3. Extended type system (vectors, matrices)
+4. Function definitions and calls -->
 
 ---
 

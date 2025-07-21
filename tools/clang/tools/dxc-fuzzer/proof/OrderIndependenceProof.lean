@@ -95,7 +95,7 @@ inductive ThreadgroupOp where
   | barrier : ThreadgroupOp  -- GroupMemoryBarrierWithGroupSync
   | sharedRead : MemoryAddress → ThreadgroupOp
   | sharedWrite : MemoryAddress → PureExpr → ThreadgroupOp
-  | sharedAtomicAdd : MemoryAddress → PureExpr → ThreadgroupOp
+  | InterlockedAdd : MemoryAddress → PureExpr → ThreadgroupOp
 
 -- MiniHLSL statements (restricted to threadgroup order-independent constructs)
 -- MiniHLSL Statements (Simplified: Only Deterministic Control Flow)
@@ -234,7 +234,7 @@ def evalThreadgroupOp (op : ThreadgroupOp) (tgCtx : ThreadgroupContext) : Int :=
   | ThreadgroupOp.barrier => 0  -- Barrier doesn't return a value
   | ThreadgroupOp.sharedRead addr => tgCtx.sharedMemory.data addr
   | ThreadgroupOp.sharedWrite _ _ => 0  -- Write doesn't return a value
-  | ThreadgroupOp.sharedAtomicAdd _ expr =>
+  | ThreadgroupOp.InterlockedAdd _ expr =>
       -- Atomic add returns the old value, but for order independence we model the final sum
       tgCtx.activeWaves.sum (fun waveId =>
         let waveCtx := tgCtx.waveContexts waveId
@@ -384,7 +384,7 @@ def execStmt (stmt : Stmt) (tgCtx : ThreadgroupContext) : ThreadgroupContext :=
   | Stmt.threadgroupAssign _ op =>
     -- Threadgroup operation - potentially updates shared memory
     match op with
-    | ThreadgroupOp.sharedAtomicAdd addr expr =>
+    | ThreadgroupOp.InterlockedAdd addr expr =>
       -- Update shared memory with atomic add
       let value := evalThreadgroupOp op tgCtx
       { tgCtx with sharedMemory :=
@@ -696,7 +696,7 @@ theorem minihlsl_threadgroup_operations_order_independent :
   | sharedWrite addr expr =>
     -- Write operations must be disjoint (ensured by h_disjoint constraints)
     simp [evalThreadgroupOp]
-  | sharedAtomicAdd addr expr =>
+  | InterlockedAdd addr expr =>
     -- Atomic add is commutative - sum of all waves is order-independent
     simp [evalThreadgroupOp]
     rw [h_activeWaves]
@@ -955,26 +955,26 @@ lemma execStmt_deterministic (stmt : Stmt) (tgCtx1 tgCtx2 : ThreadgroupContext) 
   | threadgroupAssign _ op =>
     -- Threadgroup operation - may change shared memory
     cases op with
-    | sharedAtomicAdd addr expr =>
+    | InterlockedAdd addr expr =>
       -- Atomic add is commutative, so order doesn't matter
       simp only [execStmt]
       -- Show that the ThreadgroupContext structures are equal
       have h_equal : { tgCtx1 with sharedMemory :=
         { tgCtx1.sharedMemory with data :=
           fun a => if a = addr then
-            tgCtx1.sharedMemory.data a + evalThreadgroupOp (ThreadgroupOp.sharedAtomicAdd addr expr) tgCtx1
+            tgCtx1.sharedMemory.data a + evalThreadgroupOp (ThreadgroupOp.InterlockedAdd addr expr) tgCtx1
           else
             tgCtx1.sharedMemory.data a } } =
         { tgCtx2 with sharedMemory :=
         { tgCtx2.sharedMemory with data :=
           fun a => if a = addr then
-            tgCtx2.sharedMemory.data a + evalThreadgroupOp (ThreadgroupOp.sharedAtomicAdd addr expr) tgCtx2
+            tgCtx2.sharedMemory.data a + evalThreadgroupOp (ThreadgroupOp.InterlockedAdd addr expr) tgCtx2
           else
             tgCtx2.sharedMemory.data a } } := by
         -- Use the given equalities
-        have h_op_equal : evalThreadgroupOp (ThreadgroupOp.sharedAtomicAdd addr expr) tgCtx1 =
-                         evalThreadgroupOp (ThreadgroupOp.sharedAtomicAdd addr expr) tgCtx2 := by
-          have h_op_independent : isThreadgroupOrderIndependent (ThreadgroupOp.sharedAtomicAdd addr expr) := h_stmt_valid
+        have h_op_equal : evalThreadgroupOp (ThreadgroupOp.InterlockedAdd addr expr) tgCtx1 =
+                         evalThreadgroupOp (ThreadgroupOp.InterlockedAdd addr expr) tgCtx2 := by
+          have h_op_independent : isThreadgroupOrderIndependent (ThreadgroupOp.InterlockedAdd addr expr) := h_stmt_valid
           apply h_op_independent
           · exact h_waveCount
           · exact h_waveSize
@@ -1143,9 +1143,9 @@ theorem disjoint_writes_preserve_order_independence :
 theorem commutative_ops_preserve_order_independence :
   ∀ (tgCtx : ThreadgroupContext),
     hasOnlyCommutativeOps tgCtx →
-    isThreadgroupOrderIndependent (ThreadgroupOp.sharedAtomicAdd 0 PureExpr.laneIndex) := by
+    isThreadgroupOrderIndependent (ThreadgroupOp.InterlockedAdd 0 PureExpr.laneIndex) := by
   intro tgCtx h_commutative
-  exact minihlsl_threadgroup_operations_order_independent (ThreadgroupOp.sharedAtomicAdd 0 PureExpr.laneIndex)
+  exact minihlsl_threadgroup_operations_order_independent (ThreadgroupOp.InterlockedAdd 0 PureExpr.laneIndex)
 
 -- Data-Race-Free Memory Model Theorems
 
@@ -1637,7 +1637,7 @@ def threadgroupExampleProgram : List Stmt := [
   Stmt.assign "threadId" PureExpr.threadIndex,
   Stmt.waveAssign "waveSum" (WaveOp.activeSum PureExpr.laneIndex),
   Stmt.barrier,  -- Synchronization point
-  Stmt.threadgroupAssign "totalSum" (ThreadgroupOp.sharedAtomicAdd 0 PureExpr.waveIndex),
+  Stmt.threadgroupAssign "totalSum" (ThreadgroupOp.InterlockedAdd 0 PureExpr.waveIndex),
   Stmt.barrier,
   Stmt.threadgroupAssign "result" (ThreadgroupOp.sharedRead 0)
 ]
@@ -1671,7 +1671,7 @@ def threadgroupExampleWithLoops : List Stmt := [
     Stmt.assign "caseVal" (PureExpr.literal 0)  -- Default case
   ],
   Stmt.barrier,
-  Stmt.threadgroupAssign "finalSum" (ThreadgroupOp.sharedAtomicAdd 0 PureExpr.waveIndex),
+  Stmt.threadgroupAssign "finalSum" (ThreadgroupOp.InterlockedAdd 0 PureExpr.waveIndex),
   Stmt.barrier,
   Stmt.threadgroupAssign "result" (ThreadgroupOp.sharedRead 0)
 ]

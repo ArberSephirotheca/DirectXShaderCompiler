@@ -98,12 +98,12 @@ inductive ThreadgroupOp where
   | barrier : ThreadgroupOp
   | sharedRead : MemoryAddress → ThreadgroupOp
   | sharedWrite : MemoryAddress → PureExpr → ThreadgroupOp
-  | sharedAtomicAdd : MemoryAddress → PureExpr → ThreadgroupOp
+  | InterlockedAdd : MemoryAddress → PureExpr → ThreadgroupOp
 ```
 **Purpose**: Threadgroup-level operations that work across waves
 - Requires careful synchronization and memory access patterns
 - `barrier`: Synchronizes all waves
-- `sharedAtomicAdd`: Atomic addition (commutative, order-independent)
+- `InterlockedAdd`: Atomic addition (commutative, order-independent)
 
 ### `Stmt`
 ```lean
