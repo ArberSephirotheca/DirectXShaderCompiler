@@ -368,9 +368,125 @@ bool DeterministicExpressionAnalyzer::is_comparison_of_deterministic(
 // Rust-style helper method implementations
 bool DeterministicExpressionAnalyzer::analyze_complex_expression(
     const clang::Expr *expr) {
-  // For complex expressions, be conservative and return false
-  // A full implementation would handle more expression types
-  return false;
+  // Early return for null expression (Rust-style)
+  if (!expr) {
+    return false;
+  }
+  
+  // Remove any implicit casts to get to the actual expression
+  expr = expr->IgnoreImpCasts();
+  
+  // Handle additional complex expression types based on OrderIndependence.lean
+  const auto stmt_class = expr->getStmtClass();
+  
+  switch (stmt_class) {
+    // Compound assignment operators (+=, -=, *=, /=, etc.)
+    case clang::Stmt::CompoundAssignOperatorClass: {
+      const auto compound_op = clang::cast<clang::CompoundAssignOperator>(expr);
+      // Compound assignments are deterministic if both LHS and RHS are deterministic
+      return is_compile_time_deterministic(compound_op->getLHS()) &&
+             is_compile_time_deterministic(compound_op->getRHS());
+    }
+    
+    // Comma operator - all sub-expressions must be deterministic
+    case clang::Stmt::BinaryOperatorClass: {
+      const auto bin_op = clang::cast<clang::BinaryOperator>(expr);
+      if (bin_op->getOpcode() == clang::BO_Comma) {
+        return is_compile_time_deterministic(bin_op->getLHS()) &&
+               is_compile_time_deterministic(bin_op->getRHS());
+      }
+      // Other binary operators are handled in main switch
+      return false;
+    }
+    
+    // Sizeof expressions - always deterministic
+    case clang::Stmt::UnaryExprOrTypeTraitExprClass: {
+      const auto sizeof_expr = clang::cast<clang::UnaryExprOrTypeTraitExpr>(expr);
+      // sizeof, alignof are compile-time constants
+      return sizeof_expr->getKind() == clang::UETT_SizeOf ||
+             sizeof_expr->getKind() == clang::UETT_AlignOf;
+    }
+    
+    // Vector element access (e.g., vec.x, vec.y)
+    case clang::Stmt::ExtVectorElementExprClass: {
+      const auto vec_elem = clang::cast<clang::ExtVectorElementExpr>(expr);
+      // Vector element access is deterministic if base is deterministic
+      return is_compile_time_deterministic(vec_elem->getBase());
+    }
+    
+    // HLSL-specific vector/matrix constructors
+    case clang::Stmt::CXXConstructExprClass: {
+      const auto construct_expr = clang::cast<clang::CXXConstructExpr>(expr);
+      // Constructor is deterministic if all arguments are deterministic
+      const auto num_args = construct_expr->getNumArgs();
+      for (unsigned i = 0; i < num_args; ++i) {
+        if (!is_compile_time_deterministic(construct_expr->getArg(i))) {
+          return false;
+        }
+      }
+      return true;
+    }
+    
+    // Implicit value initialization (e.g., int x = int())
+    case clang::Stmt::ImplicitValueInitExprClass:
+      // Default initialization is always deterministic
+      return true;
+    
+    // HLSL intrinsic calls that might be deterministic
+    case clang::Stmt::CXXMemberCallExprClass: {
+      const auto member_call = clang::cast<clang::CXXMemberCallExpr>(expr);
+      return is_deterministic_member_call(member_call);
+    }
+    
+    // HLSL swizzle operations (e.g., vec.xy, vec.rgb)
+    case clang::Stmt::ShuffleVectorExprClass: {
+      const auto shuffle = clang::cast<clang::ShuffleVectorExpr>(expr);
+      // Shuffle is deterministic if all operands are deterministic
+      const auto num_exprs = shuffle->getNumSubExprs();
+      for (unsigned i = 0; i < num_exprs; ++i) {
+        if (!is_compile_time_deterministic(shuffle->getExpr(i))) {
+          return false;
+        }
+      }
+      return true;
+    }
+    
+    // Matrix/vector subscript operations
+    case clang::Stmt::CXXOperatorCallExprClass: {
+      const auto op_call = clang::cast<clang::CXXOperatorCallExpr>(expr);
+      // Check if this is a subscript operator
+      if (op_call->getOperator() == clang::OO_Subscript) {
+        // Subscript is deterministic if object and index are deterministic
+        return op_call->getNumArgs() >= 2 &&
+               is_compile_time_deterministic(op_call->getArg(0)) &&
+               is_compile_time_deterministic(op_call->getArg(1));
+      }
+      return false;
+    }
+    
+    // Default case - analyze subexpressions recursively
+    default: {
+      // For unknown expression types, check if all child expressions are deterministic
+      bool all_children_deterministic = true;
+      
+      for (const auto child : expr->children()) {
+        if (const auto child_expr = clang::dyn_cast<clang::Expr>(child)) {
+          if (!is_compile_time_deterministic(child_expr)) {
+            all_children_deterministic = false;
+            break;
+          }
+        }
+      }
+      
+      // If expression has no children, it's likely a terminal we don't recognize
+      // Be conservative and return false
+      if (expr->child_begin() == expr->child_end()) {
+        return false;
+      }
+      
+      return all_children_deterministic;
+    }
+  }
 }
 
 bool DeterministicExpressionAnalyzer::analyze_conditional_operator(
@@ -443,17 +559,115 @@ set<string> DeterministicExpressionAnalyzer::get_dependent_variables(
   if (!expr)
     return variables;
 
-  // Simple implementation - would be more sophisticated in practice
-  if (const auto decl_ref = clang::dyn_cast<clang::DeclRefExpr>(expr)) {
-    variables.insert(decl_ref->getDecl()->getNameAsString());
-  }
+  // Remove any implicit casts to get to the actual expression
+  expr = expr->IgnoreImpCasts();
 
-  // For complex expressions, recursively analyze subexpressions (Rust-style
-  // iteration)
-  for (const auto child : expr->children()) {
-    if (const auto child_expr = clang::dyn_cast<clang::Expr>(child)) {
-      const auto child_vars = get_dependent_variables(child_expr);
-      variables.insert(child_vars.begin(), child_vars.end());
+  // Handle specific expression types
+  switch (expr->getStmtClass()) {
+    // Direct variable reference
+    case clang::Stmt::DeclRefExprClass: {
+      const auto decl_ref = clang::cast<clang::DeclRefExpr>(expr);
+      const auto decl = decl_ref->getDecl();
+      if (clang::isa<clang::VarDecl>(decl) || clang::isa<clang::ParmVarDecl>(decl)) {
+        variables.insert(decl->getNameAsString());
+      }
+      break;
+    }
+
+    // Member access (e.g., struct.field, vec.x)
+    case clang::Stmt::MemberExprClass: {
+      const auto member = clang::cast<clang::MemberExpr>(expr);
+      // Get variables from the base expression
+      const auto base_vars = get_dependent_variables(member->getBase());
+      variables.insert(base_vars.begin(), base_vars.end());
+      break;
+    }
+
+    // Array subscript (e.g., arr[i])
+    case clang::Stmt::ArraySubscriptExprClass: {
+      const auto array = clang::cast<clang::ArraySubscriptExpr>(expr);
+      // Get variables from both base and index
+      const auto base_vars = get_dependent_variables(array->getBase());
+      const auto idx_vars = get_dependent_variables(array->getIdx());
+      variables.insert(base_vars.begin(), base_vars.end());
+      variables.insert(idx_vars.begin(), idx_vars.end());
+      break;
+    }
+
+    // Function calls - analyze arguments but not the function name itself
+    case clang::Stmt::CallExprClass: {
+      const auto call = clang::cast<clang::CallExpr>(expr);
+      for (unsigned i = 0; i < call->getNumArgs(); ++i) {
+        const auto arg_vars = get_dependent_variables(call->getArg(i));
+        variables.insert(arg_vars.begin(), arg_vars.end());
+      }
+      break;
+    }
+
+    // Binary operators
+    case clang::Stmt::BinaryOperatorClass:
+    case clang::Stmt::CompoundAssignOperatorClass: {
+      const auto bin_op = clang::cast<clang::BinaryOperator>(expr);
+      const auto lhs_vars = get_dependent_variables(bin_op->getLHS());
+      const auto rhs_vars = get_dependent_variables(bin_op->getRHS());
+      variables.insert(lhs_vars.begin(), lhs_vars.end());
+      variables.insert(rhs_vars.begin(), rhs_vars.end());
+      break;
+    }
+
+    // Unary operators
+    case clang::Stmt::UnaryOperatorClass: {
+      const auto unary_op = clang::cast<clang::UnaryOperator>(expr);
+      const auto sub_vars = get_dependent_variables(unary_op->getSubExpr());
+      variables.insert(sub_vars.begin(), sub_vars.end());
+      break;
+    }
+
+    // Conditional operator (? :)
+    case clang::Stmt::ConditionalOperatorClass: {
+      const auto cond_op = clang::cast<clang::ConditionalOperator>(expr);
+      const auto cond_vars = get_dependent_variables(cond_op->getCond());
+      const auto true_vars = get_dependent_variables(cond_op->getTrueExpr());
+      const auto false_vars = get_dependent_variables(cond_op->getFalseExpr());
+      variables.insert(cond_vars.begin(), cond_vars.end());
+      variables.insert(true_vars.begin(), true_vars.end());
+      variables.insert(false_vars.begin(), false_vars.end());
+      break;
+    }
+
+    // Parenthesized expressions
+    case clang::Stmt::ParenExprClass: {
+      const auto paren = clang::cast<clang::ParenExpr>(expr);
+      return get_dependent_variables(paren->getSubExpr());
+    }
+
+    // Cast expressions
+    case clang::Stmt::ImplicitCastExprClass:
+    case clang::Stmt::CStyleCastExprClass:
+    case clang::Stmt::CXXStaticCastExprClass:
+    case clang::Stmt::CXXFunctionalCastExprClass: {
+      const auto cast = clang::cast<clang::CastExpr>(expr);
+      return get_dependent_variables(cast->getSubExpr());
+    }
+
+    // Literals don't depend on any variables
+    case clang::Stmt::IntegerLiteralClass:
+    case clang::Stmt::FloatingLiteralClass:
+    case clang::Stmt::CXXBoolLiteralExprClass:
+    case clang::Stmt::StringLiteralClass:
+    case clang::Stmt::CharacterLiteralClass:
+      // No variables to add
+      break;
+
+    // Default: recursively analyze all children
+    default: {
+      for (const auto child : expr->children()) {
+        if (const auto child_expr = clang::dyn_cast<clang::Expr>(child)) {
+          const auto child_vars = get_dependent_variables(child_expr);
+          variables.insert(child_vars.begin(), child_vars.end());
+        }
+      }
+      break;
     }
   }
 
@@ -530,6 +744,50 @@ bool DeterministicExpressionAnalyzer::is_deterministic_member_access(
 
   // Member access is deterministic if base is deterministic
   return is_compile_time_deterministic(member->getBase());
+}
+
+bool DeterministicExpressionAnalyzer::is_deterministic_member_call(
+    const clang::CXXMemberCallExpr *call) {
+  if (!call)
+    return false;
+
+  // Get the member function being called
+  const auto method_decl = call->getMethodDecl();
+  if (!method_decl)
+    return false;
+
+  const auto method_name = method_decl->getNameAsString();
+  
+  // Check if it's a deterministic HLSL intrinsic method
+  // Vector/matrix methods that are deterministic
+  if (method_name == "length" || method_name == "normalize" ||
+      method_name == "dot" || method_name == "cross" ||
+      method_name == "abs" || method_name == "min" || method_name == "max" ||
+      method_name == "clamp" || method_name == "saturate" ||
+      method_name == "floor" || method_name == "ceil" || method_name == "round" ||
+      method_name == "trunc" || method_name == "sign" ||
+      method_name == "step" || method_name == "smoothstep" ||
+      method_name == "lerp" || method_name == "distance") {
+    // These methods are deterministic if their object and arguments are deterministic
+    
+    // Check the implicit object argument (this)
+    if (!is_compile_time_deterministic(call->getImplicitObjectArgument())) {
+      return false;
+    }
+    
+    // Check all explicit arguments
+    const auto num_args = call->getNumArgs();
+    for (unsigned i = 0; i < num_args; ++i) {
+      if (!is_compile_time_deterministic(call->getArg(i))) {
+        return false;
+      }
+    }
+    
+    return true;
+  }
+  
+  // Conservative: unknown member calls are non-deterministic
+  return false;
 }
 
 // Rust-style Memory Safety Analyzer Implementation
@@ -756,8 +1014,73 @@ bool MemorySafetyAnalyzer::could_alias(const clang::Expr *addr1,
   if (!addr1 || !addr2)
     return false;
 
-  // Simplified alias analysis - real implementation would be more sophisticated
-  return true; // Conservative: assume they could alias
+  // Remove implicit casts
+  addr1 = addr1->IgnoreImpCasts();
+  addr2 = addr2->IgnoreImpCasts();
+
+  // If they're the exact same expression, they definitely alias
+  if (addr1 == addr2)
+    return true;
+
+  // Check for array accesses with different constant indices
+  if (const auto arr1 = clang::dyn_cast<clang::ArraySubscriptExpr>(addr1)) {
+    if (const auto arr2 = clang::dyn_cast<clang::ArraySubscriptExpr>(addr2)) {
+      // Check if they're accessing the same array
+      const auto base1 = arr1->getBase()->IgnoreImpCasts();
+      const auto base2 = arr2->getBase()->IgnoreImpCasts();
+      
+      // If different base arrays, they can't alias
+      if (const auto decl1 = clang::dyn_cast<clang::DeclRefExpr>(base1)) {
+        if (const auto decl2 = clang::dyn_cast<clang::DeclRefExpr>(base2)) {
+          if (decl1->getDecl() != decl2->getDecl()) {
+            return false; // Different arrays don't alias
+          }
+          
+          // Same array - check indices
+          const auto idx1 = arr1->getIdx()->IgnoreImpCasts();
+          const auto idx2 = arr2->getIdx()->IgnoreImpCasts();
+          
+          // If both indices are integer literals, compare them
+          if (const auto lit1 = clang::dyn_cast<clang::IntegerLiteral>(idx1)) {
+            if (const auto lit2 = clang::dyn_cast<clang::IntegerLiteral>(idx2)) {
+              return lit1->getValue() == lit2->getValue();
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Check for member accesses of different fields
+  if (const auto mem1 = clang::dyn_cast<clang::MemberExpr>(addr1)) {
+    if (const auto mem2 = clang::dyn_cast<clang::MemberExpr>(addr2)) {
+      // Check if they're accessing the same object
+      const auto base1 = mem1->getBase()->IgnoreImpCasts();
+      const auto base2 = mem2->getBase()->IgnoreImpCasts();
+      
+      // If same base object, check if different fields
+      if (base1 == base2 || could_alias(base1, base2)) {
+        const auto field1 = mem1->getMemberDecl();
+        const auto field2 = mem2->getMemberDecl();
+        return field1 == field2; // Same field = alias, different field = no alias
+      }
+      return false; // Different objects don't alias
+    }
+  }
+
+  // Check for different variable references
+  if (const auto ref1 = clang::dyn_cast<clang::DeclRefExpr>(addr1)) {
+    if (const auto ref2 = clang::dyn_cast<clang::DeclRefExpr>(addr2)) {
+      return ref1->getDecl() == ref2->getDecl();
+    }
+  }
+
+  // For thread-local or wave-local storage with explicit indices
+  // e.g., groupshared[tid] vs groupshared[tid+1]
+  // This would require more sophisticated analysis of the index expressions
+
+  // Conservative default: assume they could alias
+  return true;
 }
 
 bool MemorySafetyAnalyzer::is_commutative_memory_operation(

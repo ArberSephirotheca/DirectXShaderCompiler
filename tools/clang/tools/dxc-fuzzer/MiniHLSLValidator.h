@@ -311,6 +311,7 @@ private:
   bool is_deterministic_unary_op(const clang::UnaryOperator *op);
   bool is_deterministic_decl_ref(const clang::DeclRefExpr *ref);
   bool is_deterministic_member_access(const clang::MemberExpr *member);
+  bool is_deterministic_member_call(const clang::CXXMemberCallExpr *call);
 
   // Legacy compatibility
   bool isDeterministicIntrinsicCall(const clang::CallExpr *call) {
