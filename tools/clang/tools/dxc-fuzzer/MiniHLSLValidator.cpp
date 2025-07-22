@@ -1721,23 +1721,75 @@ ControlFlowAnalyzer::validate_loop_termination(const clang::Expr *condition,
                                                const clang::Expr *increment) {
   std::vector<ValidationResult> results;
 
-  // Basic termination analysis - a full implementation would be more
-  // sophisticated
-  if (condition &&
-      !deterministic_analyzer_.is_compile_time_deterministic(condition)) {
+  // For MiniHLSL, we focus on determinism rather than proving termination
+  // The key requirement is that loops have deterministic bounds
+  
+  if (!condition) {
+    // No condition means infinite loop (like for(;;))
     results.push_back(ValidationResultBuilder::err(
         ValidationError::NonDeterministicCondition,
-        "Loop condition may not terminate deterministically"));
+        "Loop without condition may not terminate"));
+    return ValidationResultBuilder::combine(results);
   }
 
+  // Check if condition is deterministic
+  if (!deterministic_analyzer_.is_compile_time_deterministic(condition)) {
+    results.push_back(ValidationResultBuilder::err(
+        ValidationError::NonDeterministicCondition,
+        "Loop condition must be deterministic for order-independent execution"));
+  }
+
+  // For increment, we care about determinism, not just termination
   if (increment &&
       !deterministic_analyzer_.is_compile_time_deterministic(increment)) {
     results.push_back(
         ValidationResultBuilder::err(ValidationError::NonDeterministicCondition,
-                                     "Loop increment is not deterministic"));
+                                     "Loop increment must be deterministic"));
   }
 
+  // Additional checks for common patterns
+  if (is_simple_count_loop(condition, increment)) {
+    // Pattern like: for(int i = 0; i < N; i++)
+    // These are generally safe if N is deterministic
+    return ValidationResultBuilder::ok();
+  }
+
+  // For while loops and complex conditions, we can't easily prove termination
+  // but we've already checked determinism which is the key requirement
+  
   return ValidationResultBuilder::combine(results);
+}
+
+// Helper to check if this is a simple counting loop
+bool ControlFlowAnalyzer::is_simple_count_loop(const clang::Expr *condition,
+                                               const clang::Expr *increment) {
+  if (!condition || !increment)
+    return false;
+
+  // Check if condition is a comparison like i < N
+  const auto bin_op = clang::dyn_cast<clang::BinaryOperator>(condition);
+  if (!bin_op)
+    return false;
+
+  const auto op = bin_op->getOpcode();
+  if (op != clang::BO_LT && op != clang::BO_LE && 
+      op != clang::BO_GT && op != clang::BO_GE)
+    return false;
+
+  // Check if increment is i++ or i += constant
+  if (const auto unary_op = clang::dyn_cast<clang::UnaryOperator>(increment)) {
+    return unary_op->getOpcode() == clang::UO_PreInc ||
+           unary_op->getOpcode() == clang::UO_PostInc ||
+           unary_op->getOpcode() == clang::UO_PreDec ||
+           unary_op->getOpcode() == clang::UO_PostDec;
+  }
+
+  if (const auto compound_op = clang::dyn_cast<clang::CompoundAssignOperator>(increment)) {
+    return compound_op->getOpcode() == clang::BO_AddAssign ||
+           compound_op->getOpcode() == clang::BO_SubAssign;
+  }
+
+  return false;
 }
 
 ValidationResult

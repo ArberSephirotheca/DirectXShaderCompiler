@@ -441,6 +441,7 @@ private:
   bool is_simple_deterministic_loop(const clang::ForStmt *for_stmt);
   bool is_count_based_loop(const clang::ForStmt *for_stmt);
   bool is_lane_index_based_branch(const clang::IfStmt *if_stmt);
+  bool is_simple_count_loop(const clang::Expr *condition, const clang::Expr *increment);
 
   // Legacy compatibility
   bool isSimpleDeterministicLoop(const clang::ForStmt *forStmt) {
