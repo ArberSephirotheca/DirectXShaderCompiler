@@ -33,5 +33,27 @@ target_link_libraries(test_runner
 # Enable testing
 enable_testing()
 
+# MiniHLSL-specific fuzzer - generates only valid MiniHLSL mutations
+add_executable(minihlsl-fuzzer
+  MiniHLSLFuzzer.cpp
+  MiniHLSLValidator.cpp
+)
+target_link_libraries(minihlsl-fuzzer
+  dxcompiler
+  clangAST
+  clangBasic
+  clangFrontend
+  clangLex
+  clangParse
+  clangSema
+  LLVMSupport
+  LLVMOption
+  LLVMCore
+)
+set_target_properties(minihlsl-fuzzer PROPERTIES
+  COMPILE_FLAGS "-fsanitize=address,fuzzer"
+  LINK_FLAGS    "-fsanitize=address,fuzzer"
+)
+
 # Add test that runs all .hlsl files in test_cases directory
 add_test(NAME MiniHLSLValidatorTest COMMAND test_runner test_cases)

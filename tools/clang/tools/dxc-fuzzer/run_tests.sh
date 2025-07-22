@@ -31,12 +31,21 @@ fi
 echo "Creating new build directory at: $BUILD_DIR"
 mkdir -p "$BUILD_DIR"
 
-# Configure with CMake from DXC root
-echo "Configuring with CMake..."
+# Configure with CMake from DXC root using clang++
+echo "Configuring with CMake using clang++..."
 echo "DXC Root: $DXC_ROOT"
 echo "Build Dir: $BUILD_DIR"
 cd "$BUILD_DIR"
-cmake "$DXC_ROOT" -C "$DXC_ROOT/cmake/caches/PredefinedParams.cmake" -G Ninja
+cmake "$DXC_ROOT" \
+  -C "$DXC_ROOT/cmake/caches/PredefinedParams.cmake" \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_C_COMPILER=clang \
+  -DCMAKE_CXX_COMPILER=clang++ \
+  -DLLVM_ENABLE_ASSERTIONS=ON \
+  -DLLVM_USE_SANITIZER='Address' \
+  -DCMAKE_C_FLAGS="-fsanitize=address" \
+  -DCMAKE_CXX_FLAGS="-fsanitize=address" \
+  -G Ninja
 
 if [ $? -ne 0 ]; then
     echo "CMake configuration failed!"
