@@ -812,9 +812,12 @@ lemma execStmt_deterministic (stmt : Stmt) (tgCtx1 tgCtx2 : ThreadgroupContext) 
             | assign _ _ => trivial
             | barrier => trivial
             | deterministicIf cond _ _ =>
-              -- Validity inheritance: nested deterministic constructs inherit determinism
-              -- This follows from the assumption that all control flow in valid programs is deterministic
-              admit
+              -- LIMITATION: Nested control flow validity requires structural induction
+              -- In a complete implementation, this would be proven by:
+              -- 1. Adding validity assumption to top-level theorem, OR
+              -- 2. Using well-founded recursion on nesting depth
+              -- For now, we assume nested constructs inherit validity
+              sorry
             | deterministicFor _ cond _ _ => admit
             | deterministicWhile cond _ => admit
             | deterministicSwitch cond _ _ => admit
@@ -1155,7 +1158,7 @@ def threadIdToWaveId (threadId : Nat) (waveSize : Nat) : WaveId :=
 
 -- Theorem: Disjoint writes prevent inter-wave write-write races
 theorem disjoint_writes_prevent_inter_wave_write_races :
-  ∀ (program : List Stmt) (tgCtx : ThreadgroupContext),
+  ∀ (tgCtx : ThreadgroupContext),
     hasDisjointWrites tgCtx →
     -- Additional assumption: memory accesses correspond to waves that actually write
     (∀ (accesses : List MemoryAccess) (access : MemoryAccess),
@@ -1171,7 +1174,7 @@ theorem disjoint_writes_prevent_inter_wave_write_races :
       a2.accessType = MemoryAccessType.write →
       threadIdToWaveId a1.threadId tgCtx.waveSize ≠ threadIdToWaveId a2.threadId tgCtx.waveSize →
       a1.address ≠ a2.address := by
-  intro program tgCtx h_disjoint h_access_mapping accesses a1 a2 h_a1_in h_a2_in h_a1_write h_a2_write h_diff_waves
+  intro tgCtx h_disjoint h_access_mapping accesses a1 a2 h_a1_in h_a2_in h_a1_write h_a2_write h_diff_waves
   by_contra h_same_addr
   -- Get the wave IDs for both accesses
   let wave1 := threadIdToWaveId a1.threadId tgCtx.waveSize
@@ -1267,7 +1270,7 @@ theorem barriers_imply_happens_before :
     -- Convert the barrier gap to program order: if a1.programPoint + 10 < a2.programPoint then a1.programPoint < a2.programPoint
     linarith
   | inr h_a2_before_a1 =>
-    -- a2.programPoint + 10 < a1.programPoint  
+    -- a2.programPoint + 10 < a1.programPoint
     right
     apply HappensBefore.synchronization
     -- Convert the barrier gap to program order: if a2.programPoint + 10 < a1.programPoint then a2.programPoint < a1.programPoint
@@ -1275,7 +1278,7 @@ theorem barriers_imply_happens_before :
 
 -- Theorem: Combined disjoint writes and read-write synchronization are data-race free
 theorem disjoint_writes_readonly_are_data_race_free :
-  ∀ (program : List Stmt) (tgCtx : ThreadgroupContext),
+  ∀ (program : List Stmt),
     -- Use thread-level disjoint writes for completeness
     hasDisjointThreadWrites program →
     -- Additional constraint: read-write conflicts are synchronized
@@ -1287,7 +1290,7 @@ theorem disjoint_writes_readonly_are_data_race_free :
       a1.threadId ≠ a2.threadId →
       HappensBefore a1 a2 ∨ HappensBefore a2 a1) →
     isDataRaceFree program := by
-  intro program tgCtx h_disjoint h_read_write_sync
+  intro program h_disjoint h_read_write_sync
   unfold isDataRaceFree
   intro _ accesses
   unfold hasDataRace
@@ -1361,7 +1364,7 @@ theorem disjoint_writes_readonly_are_data_race_free :
 
 -- Main theorem: Comprehensive data-race freedom with compound operations
 theorem comprehensive_data_race_freedom :
-  ∀ (program : List Stmt) (tgCtx : ThreadgroupContext),
+  ∀ (program : List Stmt),
     -- All our safety constraints
     hasDisjointThreadWrites program →
     (∀ accesses : List MemoryAccess, simpleRMWRequiresAtomic accesses) →
@@ -1376,7 +1379,7 @@ theorem comprehensive_data_race_freedom :
       HappensBefore a1 a2 ∨ HappensBefore a2 a1) →
     -- Then the program is data-race-free
     isDataRaceFree program := by
-  intro program tgCtx h_disjoint_writes h_simple_rmw h_complex_ops h_read_write_sync
+  intro program h_disjoint_writes h_simple_rmw h_complex_ops h_read_write_sync
   unfold isDataRaceFree
   intro _ accesses
   unfold hasDataRace
@@ -1831,6 +1834,7 @@ theorem threadgroupExampleWithLoops_order_independent :
     -- This follows from the construction of threadgroupExampleWithLoops
     admit
 
+
 -- ==========================================
 -- THEOREMS FOR COMPILE-TIME DETERMINISTIC CONSTRUCTS
 -- ==========================================
@@ -2002,8 +2006,6 @@ theorem deterministic_programs_are_order_independent (program : List Stmt) :
     | barrier => trivial
     | breakStmt => trivial
     | continueStmt => trivial
-
--- Removed: Specific theorem eliminated - covered by the general principle above
 
 -- Summary of what we've proven for threadgroup-level order independence:
 -- 1. Wave operations remain order-independent within each wave
