@@ -617,6 +617,82 @@ private:
   const clang::Expr* extract_base_and_offset(const clang::Expr *expr, int64_t &offset);
   bool is_shared_memory_access(const clang::Expr *expr);
 
+  // Dynamic Block Execution Graph (DBEG) for cross-path dependency analysis
+  struct DynamicBlock {
+    uint32_t id;                              // Unique identifier
+    const clang::Stmt* staticBlock;           // Original basic block/statement
+    std::set<uint32_t> threads;               // db.T - threads that execute this dynamic block
+    int iterationId;                          // Loop iteration (-1 if not in loop)
+    const clang::Stmt* parentLoop;           // Parent loop statement (nullptr if not in loop)
+    
+    // Merge block information (critical for reconvergence)
+    uint32_t mergeTargetId;                   // db.merge - where threads reconverge
+    std::vector<uint32_t> mergeStack;         // Stack of merge targets for nested control flow
+    
+    // Graph structure
+    std::vector<uint32_t> children;           // Child dynamic blocks
+    std::vector<uint32_t> predecessors;       // Predecessor dynamic blocks
+    
+    // Helper methods
+    bool hasThread(uint32_t threadId) const { return threads.find(threadId) != threads.end(); }
+    bool isInLoop() const { return iterationId >= 0; }
+  };
+
+  struct MemoryOperationInDBEG {
+    MemoryOperation op;                       // Original memory operation
+    uint32_t dynamicBlockId;                  // Which dynamic block contains this operation
+    int programPoint;                         // Execution order within thread
+  };
+
+  // DBEG construction and analysis
+  std::map<uint32_t, DynamicBlock> dynamicBlocks_;
+  std::vector<MemoryOperationInDBEG> dbegMemoryOps_;
+  uint32_t nextDynamicBlockId_ = 0;
+  
+  // Track active threads as we build the DBEG
+  std::map<uint32_t, std::set<uint32_t>> activeThreadsAfterBlock_;
+  std::set<uint32_t> compute_threads_after_block(uint32_t blockId);
+  std::set<uint32_t> remove_exiting_threads(const std::set<uint32_t>& threads, const clang::Stmt* stmt);
+  
+  // DBEG methods
+  void build_dynamic_execution_graph(clang::FunctionDecl *func);
+  void build_dynamic_blocks_recursive(
+    const clang::Stmt* stmt, 
+    uint32_t parentBlockId,
+    const std::set<uint32_t>& threads);
+  void collect_memory_operations_in_dbeg(
+    const clang::Stmt* stmt,
+    uint32_t dynamicBlockId,
+    const std::set<uint32_t>& activeThreads);
+  uint32_t create_dynamic_block(const clang::Stmt* stmt, 
+                               const std::set<uint32_t>& threads,
+                               int iteration = -1,
+                               const clang::Stmt* parentLoop = nullptr);
+  std::set<uint32_t> compute_thread_participation(const clang::Stmt* stmt, 
+                                                const std::set<uint32_t>& parentThreads);
+  std::set<uint32_t> compute_thread_participation_if_branch(
+  const clang::IfStmt* if_stmt, const std::set<uint32_t>& threads, bool takeTrueBranch);   
+  std::set<uint32_t> compute_threads_executing_iteration(
+  const clang::ForStmt* for_stmt, const std::set<uint32_t>& threads, int iteration);
+  int compute_max_loop_iterations(const clang::ForStmt* for_stmt, const std::set<uint32_t>& parentThreads);
+  bool thread_executes_loop_iteration(const clang::ForStmt* for_stmt, const uint32_t tid, const int iteration);
+  const clang::Stmt* find_merge_target_for_if(const clang::IfStmt* if_stmt);
+  const clang::Stmt* find_merge_target_for_loop(const clang::ForStmt* for_stmt);
+  ValidationResult validate_cross_dynamic_block_dependencies();
+  void print_dynamic_execution_graph(bool verbose = false);
+  
+  // Helper methods for DBEG construction
+  const clang::Stmt* get_parent_statement(const clang::Stmt* stmt);
+  bool evaluate_deterministic_condition_for_thread(const clang::Expr* condition, uint32_t threadId);
+  const clang::Stmt* get_next_statement_after_loop(const clang::ForStmt* for_stmt);
+  const clang::Stmt* get_statement_after_compound(const clang::CompoundStmt* compound);
+  const clang::Stmt* get_next_statement(const clang::Stmt* stmt);
+  bool branch_contains_escape_statement(const clang::Stmt* branch);
+  bool statement_causes_divergent_exit(const clang::Stmt* stmt);
+  bool branch_contains_break_statement(const clang::Stmt* branch);
+  bool branch_contains_continue_statement(const clang::Stmt* branch);
+  bool branch_contains_return_statement(const clang::Stmt* branch);
+
   // Legacy compatibility
   bool couldAlias(const clang::Expr *addr1, const clang::Expr *addr2) {
     return could_alias(addr1, addr2);
