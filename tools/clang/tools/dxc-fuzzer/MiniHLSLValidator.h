@@ -604,6 +604,17 @@ private:
   bool is_disjoint_lane_based_access(const clang::Expr *addr1,
                                      const clang::Expr *addr2);
   bool is_constant_offset(const clang::Expr *expr, int64_t &offset);
+  
+  // Basic symbolic expression analysis for array indices
+  bool are_indices_definitely_different(const clang::Expr *idx1, const clang::Expr *idx2);
+  bool are_same_expression(const clang::Expr *expr1, const clang::Expr *expr2);
+  
+  // Cross-thread alias analysis
+  bool could_alias_across_threads(const clang::Expr *addr1, uint32_t thread1,
+                                  const clang::Expr *addr2, uint32_t thread2);
+  bool is_thread_id_expression(const clang::Expr *expr);
+  const clang::Expr* extract_base_and_offset(const clang::Expr *expr, int64_t &offset);
+  bool is_shared_memory_access(const clang::Expr *expr);
 
   // Legacy compatibility
   bool couldAlias(const clang::Expr *addr1, const clang::Expr *addr2) {

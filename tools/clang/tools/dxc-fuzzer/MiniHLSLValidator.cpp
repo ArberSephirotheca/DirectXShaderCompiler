@@ -836,7 +836,7 @@ void MemorySafetyAnalyzer::collect_memory_operations(
 
 bool MemorySafetyAnalyzer::has_disjoint_writes() {
   // Check if all write operations access different memory addresses
-  // (Rust-style)
+  // Only check shared memory - local variables are private to each thread
   const auto size = memory_operations_.size();
   for (size_t i = 0; i < size; ++i) {
     for (size_t j = i + 1; j < size; ++j) {
@@ -844,8 +844,25 @@ bool MemorySafetyAnalyzer::has_disjoint_writes() {
       const auto &op2 = memory_operations_[j];
 
       if (op1.isWrite && op2.isWrite) {
-        if (could_alias(op1.addressExpr, op2.addressExpr)) {
-          return false;
+        // Only check shared memory accesses
+        if (!is_shared_memory_access(op1.addressExpr) ||
+            !is_shared_memory_access(op2.addressExpr)) {
+          // At least one is not shared memory - no race possible
+          continue;
+        }
+        
+        // Both access shared memory
+        if (op1.threadId != op2.threadId) {
+          // Cross-thread shared memory writes - check for conflicts
+          if (could_alias_across_threads(op1.addressExpr, op1.threadId,
+                                        op2.addressExpr, op2.threadId)) {
+            return false;
+          }
+        } else {
+          // Same thread - use regular alias analysis
+          if (could_alias(op1.addressExpr, op2.addressExpr)) {
+            return false;
+          }
         }
       }
     }
@@ -1076,11 +1093,360 @@ bool MemorySafetyAnalyzer::could_alias(const clang::Expr *addr1,
   }
 
   // For thread-local or wave-local storage with explicit indices
-  // e.g., groupshared[tid] vs groupshared[tid+1]
-  // This would require more sophisticated analysis of the index expressions
+  // Try to do basic symbolic comparison for common patterns
+  if (const auto arr1 = clang::dyn_cast<clang::ArraySubscriptExpr>(addr1)) {
+    if (const auto arr2 = clang::dyn_cast<clang::ArraySubscriptExpr>(addr2)) {
+      // Get the base arrays
+      const auto base1 = arr1->getBase()->IgnoreImpCasts();
+      const auto base2 = arr2->getBase()->IgnoreImpCasts();
+      
+      // If they're the same array, check indices symbolically
+      if (are_same_expression(base1, base2)) {
+        const auto idx1 = arr1->getIdx();
+        const auto idx2 = arr2->getIdx();
+        
+        // Try to determine if indices are definitely different
+        if (are_indices_definitely_different(idx1, idx2)) {
+          return false;
+        }
+      }
+    }
+  }
 
   // Conservative default: assume they could alias
   return true;
+}
+
+// Basic symbolic expression analyzer for common patterns
+bool MemorySafetyAnalyzer::are_indices_definitely_different(
+    const clang::Expr *idx1, const clang::Expr *idx2) {
+  if (!idx1 || !idx2)
+    return false;
+
+  // Remove casts
+  idx1 = idx1->IgnoreImpCasts();
+  idx2 = idx2->IgnoreImpCasts();
+
+  // Case 1: Both are integer literals
+  if (const auto lit1 = clang::dyn_cast<clang::IntegerLiteral>(idx1)) {
+    if (const auto lit2 = clang::dyn_cast<clang::IntegerLiteral>(idx2)) {
+      return lit1->getValue() != lit2->getValue();
+    }
+  }
+
+  // Case 2: One is X and the other is X + constant (e.g., tid vs tid+1)
+  if (const auto bin_op = clang::dyn_cast<clang::BinaryOperator>(idx2)) {
+    if (bin_op->getOpcode() == clang::BO_Add || 
+        bin_op->getOpcode() == clang::BO_Sub) {
+      const auto lhs = bin_op->getLHS()->IgnoreImpCasts();
+      const auto rhs = bin_op->getRHS()->IgnoreImpCasts();
+      
+      // Check if LHS of binary op is same as idx1
+      if (are_same_expression(idx1, lhs)) {
+        // Check if RHS is a non-zero constant
+        if (const auto lit = clang::dyn_cast<clang::IntegerLiteral>(rhs)) {
+          return lit->getValue() != 0;
+        }
+      }
+    }
+  }
+
+  // Case 3: Reverse - idx1 is X + constant, idx2 is X
+  if (const auto bin_op = clang::dyn_cast<clang::BinaryOperator>(idx1)) {
+    if (bin_op->getOpcode() == clang::BO_Add || 
+        bin_op->getOpcode() == clang::BO_Sub) {
+      const auto lhs = bin_op->getLHS()->IgnoreImpCasts();
+      const auto rhs = bin_op->getRHS()->IgnoreImpCasts();
+      
+      if (are_same_expression(lhs, idx2)) {
+        if (const auto lit = clang::dyn_cast<clang::IntegerLiteral>(rhs)) {
+          return lit->getValue() != 0;
+        }
+      }
+    }
+  }
+
+  // Case 4: Both are X + constant with different constants
+  const auto bin_op1 = clang::dyn_cast<clang::BinaryOperator>(idx1);
+  const auto bin_op2 = clang::dyn_cast<clang::BinaryOperator>(idx2);
+  
+  if (bin_op1 && bin_op2) {
+    if ((bin_op1->getOpcode() == clang::BO_Add || 
+         bin_op1->getOpcode() == clang::BO_Sub) &&
+        (bin_op2->getOpcode() == clang::BO_Add || 
+         bin_op2->getOpcode() == clang::BO_Sub)) {
+      
+      const auto base1 = bin_op1->getLHS()->IgnoreImpCasts();
+      const auto base2 = bin_op2->getLHS()->IgnoreImpCasts();
+      
+      if (are_same_expression(base1, base2)) {
+        const auto offset1 = bin_op1->getRHS()->IgnoreImpCasts();
+        const auto offset2 = bin_op2->getRHS()->IgnoreImpCasts();
+        
+        if (const auto lit1 = clang::dyn_cast<clang::IntegerLiteral>(offset1)) {
+          if (const auto lit2 = clang::dyn_cast<clang::IntegerLiteral>(offset2)) {
+            int64_t val1 = lit1->getValue().getSExtValue();
+            int64_t val2 = lit2->getValue().getSExtValue();
+            
+            // Adjust for subtraction
+            if (bin_op1->getOpcode() == clang::BO_Sub) val1 = -val1;
+            if (bin_op2->getOpcode() == clang::BO_Sub) val2 = -val2;
+            
+            return val1 != val2;
+          }
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+// Check if two expressions are syntactically the same
+bool MemorySafetyAnalyzer::are_same_expression(
+    const clang::Expr *expr1, const clang::Expr *expr2) {
+  if (!expr1 || !expr2)
+    return false;
+
+  expr1 = expr1->IgnoreImpCasts();
+  expr2 = expr2->IgnoreImpCasts();
+
+  // Same pointer means same expression
+  if (expr1 == expr2)
+    return true;
+
+  // Check if both are references to the same variable
+  if (const auto ref1 = clang::dyn_cast<clang::DeclRefExpr>(expr1)) {
+    if (const auto ref2 = clang::dyn_cast<clang::DeclRefExpr>(expr2)) {
+      return ref1->getDecl() == ref2->getDecl();
+    }
+  }
+
+  // Check if both are the same member access
+  if (const auto mem1 = clang::dyn_cast<clang::MemberExpr>(expr1)) {
+    if (const auto mem2 = clang::dyn_cast<clang::MemberExpr>(expr2)) {
+      return mem1->getMemberDecl() == mem2->getMemberDecl() &&
+             are_same_expression(mem1->getBase(), mem2->getBase());
+    }
+  }
+
+  // Check if both are calls to the same function with same arguments
+  if (const auto call1 = clang::dyn_cast<clang::CallExpr>(expr1)) {
+    if (const auto call2 = clang::dyn_cast<clang::CallExpr>(expr2)) {
+      if (call1->getDirectCallee() == call2->getDirectCallee() &&
+          call1->getNumArgs() == call2->getNumArgs()) {
+        // For deterministic functions like WaveGetLaneIndex(), 
+        // multiple calls return the same value
+        if (const auto callee = call1->getDirectCallee()) {
+          const auto name = callee->getNameAsString();
+          if (name == "WaveGetLaneIndex" || name == "WaveGetLaneCount" ||
+              name.find("SV_DispatchThreadID") != string::npos) {
+            return true;
+          }
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+// Check if two addresses could alias when accessed by different threads
+bool MemorySafetyAnalyzer::could_alias_across_threads(
+    const clang::Expr *addr1, uint32_t thread1,
+    const clang::Expr *addr2, uint32_t thread2) {
+  if (!addr1 || !addr2)
+    return false;
+
+  // Remove casts
+  addr1 = addr1->IgnoreImpCasts();
+  addr2 = addr2->IgnoreImpCasts();
+
+  // Special case: array indexed by thread ID
+  if (const auto arr1 = clang::dyn_cast<clang::ArraySubscriptExpr>(addr1)) {
+    if (const auto arr2 = clang::dyn_cast<clang::ArraySubscriptExpr>(addr2)) {
+      // Check if they're the same array
+      const auto base1 = arr1->getBase()->IgnoreImpCasts();
+      const auto base2 = arr2->getBase()->IgnoreImpCasts();
+      
+      if (are_same_expression(base1, base2)) {
+        // Same array - now check if indices could overlap across threads
+        const auto idx1 = arr1->getIdx()->IgnoreImpCasts();
+        const auto idx2 = arr2->getIdx()->IgnoreImpCasts();
+        
+        // Check for patterns like data[tid] where each thread uses its ID
+        if (is_thread_id_expression(idx1) && is_thread_id_expression(idx2)) {
+          // If both use thread ID directly, they don't alias
+          return false;
+        }
+        
+        // Check for data[tid + offset] patterns
+        int64_t offset1 = 0, offset2 = 0;
+        const auto base_idx1 = extract_base_and_offset(idx1, offset1);
+        const auto base_idx2 = extract_base_and_offset(idx2, offset2);
+        
+        if (base_idx1 && base_idx2 && 
+            is_thread_id_expression(base_idx1) && 
+            is_thread_id_expression(base_idx2)) {
+          // Both are tid + offset
+          // Thread T1 writes to tid1 + offset1
+          // Thread T2 writes to tid2 + offset2
+          // These alias if tid1 + offset1 == tid2 + offset2
+          // Since tid1 != tid2 for different threads, this happens when
+          // offset1 - offset2 == tid2 - tid1
+          // This can happen! For example:
+          // Thread 0: data[tid + 1] = data[0 + 1] = data[1]
+          // Thread 1: data[tid + 0] = data[1 + 0] = data[1]
+          // They both write to data[1]!
+          
+          // For safety, assume they could alias unless we can prove
+          // the offset difference is larger than the thread count
+          return true;
+        }
+      }
+    }
+  }
+
+  // Default to could_alias for other cases
+  return could_alias(addr1, addr2);
+}
+
+// Check if an expression represents the thread ID
+bool MemorySafetyAnalyzer::is_thread_id_expression(const clang::Expr *expr) {
+  if (!expr)
+    return false;
+    
+  expr = expr->IgnoreImpCasts();
+  
+  // Direct variable reference to thread ID
+  if (const auto ref = clang::dyn_cast<clang::DeclRefExpr>(expr)) {
+    const auto name = ref->getDecl()->getNameAsString();
+    return name == "tid" || name == "threadId" || 
+           name.find("threadID") != string::npos ||
+           name.find("SV_DispatchThreadID") != string::npos ||
+           name.find("SV_GroupThreadID") != string::npos;
+  }
+  
+  // Function call to get thread ID
+  if (const auto call = clang::dyn_cast<clang::CallExpr>(expr)) {
+    if (const auto callee = call->getDirectCallee()) {
+      const auto name = callee->getNameAsString();
+      return name == "WaveGetLaneIndex" || 
+             name == "GetThreadID" ||
+             name.find("DispatchThreadID") != string::npos;
+    }
+  }
+  
+  // Member access like id.x
+  if (const auto member = clang::dyn_cast<clang::MemberExpr>(expr)) {
+    return is_thread_id_expression(member->getBase());
+  }
+  
+  return false;
+}
+
+// Extract base expression and constant offset from expressions like tid + 5
+const clang::Expr* MemorySafetyAnalyzer::extract_base_and_offset(
+    const clang::Expr *expr, int64_t &offset) {
+  if (!expr)
+    return nullptr;
+    
+  expr = expr->IgnoreImpCasts();
+  offset = 0;
+  
+  // Check for binary add/sub operations
+  if (const auto bin_op = clang::dyn_cast<clang::BinaryOperator>(expr)) {
+    if (bin_op->getOpcode() == clang::BO_Add || 
+        bin_op->getOpcode() == clang::BO_Sub) {
+      const auto lhs = bin_op->getLHS()->IgnoreImpCasts();
+      const auto rhs = bin_op->getRHS()->IgnoreImpCasts();
+      
+      // Check if RHS is a constant
+      if (const auto lit = clang::dyn_cast<clang::IntegerLiteral>(rhs)) {
+        offset = lit->getValue().getSExtValue();
+        if (bin_op->getOpcode() == clang::BO_Sub) {
+          offset = -offset;
+        }
+        return lhs;
+      }
+    }
+  }
+  
+  // No offset, return the expression itself
+  return expr;
+}
+
+// Check if an expression accesses shared memory (groupshared, RWBuffer, etc.)
+bool MemorySafetyAnalyzer::is_shared_memory_access(const clang::Expr *expr) {
+  if (!expr)
+    return false;
+    
+  expr = expr->IgnoreImpCasts();
+  
+  // Array subscript - check if the base is shared memory
+  if (const auto arr = clang::dyn_cast<clang::ArraySubscriptExpr>(expr)) {
+    return is_shared_memory_access(arr->getBase());
+  }
+  
+  // Member access - check if the base is shared memory
+  if (const auto member = clang::dyn_cast<clang::MemberExpr>(expr)) {
+    return is_shared_memory_access(member->getBase());
+  }
+  
+  // Variable reference - check if it's declared as groupshared
+  if (const auto ref = clang::dyn_cast<clang::DeclRefExpr>(expr)) {
+    if (const auto var_decl = clang::dyn_cast<clang::VarDecl>(ref->getDecl())) {
+      // Check type for RWBuffer, RWTexture, groupshared, etc.
+      const auto type = var_decl->getType();
+      const auto type_str = type.getAsString();
+      
+      // Common HLSL shared resource types
+      if (type_str.find("RWBuffer") != string::npos ||
+          type_str.find("RWTexture") != string::npos ||
+          type_str.find("RWStructuredBuffer") != string::npos ||
+          type_str.find("RWByteAddressBuffer") != string::npos ||
+          type_str.find("groupshared") != string::npos ||
+          type_str.find("shared") != string::npos) {
+        return true;
+      }
+      
+      // Check variable name hints (simplified heuristic)
+    //   const auto var_name = var_decl->getNameAsString();
+    //   if (var_name.find("shared") != string::npos ||
+    //       var_name.find("groupshared") != string::npos ||
+    //       var_name.find("lds") != string::npos ||  // local data share
+    //       var_name.find("tileShared") != string::npos) {
+    //     return true;
+    //   }
+      
+      // Check storage class
+      const auto storage = var_decl->getStorageClass();
+      // In HLSL/DXC, static at file scope often means groupshared
+      if (storage == clang::SC_Static && !var_decl->isLocalVarDecl()) {
+        // Global static in compute shader context might be groupshared
+        return true;
+      }
+    }
+  }
+  
+  // Unary operators - check the operand
+  if (const auto unary = clang::dyn_cast<clang::UnaryOperator>(expr)) {
+    return is_shared_memory_access(unary->getSubExpr());
+  }
+  
+  // Binary operators (for pointer arithmetic) - check the base
+  if (const auto binary = clang::dyn_cast<clang::BinaryOperator>(expr)) {
+    if (binary->getOpcode() == clang::BO_Add || 
+        binary->getOpcode() == clang::BO_Sub || 
+        binary->getOpcode() == clang::BO_Mul ||
+        binary->getOpcode() == clang::BO_Div) {
+      // Could be pointer arithmetic
+      return is_shared_memory_access(binary->getLHS()) ||
+             is_shared_memory_access(binary->getRHS());
+    }
+  }
+  
+  return false;
 }
 
 bool MemorySafetyAnalyzer::is_commutative_memory_operation(
@@ -1443,13 +1809,42 @@ void ControlFlowAnalyzer::update_control_flow_state(ControlFlowState &state,
   // Update state based on statement type (Rust-style pattern matching)
   const auto stmt_class = stmt->getStmtClass();
   switch (stmt_class) {
-  case clang::Stmt::IfStmtClass:
-  case clang::Stmt::ForStmtClass:
-  case clang::Stmt::WhileStmtClass:
-  case clang::Stmt::SwitchStmtClass:
-    // These create new deterministic contexts
-    state.hasDeterministicConditions = true;
+  case clang::Stmt::IfStmtClass: {
+    const auto if_stmt = clang::cast<clang::IfStmt>(stmt);
+    // Only mark as deterministic if the condition is actually deterministic
+    if (if_stmt->getCond() && 
+        deterministic_analyzer_.is_compile_time_deterministic(if_stmt->getCond())) {
+      state.hasDeterministicConditions = true;
+    }
     break;
+  }
+  case clang::Stmt::ForStmtClass: {
+    const auto for_stmt = clang::cast<clang::ForStmt>(stmt);
+    // Check if loop condition is deterministic
+    if (for_stmt->getCond() && 
+        deterministic_analyzer_.is_compile_time_deterministic(for_stmt->getCond())) {
+      state.hasDeterministicConditions = true;
+    }
+    break;
+  }
+  case clang::Stmt::WhileStmtClass: {
+    const auto while_stmt = clang::cast<clang::WhileStmt>(stmt);
+    // Check if loop condition is deterministic
+    if (while_stmt->getCond() && 
+        deterministic_analyzer_.is_compile_time_deterministic(while_stmt->getCond())) {
+      state.hasDeterministicConditions = true;
+    }
+    break;
+  }
+  case clang::Stmt::SwitchStmtClass: {
+    const auto switch_stmt = clang::cast<clang::SwitchStmt>(stmt);
+    // Check if switch expression is deterministic
+    if (switch_stmt->getCond() && 
+        deterministic_analyzer_.is_compile_time_deterministic(switch_stmt->getCond())) {
+      state.hasDeterministicConditions = true;
+    }
+    break;
+  }
 
   case clang::Stmt::CallExprClass:
     // Check for wave operations
