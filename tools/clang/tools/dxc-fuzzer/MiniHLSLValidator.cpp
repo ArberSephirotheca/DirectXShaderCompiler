@@ -11,6 +11,7 @@
 #include "clang/Basic/TargetInfo.h"
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendActions.h"
+#include "clang/Frontend/CompilerInvocation.h"
 #include "clang/Frontend/TextDiagnosticPrinter.h"
 #include "clang/Lex/Preprocessor.h"
 #include "clang/Parse/ParseAST.h"
@@ -712,8 +713,11 @@ bool DeterministicExpressionAnalyzer::is_deterministic_binary_op(
     return false;
 
   // Binary operation is deterministic if both operands are deterministic
-  return is_compile_time_deterministic(op->getLHS()) &&
-         is_compile_time_deterministic(op->getRHS());
+  const auto lhs = op->getLHS();
+  const auto rhs = op->getRHS();
+  
+  return (lhs && is_compile_time_deterministic(lhs)) &&
+         (rhs && is_compile_time_deterministic(rhs));
 }
 
 bool DeterministicExpressionAnalyzer::is_deterministic_unary_op(
@@ -722,7 +726,8 @@ bool DeterministicExpressionAnalyzer::is_deterministic_unary_op(
     return false;
 
   // Unary operation is deterministic if operand is deterministic
-  return is_compile_time_deterministic(op->getSubExpr());
+  const auto subExpr = op->getSubExpr();
+  return subExpr && is_compile_time_deterministic(subExpr);
 }
 
 bool DeterministicExpressionAnalyzer::is_deterministic_decl_ref(
@@ -1509,6 +1514,9 @@ void MemorySafetyAnalyzer::build_dynamic_blocks_recursive(
     return;
   }
   
+  // Debug output to track where crash occurs
+  llvm::errs() << "Processing statement class: " << stmt->getStmtClassName() << "\n";
+  
   // Track which threads are still active (haven't returned/broken/continued)
   std::set<uint32_t> activeThreads = threads;
   
@@ -1525,20 +1533,22 @@ void MemorySafetyAnalyzer::build_dynamic_blocks_recursive(
         }
         
         if (const auto child_stmt = clang::dyn_cast<clang::Stmt>(child)) {
-          // Collect memory operations from this statement with current active threads
-          collect_memory_operations_in_dbeg(child_stmt, currentBlockId, currentThreads);
-          
-          // Check if this statement causes threads to exit
-          currentThreads = remove_exiting_threads(currentThreads, child_stmt);
-          
-          // Build blocks with current active threads
-          build_dynamic_blocks_recursive(child_stmt, currentBlockId, currentThreads);
-          
-          // Update threads for next statement
-          if (branch_contains_return_statement(child_stmt)) {
-            // Remove threads that returned
-            // This needs more sophisticated analysis to determine which threads
-            // TODO: Implement per-thread return tracking
+          if (child_stmt) {  // Add null check to prevent crashes
+            // Collect memory operations from this statement with current active threads
+            collect_memory_operations_in_dbeg(child_stmt, currentBlockId, currentThreads);
+            
+            // Check if this statement causes threads to exit
+            currentThreads = remove_exiting_threads(currentThreads, child_stmt);
+            
+            // Build blocks with current active threads
+            build_dynamic_blocks_recursive(child_stmt, currentBlockId, currentThreads);
+            
+            // Update threads for next statement
+            if (branch_contains_return_statement(child_stmt)) {
+              // Remove threads that returned
+              // This needs more sophisticated analysis to determine which threads
+              // TODO: Implement per-thread return tracking
+            }
           }
         }
       }
@@ -1639,8 +1649,30 @@ void MemorySafetyAnalyzer::build_dynamic_blocks_recursive(
       break;
     }
     
+    case clang::Stmt::DeclStmtClass: {
+      // Declaration statements - process any initializers
+      const auto decl_stmt = clang::cast<clang::DeclStmt>(stmt);
+      llvm::errs() << "Processing DeclStmt with " << std::distance(decl_stmt->decl_begin(), decl_stmt->decl_end()) << " declarations\n";
+      
+      // Check each declaration for initializer expressions that might contain memory operations
+      for (const auto decl : decl_stmt->decls()) {
+        if (const auto var_decl = clang::dyn_cast<clang::VarDecl>(decl)) {
+          if (var_decl && var_decl->hasInit()) {
+            const auto init_expr = var_decl->getInit();
+            if (init_expr) {
+              llvm::errs() << "Processing initializer for variable: " << var_decl->getNameAsString() << "\n";
+              // Collect memory operations from the initializer expression
+              collect_memory_operations_in_dbeg(init_expr, parentBlockId, activeThreads);
+            }
+          }
+        }
+      }
+      break;
+    }
+    
     default:
       // For other statements, continue with same dynamic block
+      llvm::errs() << "Unhandled statement class in DBEG analysis: " << stmt->getStmtClassName() << "\n";
       break;
   }
 }
@@ -2312,18 +2344,7 @@ ValidationResult MiniHLSLValidator::validate_source(const string &hlsl_source) {
     }
 
     // Perform MiniHLSL-specific validation
-    auto result = perform_minihlsl_validation(hlsl_source);
-    
-    // For demonstration: if this is our test case, simulate DBEG analysis
-    if (hlsl_source.find("invalid_cross_path_dependency") != string::npos) {
-      // This is our invalid test case - manually detect the cross-path dependency
-      return ValidationResultBuilder::err(
-          ValidationError::NonDeterministicCondition,
-          "Cross-dynamic-block data dependency violates order independence. "
-          "Thread 0 writes in one branch while thread 16 reads the same location in another branch.");
-    }
-    
-    return result;
+    return perform_minihlsl_validation(hlsl_source);
 
   } catch (const std::exception &e) {
     return ValidationResultBuilder::err(ValidationError::UnsupportedOperation,
@@ -2349,23 +2370,9 @@ ValidationResult MiniHLSLValidator::validate_ast(clang::TranslationUnitDecl *tu,
 ValidationResult
 MiniHLSLValidator::validate_source_with_full_ast(const string &hlsl_source,
                                                  const string &filename) {
-  try {
-    // Parse HLSL source to AST
-    auto [context, tu] = parse_hlsl_with_complete_ast(hlsl_source, filename);
-
-    if (!context || !tu) {
-      return ValidationResultBuilder::err(ValidationError::InvalidExpression,
-                                          "Failed to parse HLSL source");
-    }
-
-    // Validate using complete AST analysis
-    return validate_ast(tu, *context);
-
-  } catch (const std::exception &e) {
-    return ValidationResultBuilder::err(ValidationError::InvalidExpression,
-                                        string("AST parsing failed: ") +
-                                            e.what());
-  }
+  // Now using standard Clang pattern where all analysis happens during parsing
+  // No need for separate AST validation - everything is done in ASTConsumer
+  return parse_and_validate_hlsl(hlsl_source, filename);
 }
 
 string
@@ -2608,12 +2615,91 @@ int WaveOperationValidator::calculate_divergence_level(
   return cf_state.deterministicNestingLevel;
 }
 
-std::pair<Box<clang::ASTContext>, clang::TranslationUnitDecl *>
-MiniHLSLValidator::parse_hlsl_with_complete_ast(const string &source,
-                                                const string &filename) {
-  // This would implement complete HLSL parsing
-  // For now, return null to indicate this needs integration with DXC
-  return std::make_pair(nullptr, nullptr);
+ValidationResult
+MiniHLSLValidator::parse_and_validate_hlsl(const string &source,
+                                            const string &filename) {
+  // Use standard Clang pattern: Parse -> Analyze in ASTConsumer -> Return Results
+  try {
+    llvm::errs() << "\n=== Starting HLSL Parse and Validation ===\n";
+    llvm::errs() << "File: " << filename << "\n";
+    
+    // Create CompilerInstance
+    auto CI = std::make_unique<clang::CompilerInstance>();
+    
+    // Set up basic compiler instance
+    CI->createDiagnostics();
+    // Convert relative filename to absolute path for ExecuteAction
+    std::string abs_filename = filename;
+    if (!llvm::sys::path::is_absolute(filename)) {
+        abs_filename = "/home/zheyuan/dxc_workspace/DirectXShaderCompiler/tools/clang/tools/dxc-fuzzer/test_cases/" + filename;
+    }
+    
+    llvm::errs() << "Using absolute path: " << abs_filename << "\n";
+    
+    // Set up FrontendOptions with absolute path - this is what ExecuteAction needs!
+    auto& FrontendOpts = CI->getFrontendOpts();
+    FrontendOpts.Inputs.clear();
+    FrontendOpts.Inputs.emplace_back(abs_filename, clang::IK_HLSL);
+    FrontendOpts.ProgramAction = clang::frontend::ParseSyntaxOnly; // Just parse, don't generate code
+
+    
+    // Set up target - use a more standard target that's guaranteed to work
+    auto& Invocation = CI->getInvocation();
+    Invocation.TargetOpts = std::make_shared<clang::TargetOptions>();
+    Invocation.TargetOpts->Triple = "dxil-unknown-unknown"; // Standard target that works
+    // Note: For HLSL analysis, the target matters less since we're just parsing syntax
+    
+    clang::CompilerInvocation::setLangDefaults(
+      CI->getLangOpts(), clang::InputKind::IK_HLSL, clang::LangStandard::lang_hlsl);
+
+    auto Target = clang::TargetInfo::CreateTargetInfo(CI->getDiagnostics(), CI->getInvocation().TargetOpts);
+    CI->setTarget(std::move(Target));
+
+    // Set up file system
+    CI->createFileManager();
+    CI->createSourceManager(CI->getFileManager());
+    
+    // Set up preprocessor first (required before file operations)
+    CI->createPreprocessor(clang::TU_Complete);
+    const clang::FileEntry *File = CI->getFileManager().getFile(abs_filename);
+    if (!File) {
+    llvm::errs() << "File not found: " << abs_filename << "\n";
+    return ValidationResultBuilder::err(
+      ValidationError::InvalidExpression, "File not found: " + abs_filename);
+    }
+    CI->getSourceManager().setMainFileID(
+    CI->getSourceManager().createFileID(File, clang::SourceLocation(), clang::SrcMgr::C_User));
+    // Create AST context (required before ASTConsumer)
+    CI->createASTContext();
+    
+    // Use our custom FrontendAction that performs ALL analysis in ASTConsumer
+    auto Action = std::make_unique<DBEGAnalysisAction>();
+    
+    llvm::errs() << "About to execute FrontendAction...\n";
+    // Execute the action - this parses and analyzes in one step
+    bool parsing_success = CI->ExecuteAction(*Action);
+    llvm::errs() << "FrontendAction execution result: " << (parsing_success ? "SUCCESS" : "FAILED") << "\n";
+    
+    if (!parsing_success) {
+      llvm::errs() << "FrontendAction execution failed\n";
+      return ValidationResultBuilder::err(ValidationError::InvalidExpression, "Failed to parse HLSL source");
+    }
+    
+    if (!Action->isAnalysisCompleted()) {
+      llvm::errs() << "Analysis was not completed\n";
+      return ValidationResultBuilder::err(ValidationError::InvalidExpression, "DBEG analysis was not completed");
+    }
+    
+    // Return the final validation result from the ASTConsumer
+    const auto& result = Action->getFinalResult();
+    llvm::errs() << "HLSL Parse and Validation: " << (result.is_ok() ? "SUCCESS" : "FAILED") << "\n";
+    return result;
+    
+  } catch (const std::exception& e) {
+    llvm::errs() << "HLSL parsing and validation failed: " << e.what() << "\n";
+    return ValidationResultBuilder::err(ValidationError::InvalidExpression, 
+                                        "Failed to parse and validate HLSL: " + std::string(e.what()));
+  }
 }
 
 Box<clang::CompilerInstance> MiniHLSLValidator::setup_complete_compiler() {
@@ -2947,7 +3033,7 @@ bool MemorySafetyAnalyzer::branch_contains_return_statement(const clang::Stmt* b
   
   // Recursively check children
   for (const auto child : branch->children()) {
-    if (branch_contains_return_statement(child)) {
+    if (child && branch_contains_return_statement(child)) {  // Add null check
       return true;
     }
   }
@@ -2994,6 +3080,9 @@ void MemorySafetyAnalyzer::collect_memory_operations_in_dbeg(
   if (!stmt || activeThreads.empty()) {
     return;
   }
+  
+  // Debug output to track where crash occurs
+  llvm::errs() << "collect_memory_operations_in_dbeg: Processing " << stmt->getStmtClassName() << "\n";
   
   // Check if this statement is a memory operation
   if (const auto binOp = clang::dyn_cast<clang::BinaryOperator>(stmt)) {
@@ -3051,7 +3140,7 @@ void MemorySafetyAnalyzer::collect_memory_operations_in_dbeg(
         memOp.addressExpr = arrayAccess;
         memOp.isWrite = false;
         memOp.isRead = true;
-        memOp.location = arrayAccess->getLocStart();
+        memOp.location = clang::SourceLocation(); // Placeholder for now
         memOp.threadId = tid;
         
         MemoryOperationInDBEG dbegOp;
@@ -3066,8 +3155,12 @@ void MemorySafetyAnalyzer::collect_memory_operations_in_dbeg(
   
   // Recursively process child statements
   for (const auto child : stmt->children()) {
-    if (const auto childStmt = clang::dyn_cast<clang::Stmt>(child)) {
-      collect_memory_operations_in_dbeg(childStmt, dynamicBlockId, activeThreads);
+    if (child) {  // Check if child itself is not null first
+      if (const auto childStmt = clang::dyn_cast<clang::Stmt>(child)) {
+        if (childStmt) {  // Add null check for the casted result
+          collect_memory_operations_in_dbeg(childStmt, dynamicBlockId, activeThreads);
+        }
+      }
     }
   }
 }
@@ -3204,6 +3297,87 @@ ValidationResult MemorySafetyAnalyzer::analyze_function(clang::FunctionDecl *fun
   results.push_back(validate_cross_dynamic_block_dependencies());
   
   return ValidationResultBuilder::combine(results);
+}
+
+// ASTConsumer implementation for DBEG analysis
+void DBEGAnalysisConsumer::HandleTranslationUnit(clang::ASTContext &context) {
+  llvm::errs() << "\n=== HandleTranslationUnit: Starting DBEG Analysis ===\n";
+  
+  try {
+    // Initialize memory analyzer with the real ASTContext
+    memory_analyzer_ = std::make_unique<MemorySafetyAnalyzer>(context);
+    
+    // Traverse all declarations in the translation unit
+    // This will call VisitFunctionDecl for each function
+    TraverseDecl(context.getTranslationUnitDecl());
+    
+    // If we reach here without errors, validation succeeded
+    if (errors_.empty()) {
+      final_result_ = ValidationResultBuilder::ok();
+      llvm::errs() << "DBEG Analysis: SUCCESS - No errors found\n";
+    } else {
+      // Convert errors to validation failure
+      final_result_ = ValidationResultBuilder::err(ValidationError::InvalidExpression, 
+                                                   "DBEG analysis found cross-path dependencies");
+      llvm::errs() << "DBEG Analysis: FAILED - " << errors_.size() << " errors found\n";
+    }
+    
+  } catch (const std::exception& e) {
+    llvm::errs() << "DBEG Analysis: EXCEPTION - " << e.what() << "\n";
+    errors_.push_back({ValidationError::InvalidExpression, e.what()});
+    final_result_ = ValidationResultBuilder::err(ValidationError::InvalidExpression, 
+                                                 "DBEG analysis failed with exception");
+  }
+  
+  analysis_completed_ = true;
+  llvm::errs() << "=== HandleTranslationUnit: DBEG Analysis Complete ===\n";
+}
+
+bool DBEGAnalysisConsumer::VisitFunctionDecl(clang::FunctionDecl *func) {
+  // Only analyze functions with bodies (actual implementations)
+  if (!func->hasBody()) {
+    return true;
+  }
+  
+  // Run DBEG analysis on this function
+  llvm::errs() << "\n=== DBEG Analysis via ASTConsumer ===\n";
+  llvm::errs() << "Analyzing function: " << func->getNameAsString() << "\n";
+  
+  try {
+    auto result = memory_analyzer_->analyze_function(func);
+    
+    if (result.is_err()) {
+      const auto &function_errors = result.unwrap_err();
+      errors_.insert(errors_.end(), function_errors.begin(), function_errors.end());
+      
+      llvm::errs() << "DBEG Analysis found " << function_errors.size() << " errors:\n";
+      for (const auto& error : function_errors) {
+        llvm::errs() << "  - " << error.message << "\n";
+      }
+    } else {
+      llvm::errs() << "DBEG Analysis: Function passed validation\n";
+    }
+  } catch (const std::exception& e) {
+    llvm::errs() << "DBEG Analysis exception: " << e.what() << "\n";
+    errors_.emplace_back(ValidationError::UnsupportedOperation, 
+                        "DBEG analysis failed: " + std::string(e.what()));
+  }
+  
+  return true; // Continue traversing
+}
+
+// FrontendAction implementation
+std::unique_ptr<clang::ASTConsumer> DBEGAnalysisAction::CreateASTConsumer(
+    clang::CompilerInstance &CI, clang::StringRef InFile) {
+  
+  llvm::errs() << "\n=== DBEGAnalysisAction::CreateASTConsumer CALLED ===\n";
+  llvm::errs() << "Input file: " << InFile.str() << "\n";
+  
+  auto consumer = std::make_unique<DBEGAnalysisConsumer>();
+  consumer_ = consumer.get(); // Store raw pointer to access results later
+  
+  llvm::errs() << "Consumer created successfully, pointer: " << consumer.get() << "\n";
+  return std::move(consumer);
 }
 
 } // namespace minihlsl

@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
             
             try {
                 std::string source = read_file(filepath);
-                auto result = validator->validate_source(source);
+                auto result = validator->validate_source_with_full_ast(source, filename);
                 
                 bool expected_pass = should_pass(filename);
                 bool actually_passed = result.is_ok();

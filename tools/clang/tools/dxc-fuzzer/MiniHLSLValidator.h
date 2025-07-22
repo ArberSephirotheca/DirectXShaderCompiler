@@ -5,6 +5,8 @@
 #include "clang/AST/Decl.h"
 #include "clang/AST/Expr.h"
 #include "clang/AST/RecursiveASTVisitor.h"
+#include "clang/AST/ASTConsumer.h"
+#include "clang/Frontend/FrontendAction.h"
 #include "clang/AST/Stmt.h"
 #include "clang/Frontend/CompilerInstance.h"
 #include <functional>
@@ -185,6 +187,58 @@ class ControlFlowAnalyzer;
 class MemorySafetyAnalyzer;
 class WaveOperationValidator;
 class HybridRMWAnalyzer;
+
+// ASTConsumer for DBEG analysis that plugs into DXC compilation
+class DBEGAnalysisConsumer : public clang::ASTConsumer, 
+                             public clang::RecursiveASTVisitor<DBEGAnalysisConsumer> {
+private:
+  std::unique_ptr<MemorySafetyAnalyzer> memory_analyzer_;
+  std::vector<ValidationErrorWithMessage> errors_;
+  ValidationResult final_result_;
+  bool analysis_completed_;
+  
+public:
+  explicit DBEGAnalysisConsumer() 
+    : memory_analyzer_(nullptr), final_result_(ValidationResultBuilder::ok()), analysis_completed_(false) {
+    llvm::errs() << "DBEGAnalysisConsumer constructor called\n";
+  }
+  
+  // ASTConsumer interface - this is where ALL analysis happens
+  void HandleTranslationUnit(clang::ASTContext &context) override;
+  
+  // RecursiveASTVisitor interface
+  bool VisitFunctionDecl(clang::FunctionDecl *func);
+  
+  // Get analysis results - only valid after HandleTranslationUnit completes
+  const ValidationResult& getFinalResult() const { return final_result_; }
+  const std::vector<ValidationErrorWithMessage>& getErrors() const { return errors_; }
+  bool hasErrors() const { return !errors_.empty(); }
+  bool isAnalysisCompleted() const { return analysis_completed_; }
+};
+
+// FrontendAction to create our ASTConsumer
+class DBEGAnalysisAction : public clang::ASTFrontendAction {
+private:
+  DBEGAnalysisConsumer* consumer_; // Raw pointer to track consumer
+  
+public:
+  DBEGAnalysisAction() : consumer_(nullptr) {}
+  
+  std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(
+      clang::CompilerInstance &CI, clang::StringRef InFile) override;
+      
+  // Get analysis results after compilation - delegates to consumer
+  const ValidationResult& getFinalResult() const {
+    static ValidationResult default_success = ValidationResultBuilder::ok();
+    return consumer_ ? consumer_->getFinalResult() : default_success;
+  }
+  bool hasAnalysisErrors() const {
+    return consumer_ ? consumer_->hasErrors() : false;
+  }
+  bool isAnalysisCompleted() const {
+    return consumer_ ? consumer_->isAnalysisCompleted() : false;
+  }
+};
 
 // Production-ready implementation of all AST-based validation components
 // This provides complete implementations of all validation methods
@@ -961,19 +1015,18 @@ private:
   ValidationResult
   validate_memory_safety_patterns(const std::string &hlsl_source);
 
-  // Rust-style AST parsing and setup
-  std::pair<Box<clang::ASTContext>, clang::TranslationUnitDecl *>
-  parse_hlsl_with_complete_ast(const std::string &source,
-                               const std::string &filename);
+  // Parse HLSL and perform complete DBEG validation using standard Clang pattern
+  ValidationResult
+  parse_and_validate_hlsl(const std::string &source,
+                          const std::string &filename);
 
   Box<clang::CompilerInstance> setup_complete_compiler();
 
-  // Legacy compatibility
-  std::pair<std::unique_ptr<clang::ASTContext>, clang::TranslationUnitDecl *>
+  // Legacy compatibility - now returns validation result instead of AST
+  ValidationResult
   parseHLSLWithCompleteAST(const std::string &source,
                            const std::string &filename) {
-    auto result = parse_hlsl_with_complete_ast(source, filename);
-    return std::make_pair(std::move(result.first), result.second);
+    return parse_and_validate_hlsl(source, filename);
   }
   std::unique_ptr<clang::CompilerInstance> setupCompleteCompiler() {
     return setup_complete_compiler();
