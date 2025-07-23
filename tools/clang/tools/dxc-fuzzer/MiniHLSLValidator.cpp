@@ -3480,21 +3480,21 @@ ValidationResult DBEGAnalysisConsumer::validate_wave_operations_in_function(
 
 // Helper function to validate deterministic expressions in a function
 ValidationResult DBEGAnalysisConsumer::validate_deterministic_expressions_in_function(
-    clang::FunctionDecl *func, const DeterministicExpressionAnalyzer &analyzer) {
+    clang::FunctionDecl *func, DeterministicExpressionAnalyzer &analyzer) {
   std::vector<ValidationErrorWithMessage> expr_errors;
   
   // Use a recursive AST visitor to find all expressions that need validation
   class ExpressionVisitor : public clang::RecursiveASTVisitor<ExpressionVisitor> {
   public:
     std::vector<ValidationErrorWithMessage> &errors;
-    const DeterministicExpressionAnalyzer &analyzer;
+    DeterministicExpressionAnalyzer &analyzer;
     
-    ExpressionVisitor(std::vector<ValidationErrorWithMessage> &errs, const DeterministicExpressionAnalyzer &anal)
+    ExpressionVisitor(std::vector<ValidationErrorWithMessage> &errs, DeterministicExpressionAnalyzer &anal)
         : errors(errs), analyzer(anal) {}
     
     bool VisitIfStmt(clang::IfStmt *stmt) {
       if (stmt->getCond()) {
-        if (!analyzer.is_deterministic_expression(stmt->getCond())) {
+        if (!analyzer.is_compile_time_deterministic(stmt->getCond())) {
           errors.emplace_back(
               ValidationError::NonDeterministicCondition,
               "Control flow condition is not deterministic"
@@ -3506,7 +3506,7 @@ ValidationResult DBEGAnalysisConsumer::validate_deterministic_expressions_in_fun
     
     bool VisitWhileStmt(clang::WhileStmt *stmt) {
       if (stmt->getCond()) {
-        if (!analyzer.is_deterministic_expression(stmt->getCond())) {
+        if (!analyzer.is_compile_time_deterministic(stmt->getCond())) {
           errors.emplace_back(
               ValidationError::NonDeterministicCondition,
               "Loop condition is not deterministic"
@@ -3518,7 +3518,7 @@ ValidationResult DBEGAnalysisConsumer::validate_deterministic_expressions_in_fun
     
     bool VisitForStmt(clang::ForStmt *stmt) {
       if (stmt->getCond()) {
-        if (!analyzer.is_deterministic_expression(stmt->getCond())) {
+        if (!analyzer.is_compile_time_deterministic(stmt->getCond())) {
           errors.emplace_back(
               ValidationError::NonDeterministicCondition,
               "For loop condition is not deterministic"

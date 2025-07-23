@@ -216,7 +216,7 @@ private:
       
   // Helper function to validate deterministic expressions in a function
   ValidationResult validate_deterministic_expressions_in_function(
-      clang::FunctionDecl *func, const DeterministicExpressionAnalyzer &analyzer);
+      clang::FunctionDecl *func, DeterministicExpressionAnalyzer &analyzer);
       
   // Helper function to validate control flow in a function
   ValidationResult validate_control_flow_in_function(
@@ -298,10 +298,6 @@ public:
   ExpressionKind classify_expression(const clang::Expr *expr);
   ValidationResult validate_deterministic_expression(const clang::Expr *expr);
 
-  // Legacy C++ style methods for compatibility
-  bool isCompileTimeDeterministic(const clang::Expr *expr) {
-    return is_compile_time_deterministic(expr);
-  }
   ExpressionKind classifyExpression(const clang::Expr *expr) {
     return classify_expression(expr);
   }
@@ -317,26 +313,6 @@ public:
   bool is_arithmetic_of_deterministic(const clang::Expr *expr);
   bool is_comparison_of_deterministic(const clang::Expr *expr);
 
-  // Legacy compatibility methods
-  bool isLiteralConstant(const clang::Expr *expr) {
-    return is_literal_constant(expr);
-  }
-  bool isLaneIndexExpression(const clang::Expr *expr) {
-    return is_lane_index_expression(expr);
-  }
-  bool isWavePropertyExpression(const clang::Expr *expr) {
-    return is_wave_property_expression(expr);
-  }
-  bool isThreadIndexExpression(const clang::Expr *expr) {
-    return is_thread_index_expression(expr);
-  }
-  bool isArithmeticOfDeterministic(const clang::Expr *expr) {
-    return is_arithmetic_of_deterministic(expr);
-  }
-  bool isComparisonOfDeterministic(const clang::Expr *expr) {
-    return is_comparison_of_deterministic(expr);
-  }
-
 private:
   // Rust-style advanced expression analysis methods
   bool analyze_complex_expression(const clang::Expr *expr);
@@ -345,46 +321,14 @@ private:
   bool analyze_array_subscript(const clang::ArraySubscriptExpr *array);
   bool analyze_init_list_expression(const clang::InitListExpr *init_list);
 
-  // Legacy compatibility methods
-  bool analyzeComplexExpression(const clang::Expr *expr) {
-    return analyze_complex_expression(expr);
-  }
-  bool analyzeConditionalOperator(const clang::ConditionalOperator *cond) {
-    return analyze_conditional_operator(cond);
-  }
-  bool analyzeCastExpression(const clang::CastExpr *cast) {
-    return analyze_cast_expression(cast);
-  }
-  bool analyzeArraySubscript(const clang::ArraySubscriptExpr *array) {
-    return analyze_array_subscript(array);
-  }
-  bool analyzeInitListExpression(const clang::InitListExpr *initList) {
-    return analyze_init_list_expression(initList);
-  }
-
   // Rust-style context-aware analysis
   bool is_in_deterministic_context() const;
   void push_deterministic_context();
   void pop_deterministic_context();
 
-  // Legacy compatibility
-  bool isInDeterministicContext() const {
-    return is_in_deterministic_context();
-  }
-  void pushDeterministicContext() { push_deterministic_context(); }
-  void popDeterministicContext() { pop_deterministic_context(); }
-
   // Rust-style expression dependency tracking
   std::set<std::string> get_dependent_variables(const clang::Expr *expr);
   bool are_variables_deterministic(const std::set<std::string> &variables);
-
-  // Legacy compatibility
-  std::set<std::string> getDependentVariables(const clang::Expr *expr) {
-    return get_dependent_variables(expr);
-  }
-  bool areVariablesDeterministic(const std::set<std::string> &variables) {
-    return are_variables_deterministic(variables);
-  }
 
   // Rust-style helper methods
   bool is_deterministic_intrinsic_call(const clang::CallExpr *call);
@@ -394,32 +338,10 @@ private:
   bool is_deterministic_member_access(const clang::MemberExpr *member);
   bool is_deterministic_member_call(const clang::CXXMemberCallExpr *call);
 
-  // Legacy compatibility
-  bool isDeterministicIntrinsicCall(const clang::CallExpr *call) {
-    return is_deterministic_intrinsic_call(call);
-  }
-  bool isDeterministicBinaryOp(const clang::BinaryOperator *op) {
-    return is_deterministic_binary_op(op);
-  }
-  bool isDeterministicUnaryOp(const clang::UnaryOperator *op) {
-    return is_deterministic_unary_op(op);
-  }
-  bool isDeterministicDeclRef(const clang::DeclRefExpr *ref) {
-    return is_deterministic_decl_ref(ref);
-  }
-  bool isDeterministicMemberAccess(const clang::MemberExpr *member) {
-    return is_deterministic_member_access(member);
-  }
-
   // Rust-style data members
   clang::ASTContext &context_;
   std::vector<bool> deterministic_context_stack_;
-  std::map<std::string, bool> variable_determinism_cache_;
-
-  // Legacy compatibility members
-  std::vector<bool> &deterministicContextStack_ = deterministic_context_stack_;
-  std::map<std::string, bool> &variableDeterminismCache_ =
-      variable_determinism_cache_;
+  mutable std::map<std::string, bool> variable_determinism_cache_;
 };
 
 // Standalone control flow analyzer
@@ -446,15 +368,6 @@ public:
   ValidationResult analyze_statement(const clang::Stmt *stmt,
                                      ControlFlowState &state);
 
-  // Legacy compatibility
-  ValidationResult analyzeFunction(clang::FunctionDecl *func) {
-    return analyze_function(func);
-  }
-  ValidationResult analyzeStatement(const clang::Stmt *stmt,
-                                    ControlFlowState &state) {
-    return analyze_statement(stmt, state);
-  }
-
   // Rust-style control flow construct validation
   ValidationResult validate_deterministic_if(const clang::IfStmt *if_stmt,
                                              ControlFlowState &state);
@@ -466,25 +379,6 @@ public:
   ValidationResult
   validate_deterministic_switch(const clang::SwitchStmt *switch_stmt,
                                 ControlFlowState &state);
-
-  // Legacy compatibility
-  ValidationResult validateDeterministicIf(const clang::IfStmt *ifStmt,
-                                           ControlFlowState &state) {
-    return validate_deterministic_if(ifStmt, state);
-  }
-  ValidationResult validateDeterministicFor(const clang::ForStmt *forStmt,
-                                            ControlFlowState &state) {
-    return validate_deterministic_for(forStmt, state);
-  }
-  ValidationResult validateDeterministicWhile(const clang::WhileStmt *whileStmt,
-                                              ControlFlowState &state) {
-    return validate_deterministic_while(whileStmt, state);
-  }
-  ValidationResult
-  validateDeterministicSwitch(const clang::SwitchStmt *switchStmt,
-                              ControlFlowState &state) {
-    return validate_deterministic_switch(switchStmt, state);
-  }
 
 private:
   clang::ASTContext &context_;
@@ -500,40 +394,11 @@ private:
   ValidationResult analyze_break_continue_flow(const clang::Stmt *stmt,
                                                ControlFlowState &state);
 
-  // Legacy compatibility
-  ValidationResult analyzeNestedControlFlow(const clang::Stmt *stmt,
-                                            ControlFlowState &state) {
-    return analyze_nested_control_flow(stmt, state);
-  }
-  ValidationResult validateLoopTermination(const clang::Expr *condition,
-                                           const clang::Expr *increment) {
-    return validate_loop_termination(condition, increment);
-  }
-  ValidationResult validateSwitchCases(const clang::SwitchStmt *switchStmt,
-                                       ControlFlowState &state) {
-    return validate_switch_cases(switchStmt, state);
-  }
-  ValidationResult analyzeBreakContinueFlow(const clang::Stmt *stmt,
-                                            ControlFlowState &state) {
-    return analyze_break_continue_flow(stmt, state);
-  }
-
   // Rust-style control flow pattern recognition
   bool is_simple_deterministic_loop(const clang::ForStmt *for_stmt);
   bool is_count_based_loop(const clang::ForStmt *for_stmt);
   bool is_lane_index_based_branch(const clang::IfStmt *if_stmt);
   bool is_simple_count_loop(const clang::Expr *condition, const clang::Expr *increment);
-
-  // Legacy compatibility
-  bool isSimpleDeterministicLoop(const clang::ForStmt *forStmt) {
-    return is_simple_deterministic_loop(forStmt);
-  }
-  bool isCountBasedLoop(const clang::ForStmt *forStmt) {
-    return is_count_based_loop(forStmt);
-  }
-  bool isLaneIndexBasedBranch(const clang::IfStmt *ifStmt) {
-    return is_lane_index_based_branch(ifStmt);
-  }
 
   // Rust-style flow analysis utilities
   void update_control_flow_state(ControlFlowState &state,
@@ -541,19 +406,6 @@ private:
   bool check_control_flow_consistency(const ControlFlowState &state);
   ValidationResult
   merge_control_flow_results(const std::vector<ValidationResult> &results);
-
-  // Legacy compatibility
-  void updateControlFlowState(ControlFlowState &state,
-                              const clang::Stmt *stmt) {
-    update_control_flow_state(state, stmt);
-  }
-  bool checkControlFlowConsistency(const ControlFlowState &state) {
-    return check_control_flow_consistency(state);
-  }
-  ValidationResult
-  mergeControlFlowResults(const std::vector<ValidationResult> &results) {
-    return merge_control_flow_results(results);
-  }
 };
 
 // Standalone memory safety analyzer
@@ -598,22 +450,6 @@ public:
   bool has_memory_race_condition(const MemoryOperation &op1,
                                  const MemoryOperation &op2);
 
-  // Legacy compatibility
-  ValidationResult analyzeFunction(clang::FunctionDecl *func) {
-    return analyze_function(func);
-  }
-  void collectMemoryOperations(clang::FunctionDecl *func) {
-    collect_memory_operations(func);
-  }
-  bool hasDisjointWrites() { return has_disjoint_writes(); }
-  bool hasOnlyCommutativeOperations() {
-    return has_only_commutative_operations();
-  }
-  bool hasMemoryRaceCondition(const MemoryOperation &op1,
-                              const MemoryOperation &op2) {
-    return has_memory_race_condition(op1, op2);
-  }
-
   // Rust-style data-race-free memory model validation
   ValidationResult validate_data_race_freedom();
   bool has_data_race(const MemoryOperation &op1, const MemoryOperation &op2);
@@ -630,54 +466,12 @@ public:
   bool has_barrier_synchronization(const MemoryOperation &op1,
                                    const MemoryOperation &op2);
 
-  // Legacy compatibility methods
-  ValidationResult validateDataRaceFreedom() {
-    return validate_data_race_freedom();
-  }
-  bool hasDataRace(const MemoryOperation &op1, const MemoryOperation &op2) {
-    return has_data_race(op1, op2);
-  }
-  bool areConflictingAccesses(const MemoryOperation &op1,
-                              const MemoryOperation &op2) {
-    return are_conflicting_accesses(op1, op2);
-  }
-  bool areSynchronized(const MemoryOperation &op1, const MemoryOperation &op2) {
-    return are_synchronized(op1, op2);
-  }
-  ValidationResult validateHybridRMWApproach() {
-    return validate_hybrid_rmw_approach();
-  }
-  bool isSimpleRMWOperation(const MemoryOperation &read,
-                            const MemoryOperation &write) {
-    return is_simple_rmw_operation(read, write);
-  }
-  bool requiresAtomicRMW(const MemoryOperation &read,
-                         const MemoryOperation &write) {
-    return requires_atomic_rmw(read, write);
-  }
-  bool hasBarrierSynchronization(const MemoryOperation &op1,
-                                 const MemoryOperation &op2) {
-    return has_barrier_synchronization(op1, op2);
-  }
-
 private:
   // Rust-style advanced memory analysis
   ValidationResult perform_alias_analysis();
   ValidationResult analyze_shared_memory_usage();
   ValidationResult validate_atomic_operations();
   ValidationResult check_memory_access_patterns();
-
-  // Legacy compatibility
-  ValidationResult performAliasAnalysis() { return perform_alias_analysis(); }
-  ValidationResult analyzeSharedMemoryUsage() {
-    return analyze_shared_memory_usage();
-  }
-  ValidationResult validateAtomicOperations() {
-    return validate_atomic_operations();
-  }
-  ValidationResult checkMemoryAccessPatterns() {
-    return check_memory_access_patterns();
-  }
 
   // Rust-style sophisticated alias analysis
   bool could_alias(const clang::Expr *addr1, const clang::Expr *addr2);
@@ -774,51 +568,15 @@ private:
   bool branch_contains_continue_statement(const clang::Stmt* branch);
   bool branch_contains_return_statement(const clang::Stmt* branch);
 
-  // Legacy compatibility
-  bool couldAlias(const clang::Expr *addr1, const clang::Expr *addr2) {
-    return could_alias(addr1, addr2);
-  }
-  bool analyzeAddressExpressions(const clang::Expr *addr1,
-                                 const clang::Expr *addr2) {
-    return analyze_address_expressions(addr1, addr2);
-  }
-  bool isDisjointLaneBasedAccess(const clang::Expr *addr1,
-                                 const clang::Expr *addr2) {
-    return is_disjoint_lane_based_access(addr1, addr2);
-  }
-  bool isConstantOffset(const clang::Expr *expr, int64_t &offset) {
-    return is_constant_offset(expr, offset);
-  }
-
   // Rust-style memory operation classification
   MemoryAccessPattern classify_memory_access(const MemoryOperation &op);
   bool is_commutative_memory_operation(const MemoryOperation &op);
   bool requires_atomicity(const MemoryOperation &op);
 
-  // Legacy compatibility
-  MemoryAccessPattern classifyMemoryAccess(const MemoryOperation &op) {
-    return classify_memory_access(op);
-  }
-  bool isCommutativeMemoryOperation(const MemoryOperation &op) {
-    return is_commutative_memory_operation(op);
-  }
-  bool requiresAtomicity(const MemoryOperation &op) {
-    return requires_atomicity(op);
-  }
-
   // Rust-style data flow analysis
   std::set<std::string> get_alias_set(const std::string &resource_name);
   void build_memory_dependency_graph();
   ValidationResult analyze_memory_dependencies();
-
-  // Legacy compatibility
-  std::set<std::string> getAliasSet(const std::string &resourceName) {
-    return get_alias_set(resourceName);
-  }
-  void buildMemoryDependencyGraph() { build_memory_dependency_graph(); }
-  ValidationResult analyzeMemoryDependencies() {
-    return analyze_memory_dependencies();
-  }
 
   clang::ASTContext &context_;
   std::vector<MemoryOperation> memory_operations_;
@@ -857,25 +615,6 @@ public:
   bool is_order_independent_wave_op(const std::string &func_name) const;
   bool requires_full_participation(const std::string &func_name);
 
-  // Legacy compatibility
-  ValidationResult
-  validateWaveCall(const clang::CallExpr *call,
-                   const ControlFlowAnalyzer::ControlFlowState &cfState) {
-    return validate_wave_call(call, cfState);
-  }
-  bool isWaveOperation(const clang::CallExpr *call) {
-    return is_wave_operation(call);
-  }
-  bool isOrderIndependentWaveOp(const std::string &funcName) {
-    return is_order_independent_wave_op(funcName);
-  }
-  bool isOrderDependentWaveOp(const std::string &funcName) {
-    return !is_order_independent_wave_op(funcName);
-  }
-  bool requiresFullParticipation(const std::string &funcName) {
-    return requires_full_participation(funcName);
-  }
-
 private:
   // Rust-style advanced wave operation analysis
   ValidationResult analyze_wave_participation(
@@ -885,39 +624,11 @@ private:
                                            const std::string &func_name);
   ValidationResult check_wave_operation_context(const clang::CallExpr *call);
 
-  // Legacy compatibility
-  ValidationResult analyzeWaveParticipation(
-      const clang::CallExpr *call,
-      const ControlFlowAnalyzer::ControlFlowState &cfState) {
-    return analyze_wave_participation(call, cfState);
-  }
-  ValidationResult validateWaveArguments(const clang::CallExpr *call,
-                                         const std::string &funcName) {
-    return validate_wave_arguments(call, funcName);
-  }
-  ValidationResult checkWaveOperationContext(const clang::CallExpr *call) {
-    return check_wave_operation_context(call);
-  }
-
   // Rust-style wave operation classification
   WaveOperationType classify_wave_operation(const std::string &func_name);
   bool is_reduction_operation(const std::string &func_name);
   bool is_broadcast_operation(const std::string &func_name);
   bool is_query_operation(const std::string &func_name);
-
-  // Legacy compatibility
-  WaveOperationType classifyWaveOperation(const std::string &funcName) {
-    return classify_wave_operation(funcName);
-  }
-  bool isReductionOperation(const std::string &funcName) {
-    return is_reduction_operation(funcName);
-  }
-  bool isBroadcastOperation(const std::string &funcName) {
-    return is_broadcast_operation(funcName);
-  }
-  bool isQueryOperation(const std::string &funcName) {
-    return is_query_operation(funcName);
-  }
 
   // Rust-style context analysis
   bool is_in_uniform_control_flow(
@@ -926,20 +637,6 @@ private:
       const ControlFlowAnalyzer::ControlFlowState &cf_state);
   int calculate_divergence_level(
       const ControlFlowAnalyzer::ControlFlowState &cf_state);
-
-  // Legacy compatibility
-  bool
-  isInUniformControlFlow(const ControlFlowAnalyzer::ControlFlowState &cfState) {
-    return is_in_uniform_control_flow(cfState);
-  }
-  bool isInDivergentControlFlow(
-      const ControlFlowAnalyzer::ControlFlowState &cfState) {
-    return is_in_divergent_control_flow(cfState);
-  }
-  int calculateDivergenceLevel(
-      const ControlFlowAnalyzer::ControlFlowState &cfState) {
-    return calculate_divergence_level(cfState);
-  }
 
   clang::ASTContext &context_;
   std::map<std::string, WaveOperationType> wave_operation_types_;
@@ -956,17 +653,6 @@ public:
   ValidationResult validate_function(const Function *func);
   ValidationResult validate_source(const std::string &hlsl_source);
 
-  // Legacy compatibility
-  ValidationResult validateProgram(const Program *program) {
-    return validate_program(program);
-  }
-  ValidationResult validateFunction(const Function *func) {
-    return validate_function(func);
-  }
-  ValidationResult validateSource(const std::string &hlslSource) {
-    return validate_source(hlslSource);
-  }
-
   // Rust-style AST-based methods
   ValidationResult validate_ast(clang::TranslationUnitDecl *tu,
                                 clang::ASTContext &context);
@@ -974,30 +660,10 @@ public:
   validate_source_with_full_ast(const std::string &hlsl_source,
                                 const std::string &filename = "shader.hlsl");
 
-  // Legacy compatibility
-  ValidationResult validateAST(clang::TranslationUnitDecl *tu,
-                               clang::ASTContext &context) {
-    return validate_ast(tu, context);
-  }
-  ValidationResult
-  validateSourceWithFullAST(const std::string &hlslSource,
-                            const std::string &filename = "shader.hlsl") {
-    return validate_source_with_full_ast(hlslSource, filename);
-  }
-
   // Rust-style formal proof integration
   std::string generate_formal_proof_alignment(const Program *program);
   FormalProofMapping map_to_formal_proof(const ValidationResult &result,
                                          const Program *program);
-
-  // Legacy compatibility
-  std::string generateFormalProofAlignment(const Program *program) {
-    return generate_formal_proof_alignment(program);
-  }
-  FormalProofMapping mapToFormalProof(const ValidationResult &result,
-                                      const Program *program) {
-    return map_to_formal_proof(result, program);
-  }
 
   // Rust-style advanced analysis capabilities
   ValidationResult perform_full_static_analysis(clang::TranslationUnitDecl *tu,
@@ -1007,21 +673,6 @@ public:
   ValidationResult
   generate_optimization_suggestions(clang::TranslationUnitDecl *tu,
                                     clang::ASTContext &context);
-
-  // Legacy compatibility
-  ValidationResult performFullStaticAnalysis(clang::TranslationUnitDecl *tu,
-                                             clang::ASTContext &context) {
-    return perform_full_static_analysis(tu, context);
-  }
-  ValidationResult analyzeOrderIndependence(clang::TranslationUnitDecl *tu,
-                                            clang::ASTContext &context) {
-    return analyze_order_independence(tu, context);
-  }
-  ValidationResult
-  generateOptimizationSuggestions(clang::TranslationUnitDecl *tu,
-                                  clang::ASTContext &context) {
-    return generate_optimization_suggestions(tu, context);
-  }
 
 private:
   // Rust-style analyzer instances (using Box<T> instead of std::unique_ptr)
@@ -1048,16 +699,6 @@ private:
 
   Box<clang::CompilerInstance> setup_complete_compiler();
 
-  // Legacy compatibility - now returns validation result instead of AST
-  ValidationResult
-  parseHLSLWithCompleteAST(const std::string &source,
-                           const std::string &filename) {
-    return parse_and_validate_hlsl(source, filename);
-  }
-  std::unique_ptr<clang::CompilerInstance> setupCompleteCompiler() {
-    return setup_complete_compiler();
-  }
-
   // Rust-style validation workflow
   ValidationResult run_complete_validation(clang::TranslationUnitDecl *tu,
                                            clang::ASTContext &context);
@@ -1067,40 +708,12 @@ private:
                                                  clang::TranslationUnitDecl *tu,
                                                  clang::ASTContext &context);
 
-  // Legacy compatibility
-  ValidationResult runCompleteValidation(clang::TranslationUnitDecl *tu,
-                                         clang::ASTContext &context) {
-    return run_complete_validation(tu, context);
-  }
-  ValidationResult validateAllConstraints(clang::TranslationUnitDecl *tu,
-                                          clang::ASTContext &context) {
-    return validate_all_constraints(tu, context);
-  }
-  ValidationResult generateComprehensiveReport(const ValidationResult &result,
-                                               clang::TranslationUnitDecl *tu,
-                                               clang::ASTContext &context) {
-    return generate_comprehensive_report(result, tu, context);
-  }
-
   // Rust-style analysis coordination
   void initialize_analyzers(clang::ASTContext &context);
   ValidationResult coordinate_analysis(clang::TranslationUnitDecl *tu,
                                        clang::ASTContext &context);
   ValidationResult
   consolidate_results(const std::vector<ValidationResult> &results);
-
-  // Legacy compatibility
-  void initializeAnalyzers(clang::ASTContext &context) {
-    initialize_analyzers(context);
-  }
-  ValidationResult coordinateAnalysis(clang::TranslationUnitDecl *tu,
-                                      clang::ASTContext &context) {
-    return coordinate_analysis(tu, context);
-  }
-  ValidationResult
-  consolidateResults(const std::vector<ValidationResult> &results) {
-    return consolidate_results(results);
-  }
 };
 
 // Rust-style factory for creating validators
@@ -1116,14 +729,6 @@ public:
       Box<ControlFlowAnalyzer> control_flow_analyzer,
       Box<MemorySafetyAnalyzer> memory_analyzer,
       Box<WaveOperationValidator> wave_validator);
-
-  // Legacy compatibility
-  static std::unique_ptr<MiniHLSLValidator> createValidator() {
-    return create_validator();
-  }
-  static std::unique_ptr<MiniHLSLValidator> createMiniHLSLValidator() {
-    return create_mini_hlsl_validator();
-  }
 };
 
 } // namespace minihlsl
