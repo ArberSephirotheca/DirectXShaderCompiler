@@ -209,6 +209,23 @@ public:
   // RecursiveASTVisitor interface
   bool VisitFunctionDecl(clang::FunctionDecl *func);
   
+private:
+  // Helper function to validate wave operations in a function
+  ValidationResult validate_wave_operations_in_function(
+      clang::FunctionDecl *func, const WaveOperationValidator &validator);
+      
+  // Helper function to validate deterministic expressions in a function
+  ValidationResult validate_deterministic_expressions_in_function(
+      clang::FunctionDecl *func, const DeterministicExpressionAnalyzer &analyzer);
+      
+  // Helper function to validate control flow in a function
+  ValidationResult validate_control_flow_in_function(
+      clang::FunctionDecl *func, const ControlFlowAnalyzer &analyzer);
+      
+  // Helper function to validate memory safety patterns in a function
+  ValidationResult validate_memory_safety_patterns_in_function(clang::FunctionDecl *func);
+      
+public:
   // Get analysis results - only valid after HandleTranslationUnit completes
   const ValidationResult& getFinalResult() const { return final_result_; }
   const std::vector<ValidationErrorWithMessage>& getErrors() const { return errors_; }
@@ -219,24 +236,34 @@ public:
 // FrontendAction to create our ASTConsumer
 class DBEGAnalysisAction : public clang::ASTFrontendAction {
 private:
-  DBEGAnalysisConsumer* consumer_; // Raw pointer to track consumer
+  DBEGAnalysisConsumer* consumer_; // Raw pointer to track consumer - only valid during execution
+  
+  // Copy results before consumer is deleted
+  ValidationResult final_result_;
+  std::vector<ValidationErrorWithMessage> captured_errors_;
+  bool analysis_completed_;
+  bool results_captured_;
   
 public:
-  DBEGAnalysisAction() : consumer_(nullptr) {}
+  DBEGAnalysisAction() : consumer_(nullptr), final_result_(ValidationResultBuilder::ok()), 
+                         analysis_completed_(false), results_captured_(false) {}
   
   std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(
       clang::CompilerInstance &CI, clang::StringRef InFile) override;
       
-  // Get analysis results after compilation - delegates to consumer
+  // Override to capture results before consumer is deleted
+  void ExecuteAction() override;
+      
+  // Get analysis results after compilation - uses captured results
   const ValidationResult& getFinalResult() const {
     static ValidationResult default_success = ValidationResultBuilder::ok();
-    return consumer_ ? consumer_->getFinalResult() : default_success;
+    return results_captured_ ? final_result_ : default_success;
   }
   bool hasAnalysisErrors() const {
-    return consumer_ ? consumer_->hasErrors() : false;
+    return results_captured_ ? !captured_errors_.empty() : false;
   }
   bool isAnalysisCompleted() const {
-    return consumer_ ? consumer_->isAnalysisCompleted() : false;
+    return results_captured_ ? analysis_completed_ : false;
   }
 };
 
@@ -827,8 +854,7 @@ public:
   validate_wave_call(const clang::CallExpr *call,
                      const ControlFlowAnalyzer::ControlFlowState &cf_state);
   bool is_wave_operation(const clang::CallExpr *call);
-  bool is_order_independent_wave_op(const std::string &func_name);
-  bool is_order_dependent_wave_op(const std::string &func_name);
+  bool is_order_independent_wave_op(const std::string &func_name) const;
   bool requires_full_participation(const std::string &func_name);
 
   // Legacy compatibility
@@ -844,7 +870,7 @@ public:
     return is_order_independent_wave_op(funcName);
   }
   bool isOrderDependentWaveOp(const std::string &funcName) {
-    return is_order_dependent_wave_op(funcName);
+    return !is_order_independent_wave_op(funcName);
   }
   bool requiresFullParticipation(const std::string &funcName) {
     return requires_full_participation(funcName);

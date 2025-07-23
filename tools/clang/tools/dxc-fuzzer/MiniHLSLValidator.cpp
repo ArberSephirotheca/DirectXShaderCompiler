@@ -1515,7 +1515,7 @@ void MemorySafetyAnalyzer::build_dynamic_blocks_recursive(
   }
   
   // Debug output to track where crash occurs
-  llvm::errs() << "Processing statement class: " << stmt->getStmtClassName() << "\n";
+  // llvm::errs() << "Processing statement class: " << stmt->getStmtClassName() << "\n";
   
   // Track which threads are still active (haven't returned/broken/continued)
   std::set<uint32_t> activeThreads = threads;
@@ -1652,7 +1652,7 @@ void MemorySafetyAnalyzer::build_dynamic_blocks_recursive(
     case clang::Stmt::DeclStmtClass: {
       // Declaration statements - process any initializers
       const auto decl_stmt = clang::cast<clang::DeclStmt>(stmt);
-      llvm::errs() << "Processing DeclStmt with " << std::distance(decl_stmt->decl_begin(), decl_stmt->decl_end()) << " declarations\n";
+      // llvm::errs() << "Processing DeclStmt with " << std::distance(decl_stmt->decl_begin(), decl_stmt->decl_end()) << " declarations\n";
       
       // Check each declaration for initializer expressions that might contain memory operations
       for (const auto decl : decl_stmt->decls()) {
@@ -1660,13 +1660,19 @@ void MemorySafetyAnalyzer::build_dynamic_blocks_recursive(
           if (var_decl && var_decl->hasInit()) {
             const auto init_expr = var_decl->getInit();
             if (init_expr) {
-              llvm::errs() << "Processing initializer for variable: " << var_decl->getNameAsString() << "\n";
+              // llvm::errs() << "Processing initializer for variable: " << var_decl->getNameAsString() << "\n";
               // Collect memory operations from the initializer expression
               collect_memory_operations_in_dbeg(init_expr, parentBlockId, activeThreads);
             }
           }
         }
       }
+      break;
+    }
+    
+    case clang::Stmt::BinaryOperatorClass: {
+      // Binary operators (like comparisons, arithmetic) - no control flow impact
+      // Just continue with same dynamic block
       break;
     }
     
@@ -2485,7 +2491,7 @@ ValidationResult WaveOperationValidator::validate_wave_call(
   }
 
   // Check if operation is order-dependent (forbidden)
-  if (is_order_dependent_wave_op(func_name)) {
+  if (!is_order_independent_wave_op(func_name)) {
     return ValidationResultBuilder::err(
         ValidationError::OrderDependentWaveOp,
         "Order-dependent wave operations are forbidden in MiniHLSL");
@@ -2512,24 +2518,17 @@ bool WaveOperationValidator::is_wave_operation(const clang::CallExpr *call) {
 }
 
 bool WaveOperationValidator::is_order_independent_wave_op(
-    const string &func_name) {
-  // Order-independent operations allowed in MiniHLSL
+    const string &func_name) const {
+  // Order-independent wave operations allowed in MiniHLSL
   return func_name == "WaveActiveSum" || func_name == "WaveActiveProduct" ||
          func_name == "WaveActiveMax" || func_name == "WaveActiveMin" ||
+         func_name == "WaveActiveAllTrue" || func_name == "WaveActiveAnyTrue" ||
+         func_name == "WaveActiveAllEqual" ||
          func_name == "WaveActiveCountBits" ||
          func_name == "WaveGetLaneCount" || func_name == "WaveGetLaneIndex" ||
-         func_name == "InterlockedAdd" || // Atomic operations are commutative
-         func_name == "InterlockedOr" || func_name == "InterlockedXor" ||
-         func_name == "InterlockedAnd";
+         func_name == "WaveIsFirstLane"; // Deterministic divergence - we know exactly who participates
 }
 
-bool WaveOperationValidator::is_order_dependent_wave_op(
-    const string &func_name) {
-  // Order-dependent operations forbidden in MiniHLSL
-  return func_name == "WaveReadLaneAt" || func_name == "WaveReadLaneFirst" ||
-         func_name == "WaveBallot" || func_name == "WavePrefixSum" ||
-         func_name == "WavePrefixProduct" || func_name.find("WavePrefix") == 0;
-}
 
 bool WaveOperationValidator::requires_full_participation(
     const string &func_name) {
@@ -2631,6 +2630,7 @@ MiniHLSLValidator::parse_and_validate_hlsl(const string &source,
     // Convert relative filename to absolute path for ExecuteAction
     std::string abs_filename = filename;
     if (!llvm::sys::path::is_absolute(filename)) {
+        // TODO: change the hardcoded path
         abs_filename = "/home/zheyuan/dxc_workspace/DirectXShaderCompiler/tools/clang/tools/dxc-fuzzer/test_cases/" + filename;
     }
     
@@ -2736,7 +2736,7 @@ ValidationResult MiniHLSLValidator::validate_forbidden_wave_operations(
   std::vector<std::string> forbidden_ops = {
       "WavePrefixSum",  "WavePrefixProduct", "WavePrefixCountBits",
       "WavePrefixAnd",  "WavePrefixOr",      "WavePrefixXor",
-      "WaveReadLaneAt", "WaveReadLaneFirst", "WaveReadFirstLane"};
+      "WaveReadLaneAt", "WaveReadLaneFirst"};
 
   for (const auto &op : forbidden_ops) {
     if (hlsl_source.find(op) != string::npos) {
@@ -3082,7 +3082,7 @@ void MemorySafetyAnalyzer::collect_memory_operations_in_dbeg(
   }
   
   // Debug output to track where crash occurs
-  llvm::errs() << "collect_memory_operations_in_dbeg: Processing " << stmt->getStmtClassName() << "\n";
+  // llvm::errs() << "collect_memory_operations_in_dbeg: Processing " << stmt->getStmtClassName() << "\n";
   
   // Check if this statement is a memory operation
   if (const auto binOp = clang::dyn_cast<clang::BinaryOperator>(stmt)) {
@@ -3339,6 +3339,73 @@ bool DBEGAnalysisConsumer::VisitFunctionDecl(clang::FunctionDecl *func) {
     return true;
   }
   
+  // First, check for forbidden wave operations
+  llvm::errs() << "\n=== Wave Operation Validation ===\n";
+  auto wave_validator = std::make_unique<WaveOperationValidator>(func->getASTContext());
+  auto wave_result = validate_wave_operations_in_function(func, *wave_validator);
+  
+  if (wave_result.is_err()) {
+    const auto &wave_errors = wave_result.unwrap_err();
+    errors_.insert(errors_.end(), wave_errors.begin(), wave_errors.end());
+    
+    llvm::errs() << "Wave Operation Validation found " << wave_errors.size() << " errors:\n";
+    for (const auto& error : wave_errors) {
+      llvm::errs() << "  - " << error.message << "\n";
+    }
+  } else {
+    llvm::errs() << "Wave Operation Validation: Function passed\n";
+  }
+
+  // Check for deterministic expressions
+  llvm::errs() << "\n=== Deterministic Expression Validation ===\n";
+  auto expr_analyzer = std::make_unique<DeterministicExpressionAnalyzer>(func->getASTContext());
+  auto expr_result = validate_deterministic_expressions_in_function(func, *expr_analyzer);
+  
+  if (expr_result.is_err()) {
+    const auto &expr_errors = expr_result.unwrap_err();
+    errors_.insert(errors_.end(), expr_errors.begin(), expr_errors.end());
+    
+    llvm::errs() << "Deterministic Expression Validation found " << expr_errors.size() << " errors:\n";
+    for (const auto& error : expr_errors) {
+      llvm::errs() << "  - " << error.message << "\n";
+    }
+  } else {
+    llvm::errs() << "Deterministic Expression Validation: Function passed\n";
+  }
+
+  // Check control flow patterns
+  llvm::errs() << "\n=== Control Flow Validation ===\n";
+  auto cf_analyzer = std::make_unique<ControlFlowAnalyzer>(func->getASTContext());
+  auto cf_result = validate_control_flow_in_function(func, *cf_analyzer);
+  
+  if (cf_result.is_err()) {
+    const auto &cf_errors = cf_result.unwrap_err();
+    errors_.insert(errors_.end(), cf_errors.begin(), cf_errors.end());
+    
+    llvm::errs() << "Control Flow Validation found " << cf_errors.size() << " errors:\n";
+    for (const auto& error : cf_errors) {
+      llvm::errs() << "  - " << error.message << "\n";
+    }
+  } else {
+    llvm::errs() << "Control Flow Validation: Function passed\n";
+  }
+
+  // Check memory safety patterns
+  llvm::errs() << "\n=== Memory Safety Pattern Validation ===\n";
+  auto memory_result = validate_memory_safety_patterns_in_function(func);
+  
+  if (memory_result.is_err()) {
+    const auto &memory_errors = memory_result.unwrap_err();
+    errors_.insert(errors_.end(), memory_errors.begin(), memory_errors.end());
+    
+    llvm::errs() << "Memory Safety Pattern Validation found " << memory_errors.size() << " errors:\n";
+    for (const auto& error : memory_errors) {
+      llvm::errs() << "  - " << error.message << "\n";
+    }
+  } else {
+    llvm::errs() << "Memory Safety Pattern Validation: Function passed\n";
+  }
+
   // Run DBEG analysis on this function
   llvm::errs() << "\n=== DBEG Analysis via ASTConsumer ===\n";
   llvm::errs() << "Analyzing function: " << func->getNameAsString() << "\n";
@@ -3366,6 +3433,232 @@ bool DBEGAnalysisConsumer::VisitFunctionDecl(clang::FunctionDecl *func) {
   return true; // Continue traversing
 }
 
+// Helper function to validate wave operations in a function
+ValidationResult DBEGAnalysisConsumer::validate_wave_operations_in_function(
+    clang::FunctionDecl *func, const WaveOperationValidator &validator) {
+  std::vector<ValidationErrorWithMessage> wave_errors;
+  
+  // Use a recursive AST visitor to find all CallExpr nodes
+  class WaveCallVisitor : public clang::RecursiveASTVisitor<WaveCallVisitor> {
+  public:
+    std::vector<ValidationErrorWithMessage> &errors;
+    const WaveOperationValidator &validator;
+    
+    WaveCallVisitor(std::vector<ValidationErrorWithMessage> &errs, const WaveOperationValidator &val)
+        : errors(errs), validator(val) {}
+    
+    bool VisitCallExpr(clang::CallExpr *call) {
+      if (!call || !call->getDirectCallee()) {
+        return true;
+      }
+      
+      const auto func_name = call->getDirectCallee()->getNameAsString();
+      
+      // Only validate wave operations, not all function calls
+      if (func_name.find("Wave") == 0 && !validator.is_order_independent_wave_op(func_name)) {
+        errors.emplace_back(
+            ValidationError::OrderDependentWaveOp,
+            "Order-dependent wave operation '" + func_name + "' is forbidden in MiniHLSL"
+        );
+        llvm::errs() << "FORBIDDEN: " << func_name << " detected\n";
+      }
+      
+      return true;
+    }
+  };
+  
+  WaveCallVisitor visitor(wave_errors, validator);
+  visitor.TraverseStmt(func->getBody());
+  
+  if (wave_errors.empty()) {
+    return ValidationResultBuilder::ok();
+  } else {
+    return ValidationResultBuilder::err(ValidationError::OrderDependentWaveOp, 
+                                       "Function contains forbidden wave operations");
+  }
+}
+
+// Helper function to validate deterministic expressions in a function
+ValidationResult DBEGAnalysisConsumer::validate_deterministic_expressions_in_function(
+    clang::FunctionDecl *func, const DeterministicExpressionAnalyzer &analyzer) {
+  std::vector<ValidationErrorWithMessage> expr_errors;
+  
+  // Use a recursive AST visitor to find all expressions that need validation
+  class ExpressionVisitor : public clang::RecursiveASTVisitor<ExpressionVisitor> {
+  public:
+    std::vector<ValidationErrorWithMessage> &errors;
+    const DeterministicExpressionAnalyzer &analyzer;
+    
+    ExpressionVisitor(std::vector<ValidationErrorWithMessage> &errs, const DeterministicExpressionAnalyzer &anal)
+        : errors(errs), analyzer(anal) {}
+    
+    bool VisitIfStmt(clang::IfStmt *stmt) {
+      if (stmt->getCond()) {
+        if (!analyzer.is_deterministic_expression(stmt->getCond())) {
+          errors.emplace_back(
+              ValidationError::NonDeterministicCondition,
+              "Control flow condition is not deterministic"
+          );
+        }
+      }
+      return true;
+    }
+    
+    bool VisitWhileStmt(clang::WhileStmt *stmt) {
+      if (stmt->getCond()) {
+        if (!analyzer.is_deterministic_expression(stmt->getCond())) {
+          errors.emplace_back(
+              ValidationError::NonDeterministicCondition,
+              "Loop condition is not deterministic"
+          );
+        }
+      }
+      return true;
+    }
+    
+    bool VisitForStmt(clang::ForStmt *stmt) {
+      if (stmt->getCond()) {
+        if (!analyzer.is_deterministic_expression(stmt->getCond())) {
+          errors.emplace_back(
+              ValidationError::NonDeterministicCondition,
+              "For loop condition is not deterministic"
+          );
+        }
+      }
+      return true;
+    }
+  };
+  
+  ExpressionVisitor visitor(expr_errors, analyzer);
+  visitor.TraverseStmt(func->getBody());
+  
+  if (expr_errors.empty()) {
+    return ValidationResultBuilder::ok();
+  } else {
+    return ValidationResultBuilder::err(ValidationError::NonDeterministicCondition, 
+                                       "Function contains non-deterministic expressions");
+  }
+}
+
+// Helper function to validate control flow in a function
+ValidationResult DBEGAnalysisConsumer::validate_control_flow_in_function(
+    clang::FunctionDecl *func, const ControlFlowAnalyzer &analyzer) {
+  std::vector<ValidationErrorWithMessage> cf_errors;
+  
+  // Use a recursive AST visitor to find forbidden control flow constructs
+  class ControlFlowVisitor : public clang::RecursiveASTVisitor<ControlFlowVisitor> {
+  public:
+    std::vector<ValidationErrorWithMessage> &errors;
+    
+    ControlFlowVisitor(std::vector<ValidationErrorWithMessage> &errs) : errors(errs) {}
+    
+    bool VisitBreakStmt(clang::BreakStmt *stmt) {
+      errors.emplace_back(
+          ValidationError::UnsupportedOperation,
+          "Break statements are forbidden in MiniHLSL"
+      );
+      return true;
+    }
+    
+    bool VisitContinueStmt(clang::ContinueStmt *stmt) {
+      errors.emplace_back(
+          ValidationError::UnsupportedOperation,
+          "Continue statements are forbidden in MiniHLSL"
+      );
+      return true;
+    }
+    
+    bool VisitGotoStmt(clang::GotoStmt *stmt) {
+      errors.emplace_back(
+          ValidationError::UnsupportedOperation,
+          "Goto statements are forbidden in MiniHLSL"
+      );
+      return true;
+    }
+  };
+  
+  ControlFlowVisitor visitor(cf_errors);
+  visitor.TraverseStmt(func->getBody());
+  
+  if (cf_errors.empty()) {
+    return ValidationResultBuilder::ok();
+  } else {
+    return ValidationResultBuilder::err(ValidationError::UnsupportedOperation, 
+                                       "Function contains forbidden control flow constructs");
+  }
+}
+
+// Helper function to validate memory safety patterns in a function
+ValidationResult DBEGAnalysisConsumer::validate_memory_safety_patterns_in_function(
+    clang::FunctionDecl *func) {
+  std::vector<ValidationErrorWithMessage> memory_errors;
+  
+  // Use a recursive AST visitor to find memory access patterns
+  class MemoryPatternVisitor : public clang::RecursiveASTVisitor<MemoryPatternVisitor> {
+  public:
+    std::vector<ValidationErrorWithMessage> &errors;
+    
+    MemoryPatternVisitor(std::vector<ValidationErrorWithMessage> &errs) : errors(errs) {}
+    
+    bool VisitCallExpr(clang::CallExpr *call) {
+      if (!call || !call->getDirectCallee()) {
+        return true;
+      }
+      
+      const auto func_name = call->getDirectCallee()->getNameAsString();
+      
+      // Check atomic operations for proper usage patterns
+      if (func_name.find("Interlocked") == 0) {
+        if (!is_order_independent_atomic_op(func_name)) {
+          errors.emplace_back(
+              ValidationError::UnsupportedOperation,
+              "Order-dependent atomic operation '" + func_name + "' is forbidden in MiniHLSL"
+          );
+          llvm::errs() << "FORBIDDEN ATOMIC: " << func_name << " detected\n";
+        } else {
+          llvm::errs() << "ALLOWED ATOMIC: " << func_name << " detected\n";
+        }
+        return true;
+      }
+      
+      // Check for barrier/synchronization operations (forbidden in MiniHLSL)
+      if (func_name.find("Barrier") != std::string::npos ||
+          func_name.find("GroupMemoryBarrier") == 0 ||
+          func_name.find("AllMemoryBarrier") == 0) {
+        errors.emplace_back(
+            ValidationError::UnsupportedOperation,
+            "Synchronization operation '" + func_name + "' is forbidden in MiniHLSL"
+        );
+        llvm::errs() << "FORBIDDEN SYNC: " << func_name << " detected\n";
+      }
+      
+      return true;
+    }
+    
+  private:
+    bool is_order_independent_atomic_op(const std::string &func_name) {
+      // Commutative/associative atomic operations allowed in MiniHLSL
+      return func_name == "InterlockedAdd" || 
+             func_name == "InterlockedOr" || 
+             func_name == "InterlockedXor" ||
+             func_name == "InterlockedAnd" ||
+             func_name == "InterlockedMax" ||
+             func_name == "InterlockedMin";
+      // Note: InterlockedExchange, InterlockedCompareExchange are order-dependent
+    }
+  };
+  
+  MemoryPatternVisitor visitor(memory_errors);
+  visitor.TraverseStmt(func->getBody());
+  
+  if (memory_errors.empty()) {
+    return ValidationResultBuilder::ok();
+  } else {
+    return ValidationResultBuilder::err(ValidationError::UnsupportedOperation, 
+                                       "Function contains unsafe memory access patterns");
+  }
+}
+
 // FrontendAction implementation
 std::unique_ptr<clang::ASTConsumer> DBEGAnalysisAction::CreateASTConsumer(
     clang::CompilerInstance &CI, clang::StringRef InFile) {
@@ -3378,6 +3671,23 @@ std::unique_ptr<clang::ASTConsumer> DBEGAnalysisAction::CreateASTConsumer(
   
   llvm::errs() << "Consumer created successfully, pointer: " << consumer.get() << "\n";
   return std::move(consumer);
+}
+
+void DBEGAnalysisAction::ExecuteAction() {
+  // Call parent implementation to do the actual parsing
+  clang::ASTFrontendAction::ExecuteAction();
+  
+  // Capture results before consumer gets deleted
+  if (consumer_) {
+    llvm::errs() << "Capturing analysis results before consumer deletion\n";
+    final_result_ = consumer_->getFinalResult();
+    captured_errors_ = consumer_->getErrors();
+    analysis_completed_ = consumer_->isAnalysisCompleted();
+    results_captured_ = true;
+    
+    llvm::errs() << "Results captured: completed=" << analysis_completed_ 
+                 << ", errors=" << captured_errors_.size() << "\n";
+  }
 }
 
 } // namespace minihlsl
