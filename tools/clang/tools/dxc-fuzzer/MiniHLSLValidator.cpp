@@ -817,6 +817,10 @@ bool DeterministicExpressionAnalyzer::is_deterministic_initializer(const clang::
   
   llvm::errs() << "DEBUG: Checking initializer of type: " << init->getStmtClassName() << "\n";
   
+  // Remove any implicit casts to get to the actual expression (consistent with is_compile_time_deterministic)
+  init = init->IgnoreImpCasts();
+  llvm::errs() << "DEBUG: After IgnoreImpCasts, type is: " << init->getStmtClassName() << "\n";
+  
   // For initializers, we can safely check determinism without recursion issues
   // because we're not going through variable references
   switch (init->getStmtClass()) {
@@ -841,14 +845,6 @@ bool DeterministicExpressionAnalyzer::is_deterministic_initializer(const clang::
       llvm::errs() << "DEBUG: Found unary operator initializer\n";
       bool result = is_deterministic_initializer(unOp->getSubExpr());
       llvm::errs() << "DEBUG: Unary operator result: " << (result ? "deterministic" : "non-deterministic") << "\n";
-      return result;
-    }
-    
-    case clang::Stmt::ImplicitCastExprClass: {
-      const auto *castExpr = clang::cast<clang::ImplicitCastExpr>(init);
-      llvm::errs() << "DEBUG: Found implicit cast expression - checking sub-expression\n";
-      bool result = is_deterministic_initializer(castExpr->getSubExpr());
-      llvm::errs() << "DEBUG: Implicit cast result: " << (result ? "deterministic" : "non-deterministic") << "\n";
       return result;
     }
     
