@@ -1,3 +1,6 @@
+# Find required packages
+find_package(Threads REQUIRED)
+
 add_executable(dxc-fuzzer
   HLSLFuzzer.cpp
   MiniHLSLValidator.cpp
@@ -55,5 +58,24 @@ set_target_properties(minihlsl-fuzzer PROPERTIES
   LINK_FLAGS    "-fsanitize=address,fuzzer"
 )
 
+# MiniHLSL Interpreter - executes MiniHLSL programs and verifies order independence
+add_executable(minihlsl-interpreter
+  MiniHLSLInterpreter.cpp
+  test_interpreter.cpp
+)
+target_link_libraries(minihlsl-interpreter
+  # Use pthread for std::thread and std::mutex
+  Threads::Threads
+)
+
+# Set C++17 standard for the interpreter (uses std::variant)
+set_target_properties(minihlsl-interpreter PROPERTIES
+  CXX_STANDARD 17
+  CXX_STANDARD_REQUIRED ON
+)
+
 # Add test that runs all .hlsl files in test_cases directory
 add_test(NAME MiniHLSLValidatorTest COMMAND test_runner test_cases)
+
+# Add test for the interpreter
+add_test(NAME MiniHLSLInterpreterTest COMMAND minihlsl-interpreter)
