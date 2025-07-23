@@ -16,6 +16,7 @@
 #include "clang/Lex/Preprocessor.h"
 #include "clang/Parse/ParseAST.h"
 #include "clang/Parse/Parser.h"
+#include "llvm/Support/raw_ostream.h"
 #include <algorithm>
 #include <sstream>
 
@@ -54,12 +55,8 @@ bool DeterministicExpressionAnalyzer::is_compile_time_deterministic(
   // Remove any implicit casts to get to the actual expression
   expr = expr->IgnoreImpCasts();
 
-  // Check cache first for performance (Rust-style variable naming)
-  const auto expr_str = expr->getStmtClassName();
-  if (const auto cached = variable_determinism_cache_.find(expr_str);
-      cached != variable_determinism_cache_.end()) {
-    return cached->second;
-  }
+  // No expression-level caching - let each expression be evaluated fresh
+  // Only cache at the variable level to prevent infinite recursion
 
   // Rust-style pattern matching with early returns
   const auto stmt_class = expr->getStmtClass();
@@ -130,8 +127,7 @@ bool DeterministicExpressionAnalyzer::is_compile_time_deterministic(
     }
   }();
 
-  // Cache the result (Rust-style variable naming)
-  variable_determinism_cache_[expr_str] = result;
+  // No expression-level caching - variable caching is handled in is_deterministic_decl_ref
   return result;
 }
 
@@ -737,22 +733,29 @@ bool DeterministicExpressionAnalyzer::is_deterministic_unary_op(
 
 bool DeterministicExpressionAnalyzer::is_deterministic_decl_ref(
     const clang::DeclRefExpr *ref) {
-  if (!ref)
+  if (!ref) {
+    llvm::errs() << "DEBUG: is_deterministic_decl_ref called with null ref\n";
     return false;
+  }
 
   const auto *decl = ref->getDecl();
+  const auto var_name = decl->getNameAsString();
+  llvm::errs() << "DEBUG: Analyzing variable reference: " << var_name << "\n";
   
   // Check if it's a parameter with deterministic semantic
   if (const auto *namedDecl = clang::dyn_cast<clang::NamedDecl>(decl)) {
+    llvm::errs() << "DEBUG: Variable " << var_name << " is a NamedDecl, checking semantics\n";
     // Check for HLSL semantic annotations
     for (const auto *annotation : namedDecl->getUnusualAnnotations()) {
       if (annotation->getKind() == hlsl::UnusualAnnotation::UA_SemanticDecl) {
         const auto *semantic = static_cast<const hlsl::SemanticDecl*>(annotation);
+        llvm::errs() << "DEBUG: Found semantic: " << semantic->SemanticName.str() << "\n";
         // Thread/dispatch/group IDs are deterministic
         if (semantic->SemanticName == "SV_DispatchThreadID" ||
             semantic->SemanticName == "SV_GroupThreadID" || 
             semantic->SemanticName == "SV_GroupID" ||
             semantic->SemanticName == "SV_GroupIndex") {
+          llvm::errs() << "DEBUG: Variable " << var_name << " has deterministic semantic - returning true\n";
           return true;
         }
       }
@@ -761,39 +764,58 @@ bool DeterministicExpressionAnalyzer::is_deterministic_decl_ref(
 
   // Check if this variable is in our deterministic cache
   if (const auto *varDecl = clang::dyn_cast<clang::VarDecl>(decl)) {
+    llvm::errs() << "DEBUG: Variable " << var_name << " is a VarDecl\n";
+    
     // Use cache to avoid recursion
     const void* declPtr = static_cast<const void*>(varDecl);
     auto it = variable_determinism_cache_.find(declPtr);
     if (it != variable_determinism_cache_.end()) {
+      llvm::errs() << "DEBUG: Found " << var_name << " in cache: " << (it->second ? "deterministic" : "non-deterministic") << "\n";
       return it->second;
     }
+    
+    llvm::errs() << "DEBUG: Variable " << var_name << " not in cache, analyzing initialization\n";
     
     // Not in cache - analyze the variable's initialization
     bool isDeterministic = false;
     
     if (varDecl->hasInit()) {
+      llvm::errs() << "DEBUG: Variable " << var_name << " has initializer\n";
+      
       // Mark as "being analyzed" to prevent recursion
       variable_determinism_cache_[declPtr] = false;
       
       const auto *init = varDecl->getInit();
       if (init) {
+        llvm::errs() << "DEBUG: Analyzing initializer for " << var_name << "\n";
         // Check if initializer is deterministic (this won't recurse back to this variable)
         isDeterministic = is_deterministic_initializer(init);
+        llvm::errs() << "DEBUG: Initializer analysis result: " << (isDeterministic ? "deterministic" : "non-deterministic") << "\n";
       }
+    } else {
+      llvm::errs() << "DEBUG: Variable " << var_name << " has no initializer\n";
     }
     
     // Cache the result
     variable_determinism_cache_[declPtr] = isDeterministic;
+    llvm::errs() << "DEBUG: Cached result for " << var_name << ": " << (isDeterministic ? "deterministic" : "non-deterministic") << "\n";
     return isDeterministic;
   }
 
   // Simple fallback for other kinds of declarations
-  const auto var_name = decl->getNameAsString();
-  return var_name == "tid" || var_name == "id";
+  llvm::errs() << "DEBUG: Variable " << var_name << " is not a VarDecl, using fallback\n";
+  bool result = var_name == "tid" || var_name == "id" || var_name == "i" || var_name == "j";
+  llvm::errs() << "DEBUG: Fallback result for " << var_name << ": " << (result ? "deterministic" : "non-deterministic") << "\n";
+  return result;
 }
 
 bool DeterministicExpressionAnalyzer::is_deterministic_initializer(const clang::Expr *init) {
-  if (!init) return false;
+  if (!init) {
+    llvm::errs() << "DEBUG: is_deterministic_initializer called with null init\n";
+    return false;
+  }
+  
+  llvm::errs() << "DEBUG: Checking initializer of type: " << init->getStmtClassName() << "\n";
   
   // For initializers, we can safely check determinism without recursion issues
   // because we're not going through variable references
@@ -801,22 +823,38 @@ bool DeterministicExpressionAnalyzer::is_deterministic_initializer(const clang::
     case clang::Stmt::IntegerLiteralClass:
     case clang::Stmt::FloatingLiteralClass:
     case clang::Stmt::CXXBoolLiteralExprClass:
+      llvm::errs() << "DEBUG: Found literal initializer - returning true\n";
       return true; // Literals are always deterministic
       
     case clang::Stmt::BinaryOperatorClass: {
       const auto *binOp = clang::cast<clang::BinaryOperator>(init);
+      llvm::errs() << "DEBUG: Found binary operator initializer\n";
       // Recursively check operands, but this won't cause variable reference loops
-      return is_deterministic_initializer(binOp->getLHS()) && 
-             is_deterministic_initializer(binOp->getRHS());
+      bool result = is_deterministic_initializer(binOp->getLHS()) && 
+                   is_deterministic_initializer(binOp->getRHS());
+      llvm::errs() << "DEBUG: Binary operator result: " << (result ? "deterministic" : "non-deterministic") << "\n";
+      return result;
     }
     
     case clang::Stmt::UnaryOperatorClass: {
       const auto *unOp = clang::cast<clang::UnaryOperator>(init);
-      return is_deterministic_initializer(unOp->getSubExpr());
+      llvm::errs() << "DEBUG: Found unary operator initializer\n";
+      bool result = is_deterministic_initializer(unOp->getSubExpr());
+      llvm::errs() << "DEBUG: Unary operator result: " << (result ? "deterministic" : "non-deterministic") << "\n";
+      return result;
+    }
+    
+    case clang::Stmt::ImplicitCastExprClass: {
+      const auto *castExpr = clang::cast<clang::ImplicitCastExpr>(init);
+      llvm::errs() << "DEBUG: Found implicit cast expression - checking sub-expression\n";
+      bool result = is_deterministic_initializer(castExpr->getSubExpr());
+      llvm::errs() << "DEBUG: Implicit cast result: " << (result ? "deterministic" : "non-deterministic") << "\n";
+      return result;
     }
     
     default:
       // For more complex initializers, be conservative
+      llvm::errs() << "DEBUG: Unknown initializer type (" << init->getStmtClassName() << ") - returning false\n";
       return false;
   }
 }
