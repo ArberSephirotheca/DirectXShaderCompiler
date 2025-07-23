@@ -702,9 +702,14 @@ bool DeterministicExpressionAnalyzer::is_deterministic_intrinsic_call(
 
   const auto func_name = call->getDirectCallee()->getNameAsString();
 
-  // Deterministic intrinsics (Rust-style pattern matching)
-  return func_name == "WaveGetLaneIndex" || func_name == "WaveGetLaneCount" ||
-         func_name == "WaveIsFirstLane" || func_name.find("SV_") == 0;
+  // Use the canonical wave operation validator for wave operations
+  if (func_name.find("Wave") == 0) {
+    WaveOperationValidator wave_validator(context_);
+    return wave_validator.is_order_independent_wave_op(func_name);
+  }
+
+  // Other deterministic intrinsics
+  return func_name.find("SV_") == 0;
 }
 
 bool DeterministicExpressionAnalyzer::is_deterministic_binary_op(
@@ -735,11 +740,41 @@ bool DeterministicExpressionAnalyzer::is_deterministic_decl_ref(
   if (!ref)
     return false;
 
-  const auto var_name = ref->getDecl()->getNameAsString();
+  const auto *decl = ref->getDecl();
+  
+  // Check if it's a parameter with deterministic semantic
+  if (const auto *namedDecl = clang::dyn_cast<clang::NamedDecl>(decl)) {
+    // Check for HLSL semantic annotations
+    for (const auto *annotation : namedDecl->getUnusualAnnotations()) {
+      if (annotation->getKind() == hlsl::UnusualAnnotation::UA_SemanticDecl) {
+        const auto *semantic = static_cast<const hlsl::SemanticDecl*>(annotation);
+        // Thread/dispatch/group IDs are deterministic
+        if (semantic->SemanticName == "SV_DispatchThreadID" ||
+            semantic->SemanticName == "SV_GroupThreadID" || 
+            semantic->SemanticName == "SV_GroupID" ||
+            semantic->SemanticName == "SV_GroupIndex") {
+          return true;
+        }
+      }
+    }
+  }
 
-  // Check if it's a known deterministic variable
-  return var_name == "id" || var_name.find("SV_") == 0 ||
-         var_name.find("threadID") != string::npos;
+  const auto var_name = decl->getNameAsString();
+
+  // Fallback: Check if it's a known deterministic variable name
+  // Common thread ID parameter names used in HLSL
+  return var_name == "id" || 
+         var_name == "tid" ||  // Common abbreviation for thread ID
+         var_name == "gid" ||  // Group ID
+         var_name == "dtid" || // Dispatch thread ID
+         var_name.find("SV_") == 0 ||
+         var_name.find("threadID") != string::npos ||
+         var_name.find("threadId") != string::npos ||
+         var_name.find("ThreadID") != string::npos ||
+         var_name.find("groupID") != string::npos ||
+         var_name.find("GroupID") != string::npos ||
+         var_name.find("dispatchThreadID") != string::npos ||
+         var_name.find("DispatchThreadID") != string::npos;
 }
 
 bool DeterministicExpressionAnalyzer::is_deterministic_member_access(

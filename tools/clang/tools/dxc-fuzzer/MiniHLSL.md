@@ -124,6 +124,66 @@ Program ::= Function*
 EntryPoint ::= "[numthreads(X, Y, Z)]" "void" "main" "(" ")" BlockStmt
 ```
 
+## Value Categories: Three Levels of "Known-ness"
+
+Understanding MiniHLSL requires distinguishing between different categories of values based on when and how they are known:
+
+### 1. Compile-Time Constants
+Values known at shader compilation time:
+```hlsl
+const int BLOCK_SIZE = 32;        // Compile-time constant
+const float PI = 3.14159f;        // Known before execution
+```
+
+### 2. Wave-Uniform Runtime Values
+Values that are the same across all active lanes in a wave, but only known at runtime:
+```hlsl
+bool allPositive = WaveActiveAll(value > 0);      // Uniform across wave
+uint activeCount = WaveActiveCountBits(mask);     // Same for all lanes
+float waveSum = WaveActiveSum(data);              // Uniform result
+bool anyError = WaveActiveAny(errorFlag);         // Wave-uniform bool
+```
+
+These enable uniform control flow without requiring compile-time knowledge:
+```hlsl
+if (WaveActiveAll(data > threshold)) {  // Uniform branch
+    // All lanes execute together - safe for wave operations
+    float avg = WaveActiveSum(data) / WaveGetLaneCount();
+}
+```
+
+### 3. Lane-Varying Runtime Values
+Values that differ between lanes and are only known at runtime:
+```hlsl
+float textureValue = texture.Sample(sampler, uv);   // Runtime texture read
+float bufferData = inputBuffer[dynamicIndex];       // Runtime buffer access
+float userInput = cbuffer.userParameter;            // Runtime constant buffer
+float computed = sin(currentTime * frequency);      // Time-dependent value
+```
+
+### Special Case: Lane Indices
+Lane indices (`WaveGetLaneIndex()`) occupy a unique position:
+- **Deterministic**: Each lane's ID is predetermined and never changes
+- **Lane-specific**: Different for each lane but in a predictable pattern
+- **Compile-time known**: The compiler knows what value each lane will receive
+
+This makes lane indices suitable for **deterministic control flow** - branches based on lane ID are order-independent because they're predetermined:
+```hlsl
+if (WaveGetLaneIndex() < 16) {
+    // First 16 lanes always take this branch - deterministic
+}
+```
+
+### Implications for Order-Independence
+
+Order-independence does NOT require all values to be compile-time constants. Instead:
+- **Compile-time constants**: Always safe for any operation
+- **Wave-uniform values**: Safe for uniform control flow
+- **Lane-varying values**: Safe for independent computation and commutative reductions
+- **Deterministic values** (like lane IDs): Safe for predetermined control flow
+
+This distinction is crucial: order-independence is about **mathematical properties** (commutativity, associativity, determinism), not about **when values are known**.
+
 ## Order-Independence Validation Rules
 
 ### Rule 1: No Racing Memory Access
