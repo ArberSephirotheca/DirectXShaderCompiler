@@ -22,6 +22,22 @@
 
 namespace minihlsl {
 
+// Debug flags for development
+// 
+// To enable debug output, change these flags to true and recompile:
+// - ENABLE_DBEG_DEBUG: Shows detailed Dynamic Block Execution Graph construction
+// - ENABLE_MEMORY_DEBUG: Shows detailed memory operation detection and analysis
+//
+// Example usage:
+//   static constexpr bool ENABLE_MEMORY_DEBUG = true;  // Enable memory debug
+//
+static constexpr bool ENABLE_DBEG_DEBUG = false;  // Set to true to enable detailed DBEG tracing
+static constexpr bool ENABLE_MEMORY_DEBUG = false; // Set to true to enable memory operation tracing
+
+// Conditional debug macros
+#define DBEG_DEBUG_LOG(msg) do { if (ENABLE_DBEG_DEBUG) { llvm::errs() << msg; } } while(0)
+#define MEMORY_DEBUG_LOG(msg) do { if (ENABLE_MEMORY_DEBUG) { llvm::errs() << msg; } } while(0)
+
 // Global DXC support instance for HLSL parsing
 static dxc::DxcDllSupport g_dxcSupport;
 static bool g_initialized = false;
@@ -1495,24 +1511,24 @@ const clang::Expr* MemorySafetyAnalyzer::extract_base_and_offset(
 // Check if an expression accesses shared memory (groupshared, RWBuffer, etc.)
 bool MemorySafetyAnalyzer::is_shared_memory_access(const clang::Expr *expr) {
   if (!expr) {
-    llvm::errs() << "    is_shared_memory_access: expr is null\n";
+    MEMORY_DEBUG_LOG("    is_shared_memory_access: expr is null\n");
     return false;
   }
     
   expr = expr->IgnoreImpCasts();
-  llvm::errs() << "    is_shared_memory_access: checking " << expr->getStmtClassName() << "\n";
+  MEMORY_DEBUG_LOG("    is_shared_memory_access: checking " << expr->getStmtClassName() << "\n");
   
   // Array subscript - check if the base is shared memory
   if (const auto arr = clang::dyn_cast<clang::ArraySubscriptExpr>(expr)) {
-    llvm::errs() << "    Found ArraySubscriptExpr, checking base\n";
+    MEMORY_DEBUG_LOG("    Found ArraySubscriptExpr, checking base\n");
     return is_shared_memory_access(arr->getBase());
   }
   
   // C++ operator call (like buffer[index] in HLSL) - check if it's array subscript
   if (const auto operatorCall = clang::dyn_cast<clang::CXXOperatorCallExpr>(expr)) {
-    llvm::errs() << "    Found CXXOperatorCallExpr\n";
+    MEMORY_DEBUG_LOG("    Found CXXOperatorCallExpr\n");
     if (operatorCall->getOperator() == clang::OO_Subscript) {
-      llvm::errs() << "    It's operator[], checking object (arg 0)\n";
+      MEMORY_DEBUG_LOG("    It's operator[], checking object (arg 0)\n");
       // For operator[], arg 0 is the object being subscripted
       if (operatorCall->getNumArgs() > 0) {
         return is_shared_memory_access(operatorCall->getArg(0));
@@ -1522,18 +1538,18 @@ bool MemorySafetyAnalyzer::is_shared_memory_access(const clang::Expr *expr) {
   
   // Member access - check if the base is shared memory
   if (const auto member = clang::dyn_cast<clang::MemberExpr>(expr)) {
-    llvm::errs() << "    Found MemberExpr, checking base\n";
+    MEMORY_DEBUG_LOG("    Found MemberExpr, checking base\n");
     return is_shared_memory_access(member->getBase());
   }
   
   // Variable reference - check if it's declared as groupshared
   if (const auto ref = clang::dyn_cast<clang::DeclRefExpr>(expr)) {
-    llvm::errs() << "    Found DeclRefExpr\n";
+    MEMORY_DEBUG_LOG("    Found DeclRefExpr\n");
     if (const auto var_decl = clang::dyn_cast<clang::VarDecl>(ref->getDecl())) {
       // Check type for RWBuffer, RWTexture, groupshared, etc.
       const auto type = var_decl->getType();
       const auto type_str = type.getAsString();
-      llvm::errs() << "    Variable type: " << type_str << "\n";
+      MEMORY_DEBUG_LOG("    Variable type: " << type_str << "\n");
       
       // Common HLSL shared resource types
       if (type_str.find("RWBuffer") != string::npos ||
@@ -1542,7 +1558,7 @@ bool MemorySafetyAnalyzer::is_shared_memory_access(const clang::Expr *expr) {
           type_str.find("RWByteAddressBuffer") != string::npos ||
           type_str.find("groupshared") != string::npos ||
           type_str.find("shared") != string::npos) {
-        llvm::errs() << "    FOUND SHARED MEMORY ACCESS!\n";
+        MEMORY_DEBUG_LOG("    FOUND SHARED MEMORY ACCESS!\n");
         return true;
       }
       
@@ -3198,18 +3214,18 @@ void MemorySafetyAnalyzer::collect_memory_operations_in_dbeg(
   }
   
   // Enhanced debug output to track memory operations
-  llvm::errs() << "collect_memory_operations_in_dbeg: Processing " << stmt->getStmtClassName() << "\n";
+  MEMORY_DEBUG_LOG("collect_memory_operations_in_dbeg: Processing " << stmt->getStmtClassName() << "\n");
   
   // Check if this statement is a memory operation
   if (const auto binOp = clang::dyn_cast<clang::BinaryOperator>(stmt)) {
-    llvm::errs() << "  Found BinaryOperator, isAssignmentOp: " << binOp->isAssignmentOp() << "\n";
+    MEMORY_DEBUG_LOG("  Found BinaryOperator, isAssignmentOp: " << binOp->isAssignmentOp() << "\n");
     if (binOp->isAssignmentOp()) {
       const auto lhs = binOp->getLHS();
-      llvm::errs() << "  LHS type: " << lhs->getStmtClassName() << "\n";
+      MEMORY_DEBUG_LOG("  LHS type: " << lhs->getStmtClassName() << "\n");
       
       // Check if it's a shared memory write
       bool isSharedAccess = is_shared_memory_access(lhs);
-      llvm::errs() << "  is_shared_memory_access(lhs): " << isSharedAccess << "\n";
+      MEMORY_DEBUG_LOG("  is_shared_memory_access(lhs): " << isSharedAccess << "\n");
       if (isSharedAccess) {
         // Create a memory operation for each active thread
         for (uint32_t tid : activeThreads) {
@@ -3286,28 +3302,28 @@ void MemorySafetyAnalyzer::collect_memory_operations_in_dbeg(
 }
 
 void MemorySafetyAnalyzer::print_dynamic_execution_graph(bool verbose) {
-  llvm::errs() << "\n=== Dynamic Block Execution Graph ===\n";
-  llvm::errs() << "Total Dynamic Blocks: " << dynamicBlocks_.size() << "\n";
-  llvm::errs() << "Total Memory Operations: " << dbegMemoryOps_.size() << "\n\n";
+  DBEG_DEBUG_LOG("\n=== Dynamic Block Execution Graph ===\n");
+  DBEG_DEBUG_LOG("Total Dynamic Blocks: " << dynamicBlocks_.size() << "\n");
+  DBEG_DEBUG_LOG("Total Memory Operations: " << dbegMemoryOps_.size() << "\n\n");
   
   // Print each dynamic block
   for (const auto& [blockId, db] : dynamicBlocks_) {
-    llvm::errs() << "Dynamic Block " << blockId << ":\n";
-    llvm::errs() << "  Threads: {";
+    DBEG_DEBUG_LOG("Dynamic Block " << blockId << ":\n");
+    DBEG_DEBUG_LOG("  Threads: {");
     bool first = true;
     for (uint32_t tid : db.threads) {
-      if (!first) llvm::errs() << ", ";
-      llvm::errs() << tid;
+      if (!first) DBEG_DEBUG_LOG(", ");
+      DBEG_DEBUG_LOG(tid);
       first = false;
     }
-    llvm::errs() << "}\n";
+    DBEG_DEBUG_LOG("}\n");
     
     if (db.iterationId >= 0) {
-      llvm::errs() << "  Loop Iteration: " << db.iterationId << "\n";
+      DBEG_DEBUG_LOG("  Loop Iteration: " << db.iterationId << "\n");
     }
     
     if (db.mergeTargetId != UINT32_MAX) {
-      llvm::errs() << "  Merge Target: DB" << db.mergeTargetId << "\n";
+      DBEG_DEBUG_LOG("  Merge Target: DB" << db.mergeTargetId << "\n");
     }
     
     // Count memory operations in this block
@@ -3318,55 +3334,55 @@ void MemorySafetyAnalyzer::print_dynamic_execution_graph(bool verbose) {
         if (memOp.op.isWrite) writeCount++;
       }
     }
-    llvm::errs() << "  Memory Ops: " << readCount << " reads, " << writeCount << " writes\n";
+    DBEG_DEBUG_LOG("  Memory Ops: " << readCount << " reads, " << writeCount << " writes\n");
     
     if (verbose) {
       // Print AST node type
       if (db.staticBlock) {
-        llvm::errs() << "  Statement Type: " << db.staticBlock->getStmtClassName() << "\n";
+        DBEG_DEBUG_LOG("  Statement Type: " << db.staticBlock->getStmtClassName() << "\n");
       }
       
       // Print memory operations details
       for (const auto& memOp : dbegMemoryOps_) {
         if (memOp.dynamicBlockId == blockId) {
-          llvm::errs() << "    Thread " << memOp.op.threadId << ": ";
+          MEMORY_DEBUG_LOG("    Thread " << memOp.op.threadId << ": ");
           if (memOp.op.isWrite) {
-            llvm::errs() << "WRITE to ";
+            MEMORY_DEBUG_LOG("WRITE to ");
           } else {
-            llvm::errs() << "READ from ";
+            MEMORY_DEBUG_LOG("READ from ");
           }
           
           // Print simplified address expression
           if (memOp.op.addressExpr) {
             if (auto arrayAccess = clang::dyn_cast<clang::ArraySubscriptExpr>(memOp.op.addressExpr)) {
-              llvm::errs() << "array[index]";
+              MEMORY_DEBUG_LOG("array[index]");
             } else if (auto declRef = clang::dyn_cast<clang::DeclRefExpr>(memOp.op.addressExpr)) {
-              llvm::errs() << declRef->getNameInfo().getAsString();
+              MEMORY_DEBUG_LOG(declRef->getNameInfo().getAsString());
             } else {
-              llvm::errs() << "complex_expr";
+              MEMORY_DEBUG_LOG("complex_expr");
             }
           }
-          llvm::errs() << "\n";
+          MEMORY_DEBUG_LOG("\n");
         }
       }
     }
     
-    llvm::errs() << "\n";
+    DBEG_DEBUG_LOG("\n");
   }
   
   // Print block relationships
-  llvm::errs() << "=== Control Flow Graph ===\n";
+  DBEG_DEBUG_LOG("=== Control Flow Graph ===\n");
   for (const auto& [blockId, db] : dynamicBlocks_) {
     if (!db.children.empty()) {
-      llvm::errs() << "DB" << blockId << " -> ";
+      DBEG_DEBUG_LOG("DB" << blockId << " -> ");
       for (size_t i = 0; i < db.children.size(); ++i) {
-        if (i > 0) llvm::errs() << ", ";
-        llvm::errs() << "DB" << db.children[i];
+        if (i > 0) DBEG_DEBUG_LOG(", ");
+        DBEG_DEBUG_LOG("DB" << db.children[i]);
       }
-      llvm::errs() << "\n";
+      DBEG_DEBUG_LOG("\n");
     }
   }
-  llvm::errs() << "\n";
+  DBEG_DEBUG_LOG("\n");
 }
 
 ValidationResult MemorySafetyAnalyzer::analyze_function(clang::FunctionDecl *func) {
@@ -3404,15 +3420,15 @@ ValidationResult MemorySafetyAnalyzer::analyze_function(clang::FunctionDecl *fun
   }
   
   // Check for cross-dynamic-block dependencies
-  llvm::errs() << "\n=== Cross-Dynamic-Block Analysis ===\n";
-  llvm::errs() << "Total memory operations: " << dbegMemoryOps_.size() << "\n";
+  DBEG_DEBUG_LOG("\n=== Cross-Dynamic-Block Analysis ===\n");
+  MEMORY_DEBUG_LOG("Total memory operations: " << dbegMemoryOps_.size() << "\n");
   for (size_t i = 0; i < dbegMemoryOps_.size(); ++i) {
     const auto& op = dbegMemoryOps_[i];
-    llvm::errs() << "Op " << i << ": Thread " << op.op.threadId 
-                 << " in DB" << op.dynamicBlockId;
-    if (op.op.isWrite) llvm::errs() << " WRITE";
-    if (op.op.isRead) llvm::errs() << " READ";
-    llvm::errs() << "\n";
+    MEMORY_DEBUG_LOG("Op " << i << ": Thread " << op.op.threadId 
+                 << " in DB" << op.dynamicBlockId);
+    if (op.op.isWrite) MEMORY_DEBUG_LOG(" WRITE");
+    if (op.op.isRead) MEMORY_DEBUG_LOG(" READ");
+    MEMORY_DEBUG_LOG("\n");
   }
   results.push_back(validate_cross_dynamic_block_dependencies());
   
@@ -3421,7 +3437,7 @@ ValidationResult MemorySafetyAnalyzer::analyze_function(clang::FunctionDecl *fun
 
 // ASTConsumer implementation for DBEG analysis
 void DBEGAnalysisConsumer::HandleTranslationUnit(clang::ASTContext &context) {
-  llvm::errs() << "\n=== HandleTranslationUnit: Starting DBEG Analysis ===\n";
+  DBEG_DEBUG_LOG("\n=== HandleTranslationUnit: Starting DBEG Analysis ===\n");
   
   try {
     // Initialize memory analyzer with the real ASTContext
