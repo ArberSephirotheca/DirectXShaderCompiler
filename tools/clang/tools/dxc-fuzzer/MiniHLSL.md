@@ -300,6 +300,69 @@ void main() {
 5. **Memory Access Analysis** to detect potential races
 6. **Order-Independence Verification** through static analysis
 
+## Implementation Details
+
+### AST-Based Validation
+
+The MiniHLSL validator uses Clang's AST to perform robust semantic analysis:
+
+#### Consistent Cast Handling
+All expression analysis functions use `expr->IgnoreImpCasts()` to handle implicit casts consistently:
+- **Standard Clang approach**: Following Clang's recommended practice for AST analysis
+- **Comprehensive coverage**: Handles all types of implicit casts automatically
+- **Maintainable**: No need for manual case-by-case cast handling
+
+```cpp
+// Main deterministic analysis - strips implicit casts first
+bool is_compile_time_deterministic(const clang::Expr *expr) {
+  if (!expr) return false;
+  expr = expr->IgnoreImpCasts();  // Handle all implicit casts uniformly
+  // ... analysis continues with unwrapped expression
+}
+```
+
+#### Variable Determinism Tracking
+The validator uses a sophisticated caching system to track variable determinism:
+- **Loop initialization analysis**: Properly handles `int i = 0` with implicit cast wrappers
+- **Recursion prevention**: Cache prevents infinite recursion in dependency analysis  
+- **Semantic awareness**: Recognizes HLSL semantics like `SV_DispatchThreadID` as deterministic
+
+#### Robust Loop Validation
+Deterministic loop constructs are validated through:
+1. **Initializer analysis**: Check if loop variable initialization is deterministic
+2. **Condition analysis**: Ensure loop condition evaluates deterministically
+3. **Increment analysis**: Verify loop increment is deterministic
+4. **Combined validation**: All three must be deterministic for valid loops
+
+```hlsl
+// This loop is properly validated as deterministic:
+for (int i = 0; i < 1; i++) {  // i=0 (deterministic), i<1 (deterministic), i++ (deterministic)
+    // Loop body
+}
+```
+
+### Dynamic Block Execution Graph (DBEG)
+
+The validator implements a Dynamic Block Execution Graph for cross-thread dependency analysis:
+- **Thread participation tracking**: Models which threads execute each code block
+- **Reconvergence analysis**: Tracks where diverged threads reconverge
+- **Memory dependency validation**: Analyzes cross-thread memory access patterns
+- **Iteration-aware**: Handles loop iterations and their thread participation
+
+### Error Reporting
+
+The validator provides detailed error messages with:
+- **Source location information**: Precise error locations in HLSL source
+- **Semantic explanations**: Clear descriptions of why constructs are invalid
+- **Suggested fixes**: Guidance on making code order-independent
+
+### Integration with DXC
+
+The validator integrates seamlessly with DXC through:
+- **AST Consumer pattern**: Standard Clang frontend integration
+- **Compiler instance reuse**: Leverages existing DXC infrastructure  
+- **HLSL semantic awareness**: Understands HLSL-specific constructs and semantics
+
 ## Integration with Fuzzer
 
 MiniHLSL programs can be:

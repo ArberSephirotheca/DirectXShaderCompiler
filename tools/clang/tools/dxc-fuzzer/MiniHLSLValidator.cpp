@@ -2388,6 +2388,7 @@ void ControlFlowAnalyzer::update_control_flow_state(ControlFlowState &state,
             func_name == "InterlockedAnd" ||
             func_name == "GroupMemoryBarrierWithGroupSync") {
           state.hasWaveOps = true;
+          
         }
       }
     }
@@ -2585,50 +2586,7 @@ ValidationResult MiniHLSLValidator::consolidate_results(
   return ValidationResultBuilder::combine(results);
 }
 
-// Rust-style Wave Operation Validator Implementation
-ValidationResult WaveOperationValidator::validate_wave_call(
-    const clang::CallExpr *call,
-    const ControlFlowAnalyzer::ControlFlowState &cf_state) {
-  // Early returns for invalid input (Rust-style)
-  if (!call || !call->getDirectCallee()) {
-    return ValidationResultBuilder::err(ValidationError::InvalidExpression,
-                                        "Invalid wave operation call");
-  }
 
-  const auto func_name = call->getDirectCallee()->getNameAsString();
-
-  // Validate this is actually a wave operation
-  if (!is_wave_operation(call)) {
-    return ValidationResultBuilder::err(ValidationError::InvalidWaveContext,
-                                        "Not a valid wave operation");
-  }
-
-  // Check if operation is order-dependent (forbidden)
-  if (!is_order_independent_wave_op(func_name)) {
-    return ValidationResultBuilder::err(
-        ValidationError::OrderDependentWaveOp,
-        "Order-dependent wave operations are forbidden in MiniHLSL");
-  }
-
-  // Rust-style result composition
-  std::vector<ValidationResult> results;
-  results.push_back(analyze_wave_participation(call, cf_state));
-  results.push_back(validate_wave_arguments(call, func_name));
-
-  return ValidationResultBuilder::combine(results);
-}
-
-bool WaveOperationValidator::is_wave_operation(const clang::CallExpr *call) {
-  if (!call || !call->getDirectCallee())
-    return false;
-
-  const auto func_name = call->getDirectCallee()->getNameAsString();
-
-  return func_name.find("Wave") == 0 || func_name == "InterlockedAdd" ||
-         func_name == "InterlockedOr" || func_name == "InterlockedXor" ||
-         func_name == "InterlockedAnd" ||
-         func_name == "GroupMemoryBarrierWithGroupSync";
-}
 
 bool WaveOperationValidator::is_order_independent_wave_op(
     const string &func_name) const {
@@ -2640,13 +2598,6 @@ bool WaveOperationValidator::is_order_independent_wave_op(
          func_name == "WaveActiveCountBits" ||
          func_name == "WaveGetLaneCount" || func_name == "WaveGetLaneIndex" ||
          func_name == "WaveIsFirstLane"; // Deterministic divergence - we know exactly who participates
-}
-
-
-bool WaveOperationValidator::requires_full_participation(
-    const string &func_name) {
-  // Most wave operations require all lanes to participate
-  return func_name.find("WaveActive") == 0;
 }
 
 ValidationResult WaveOperationValidator::analyze_wave_participation(
@@ -2664,51 +2615,6 @@ ValidationResult WaveOperationValidator::analyze_wave_participation(
   }
 
   return ValidationResultBuilder::ok();
-}
-
-ValidationResult
-WaveOperationValidator::validate_wave_arguments(const clang::CallExpr *call,
-                                                const string &func_name) {
-  // Validate that arguments are appropriate for the wave operation
-  // Implementation would check argument types and determinism
-
-  return ValidationResultBuilder::ok();
-}
-
-ValidationResult WaveOperationValidator::check_wave_operation_context(
-    const clang::CallExpr *call) {
-  // Check that wave operation is used in appropriate context
-  // Implementation would analyze surrounding control flow
-
-  return ValidationResultBuilder::ok();
-}
-
-WaveOperationValidator::WaveOperationType
-WaveOperationValidator::classify_wave_operation(const string &func_name) {
-  if (is_reduction_operation(func_name)) {
-    return WaveOperationType::Reduction;
-  } else if (is_broadcast_operation(func_name)) {
-    return WaveOperationType::Broadcast;
-  } else if (is_query_operation(func_name)) {
-    return WaveOperationType::Query;
-  } else {
-    return WaveOperationType::Unknown;
-  }
-}
-
-bool WaveOperationValidator::is_reduction_operation(const string &func_name) {
-  return func_name == "WaveActiveSum" || func_name == "WaveActiveProduct" ||
-         func_name == "WaveActiveMax" || func_name == "WaveActiveMin" ||
-         func_name == "WaveActiveCountBits";
-}
-
-bool WaveOperationValidator::is_broadcast_operation(const string &func_name) {
-  return func_name == "WaveReadLaneAt" ||  // Forbidden in MiniHLSL
-         func_name == "WaveReadLaneFirst"; // Forbidden in MiniHLSL
-}
-
-bool WaveOperationValidator::is_query_operation(const string &func_name) {
-  return func_name == "WaveGetLaneCount" || func_name == "WaveGetLaneIndex";
 }
 
 bool WaveOperationValidator::is_in_uniform_control_flow(
@@ -3050,9 +2956,86 @@ const clang::Stmt* MemorySafetyAnalyzer::get_next_statement_after_loop(const cla
 }
 
 const clang::Stmt* MemorySafetyAnalyzer::get_statement_after_compound(const clang::CompoundStmt* compound) {
-  // TODO: This requires finding the compound statement in its parent context
-  // and returning the next statement after it
-  // For now, return nullptr as we need AST parent tracking
+  if (!compound) return nullptr;
+  
+  // Find the parent statement that contains this compound statement
+  const clang::Stmt* parent = get_parent_statement(compound);
+  if (!parent) return nullptr;
+  
+  // Handle different parent types that can contain compound statements
+  switch (parent->getStmtClass()) {
+    case clang::Stmt::IfStmtClass: {
+      const auto if_stmt = clang::cast<clang::IfStmt>(parent);
+      // Check if this compound is the 'then' or 'else' branch
+      if (compound == if_stmt->getThen() || compound == if_stmt->getElse()) {
+        // The statement after the compound is the statement after the entire if statement
+        return get_next_statement(if_stmt);
+      }
+      break;
+    }
+    
+    case clang::Stmt::ForStmtClass: {
+      const auto for_stmt = clang::cast<clang::ForStmt>(parent);
+      if (compound == for_stmt->getBody()) {
+        // For loops, the statement after the compound is the statement after the entire loop
+        return get_next_statement(for_stmt);
+      }
+      break;
+    }
+    
+    case clang::Stmt::WhileStmtClass: {
+      const auto while_stmt = clang::cast<clang::WhileStmt>(parent);
+      if (compound == while_stmt->getBody()) {
+        // While loops, the statement after the compound is the statement after the entire loop
+        return get_next_statement(while_stmt);
+      }
+      break;
+    }
+    
+    case clang::Stmt::DoStmtClass: {
+      const auto do_stmt = clang::cast<clang::DoStmt>(parent);
+      if (compound == do_stmt->getBody()) {
+        // Do-while loops, the statement after the compound is the statement after the entire loop
+        return get_next_statement(do_stmt);
+      }
+      break;
+    }
+    
+    case clang::Stmt::CompoundStmtClass: {
+      // This compound statement is nested inside another compound statement
+      const auto parent_compound = clang::cast<clang::CompoundStmt>(parent);
+      
+      // Find this compound statement in the parent's children and return the next one
+      bool found = false;
+      for (auto child : parent_compound->children()) {
+        if (found) {
+          // This is the statement after our compound statement
+          return child;
+        }
+        if (child == compound) {
+          found = true;
+        }
+      }
+      
+      // If we're the last statement in the parent compound, 
+      // recursively find what comes after the parent compound
+      return get_statement_after_compound(parent_compound);
+    }
+    
+    case clang::Stmt::SwitchStmtClass: {
+      const auto switch_stmt = clang::cast<clang::SwitchStmt>(parent);
+      if (compound == switch_stmt->getBody()) {
+        // Switch statements, the statement after the compound is the statement after the entire switch
+        return get_next_statement(switch_stmt);
+      }
+      break;
+    }
+    
+    default:
+      // For other parent types, try to get the next statement after the parent
+      return get_next_statement(parent);
+  }
+  
   return nullptr;
 }
 
