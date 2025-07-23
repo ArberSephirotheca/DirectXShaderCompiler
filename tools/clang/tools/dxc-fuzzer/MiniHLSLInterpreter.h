@@ -17,6 +17,14 @@
 #include <mutex>
 #include <condition_variable>
 
+// Forward declarations for Clang AST (to avoid heavy includes in header)
+namespace clang {
+    class FunctionDecl;
+    class ASTContext;
+    class Stmt;
+    class Expr;
+}
+
 namespace minihlsl {
 namespace interpreter {
 
@@ -255,7 +263,7 @@ class ThreadIndexExpr : public Expression {
 public:
     Value evaluate(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg) const override;
     bool isDeterministic() const override { return true; }
-    std::string toString() const override { return "GetThreadIndex()"; }
+    std::string toString() const override { return "W()"; }
 };
 
 class BinaryOpExpr : public Expression {
@@ -425,6 +433,10 @@ private:
     static bool areResultsEquivalent(const ExecutionResult& r1, 
                                    const ExecutionResult& r2,
                                    double epsilon = 1e-6);
+    
+    // HLSL AST conversion helper methods (simplified for now)
+    std::unique_ptr<Statement> convertStatement(const clang::Stmt* stmt, clang::ASTContext& context);
+    std::unique_ptr<Expression> convertExpression(const clang::Expr* expr, clang::ASTContext& context);
                                    
 public:
     explicit MiniHLSLInterpreter(uint32_t seed = 42) : rng_(seed) {}
@@ -446,6 +458,16 @@ public:
     // Generate test orderings
     std::vector<ThreadOrdering> generateTestOrderings(uint32_t threadCount, 
                                                      uint32_t numOrderings);
+    
+    // HLSL AST conversion methods
+    struct ConversionResult {
+        bool success;
+        std::string errorMessage;
+        Program program;
+    };
+    
+    // Convert Clang AST function to interpreter program
+    ConversionResult convertFromHLSLAST(const clang::FunctionDecl* func, clang::ASTContext& context);
 };
 
 // Helper functions for building programs

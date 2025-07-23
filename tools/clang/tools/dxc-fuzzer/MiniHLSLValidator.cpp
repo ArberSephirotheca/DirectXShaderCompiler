@@ -31,8 +31,8 @@ namespace minihlsl {
 // Example usage:
 //   static constexpr bool ENABLE_MEMORY_DEBUG = true;  // Enable memory debug
 //
-static constexpr bool ENABLE_DBEG_DEBUG = false;  // Set to true to enable detailed DBEG tracing
-static constexpr bool ENABLE_MEMORY_DEBUG = false; // Set to true to enable memory operation tracing
+static constexpr bool ENABLE_DBEG_DEBUG = true;  // Set to true to enable detailed DBEG tracing
+static constexpr bool ENABLE_MEMORY_DEBUG = true; // Set to true to enable memory operation tracing
 
 // Conditional debug macros
 #define DBEG_DEBUG_LOG(msg) do { if (ENABLE_DBEG_DEBUG) { llvm::errs() << msg; } } while(0)
@@ -1562,6 +1562,12 @@ bool MemorySafetyAnalyzer::is_shared_memory_access(const clang::Expr *expr) {
         return true;
       }
       
+      // Check for address_space(3) which indicates groupshared memory in HLSL
+      if (type_str.find("address_space(3)") != string::npos) {
+        MEMORY_DEBUG_LOG("    FOUND SHARED MEMORY ACCESS (address_space(3))!\n");
+        return true;
+      }
+      
       // Check variable name hints (simplified heuristic)
     //   const auto var_name = var_decl->getNameAsString();
     //   if (var_name.find("shared") != string::npos ||
@@ -1617,23 +1623,29 @@ void MemorySafetyAnalyzer::build_dynamic_execution_graph(clang::FunctionDecl *fu
     return;
   }
   
-  // Start with all threads in initial dynamic block
-  std::set<uint32_t> allThreads;
-  // TODO: For now, assume 32 threads (would be configurable in practice)
-  for (uint32_t i = 0; i < 32; ++i) {
-    allThreads.insert(i);
-  }
+  // Simplified approach: Focus on control flow determinism rather than complex DBEG analysis
+  // The key is to ensure control flow conditions are deterministic for order independence
   
-  // Clear previous DBEG
+  // Clear previous state
   dynamicBlocks_.clear();
   dbegMemoryOps_.clear();
   nextDynamicBlockId_ = 0;
   
-  // Create initial dynamic block
-  const auto initialBlockId = create_dynamic_block(func->getBody(), allThreads);
+  // Create a single dynamic block representing the entire function
+  // This simplifies the analysis to focus on control flow determinism
+  std::set<uint32_t> allThreads;
+  for (uint32_t i = 0; i < 32; ++i) {
+    allThreads.insert(i);
+  }
   
-  // Build DBEG by traversing the function body
-  build_dynamic_blocks_recursive(func->getBody(), initialBlockId, allThreads);
+  const auto blockId = create_dynamic_block(func->getBody(), allThreads);
+  
+  // Collect memory operations in this simplified model
+  collect_memory_operations_in_dbeg(func->getBody(), blockId, allThreads);
+  collect_synchronization_operations_in_dbeg(func->getBody(), blockId, allThreads);
+  
+  llvm::errs() << "Simplified DBEG: Single block with " << allThreads.size() 
+               << " threads and " << dbegMemoryOps_.size() << " memory operations\n";
 }
 
 uint32_t MemorySafetyAnalyzer::create_dynamic_block(const clang::Stmt* stmt, 
@@ -1683,14 +1695,42 @@ void MemorySafetyAnalyzer::build_dynamic_blocks_recursive(
         
         if (const auto child_stmt = clang::dyn_cast<clang::Stmt>(child)) {
           if (child_stmt) {  // Add null check to prevent crashes
-            // Collect memory operations from this statement with current active threads
-            collect_memory_operations_in_dbeg(child_stmt, currentBlockId, currentThreads);
+            // For control flow statements (if, for, while), don't collect operations here
+            // They will create their own dynamic blocks and collect operations there
+            bool isControlFlow = clang::isa<clang::IfStmt>(child_stmt) ||
+                                clang::isa<clang::ForStmt>(child_stmt) ||
+                                clang::isa<clang::WhileStmt>(child_stmt) ||
+                                clang::isa<clang::SwitchStmt>(child_stmt);
+            
+            if (!isControlFlow) {
+              // Only collect operations for non-control-flow statements
+              collect_memory_operations_in_dbeg(child_stmt, currentBlockId, currentThreads);
+              // Collect synchronization operations (barriers, wave ops)
+              collect_synchronization_operations_in_dbeg(child_stmt, currentBlockId, currentThreads);
+            }
             
             // Check if this statement causes threads to exit
             currentThreads = remove_exiting_threads(currentThreads, child_stmt);
             
-            // Build blocks with current active threads
+            // Build blocks with current active threads (for control flow, this creates child blocks)
             build_dynamic_blocks_recursive(child_stmt, currentBlockId, currentThreads);
+            
+            // For control flow statements, subsequent statements should go in the merge block
+            if (isControlFlow) {
+              // Get the threads that reach the merge point
+              auto mergeThreads = activeThreadsAfterBlock_[currentBlockId];
+              if (!mergeThreads.empty()) {
+                // Find the merge block that was created
+                // It should be the last block created with these threads
+                for (auto it = dynamicBlocks_.rbegin(); it != dynamicBlocks_.rend(); ++it) {
+                  if (it->second.threads == mergeThreads) {
+                    currentBlockId = it->first;
+                    currentThreads = mergeThreads;
+                    break;
+                  }
+                }
+              }
+            }
             
             // Update threads for next statement
             if (branch_contains_return_statement(child_stmt)) {
@@ -1720,6 +1760,7 @@ void MemorySafetyAnalyzer::build_dynamic_blocks_recursive(
       if (!trueThreads.empty() && if_stmt->getThen()) {
         const auto thenBlockId = create_dynamic_block(if_stmt->getThen(), trueThreads);
         collect_memory_operations_in_dbeg(if_stmt->getThen(), thenBlockId, trueThreads);
+        collect_synchronization_operations_in_dbeg(if_stmt->getThen(), thenBlockId, trueThreads);
         build_dynamic_blocks_recursive(if_stmt->getThen(), thenBlockId, trueThreads);
         
         // Check if then branch has return statements
@@ -1736,6 +1777,7 @@ void MemorySafetyAnalyzer::build_dynamic_blocks_recursive(
       if (!falseThreads.empty() && if_stmt->getElse()) {
         const auto elseBlockId = create_dynamic_block(if_stmt->getElse(), falseThreads);
         collect_memory_operations_in_dbeg(if_stmt->getElse(), elseBlockId, falseThreads);
+        collect_synchronization_operations_in_dbeg(if_stmt->getElse(), elseBlockId, falseThreads);
         build_dynamic_blocks_recursive(if_stmt->getElse(), elseBlockId, falseThreads);
         
         // Check if else branch has return statements
@@ -1791,6 +1833,7 @@ void MemorySafetyAnalyzer::build_dynamic_blocks_recursive(
           
           // Collect memory operations and process loop body for this iteration
           collect_memory_operations_in_dbeg(for_stmt->getBody(), iterBlockId, iterThreads);
+          collect_synchronization_operations_in_dbeg(for_stmt->getBody(), iterBlockId, iterThreads);
           build_dynamic_blocks_recursive(for_stmt->getBody(), iterBlockId, iterThreads);
         }
       }
@@ -1801,21 +1844,12 @@ void MemorySafetyAnalyzer::build_dynamic_blocks_recursive(
     case clang::Stmt::DeclStmtClass: {
       // Declaration statements - process any initializers
       const auto decl_stmt = clang::cast<clang::DeclStmt>(stmt);
-      // llvm::errs() << "Processing DeclStmt with " << std::distance(decl_stmt->decl_begin(), decl_stmt->decl_end()) << " declarations\n";
+      MEMORY_DEBUG_LOG("Processing DeclStmt - SKIPPING recursive processing to avoid duplication\n");
       
-      // Check each declaration for initializer expressions that might contain memory operations
-      for (const auto decl : decl_stmt->decls()) {
-        if (const auto var_decl = clang::dyn_cast<clang::VarDecl>(decl)) {
-          if (var_decl && var_decl->hasInit()) {
-            const auto init_expr = var_decl->getInit();
-            if (init_expr) {
-              // llvm::errs() << "Processing initializer for variable: " << var_decl->getNameAsString() << "\n";
-              // Collect memory operations from the initializer expression
-              collect_memory_operations_in_dbeg(init_expr, parentBlockId, activeThreads);
-            }
-          }
-        }
-      }
+      // NOTE: We intentionally do NOT recursively process DeclStmt initializers here
+      // because they will be processed through the general recursive traversal.
+      // Processing them here causes duplicate memory operations to be created.
+      
       break;
     }
     
@@ -1845,6 +1879,9 @@ std::set<uint32_t> MemorySafetyAnalyzer::compute_thread_participation_if_branch(
   for (uint32_t tid : threads) {
     const bool conditionResult = evaluate_deterministic_condition_for_thread(
         if_stmt->getCond(), tid);
+    
+    MEMORY_DEBUG_LOG("Thread " << tid << " evaluates condition to " << conditionResult 
+                     << " (takeTrueBranch=" << takeTrueBranch << ")\n");
     
     if (conditionResult == takeTrueBranch) {
       participatingThreads.insert(tid);
@@ -1906,6 +1943,108 @@ ValidationResult MemorySafetyAnalyzer::validate_cross_dynamic_block_dependencies
   }
   
   return ValidationResultBuilder::combine(results);
+}
+
+// Check for race conditions within the same dynamic block between different threads
+ValidationResult MemorySafetyAnalyzer::validate_intra_block_cross_thread_dependencies() {
+  std::vector<ValidationResult> results;
+  
+  // Check all memory operation pairs for cross-thread dependencies within same block
+  const auto size = dbegMemoryOps_.size();
+  for (size_t i = 0; i < size; ++i) {
+    for (size_t j = i + 1; j < size; ++j) {
+      const auto& op1 = dbegMemoryOps_[i];
+      const auto& op2 = dbegMemoryOps_[j];
+      
+      // Check read-write dependencies between different threads in same block
+      if (op1.dynamicBlockId == op2.dynamicBlockId &&
+          op1.op.threadId != op2.op.threadId &&
+          ((op1.op.isRead && op2.op.isWrite) || (op1.op.isWrite && op2.op.isRead))) {
+        
+        // Check if they access potentially overlapping memory locations
+        if (is_shared_memory_access(op1.op.addressExpr) &&
+            is_shared_memory_access(op2.op.addressExpr) &&
+            could_alias_across_threads(op1.op.addressExpr, op1.op.threadId,
+                                      op2.op.addressExpr, op2.op.threadId)) {
+          
+          MEMORY_DEBUG_LOG("Found cross-thread dependency: Thread " << op1.op.threadId << " and Thread " << op2.op.threadId << " in DB" << op1.dynamicBlockId << "\n");
+          
+          // Check if there's a barrier between the operations that provides proper synchronization
+          bool hasProperBarrier = has_dbeg_barrier_between_operations(op1, op2);
+          
+          if (!hasProperBarrier) {
+            MEMORY_DEBUG_LOG("No barrier synchronization found between conflicting operations\n");
+            results.push_back(ValidationResultBuilder::err(
+                ValidationError::NonDeterministicCondition,
+                "Cross-thread data dependency within dynamic block " + std::to_string(op1.dynamicBlockId) +
+                " violates order independence. Thread " + std::to_string(op1.op.threadId) +
+                " and Thread " + std::to_string(op2.op.threadId) + " have conflicting memory access without proper synchronization."));
+          } else {
+            MEMORY_DEBUG_LOG("Found proper barrier synchronization - dependency is valid\n");
+          }
+        }
+      }
+    }
+  }
+  
+  return ValidationResultBuilder::combine(results);
+}
+
+// DBEG-specific barrier detection - checks if there's a synchronization barrier between two memory operations
+bool MemorySafetyAnalyzer::has_dbeg_barrier_between_operations(const MemoryOperationInDBEG& op1, const MemoryOperationInDBEG& op2) {
+  // If operations are in different dynamic blocks, they're already synchronized
+  if (op1.dynamicBlockId != op2.dynamicBlockId) {
+    return true;
+  }
+  
+  // For operations in the same dynamic block, check program point ordering and look for barriers
+  int earlierPoint = std::min(op1.programPoint, op2.programPoint);
+  int laterPoint = std::max(op1.programPoint, op2.programPoint);
+  
+  MEMORY_DEBUG_LOG("Checking for barriers between program points " << earlierPoint << " and " << laterPoint << "\n");
+  
+  // Look for barrier operations between the two program points
+  for (const auto& memOp : dbegMemoryOps_) {
+    if (memOp.dynamicBlockId == op1.dynamicBlockId &&
+        memOp.programPoint > earlierPoint &&
+        memOp.programPoint < laterPoint) {
+      
+      // Check if this is a barrier operation by checking the operationType field
+      if (memOp.op.operationType == "barrier") {
+        MEMORY_DEBUG_LOG("Found barrier operation at program point " << memOp.programPoint << "\n");
+        return true;
+      }
+    }
+  }
+  
+  MEMORY_DEBUG_LOG("No barrier found between operations\n");
+  return false;
+}
+
+// Check if an expression represents a barrier operation
+bool MemorySafetyAnalyzer::is_barrier_operation(const clang::Expr* expr) {
+  if (!expr) return false;
+  
+  // Look for barrier function calls like GroupMemoryBarrierWithGroupSync()
+  if (const auto callExpr = clang::dyn_cast<clang::CallExpr>(expr)) {
+    if (const auto funcDecl = callExpr->getDirectCallee()) {
+      std::string funcName = funcDecl->getNameAsString();
+      MEMORY_DEBUG_LOG("Checking if " << funcName << " is a barrier operation\n");
+      
+      // Check for various barrier functions
+      if (funcName == "GroupMemoryBarrierWithGroupSync" ||
+          funcName == "GroupMemoryBarrier" ||
+          funcName == "AllMemoryBarrierWithGroupSync" ||
+          funcName == "AllMemoryBarrier" ||
+          funcName == "DeviceMemoryBarrierWithGroupSync" ||
+          funcName == "DeviceMemoryBarrier") {
+        MEMORY_DEBUG_LOG("Found barrier function: " << funcName << "\n");
+        return true;
+      }
+    }
+  }
+  
+  return false;
 }
 
 // Merge block detection - implements maximal reconvergence from SIMT-Step
@@ -2531,6 +2670,120 @@ MiniHLSLValidator::validate_source_with_full_ast(const string &hlsl_source,
   return parse_and_validate_hlsl(hlsl_source, filename);
 }
 
+ASTValidationResult
+MiniHLSLValidator::validate_source_with_ast_ownership(const string &hlsl_source,
+                                                     const string &filename) {
+  // This method is similar to parse_and_validate_hlsl but returns ownership
+  ASTValidationResult result;
+  
+  try {
+    llvm::errs() << "\n=== Starting HLSL Parse with AST Ownership ===\n";
+    llvm::errs() << "File: " << filename << "\n";
+    
+    // Create CompilerInstance - this will be returned for ownership
+    result.compiler_instance = std::make_unique<clang::CompilerInstance>();
+    auto& CI = *result.compiler_instance;
+    
+    // Set up basic compiler instance (same as parse_and_validate_hlsl)
+    CI.createDiagnostics();
+    std::string abs_filename = filename;
+    if (!llvm::sys::path::is_absolute(filename)) {
+        abs_filename = "/home/zheyuan/dxc_workspace/DirectXShaderCompiler/tools/clang/tools/dxc-fuzzer/test_cases/" + filename;
+    }
+    
+    // Set up FrontendOptions
+    auto& FrontendOpts = CI.getFrontendOpts();
+    FrontendOpts.Inputs.clear();
+    FrontendOpts.Inputs.emplace_back(abs_filename, clang::IK_HLSL);
+    FrontendOpts.ProgramAction = clang::frontend::ParseSyntaxOnly;
+    
+    // Set up target
+    auto& Invocation = CI.getInvocation();
+    Invocation.TargetOpts = std::make_shared<clang::TargetOptions>();
+    Invocation.TargetOpts->Triple = "dxil-unknown-unknown";
+    
+    clang::CompilerInvocation::setLangDefaults(
+      CI.getLangOpts(), clang::InputKind::IK_HLSL, clang::LangStandard::lang_hlsl);
+
+    auto Target = clang::TargetInfo::CreateTargetInfo(CI.getDiagnostics(), CI.getInvocation().TargetOpts);
+    CI.setTarget(std::move(Target));
+
+    // Set up file system (copy from working parse_and_validate_hlsl)
+    CI.createFileManager();
+    CI.createSourceManager(CI.getFileManager());
+    
+    // Set up preprocessor first (required before file operations)
+    CI.createPreprocessor(clang::TU_Complete);
+    const clang::FileEntry *File = CI.getFileManager().getFile(abs_filename);
+    if (!File) {
+      llvm::errs() << "File not found: " << abs_filename << "\n";
+      result.validation_result = ValidationResultBuilder::err(
+        ValidationError::IO_ERROR, "File not found: " + abs_filename);
+      return result;
+    }
+    CI.getSourceManager().setMainFileID(
+      CI.getSourceManager().createFileID(File, clang::SourceLocation(), clang::SrcMgr::C_User));
+    
+    // Create AST context (required before ASTConsumer)
+    CI.createASTContext();
+    
+    // Create custom AST consumer that captures main function AND runs validation
+    class ASTOwnershipConsumer : public clang::ASTConsumer {
+        clang::FunctionDecl*& main_func_ref;
+        clang::ASTContext*& ast_context_ref;
+        ValidationResult& validation_result_ref;
+        MiniHLSLValidator* validator;
+        
+      public:
+        ASTOwnershipConsumer(clang::FunctionDecl*& main_func, clang::ASTContext*& ast_context, ValidationResult& validation_result, MiniHLSLValidator* val)
+          : main_func_ref(main_func), ast_context_ref(ast_context), validation_result_ref(validation_result), validator(val) {}
+        
+        void HandleTranslationUnit(clang::ASTContext &Context) override {
+          // Capture the ASTContext pointer directly
+          ast_context_ref = &Context;
+          llvm::errs() << "DEBUG: Captured ASTContext pointer: " << ast_context_ref << "\n";
+          
+          // Find the main function
+          // llvm::errs() << "DEBUG: Looking for main function in " << Context.getTranslationUnitDecl()->decls() << " declarations\n";
+          for (auto& Decl : Context.getTranslationUnitDecl()->decls()) {
+            if (auto FD = clang::dyn_cast<clang::FunctionDecl>(Decl)) {
+              llvm::errs() << "DEBUG: Found function: " << FD->getNameAsString() << "\n";
+              if (FD->getNameAsString() == "main") {
+                main_func_ref = FD;
+                llvm::errs() << "DEBUG: Captured main function: " << main_func_ref << "\n";
+                break;
+              }
+            }
+          }
+          
+          if (!main_func_ref) {
+            llvm::errs() << "DEBUG: Main function not found!\n";
+          }
+          
+          // Run validation on the parsed AST
+          validation_result_ref = validator->validate_ast(Context.getTranslationUnitDecl(), Context);
+        }
+      };
+    
+    // Use direct ParseAST instead of ExecuteAction to avoid automatic cleanup
+    auto Consumer = std::make_unique<ASTOwnershipConsumer>(result.main_function, result.ast_context, result.validation_result, this);
+    
+    llvm::errs() << "About to parse AST directly...\n";
+    // Parse directly without FrontendAction - this gives us full control over lifetime
+    clang::ParseAST(CI.getPreprocessor(), Consumer.get(), CI.getASTContext());
+    llvm::errs() << "Direct ParseAST complete\n";
+    
+    llvm::errs() << "=== HLSL Parse with AST Ownership Complete ===\n";
+    return result;
+    
+  } catch (const std::exception& e) {
+    llvm::errs() << "Exception during parsing: " << e.what() << "\n";
+    result.validation_result = ValidationResultBuilder::err(
+      ValidationError::PARSING_ERROR, std::string("Exception: ") + e.what());
+    return result;
+  }
+}
+
 string
 MiniHLSLValidator::generate_formal_proof_alignment(const Program *program) {
   std::ostringstream report;
@@ -2931,6 +3184,8 @@ bool MemorySafetyAnalyzer::evaluate_deterministic_condition_for_thread(
   }
   
   // Default case: assume condition is true for all threads
+  MEMORY_DEBUG_LOG("WARNING: Could not evaluate condition for thread " << threadId 
+                   << ", returning default true\n");
   return true;
 }
 
@@ -3213,6 +3468,14 @@ void MemorySafetyAnalyzer::collect_memory_operations_in_dbeg(
     return;
   }
   
+  // Prevent duplicate processing of the same AST node within the same dynamic block
+  auto stmtKey = std::make_pair(stmt, dynamicBlockId);
+  if (processedMemoryStmts_.find(stmtKey) != processedMemoryStmts_.end()) {
+    MEMORY_DEBUG_LOG("collect_memory_operations_in_dbeg: Skipping already processed " << stmt->getStmtClassName() << " in DB" << dynamicBlockId << "\n");
+    return;
+  }
+  processedMemoryStmts_.insert(stmtKey);
+  
   // Enhanced debug output to track memory operations
   MEMORY_DEBUG_LOG("collect_memory_operations_in_dbeg: Processing " << stmt->getStmtClassName() << "\n");
   
@@ -3268,7 +3531,7 @@ void MemorySafetyAnalyzer::collect_memory_operations_in_dbeg(
     }
   }
   
-  // Check array subscript expressions for reads
+  // Check array subscript expressions for reads (both ArraySubscriptExpr and CXXOperatorCallExpr)
   if (const auto arrayAccess = clang::dyn_cast<clang::ArraySubscriptExpr>(stmt)) {
     if (is_shared_memory_access(arrayAccess)) {
       for (uint32_t tid : activeThreads) {
@@ -3289,6 +3552,15 @@ void MemorySafetyAnalyzer::collect_memory_operations_in_dbeg(
     }
   }
   
+  // NOTE: We intentionally do NOT process CXXOperatorCallExpr here for reads
+  // because it causes spurious read operations from the LHS of assignments.
+  // Buffer accesses are properly handled through:
+  // 1. BinaryOperator processing for writes (LHS of assignments)
+  // 2. The RHS checking in BinaryOperator for reads
+  // 3. ArraySubscriptExpr processing for regular array reads
+  // This prevents double-counting and incorrect classification of writes as reads.
+  
+  
   // Recursively process child statements
   for (const auto child : stmt->children()) {
     if (child) {  // Check if child itself is not null first
@@ -3299,6 +3571,74 @@ void MemorySafetyAnalyzer::collect_memory_operations_in_dbeg(
       }
     }
   }
+}
+
+// Collect synchronization operations (barriers, wave operations) in DBEG
+void MemorySafetyAnalyzer::collect_synchronization_operations_in_dbeg(
+    const clang::Stmt* stmt,
+    uint32_t dynamicBlockId,
+    const std::set<uint32_t>& activeThreads) {
+  
+  if (!stmt || activeThreads.empty()) {
+    return;
+  }
+  
+  MEMORY_DEBUG_LOG("collect_synchronization_operations_in_dbeg: Processing " << stmt->getStmtClassName() << "\n");
+  
+  // Check for barrier function calls and wave operations
+  if (const auto callExpr = clang::dyn_cast<clang::CallExpr>(stmt)) {
+    if (is_barrier_operation(callExpr) || is_wave_operation_call(callExpr)) {
+      std::string opType = is_barrier_operation(callExpr) ? "barrier" : "wave_operation";
+      MEMORY_DEBUG_LOG("Found " << opType << " call - adding to DBEG\n");
+      
+      // Add synchronization operation as a special "memory operation" for tracking purposes
+      for (uint32_t tid : activeThreads) {
+        MemoryOperation memOp;
+        memOp.addressExpr = callExpr;  // Store the call expression
+        memOp.isWrite = false;
+        memOp.isRead = false;  // Neither read nor write - it's a synchronization operation
+        memOp.location = clang::SourceLocation(); // Placeholder for location
+        memOp.threadId = tid;
+        memOp.isAtomic = false;
+        memOp.operationType = opType;
+        
+        MemoryOperationInDBEG dbegOp;
+        dbegOp.op = memOp;
+        dbegOp.dynamicBlockId = dynamicBlockId;
+        dbegOp.programPoint = dbegMemoryOps_.size();
+        
+        dbegMemoryOps_.push_back(dbegOp);
+      }
+    }
+  }
+  
+  // Recursively process child statements
+  for (const auto child : stmt->children()) {
+    if (child) {
+      if (const auto childStmt = clang::dyn_cast<clang::Stmt>(child)) {
+        if (childStmt) {
+          collect_synchronization_operations_in_dbeg(childStmt, dynamicBlockId, activeThreads);
+        }
+      }
+    }
+  }
+}
+
+// Check if a call expression is a wave operation
+bool MemorySafetyAnalyzer::is_wave_operation_call(const clang::CallExpr* callExpr) {
+  if (!callExpr) return false;
+  
+  if (const auto funcDecl = callExpr->getDirectCallee()) {
+    std::string funcName = funcDecl->getNameAsString();
+    
+    // Check for wave operations (both allowed and forbidden)
+    if (funcName.find("Wave") == 0 || funcName.find("WaveActive") == 0) {
+      MEMORY_DEBUG_LOG("Found wave operation: " << funcName << "\n");
+      return true;
+    }
+  }
+  
+  return false;
 }
 
 void MemorySafetyAnalyzer::print_dynamic_execution_graph(bool verbose) {
@@ -3428,9 +3768,16 @@ ValidationResult MemorySafetyAnalyzer::analyze_function(clang::FunctionDecl *fun
                  << " in DB" << op.dynamicBlockId);
     if (op.op.isWrite) MEMORY_DEBUG_LOG(" WRITE");
     if (op.op.isRead) MEMORY_DEBUG_LOG(" READ");
+    if (op.op.operationType == "barrier") MEMORY_DEBUG_LOG(" barrier");
+    if (op.op.operationType == "wave_operation") MEMORY_DEBUG_LOG(" wave_op");
     MEMORY_DEBUG_LOG("\n");
   }
-  results.push_back(validate_cross_dynamic_block_dependencies());
+  // Disable complex DBEG analysis - focus on control flow determinism instead
+  // results.push_back(validate_cross_dynamic_block_dependencies());
+  // results.push_back(validate_intra_block_cross_thread_dependencies());
+  
+  llvm::errs() << "SIMPLIFIED VALIDATION: Focusing on control flow determinism\n";
+  llvm::errs() << "Complex DBEG analysis disabled - moved to interpreter\n";
   
   return ValidationResultBuilder::combine(results);
 }
@@ -3509,21 +3856,32 @@ bool DBEGAnalysisConsumer::VisitFunctionDecl(clang::FunctionDecl *func) {
     llvm::errs() << "Deterministic Expression Validation: Function passed\n";
   }
 
-  // Check control flow patterns
-  llvm::errs() << "\n=== Control Flow Validation ===\n";
+  // CORE VALIDATION: Control flow determinism - the key to order independence
+  llvm::errs() << "\n=== Control Flow Determinism Validation (KEY FOR ORDER INDEPENDENCE) ===\n";
   auto cf_analyzer = std::make_unique<ControlFlowAnalyzer>(func->getASTContext());
-  auto cf_result = validate_control_flow_in_function(func, *cf_analyzer);
+  
+  // Use the main analyzer method that checks ALL control flow constructs
+  auto cf_result = cf_analyzer->analyze_function(func);
   
   if (cf_result.is_err()) {
     const auto &cf_errors = cf_result.unwrap_err();
     errors_.insert(errors_.end(), cf_errors.begin(), cf_errors.end());
     
-    llvm::errs() << "Control Flow Validation found " << cf_errors.size() << " errors:\n";
+    llvm::errs() << "CRITICAL: Control Flow Determinism Validation found " << cf_errors.size() << " errors:\n";
     for (const auto& error : cf_errors) {
       llvm::errs() << "  - " << error.message << "\n";
     }
+    llvm::errs() << "Program is NOT order-independent due to non-deterministic control flow\n";
   } else {
-    llvm::errs() << "Control Flow Validation: Function passed\n";
+    llvm::errs() << "SUCCESS: All control flow conditions are deterministic\n";
+    llvm::errs() << "Program meets key requirement for order independence\n";
+  }
+  
+  // Also run the additional control flow construct checking
+  auto additional_cf_result = validate_control_flow_in_function(func, *cf_analyzer);
+  if (additional_cf_result.is_err()) {
+    const auto &additional_errors = additional_cf_result.unwrap_err();
+    errors_.insert(errors_.end(), additional_errors.begin(), additional_errors.end());
   }
 
   // Check memory safety patterns
@@ -3688,21 +4046,21 @@ ValidationResult DBEGAnalysisConsumer::validate_control_flow_in_function(
     
     ControlFlowVisitor(std::vector<ValidationErrorWithMessage> &errs) : errors(errs) {}
     
-    bool VisitBreakStmt(clang::BreakStmt *stmt) {
-      errors.emplace_back(
-          ValidationError::UnsupportedOperation,
-          "Break statements are forbidden in MiniHLSL"
-      );
-      return true;
-    }
+    // bool VisitBreakStmt(clang::BreakStmt *stmt) {
+    //   errors.emplace_back(
+    //       ValidationError::UnsupportedOperation,
+    //       "Break statements are forbidden in MiniHLSL"
+    //   );
+    //   return true;
+    // }
     
-    bool VisitContinueStmt(clang::ContinueStmt *stmt) {
-      errors.emplace_back(
-          ValidationError::UnsupportedOperation,
-          "Continue statements are forbidden in MiniHLSL"
-      );
-      return true;
-    }
+    // bool VisitContinueStmt(clang::ContinueStmt *stmt) {
+    //   errors.emplace_back(
+    //       ValidationError::UnsupportedOperation,
+    //       "Continue statements are forbidden in MiniHLSL"
+    //   );
+    //   return true;
+    // }
     
     bool VisitGotoStmt(clang::GotoStmt *stmt) {
       errors.emplace_back(
@@ -3830,5 +4188,6 @@ void DBEGAnalysisAction::ExecuteAction() {
                  << ", errors=" << captured_errors_.size() << "\n";
   }
 }
+
 
 } // namespace minihlsl

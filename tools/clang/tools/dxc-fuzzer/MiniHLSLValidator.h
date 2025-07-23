@@ -119,7 +119,11 @@ enum class ValidationError {
   // General violations
   NonDeterministicOperation,
   SideEffectInPureFunction,
-  ForbiddenLanguageConstruct
+  ForbiddenLanguageConstruct,
+  
+  // I/O and parsing errors
+  IO_ERROR,
+  PARSING_ERROR
 };
 
 // Rust-style error with message
@@ -168,6 +172,42 @@ public:
       return ok();
     }
     return ValidationResult::Err(std::move(all_errors));
+  }
+};
+
+// Extended validation result that maintains AST ownership for interpreter conversion
+struct ASTValidationResult {
+  ValidationResult validation_result;
+  std::unique_ptr<clang::CompilerInstance> compiler_instance;
+  clang::ASTContext* ast_context = nullptr;  // Direct pointer to avoid getASTContext() assertion
+  clang::FunctionDecl* main_function = nullptr;
+  
+  // Default constructor - creates a default validation result (error state)
+  ASTValidationResult() : validation_result(ValidationResultBuilder::err(
+    ValidationError::PARSING_ERROR, "Default ASTValidationResult constructor")) {}
+  
+  // Move constructor and assignment (required for unique_ptr)
+  ASTValidationResult(ASTValidationResult&&) = default;
+  ASTValidationResult& operator=(ASTValidationResult&&) = default;
+  
+  // Delete copy constructor and assignment (unique_ptr is not copyable)
+  ASTValidationResult(const ASTValidationResult&) = delete;
+  ASTValidationResult& operator=(const ASTValidationResult&) = delete;
+  
+  // Convenience methods
+  bool is_valid() const { return validation_result.is_ok(); }
+  
+  clang::ASTContext* get_ast_context() const {
+    return ast_context;  // Use direct pointer instead of compiler_instance->getASTContext()
+  }
+  
+  clang::FunctionDecl* get_main_function() const {
+    return main_function;
+  }
+  
+  // Allow access to validation errors
+  const std::vector<ValidationErrorWithMessage>& get_errors() const {
+    return validation_result.unwrap_err();
   }
 };
 
@@ -525,6 +565,15 @@ private:
   std::vector<MemoryOperationInDBEG> dbegMemoryOps_;
   uint32_t nextDynamicBlockId_ = 0;
   
+  // Deduplication tracking for memory operation collection
+  std::set<std::pair<const clang::Stmt*, uint32_t>> processedMemoryStmts_;
+  
+  // Additional deduplication for memory expressions to prevent double-counting
+  std::set<std::pair<const clang::Expr*, uint32_t>> processedMemoryExprs_;
+  
+  // Source location-based deduplication for semantically identical operations
+  std::set<std::pair<clang::SourceLocation, uint32_t>> processedMemoryLocations_;
+  
   // Track active threads as we build the DBEG
   std::map<uint32_t, std::set<uint32_t>> activeThreadsAfterBlock_;
   std::set<uint32_t> compute_threads_after_block(uint32_t blockId);
@@ -540,6 +589,11 @@ private:
     const clang::Stmt* stmt,
     uint32_t dynamicBlockId,
     const std::set<uint32_t>& activeThreads);
+  void collect_synchronization_operations_in_dbeg(
+    const clang::Stmt* stmt,
+    uint32_t dynamicBlockId,
+    const std::set<uint32_t>& activeThreads);
+  bool is_wave_operation_call(const clang::CallExpr* callExpr);
   uint32_t create_dynamic_block(const clang::Stmt* stmt, 
                                const std::set<uint32_t>& threads,
                                int iteration = -1,
@@ -555,6 +609,9 @@ private:
   const clang::Stmt* find_merge_target_for_if(const clang::IfStmt* if_stmt);
   const clang::Stmt* find_merge_target_for_loop(const clang::ForStmt* for_stmt);
   ValidationResult validate_cross_dynamic_block_dependencies();
+  ValidationResult validate_intra_block_cross_thread_dependencies();
+  bool has_dbeg_barrier_between_operations(const MemoryOperationInDBEG& op1, const MemoryOperationInDBEG& op2);
+  bool is_barrier_operation(const clang::Expr* expr);
   void print_dynamic_execution_graph(bool verbose = false);
   
   // Helper methods for DBEG construction
@@ -660,6 +717,11 @@ public:
   ValidationResult
   validate_source_with_full_ast(const std::string &hlsl_source,
                                 const std::string &filename = "shader.hlsl");
+  
+  // Extended version that maintains AST ownership for interpreter conversion
+  ASTValidationResult
+  validate_source_with_ast_ownership(const std::string &hlsl_source,
+                                     const std::string &filename = "shader.hlsl");
 
   // Rust-style formal proof integration
   std::string generate_formal_proof_alignment(const Program *program);

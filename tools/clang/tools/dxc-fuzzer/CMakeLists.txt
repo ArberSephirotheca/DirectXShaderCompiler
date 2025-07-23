@@ -66,6 +66,17 @@ add_executable(minihlsl-interpreter
 target_link_libraries(minihlsl-interpreter
   # Use pthread for std::thread and std::mutex
   Threads::Threads
+  # Clang/LLVM libraries needed for AST conversion
+  dxcompiler
+  clangAST
+  clangBasic
+  clangFrontend
+  clangLex
+  clangParse
+  clangSema
+  LLVMSupport
+  LLVMOption
+  LLVMCore
 )
 
 # Set C++17 standard for the interpreter (uses std::variant)
@@ -79,3 +90,27 @@ add_test(NAME MiniHLSLValidatorTest COMMAND test_runner test_cases)
 
 # Add test for the interpreter
 add_test(NAME MiniHLSLInterpreterTest COMMAND minihlsl-interpreter)
+
+# Test HLSL AST to Interpreter conversion
+add_executable(test-hlsl-conversion
+  test_hlsl_conversion.cpp
+  MiniHLSLValidator.cpp
+  MiniHLSLInterpreter.cpp
+)
+target_link_libraries(test-hlsl-conversion
+  Threads::Threads
+  dxcompiler
+  clangAST
+  clangBasic
+  clangFrontend
+  clangLex
+  clangParse
+  clangSema
+  LLVMSupport
+  LLVMOption
+  LLVMCore
+)
+set_target_properties(test-hlsl-conversion PROPERTIES
+  CXX_STANDARD 17
+  CXX_STANDARD_REQUIRED ON
+)
