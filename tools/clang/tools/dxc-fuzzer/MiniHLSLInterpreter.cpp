@@ -165,6 +165,21 @@ uint32_t WaveContext::countActiveLanes() const {
                         [](const auto& lane) { return lane->isActive; });
 }
 
+std::vector<LaneId> WaveContext::getCurrentlyActiveLanes() const {
+    std::vector<LaneId> active;
+    for (size_t i = 0; i < lanes.size(); ++i) {
+        if (lanes[i]->isActive) {
+            active.push_back(i);
+        }
+    }
+    return active;
+}
+
+uint32_t WaveContext::countCurrentlyActiveLanes() const {
+    return std::count_if(lanes.begin(), lanes.end(),
+                        [](const auto& lane) { return lane->isActive; });
+}
+
 // SharedMemory implementation
 Value SharedMemory::read(MemoryAddress addr, ThreadId tid) {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -247,7 +262,6 @@ ThreadgroupContext::ThreadgroupContext(uint32_t tgSize, uint32_t wSize)
     }
     
     sharedMemory = std::make_shared<SharedMemory>();
-    currentBarrier = std::make_shared<BarrierState>();
 }
 
 ThreadId ThreadgroupContext::getGlobalThreadId(WaveId wid, LaneId lid) const {
@@ -258,6 +272,47 @@ std::pair<WaveId, LaneId> ThreadgroupContext::getWaveAndLane(ThreadId tid) const
     WaveId wid = tid / waveSize;
     LaneId lid = tid % waveSize;
     return {wid, lid};
+}
+
+std::vector<ThreadId> ThreadgroupContext::getReadyThreads() const {
+    std::vector<ThreadId> ready;
+    for (ThreadId tid = 0; tid < threadgroupSize; ++tid) {
+        auto [waveId, laneId] = getWaveAndLane(tid);
+        if (waveId < waves.size() && laneId < waves[waveId]->lanes.size()) {
+            const auto& lane = waves[waveId]->lanes[laneId];
+            if (lane->state == ThreadState::Ready) {
+                ready.push_back(tid);
+            }
+        }
+    }
+    return ready;
+}
+
+std::vector<ThreadId> ThreadgroupContext::getWaitingThreads() const {
+    std::vector<ThreadId> waiting;
+    for (ThreadId tid = 0; tid < threadgroupSize; ++tid) {
+        auto [waveId, laneId] = getWaveAndLane(tid);
+        if (waveId < waves.size() && laneId < waves[waveId]->lanes.size()) {
+            const auto& lane = waves[waveId]->lanes[laneId];
+            if (lane->state == ThreadState::WaitingAtBarrier || 
+                lane->state == ThreadState::WaitingForWave) {
+                waiting.push_back(tid);
+            }
+        }
+    }
+    return waiting;
+}
+
+bool ThreadgroupContext::canExecuteWaveOp(WaveId waveId, const std::set<LaneId>& activeLanes) const {
+    // Phase 1: Simple implementation - always allow wave ops
+    // TODO: Add proper active lane checking in Phase 2
+    return true;
+}
+
+bool ThreadgroupContext::canReleaseBarrier(uint32_t barrierId) const {
+    // Phase 1: Simple implementation - always release barriers
+    // TODO: Add proper barrier participation analysis in Phase 2
+    return true;
 }
 
 // ThreadOrdering implementation
@@ -650,11 +705,12 @@ std::string ReturnStmt::toString() const {
 }
 
 void BarrierStmt::execute(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg) {
-    // Barriers require all threads to participate
-    // In our interpreter, we handle this at the orchestration level
-    // This is a synchronization point marker
+    // Phase 1: Simple barrier implementation
+    // TODO: Add proper cooperative barrier handling in Phase 2
     ThreadId tid = tg.getGlobalThreadId(wave.waveId, lane.laneId);
-    tg.currentBarrier->tryArrive(tid);
+    
+    // For now, barriers are no-ops since we don't have full cooperative scheduling
+    // In a real GPU, this would synchronize all threads in the threadgroup
 }
 
 SharedWriteStmt::SharedWriteStmt(MemoryAddress addr, std::unique_ptr<Expression> expr)
@@ -681,7 +737,7 @@ std::string SharedReadExpr::toString() const {
     return "g_shared[" + std::to_string(addr_) + "]";
 }
 
-// MiniHLSLInterpreter implementation
+// MiniHLSLInterpreter implementation with cooperative scheduling
 ExecutionResult MiniHLSLInterpreter::executeWithOrdering(const Program& program, 
                                                        const ThreadOrdering& ordering) {
     ExecutionResult result;
@@ -690,75 +746,78 @@ ExecutionResult MiniHLSLInterpreter::executeWithOrdering(const Program& program,
     const uint32_t waveSize = 32; // Standard wave size
     ThreadgroupContext tgContext(program.getTotalThreads(), waveSize);
     
-    // Track barrier synchronization
-    std::set<ThreadId> threadsAtBarrier;
-    std::vector<ThreadId> pendingThreads = ordering.executionOrder;
-    std::set<ThreadId> completedThreads;
-    
-    // Execute threads according to ordering
-    while (!pendingThreads.empty()) {
-        std::vector<ThreadId> nextBatch;
+    try {
+        uint32_t orderingIndex = 0;
+        uint32_t maxIterations = program.getTotalThreads() * program.statements.size() * 10; // Safety limit
+        uint32_t iteration = 0;
         
-        for (ThreadId tid : pendingThreads) {
-            if (completedThreads.count(tid) > 0) continue;
+        // Cooperative scheduling main loop
+        while (iteration < maxIterations) {
+            iteration++;
             
-            // Check if thread is waiting at barrier
-            if (threadsAtBarrier.count(tid) > 0) {
-                // Check if all threads have reached barrier
-                if (threadsAtBarrier.size() == program.getTotalThreads()) {
-                    // Release all threads from barrier
-                    threadsAtBarrier.clear();
-                } else {
-                    // Thread continues waiting
-                    nextBatch.push_back(tid);
-                    continue;
+            // Process completed wave operations and barriers
+            processWaveOperations(tgContext);
+            processBarriers(tgContext);
+            
+            // Get threads ready for execution
+            auto readyThreads = tgContext.getReadyThreads();
+            if (readyThreads.empty()) {
+                // Check if all threads are completed
+                bool allCompleted = true;
+                for (const auto& wave : tgContext.waves) {
+                    for (const auto& lane : wave->lanes) {
+                        if (lane->state != ThreadState::Completed && lane->state != ThreadState::Error) {
+                            allCompleted = false;
+                            break;
+                        }
+                    }
+                    if (!allCompleted) break;
                 }
-            }
-            
-            // Execute one step of this thread
-            auto [waveId, laneId] = tgContext.getWaveAndLane(tid);
-            auto& wave = *tgContext.waves[waveId];
-            auto& lane = *wave.lanes[laneId];
-            
-            bool reachedBarrier = false;
-            
-            // Execute statements until barrier or completion
-            for (const auto& stmt : program.statements) {
-                if (lane.hasReturned) break;
                 
-                // Check if this is a barrier
-                if (dynamic_cast<BarrierStmt*>(stmt.get())) {
-                    stmt->execute(lane, wave, tgContext);
-                    threadsAtBarrier.insert(tid);
-                    reachedBarrier = true;
+                if (allCompleted) {
+                    break; // All threads finished
+                }
+                
+                // Check for deadlock
+                auto waitingThreads = tgContext.getWaitingThreads();
+                if (!waitingThreads.empty()) {
+                    result.errorMessage = "Deadlock detected: threads waiting but no progress possible";
                     break;
                 }
                 
-                stmt->execute(lane, wave, tgContext);
+                continue; // Wait for synchronization to complete
             }
             
-            if (reachedBarrier) {
-                nextBatch.push_back(tid);
-            } else {
-                completedThreads.insert(tid);
-                result.threadReturnValues.push_back(lane.returnValue);
+            // Select next thread to execute according to ordering
+            ThreadId nextTid = selectNextThread(readyThreads, ordering, orderingIndex);
+            
+            // Execute one step of the selected thread  
+            bool continueExecution = executeOneStep(nextTid, program, tgContext);
+            if (!continueExecution) {
+                break; // Fatal error occurred
             }
         }
         
-        pendingThreads = nextBatch;
-        
-        // Check for deadlock
-        if (!pendingThreads.empty() && threadsAtBarrier.size() < program.getTotalThreads() &&
-            threadsAtBarrier.size() == pendingThreads.size()) {
-            result.errorMessage = "Deadlock detected: Not all threads reached barrier";
-            break;
+        if (iteration >= maxIterations) {
+            result.errorMessage = "Execution timeout: possible infinite loop or deadlock";
         }
+        
+        // Collect return values in thread order
+        for (ThreadId tid = 0; tid < program.getTotalThreads(); ++tid) {
+            auto [waveId, laneId] = tgContext.getWaveAndLane(tid);
+            if (waveId < tgContext.waves.size() && laneId < tgContext.waves[waveId]->lanes.size()) {
+                result.threadReturnValues.push_back(tgContext.waves[waveId]->lanes[laneId]->returnValue);
+            }
+        }
+        
+    } catch (const std::exception& e) {
+        result.errorMessage = std::string("Runtime error: ") + e.what();
     }
     
     // Collect final state
     result.sharedMemoryState = tgContext.sharedMemory->getSnapshot();
     
-    // Collect global variables from first thread (they should all be the same)
+    // Collect global variables from first thread
     if (!tgContext.waves.empty() && !tgContext.waves[0]->lanes.empty()) {
         result.globalVariables = tgContext.waves[0]->lanes[0]->variables;
     }
@@ -766,17 +825,72 @@ ExecutionResult MiniHLSLInterpreter::executeWithOrdering(const Program& program,
     return result;
 }
 
-void MiniHLSLInterpreter::executeThread(ThreadId tid, 
-                                       const Program& program,
-                                       ThreadgroupContext& tgContext) {
+// Phase 1: Simple implementation to fix wave operations
+bool MiniHLSLInterpreter::executeOneStep(ThreadId tid, const Program& program, ThreadgroupContext& tgContext) {
     auto [waveId, laneId] = tgContext.getWaveAndLane(tid);
+    if (waveId >= tgContext.waves.size()) return false;
+    
     auto& wave = *tgContext.waves[waveId];
+    if (laneId >= wave.lanes.size()) return false;
+    
     auto& lane = *wave.lanes[laneId];
     
-    for (const auto& stmt : program.statements) {
-        if (lane.hasReturned) break;
-        stmt->execute(lane, wave, tgContext);
+    // Check if thread is ready to execute
+    if (lane.state != ThreadState::Ready) return true;
+    
+    // Check if we have more statements to execute
+    if (lane.currentStatement >= program.statements.size()) {
+        lane.state = ThreadState::Completed;
+        return true;
     }
+    
+    // Execute the current statement
+    try {
+        const auto& stmt = program.statements[lane.currentStatement];
+        stmt->execute(lane, wave, tgContext);
+        lane.currentStatement++;
+        
+        if (lane.hasReturned) {
+            lane.state = ThreadState::Completed;
+        }
+    } catch (const std::exception& e) {
+        lane.state = ThreadState::Error;
+        lane.errorMessage = e.what();
+    }
+    
+    return true;
+}
+
+void MiniHLSLInterpreter::processWaveOperations(ThreadgroupContext& tgContext) {
+    // Phase 1: Simple implementation - wave ops complete immediately
+    // TODO: Add proper cooperative scheduling in Phase 2
+}
+
+void MiniHLSLInterpreter::processBarriers(ThreadgroupContext& tgContext) {
+    // Phase 1: Simple implementation - barriers complete immediately  
+    // TODO: Add proper barrier analysis in Phase 2
+}
+
+ThreadId MiniHLSLInterpreter::selectNextThread(const std::vector<ThreadId>& readyThreads, 
+                                              const ThreadOrdering& ordering, 
+                                              uint32_t& orderingIndex) {
+    // Simple round-robin selection from ready threads
+    // Try to follow the ordering preference when possible
+    if (readyThreads.empty()) return 0;
+    
+    // Look for the next thread in ordering that's ready
+    for (uint32_t i = 0; i < ordering.executionOrder.size(); ++i) {
+        uint32_t idx = (orderingIndex + i) % ordering.executionOrder.size();
+        ThreadId tid = ordering.executionOrder[idx];
+        
+        if (std::find(readyThreads.begin(), readyThreads.end(), tid) != readyThreads.end()) {
+            orderingIndex = (idx + 1) % ordering.executionOrder.size();
+            return tid;
+        }
+    }
+    
+    // Fallback to first ready thread
+    return readyThreads[0];
 }
 
 bool MiniHLSLInterpreter::areResultsEquivalent(const ExecutionResult& r1, 

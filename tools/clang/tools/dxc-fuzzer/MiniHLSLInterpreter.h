@@ -69,6 +69,15 @@ struct Value {
     std::string toString() const;
 };
 
+// Thread execution state for cooperative scheduling
+enum class ThreadState {
+    Ready,           // Ready to execute
+    WaitingAtBarrier, // Waiting for barrier synchronization  
+    WaitingForWave,  // Waiting for wave operation to complete
+    Completed,       // Thread has finished execution
+    Error            // Thread encountered an error
+};
+
 // Thread execution context
 struct LaneContext {
     LaneId laneId;
@@ -76,6 +85,33 @@ struct LaneContext {
     bool isActive = true;
     bool hasReturned = false;
     Value returnValue;
+    
+    // Execution state for cooperative scheduling
+    ThreadState state = ThreadState::Ready;
+    size_t currentStatement = 0;  // Index of next statement to execute
+    std::string errorMessage;
+    
+    // Wave operation synchronization
+    uint32_t waveOpId = 0;        // Current wave operation ID
+    bool waveOpComplete = false;   // Whether current wave op is done
+};
+
+// Wave operation state for synchronization
+struct WaveOpState {
+    uint32_t opId;
+    WaveId waveId;
+    std::set<LaneId> participatingLanes;  // Lanes that need to participate
+    std::set<LaneId> completedLanes;      // Lanes that have completed the op
+    std::map<LaneId, Value> results;      // Results from each lane
+    bool isComplete = false;
+};
+
+// Barrier state for threadgroup synchronization  
+struct ThreadgroupBarrierState {
+    uint32_t barrierId;
+    std::set<ThreadId> participatingThreads;  // All threads that must reach barrier
+    std::set<ThreadId> arrivedThreads;        // Threads that have arrived
+    bool isComplete = false;
 };
 
 // Wave execution context
@@ -84,11 +120,17 @@ struct WaveContext {
     uint32_t waveSize;
     std::vector<std::unique_ptr<LaneContext>> lanes;
     
-    // Get active lane mask
+    // Wave operation synchronization
+    std::map<uint32_t, WaveOpState> activeWaveOps;
+    uint32_t nextWaveOpId = 1;
+    
+    // Get active lane mask (based on current control flow)
     uint64_t getActiveMask() const;
     std::vector<LaneId> getActiveLanes() const;
+    std::vector<LaneId> getCurrentlyActiveLanes() const; // Only lanes with isActive=true
     bool allLanesActive() const;
     uint32_t countActiveLanes() const;
+    uint32_t countCurrentlyActiveLanes() const;
 };
 
 // Shared memory state
@@ -128,11 +170,20 @@ struct ThreadgroupContext {
     uint32_t waveCount;
     std::vector<std::unique_ptr<WaveContext>> waves;
     std::shared_ptr<SharedMemory> sharedMemory;
-    std::shared_ptr<BarrierState> currentBarrier;
+    
+    // Barrier synchronization
+    std::map<uint32_t, ThreadgroupBarrierState> activeBarriers;
+    uint32_t nextBarrierId = 1;
     
     ThreadgroupContext(uint32_t tgSize, uint32_t wSize);
     ThreadId getGlobalThreadId(WaveId wid, LaneId lid) const;
     std::pair<WaveId, LaneId> getWaveAndLane(ThreadId tid) const;
+    
+    // Cooperative scheduling helpers
+    std::vector<ThreadId> getReadyThreads() const;
+    std::vector<ThreadId> getWaitingThreads() const;
+    bool canExecuteWaveOp(WaveId waveId, const std::set<LaneId>& activeLanes) const;
+    bool canReleaseBarrier(uint32_t barrierId) const;
 };
 
 // Thread execution ordering
@@ -363,9 +414,13 @@ private:
     ExecutionResult executeWithOrdering(const Program& program, 
                                       const ThreadOrdering& ordering);
     
-    void executeThread(ThreadId tid, 
-                      const Program& program,
-                      ThreadgroupContext& tgContext);
+    // Cooperative execution engine
+    bool executeOneStep(ThreadId tid, const Program& program, ThreadgroupContext& tgContext);
+    void processWaveOperations(ThreadgroupContext& tgContext);
+    void processBarriers(ThreadgroupContext& tgContext);
+    ThreadId selectNextThread(const std::vector<ThreadId>& readyThreads, 
+                             const ThreadOrdering& ordering, 
+                             uint32_t& orderingIndex);
     
     static bool areResultsEquivalent(const ExecutionResult& r1, 
                                    const ExecutionResult& r2,

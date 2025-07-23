@@ -1494,27 +1494,46 @@ const clang::Expr* MemorySafetyAnalyzer::extract_base_and_offset(
 
 // Check if an expression accesses shared memory (groupshared, RWBuffer, etc.)
 bool MemorySafetyAnalyzer::is_shared_memory_access(const clang::Expr *expr) {
-  if (!expr)
+  if (!expr) {
+    llvm::errs() << "    is_shared_memory_access: expr is null\n";
     return false;
+  }
     
   expr = expr->IgnoreImpCasts();
+  llvm::errs() << "    is_shared_memory_access: checking " << expr->getStmtClassName() << "\n";
   
   // Array subscript - check if the base is shared memory
   if (const auto arr = clang::dyn_cast<clang::ArraySubscriptExpr>(expr)) {
+    llvm::errs() << "    Found ArraySubscriptExpr, checking base\n";
     return is_shared_memory_access(arr->getBase());
+  }
+  
+  // C++ operator call (like buffer[index] in HLSL) - check if it's array subscript
+  if (const auto operatorCall = clang::dyn_cast<clang::CXXOperatorCallExpr>(expr)) {
+    llvm::errs() << "    Found CXXOperatorCallExpr\n";
+    if (operatorCall->getOperator() == clang::OO_Subscript) {
+      llvm::errs() << "    It's operator[], checking object (arg 0)\n";
+      // For operator[], arg 0 is the object being subscripted
+      if (operatorCall->getNumArgs() > 0) {
+        return is_shared_memory_access(operatorCall->getArg(0));
+      }
+    }
   }
   
   // Member access - check if the base is shared memory
   if (const auto member = clang::dyn_cast<clang::MemberExpr>(expr)) {
+    llvm::errs() << "    Found MemberExpr, checking base\n";
     return is_shared_memory_access(member->getBase());
   }
   
   // Variable reference - check if it's declared as groupshared
   if (const auto ref = clang::dyn_cast<clang::DeclRefExpr>(expr)) {
+    llvm::errs() << "    Found DeclRefExpr\n";
     if (const auto var_decl = clang::dyn_cast<clang::VarDecl>(ref->getDecl())) {
       // Check type for RWBuffer, RWTexture, groupshared, etc.
       const auto type = var_decl->getType();
       const auto type_str = type.getAsString();
+      llvm::errs() << "    Variable type: " << type_str << "\n";
       
       // Common HLSL shared resource types
       if (type_str.find("RWBuffer") != string::npos ||
@@ -1523,6 +1542,7 @@ bool MemorySafetyAnalyzer::is_shared_memory_access(const clang::Expr *expr) {
           type_str.find("RWByteAddressBuffer") != string::npos ||
           type_str.find("groupshared") != string::npos ||
           type_str.find("shared") != string::npos) {
+        llvm::errs() << "    FOUND SHARED MEMORY ACCESS!\n";
         return true;
       }
       
@@ -3177,16 +3197,20 @@ void MemorySafetyAnalyzer::collect_memory_operations_in_dbeg(
     return;
   }
   
-  // Debug output to track where crash occurs
-  // llvm::errs() << "collect_memory_operations_in_dbeg: Processing " << stmt->getStmtClassName() << "\n";
+  // Enhanced debug output to track memory operations
+  llvm::errs() << "collect_memory_operations_in_dbeg: Processing " << stmt->getStmtClassName() << "\n";
   
   // Check if this statement is a memory operation
   if (const auto binOp = clang::dyn_cast<clang::BinaryOperator>(stmt)) {
+    llvm::errs() << "  Found BinaryOperator, isAssignmentOp: " << binOp->isAssignmentOp() << "\n";
     if (binOp->isAssignmentOp()) {
       const auto lhs = binOp->getLHS();
+      llvm::errs() << "  LHS type: " << lhs->getStmtClassName() << "\n";
       
       // Check if it's a shared memory write
-      if (is_shared_memory_access(lhs)) {
+      bool isSharedAccess = is_shared_memory_access(lhs);
+      llvm::errs() << "  is_shared_memory_access(lhs): " << isSharedAccess << "\n";
+      if (isSharedAccess) {
         // Create a memory operation for each active thread
         for (uint32_t tid : activeThreads) {
           MemoryOperation memOp;
@@ -3717,15 +3741,20 @@ ValidationResult DBEGAnalysisConsumer::validate_memory_safety_patterns_in_functi
         return true;
       }
       
-      // Check for barrier/synchronization operations (forbidden in MiniHLSL)
-      if (func_name.find("Barrier") != std::string::npos ||
-          func_name.find("GroupMemoryBarrier") == 0 ||
-          func_name.find("AllMemoryBarrier") == 0) {
+      // Check for specific forbidden barrier/synchronization operations
+      // Allow GroupMemoryBarrierWithGroupSync as it's needed for proper synchronization
+      if (func_name == "DeviceMemoryBarrier" ||
+          func_name == "DeviceMemoryBarrierWithGroupSync" ||
+          func_name == "AllMemoryBarrier" ||
+          func_name == "AllMemoryBarrierWithGroupSync" ||
+          func_name.find("SubgroupBarrier") != std::string::npos) {
         errors.emplace_back(
             ValidationError::UnsupportedOperation,
             "Synchronization operation '" + func_name + "' is forbidden in MiniHLSL"
         );
         llvm::errs() << "FORBIDDEN SYNC: " << func_name << " detected\n";
+      } else if (func_name == "GroupMemoryBarrierWithGroupSync") {
+        llvm::errs() << "ALLOWED SYNC: " << func_name << " detected\n";
       }
       
       return true;
