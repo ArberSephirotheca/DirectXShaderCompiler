@@ -337,11 +337,12 @@ private:
   bool is_deterministic_decl_ref(const clang::DeclRefExpr *ref);
   bool is_deterministic_member_access(const clang::MemberExpr *member);
   bool is_deterministic_member_call(const clang::CXXMemberCallExpr *call);
+  bool is_deterministic_initializer(const clang::Expr *init);
 
   // Rust-style data members
   clang::ASTContext &context_;
   std::vector<bool> deterministic_context_stack_;
-  mutable std::map<std::string, bool> variable_determinism_cache_;
+  mutable std::map<const void*, bool> variable_determinism_cache_;
 };
 
 // Standalone control flow analyzer

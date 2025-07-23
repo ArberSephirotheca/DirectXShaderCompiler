@@ -684,9 +684,9 @@ bool DeterministicExpressionAnalyzer::are_variables_deterministic(
       continue; // These are deterministic
     }
 
-    // Check cache (Rust-style variable naming)
-    if (const auto cached = variable_determinism_cache_.find(var);
-        cached != variable_determinism_cache_.end() && !cached->second) {
+    // This method is only used for error reporting, so we use simple name-based checking
+    // The actual determinism analysis is done in is_deterministic_decl_ref with proper caching
+    if (var != "tid" && var != "id" && var != "i" && var != "j") {
       return false;
     }
   }
@@ -759,22 +759,66 @@ bool DeterministicExpressionAnalyzer::is_deterministic_decl_ref(
     }
   }
 
-  const auto var_name = decl->getNameAsString();
+  // Check if this variable is in our deterministic cache
+  if (const auto *varDecl = clang::dyn_cast<clang::VarDecl>(decl)) {
+    // Use cache to avoid recursion
+    const void* declPtr = static_cast<const void*>(varDecl);
+    auto it = variable_determinism_cache_.find(declPtr);
+    if (it != variable_determinism_cache_.end()) {
+      return it->second;
+    }
+    
+    // Not in cache - analyze the variable's initialization
+    bool isDeterministic = false;
+    
+    if (varDecl->hasInit()) {
+      // Mark as "being analyzed" to prevent recursion
+      variable_determinism_cache_[declPtr] = false;
+      
+      const auto *init = varDecl->getInit();
+      if (init) {
+        // Check if initializer is deterministic (this won't recurse back to this variable)
+        isDeterministic = is_deterministic_initializer(init);
+      }
+    }
+    
+    // Cache the result
+    variable_determinism_cache_[declPtr] = isDeterministic;
+    return isDeterministic;
+  }
 
-  // Fallback: Check if it's a known deterministic variable name
-  // Common thread ID parameter names used in HLSL
-  return var_name == "id" || 
-         var_name == "tid" ||  // Common abbreviation for thread ID
-         var_name == "gid" ||  // Group ID
-         var_name == "dtid" || // Dispatch thread ID
-         var_name.find("SV_") == 0 ||
-         var_name.find("threadID") != string::npos ||
-         var_name.find("threadId") != string::npos ||
-         var_name.find("ThreadID") != string::npos ||
-         var_name.find("groupID") != string::npos ||
-         var_name.find("GroupID") != string::npos ||
-         var_name.find("dispatchThreadID") != string::npos ||
-         var_name.find("DispatchThreadID") != string::npos;
+  // Simple fallback for other kinds of declarations
+  const auto var_name = decl->getNameAsString();
+  return var_name == "tid" || var_name == "id";
+}
+
+bool DeterministicExpressionAnalyzer::is_deterministic_initializer(const clang::Expr *init) {
+  if (!init) return false;
+  
+  // For initializers, we can safely check determinism without recursion issues
+  // because we're not going through variable references
+  switch (init->getStmtClass()) {
+    case clang::Stmt::IntegerLiteralClass:
+    case clang::Stmt::FloatingLiteralClass:
+    case clang::Stmt::CXXBoolLiteralExprClass:
+      return true; // Literals are always deterministic
+      
+    case clang::Stmt::BinaryOperatorClass: {
+      const auto *binOp = clang::cast<clang::BinaryOperator>(init);
+      // Recursively check operands, but this won't cause variable reference loops
+      return is_deterministic_initializer(binOp->getLHS()) && 
+             is_deterministic_initializer(binOp->getRHS());
+    }
+    
+    case clang::Stmt::UnaryOperatorClass: {
+      const auto *unOp = clang::cast<clang::UnaryOperator>(init);
+      return is_deterministic_initializer(unOp->getSubExpr());
+    }
+    
+    default:
+      // For more complex initializers, be conservative
+      return false;
+  }
 }
 
 bool DeterministicExpressionAnalyzer::is_deterministic_member_access(
