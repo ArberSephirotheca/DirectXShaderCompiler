@@ -675,10 +675,18 @@ void ForStmt::execute(LaneContext& lane, WaveContext& wave, ThreadgroupContext& 
     
     // Execute loop
     while (condition_->evaluate(lane, wave, tg).asBool()) {
-        // Execute body
-        for (auto& stmt : body_) {
-            stmt->execute(lane, wave, tg);
-            if (lane.hasReturned) return;
+        try {
+            // Execute body
+            for (auto& stmt : body_) {
+                stmt->execute(lane, wave, tg);
+                if (lane.hasReturned) return;
+            }
+        } catch (const ControlFlowException& e) {
+            if (e.type == ControlFlowException::Break) {
+                break; // Exit the loop
+            } else if (e.type == ControlFlowException::Continue) {
+                // Continue to increment
+            }
         }
         
         // Increment
@@ -1182,6 +1190,21 @@ std::unique_ptr<Statement> MiniHLSLInterpreter::convertStatement(const clang::St
     else if (auto forStmt = clang::dyn_cast<clang::ForStmt>(stmt)) {
         return convertForStatement(forStmt, context);
     }
+    else if (auto whileStmt = clang::dyn_cast<clang::WhileStmt>(stmt)) {
+        return convertWhileStatement(whileStmt, context);
+    }
+    else if (auto doStmt = clang::dyn_cast<clang::DoStmt>(stmt)) {
+        return convertDoStatement(doStmt, context);
+    }
+    else if (auto switchStmt = clang::dyn_cast<clang::SwitchStmt>(stmt)) {
+        return convertSwitchStatement(switchStmt, context);
+    }
+    else if (auto breakStmt = clang::dyn_cast<clang::BreakStmt>(stmt)) {
+        return convertBreakStatement(breakStmt, context);
+    }
+    else if (auto continueStmt = clang::dyn_cast<clang::ContinueStmt>(stmt)) {
+        return convertContinueStatement(continueStmt, context);
+    }
     else if (auto compound = clang::dyn_cast<clang::CompoundStmt>(stmt)) {
         // Nested compound statement - this should not happen in our current design
         std::cout << "Warning: nested compound statement found, skipping" << std::endl;
@@ -1439,6 +1462,159 @@ std::unique_ptr<Statement> MiniHLSLInterpreter::convertForStatement(const clang:
     
     return std::make_unique<ForStmt>(loopVar, std::move(init), std::move(condition), 
                                     std::move(increment), std::move(body));
+}
+
+std::unique_ptr<Statement> MiniHLSLInterpreter::convertWhileStatement(const clang::WhileStmt* whileStmt,
+                                                                     clang::ASTContext& context) {
+    std::cout << "Converting while statement" << std::endl;
+    
+    // Convert the condition expression
+    auto condition = convertExpression(whileStmt->getCond(), context);
+    if (!condition) {
+        std::cout << "Failed to convert while condition" << std::endl;
+        return nullptr;
+    }
+    
+    // Convert the loop body
+    std::vector<std::unique_ptr<Statement>> body;
+    if (auto bodyStmt = whileStmt->getBody()) {
+        if (auto compound = clang::dyn_cast<clang::CompoundStmt>(bodyStmt)) {
+            for (auto stmt : compound->body()) {
+                if (auto convertedStmt = convertStatement(stmt, context)) {
+                    body.push_back(std::move(convertedStmt));
+                }
+            }
+        } else {
+            if (auto convertedStmt = convertStatement(bodyStmt, context)) {
+                body.push_back(std::move(convertedStmt));
+            }
+        }
+    }
+    
+    return std::make_unique<WhileStmt>(std::move(condition), std::move(body));
+}
+
+std::unique_ptr<Statement> MiniHLSLInterpreter::convertDoStatement(const clang::DoStmt* doStmt,
+                                                                  clang::ASTContext& context) {
+    std::cout << "Converting do-while statement" << std::endl;
+    
+    // Convert the loop body
+    std::vector<std::unique_ptr<Statement>> body;
+    if (auto bodyStmt = doStmt->getBody()) {
+        if (auto compound = clang::dyn_cast<clang::CompoundStmt>(bodyStmt)) {
+            for (auto stmt : compound->body()) {
+                if (auto convertedStmt = convertStatement(stmt, context)) {
+                    body.push_back(std::move(convertedStmt));
+                }
+            }
+        } else {
+            if (auto convertedStmt = convertStatement(bodyStmt, context)) {
+                body.push_back(std::move(convertedStmt));
+            }
+        }
+    }
+    
+    // Convert the condition expression
+    auto condition = convertExpression(doStmt->getCond(), context);
+    if (!condition) {
+        std::cout << "Failed to convert do-while condition" << std::endl;
+        return nullptr;
+    }
+    
+    return std::make_unique<DoWhileStmt>(std::move(body), std::move(condition));
+}
+
+std::unique_ptr<Statement> MiniHLSLInterpreter::convertSwitchStatement(const clang::SwitchStmt* switchStmt,
+                                                                      clang::ASTContext& context) {
+    std::cout << "Converting switch statement" << std::endl;
+    
+    // Convert the condition expression
+    auto condition = convertExpression(switchStmt->getCond(), context);
+    if (!condition) {
+        std::cout << "Failed to convert switch condition" << std::endl;
+        return nullptr;
+    }
+    
+    auto switchResult = std::make_unique<SwitchStmt>(std::move(condition));
+    
+    // Convert the switch body - we need to handle case statements specially
+    if (auto body = switchStmt->getBody()) {
+        if (auto compound = clang::dyn_cast<clang::CompoundStmt>(body)) {
+            std::vector<std::unique_ptr<Statement>> currentCase;
+            std::optional<int> currentCaseValue;
+            bool isDefault = false;
+            
+            for (auto stmt : compound->body()) {
+                if (auto caseStmt = clang::dyn_cast<clang::CaseStmt>(stmt)) {
+                    // Save previous case if any
+                    if (currentCaseValue.has_value() || isDefault) {
+                        if (isDefault) {
+                            switchResult->addDefault(std::move(currentCase));
+                        } else {
+                            switchResult->addCase(currentCaseValue.value(), std::move(currentCase));
+                        }
+                        currentCase.clear();
+                        isDefault = false;
+                    }
+                    
+                    // Get case value
+                    if (auto lhs = caseStmt->getLHS()) {
+                        if (auto intLit = clang::dyn_cast<clang::IntegerLiteral>(lhs)) {
+                            currentCaseValue = intLit->getValue().getSExtValue();
+                        }
+                    }
+                    
+                    // Convert case body
+                    if (auto substmt = caseStmt->getSubStmt()) {
+                        if (auto converted = convertStatement(substmt, context)) {
+                            currentCase.push_back(std::move(converted));
+                        }
+                    }
+                } else if (clang::isa<clang::DefaultStmt>(stmt)) {
+                    // Save previous case if any
+                    if (currentCaseValue.has_value() || isDefault) {
+                        if (isDefault) {
+                            switchResult->addDefault(std::move(currentCase));
+                        } else {
+                            switchResult->addCase(currentCaseValue.value(), std::move(currentCase));
+                        }
+                        currentCase.clear();
+                    }
+                    
+                    isDefault = true;
+                    currentCaseValue.reset();
+                } else {
+                    // Regular statement in current case
+                    if (auto converted = convertStatement(stmt, context)) {
+                        currentCase.push_back(std::move(converted));
+                    }
+                }
+            }
+            
+            // Save last case
+            if (currentCaseValue.has_value() || isDefault) {
+                if (isDefault) {
+                    switchResult->addDefault(std::move(currentCase));
+                } else {
+                    switchResult->addCase(currentCaseValue.value(), std::move(currentCase));
+                }
+            }
+        }
+    }
+    
+    return switchResult;
+}
+
+std::unique_ptr<Statement> MiniHLSLInterpreter::convertBreakStatement(const clang::BreakStmt* breakStmt,
+                                                                     clang::ASTContext& context) {
+    std::cout << "Converting break statement" << std::endl;
+    return std::make_unique<BreakStmt>();
+}
+
+std::unique_ptr<Statement> MiniHLSLInterpreter::convertContinueStatement(const clang::ContinueStmt* continueStmt,
+                                                                        clang::ASTContext& context) {
+    std::cout << "Converting continue statement" << std::endl;
+    return std::make_unique<ContinueStmt>();
 }
 
 std::unique_ptr<Expression> MiniHLSLInterpreter::convertExpression(const clang::Expr* expr, 
@@ -1804,6 +1980,160 @@ Value WaveActiveAnyTrueExpr::evaluate(LaneContext& lane, WaveContext& wave, Thre
 
 std::string WaveActiveAnyTrueExpr::toString() const {
     return "WaveActiveAnyTrue(" + expr_->toString() + ")";
+}
+
+// WhileStmt implementation
+WhileStmt::WhileStmt(std::unique_ptr<Expression> cond,
+                     std::vector<std::unique_ptr<Statement>> body)
+    : condition_(std::move(cond)), body_(std::move(body)) {}
+
+void WhileStmt::execute(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg) {
+    if (!lane.isActive) return;
+    
+    // Execute while loop with condition checking
+    while (true) {
+        auto condValue = condition_->evaluate(lane, wave, tg);
+        if (!condValue.asBool()) break;
+        
+        try {
+            for (auto& stmt : body_) {
+                stmt->execute(lane, wave, tg);
+                if (!lane.isActive) return; // Early exit if lane becomes inactive
+            }
+        } catch (const ControlFlowException& e) {
+            if (e.type == ControlFlowException::Break) {
+                break; // Exit the loop
+            } else if (e.type == ControlFlowException::Continue) {
+                continue; // Go to next iteration
+            }
+        }
+    }
+}
+
+std::string WhileStmt::toString() const {
+    std::string result = "while (" + condition_->toString() + ") {\n";
+    for (const auto& stmt : body_) {
+        result += "  " + stmt->toString() + "\n";
+    }
+    result += "}";
+    return result;
+}
+
+// DoWhileStmt implementation
+DoWhileStmt::DoWhileStmt(std::vector<std::unique_ptr<Statement>> body,
+                         std::unique_ptr<Expression> cond)
+    : body_(std::move(body)), condition_(std::move(cond)) {}
+
+void DoWhileStmt::execute(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg) {
+    if (!lane.isActive) return;
+    
+    // Execute do-while loop - body executes at least once
+    do {
+        try {
+            for (auto& stmt : body_) {
+                stmt->execute(lane, wave, tg);
+                if (!lane.isActive) return; // Early exit if lane becomes inactive
+            }
+        } catch (const ControlFlowException& e) {
+            if (e.type == ControlFlowException::Break) {
+                break; // Exit the loop
+            } else if (e.type == ControlFlowException::Continue) {
+                // Continue to condition check
+            }
+        }
+        
+        auto condValue = condition_->evaluate(lane, wave, tg);
+        if (!condValue.asBool()) break;
+    } while (true);
+}
+
+std::string DoWhileStmt::toString() const {
+    std::string result = "do {\n";
+    for (const auto& stmt : body_) {
+        result += "  " + stmt->toString() + "\n";
+    }
+    result += "} while (" + condition_->toString() + ");";
+    return result;
+}
+
+// SwitchStmt implementation
+SwitchStmt::SwitchStmt(std::unique_ptr<Expression> cond)
+    : condition_(std::move(cond)) {}
+
+void SwitchStmt::addCase(int value, std::vector<std::unique_ptr<Statement>> stmts) {
+    cases_.push_back({value, std::move(stmts)});
+}
+
+void SwitchStmt::addDefault(std::vector<std::unique_ptr<Statement>> stmts) {
+    cases_.push_back({std::nullopt, std::move(stmts)});
+}
+
+void SwitchStmt::execute(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg) {
+    if (!lane.isActive) return;
+    
+    // Evaluate switch condition
+    auto condValue = condition_->evaluate(lane, wave, tg);
+    int switchValue = condValue.asInt();
+    
+    // Find matching case
+    bool foundMatch = false;
+    bool fallthrough = false;
+    
+    for (const auto& caseBlock : cases_) {
+        if (!foundMatch && caseBlock.value.has_value()) {
+            if (caseBlock.value.value() == switchValue) {
+                foundMatch = true;
+                fallthrough = true;
+            }
+        } else if (!foundMatch && !caseBlock.value.has_value()) {
+            // Default case
+            foundMatch = true;
+            fallthrough = true;
+        }
+        
+        if (fallthrough) {
+            try {
+                for (auto& stmt : caseBlock.statements) {
+                    stmt->execute(lane, wave, tg);
+                    if (!lane.isActive) return;
+                }
+                // Continue to next case (fallthrough)
+            } catch (const ControlFlowException& e) {
+                if (e.type == ControlFlowException::Break) {
+                    break; // Exit switch
+                }
+                // Continue statements don't apply to switch
+            }
+        }
+    }
+}
+
+std::string SwitchStmt::toString() const {
+    std::string result = "switch (" + condition_->toString() + ") {\n";
+    for (const auto& caseBlock : cases_) {
+        if (caseBlock.value.has_value()) {
+            result += "  case " + std::to_string(caseBlock.value.value()) + ":\n";
+        } else {
+            result += "  default:\n";
+        }
+        for (const auto& stmt : caseBlock.statements) {
+            result += "    " + stmt->toString() + "\n";
+        }
+    }
+    result += "}";
+    return result;
+}
+
+// BreakStmt implementation
+void BreakStmt::execute(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg) {
+    if (!lane.isActive) return;
+    throw ControlFlowException(ControlFlowException::Break);
+}
+
+// ContinueStmt implementation
+void ContinueStmt::execute(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg) {
+    if (!lane.isActive) return;
+    throw ControlFlowException(ControlFlowException::Continue);
 }
 
 } // namespace interpreter

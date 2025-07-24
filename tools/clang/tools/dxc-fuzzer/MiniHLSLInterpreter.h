@@ -30,6 +30,13 @@ namespace clang {
     class CXXOperatorCallExpr;
     class IfStmt;
     class ForStmt;
+    class WhileStmt;
+    class DoStmt;
+    class SwitchStmt;
+    class CaseStmt;
+    class DefaultStmt;
+    class BreakStmt;
+    class ContinueStmt;
     class ConditionalOperator;
     class FloatingLiteral;
     class CXXBoolLiteralExpr;
@@ -431,6 +438,61 @@ public:
     std::string toString() const override;
 };
 
+class WhileStmt : public Statement {
+    std::unique_ptr<Expression> condition_;
+    std::vector<std::unique_ptr<Statement>> body_;
+public:
+    WhileStmt(std::unique_ptr<Expression> cond,
+              std::vector<std::unique_ptr<Statement>> body);
+    void execute(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg) override;
+    std::string toString() const override;
+};
+
+class DoWhileStmt : public Statement {
+    std::vector<std::unique_ptr<Statement>> body_;
+    std::unique_ptr<Expression> condition_;
+public:
+    DoWhileStmt(std::vector<std::unique_ptr<Statement>> body,
+                std::unique_ptr<Expression> cond);
+    void execute(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg) override;
+    std::string toString() const override;
+};
+
+class SwitchStmt : public Statement {
+    std::unique_ptr<Expression> condition_;
+    struct CaseBlock {
+        std::optional<int> value; // nullopt for default case
+        std::vector<std::unique_ptr<Statement>> statements;
+    };
+    std::vector<CaseBlock> cases_;
+public:
+    SwitchStmt(std::unique_ptr<Expression> cond);
+    void addCase(int value, std::vector<std::unique_ptr<Statement>> stmts);
+    void addDefault(std::vector<std::unique_ptr<Statement>> stmts);
+    void execute(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg) override;
+    std::string toString() const override;
+};
+
+// Control flow exceptions for break/continue
+class ControlFlowException : public std::exception {
+public:
+    enum Type { Break, Continue };
+    Type type;
+    explicit ControlFlowException(Type t) : type(t) {}
+};
+
+class BreakStmt : public Statement {
+public:
+    void execute(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg) override;
+    std::string toString() const override { return "break;"; }
+};
+
+class ContinueStmt : public Statement {
+public:
+    void execute(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg) override;
+    std::string toString() const override { return "continue;"; }
+};
+
 class ReturnStmt : public Statement {
     std::unique_ptr<Expression> expr_;
 public:
@@ -547,6 +609,11 @@ private:
     std::unique_ptr<Statement> convertDeclarationStatement(const clang::DeclStmt* declStmt, clang::ASTContext& context);
     std::unique_ptr<Statement> convertIfStatement(const clang::IfStmt* ifStmt, clang::ASTContext& context);
     std::unique_ptr<Statement> convertForStatement(const clang::ForStmt* forStmt, clang::ASTContext& context);
+    std::unique_ptr<Statement> convertWhileStatement(const clang::WhileStmt* whileStmt, clang::ASTContext& context);
+    std::unique_ptr<Statement> convertDoStatement(const clang::DoStmt* doStmt, clang::ASTContext& context);
+    std::unique_ptr<Statement> convertSwitchStatement(const clang::SwitchStmt* switchStmt, clang::ASTContext& context);
+    std::unique_ptr<Statement> convertBreakStatement(const clang::BreakStmt* breakStmt, clang::ASTContext& context);
+    std::unique_ptr<Statement> convertContinueStatement(const clang::ContinueStmt* continueStmt, clang::ASTContext& context);
     std::unique_ptr<Expression> convertCallExpressionToExpression(const clang::CallExpr* callExpr, clang::ASTContext& context);
     std::unique_ptr<Expression> convertConditionalOperator(const clang::ConditionalOperator* condOp, clang::ASTContext& context);
     std::unique_ptr<Expression> convertBinaryExpression(const clang::BinaryOperator* binOp, clang::ASTContext& context);
