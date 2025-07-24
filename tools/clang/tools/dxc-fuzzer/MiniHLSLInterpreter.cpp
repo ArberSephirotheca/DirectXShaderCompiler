@@ -2971,19 +2971,19 @@ ThreadgroupContext::getWaveOperationParticipants(WaveId waveId,
   return participants;
 }
 
-void ThreadgroupContext::resolveUnknownLane(WaveId waveId, LaneId laneId,
-                                            uint32_t chosenBlockId) {
-  // Remove this lane from all blocks' unknown sets
-  for (auto &[blockId, block] : executionBlocks) {
-    block.unknownLanes.erase(laneId);
+// void ThreadgroupContext::resolveUnknownLane(WaveId waveId, LaneId laneId,
+//                                             uint32_t chosenBlockId) {
+//   // Remove this lane from all blocks' unknown sets
+//   for (auto &[blockId, block] : executionBlocks) {
+//     block.unknownLanes.erase(laneId);
 
-    // Update resolution status
-    block.allUnknownResolved = block.unknownLanes.empty();
-  }
+//     // Update resolution status
+//     block.allUnknownResolved = block.unknownLanes.empty();
+//   }
 
-  // Mark the lane as arrived at the chosen block
-  markLaneArrived(waveId, laneId, chosenBlockId);
-}
+//   // Mark the lane as arrived at the chosen block
+//   markLaneArrived(waveId, laneId, chosenBlockId);
+// }
 
 bool ThreadgroupContext::areAllUnknownLanesResolved(uint32_t blockId) const {
   auto it = executionBlocks.find(blockId);
@@ -2991,7 +2991,8 @@ bool ThreadgroupContext::areAllUnknownLanesResolved(uint32_t blockId) const {
     return true; // Block not found, consider resolved
   }
 
-  return it->second.allUnknownResolved;
+  return it->second.areAllUnknownLanesResolved();
+//   return it->second.allUnknownResolved;
 }
 
 // Block deduplication methods
