@@ -16,6 +16,20 @@
 #include "clang/AST/Stmt.h"
 #include "clang/AST/StmtCXX.h"
 #include "clang/Basic/OperatorKinds.h"
+#include "llvm/Support/raw_ostream.h"
+
+// Debug flags for MiniHLSL Interpreter
+// - ENABLE_INTERPRETER_DEBUG: Shows detailed dynamic execution block tracking
+// - ENABLE_WAVE_DEBUG: Shows wave operation synchronization details
+// - ENABLE_BLOCK_DEBUG: Shows block creation, merging, and convergence
+
+static constexpr bool ENABLE_INTERPRETER_DEBUG = true;  // Set to true to enable detailed execution tracing
+static constexpr bool ENABLE_WAVE_DEBUG = true;        // Set to true to enable wave operation tracing  
+static constexpr bool ENABLE_BLOCK_DEBUG = true;       // Set to true to enable block lifecycle tracing
+
+#define INTERPRETER_DEBUG_LOG(msg) do { if (ENABLE_INTERPRETER_DEBUG) { llvm::errs() << msg; } } while(0)
+#define WAVE_DEBUG_LOG(msg) do { if (ENABLE_WAVE_DEBUG) { llvm::errs() << msg; } } while(0)
+#define BLOCK_DEBUG_LOG(msg) do { if (ENABLE_BLOCK_DEBUG) { llvm::errs() << msg; } } while(0)
 
 namespace minihlsl {
 namespace interpreter {
@@ -3526,6 +3540,203 @@ std::vector<uint32_t> ThreadgroupContext::createSwitchCaseBlocks(
   }
 
   return caseBlockIds;
+}
+
+// Debug and visualization methods implementation
+void ThreadgroupContext::printDynamicExecutionGraph(bool verbose) const {
+  INTERPRETER_DEBUG_LOG("\n=== Dynamic Execution Graph (MiniHLSL Interpreter) ===\n");
+  INTERPRETER_DEBUG_LOG("Threadgroup Size: " << threadgroupSize << "\n");
+  INTERPRETER_DEBUG_LOG("Wave Size: " << waveSize << "\n");
+  INTERPRETER_DEBUG_LOG("Wave Count: " << waveCount << "\n");
+  INTERPRETER_DEBUG_LOG("Total Dynamic Blocks: " << executionBlocks.size() << "\n");
+  INTERPRETER_DEBUG_LOG("Next Block ID: " << nextBlockId << "\n\n");
+  
+  // Print each dynamic execution block
+  for (const auto& [blockId, block] : executionBlocks) {
+    printBlockDetails(blockId, verbose);
+    INTERPRETER_DEBUG_LOG("\n");
+  }
+  
+  if (verbose) {
+    INTERPRETER_DEBUG_LOG("=== Wave States ===\n");
+    for (uint32_t waveId = 0; waveId < waveCount; ++waveId) {
+      printWaveState(waveId, verbose);
+      INTERPRETER_DEBUG_LOG("\n");
+    }
+  }
+  
+  INTERPRETER_DEBUG_LOG("=== End Dynamic Execution Graph ===\n\n");
+}
+
+void ThreadgroupContext::printBlockDetails(uint32_t blockId, bool verbose) const {
+  auto it = executionBlocks.find(blockId);
+  if (it == executionBlocks.end()) {
+    INTERPRETER_DEBUG_LOG("Block " << blockId << ": NOT FOUND\n");
+    return;
+  }
+  
+  const auto& block = it->second;
+  INTERPRETER_DEBUG_LOG("Dynamic Block " << blockId << ":\n");
+  
+  // Basic block info
+  INTERPRETER_DEBUG_LOG("  Block ID: " << block.getBlockId() << "\n");
+  INTERPRETER_DEBUG_LOG("  Parent Block: " << block.getParentBlockId() << "\n");
+  INTERPRETER_DEBUG_LOG("  Program Point: " << block.getProgramPoint() << "\n");
+  INTERPRETER_DEBUG_LOG("  Is Converged: " << (block.getIsConverged() ? "Yes" : "No") << "\n");
+  INTERPRETER_DEBUG_LOG("  Nesting Level: " << block.getNestingLevel() << "\n");
+  
+  // Source statement info
+  if (block.getSourceStatement()) {
+    INTERPRETER_DEBUG_LOG("  Source Statement: " << static_cast<const void*>(block.getSourceStatement()) << "\n");
+  }
+  
+  // Participating lanes by wave
+  const auto& participatingLanes = block.getParticipatingLanes();
+  size_t totalLanes = 0;
+  INTERPRETER_DEBUG_LOG("  Participating Lanes by Wave:\n");
+  for (const auto& [waveId, laneSet] : participatingLanes) {
+    INTERPRETER_DEBUG_LOG("    Wave " << waveId << ": {");
+    bool first = true;
+    for (LaneId laneId : laneSet) {
+      if (!first) INTERPRETER_DEBUG_LOG(", ");
+      INTERPRETER_DEBUG_LOG(laneId);
+      first = false;
+    }
+    INTERPRETER_DEBUG_LOG("} (" << laneSet.size() << " lanes)\n");
+    totalLanes += laneSet.size();
+  }
+  INTERPRETER_DEBUG_LOG("  Total Participating Lanes: " << totalLanes << "\n");
+  
+  if (verbose) {
+    // Unknown lanes
+    const auto& unknownLanes = block.getUnknownLanes();
+    if (!unknownLanes.empty()) {
+      INTERPRETER_DEBUG_LOG("  Unknown Lanes by Wave:\n");
+      for (const auto& [waveId, laneSet] : unknownLanes) {
+        INTERPRETER_DEBUG_LOG("    Wave " << waveId << ": {");
+        bool first = true;
+        for (LaneId laneId : laneSet) {
+          if (!first) INTERPRETER_DEBUG_LOG(", ");
+          INTERPRETER_DEBUG_LOG(laneId);
+          first = false;
+        }
+        INTERPRETER_DEBUG_LOG("} (" << laneSet.size() << " lanes)\n");
+      }
+    }
+    
+    // Arrived lanes
+    const auto& arrivedLanes = block.getArrivedLanes();
+    if (!arrivedLanes.empty()) {
+      INTERPRETER_DEBUG_LOG("  Arrived Lanes by Wave:\n");
+      for (const auto& [waveId, laneSet] : arrivedLanes) {
+        INTERPRETER_DEBUG_LOG("    Wave " << waveId << ": {");
+        bool first = true;
+        for (LaneId laneId : laneSet) {
+          if (!first) INTERPRETER_DEBUG_LOG(", ");
+          INTERPRETER_DEBUG_LOG(laneId);
+          first = false;
+        }
+        INTERPRETER_DEBUG_LOG("} (" << laneSet.size() << " lanes)\n");
+      }
+    }
+    
+    // Waiting lanes
+    const auto& waitingLanes = block.getWaitingLanes();
+    if (!waitingLanes.empty()) {
+      INTERPRETER_DEBUG_LOG("  Waiting Lanes by Wave:\n");
+      for (const auto& [waveId, laneSet] : waitingLanes) {
+        INTERPRETER_DEBUG_LOG("    Wave " << waveId << ": {");
+        bool first = true;
+        for (LaneId laneId : laneSet) {
+          if (!first) INTERPRETER_DEBUG_LOG(", ");
+          INTERPRETER_DEBUG_LOG(laneId);
+          first = false;
+        }
+        INTERPRETER_DEBUG_LOG("} (" << laneSet.size() << " lanes)\n");
+      }
+    }
+    
+    // Instructions in this block
+    const auto& instructions = block.getInstructionList();
+    if (!instructions.empty()) {
+      INTERPRETER_DEBUG_LOG("  Instructions (" << instructions.size() << "):\n");
+      for (size_t i = 0; i < instructions.size(); ++i) {
+        const auto& instr = instructions[i];
+        INTERPRETER_DEBUG_LOG("    " << i << ": " << instr.instructionType 
+                            << " (ptr: " << instr.instruction << ")\n");
+      }
+    }
+    
+    // Unknown resolution status
+    const auto& allUnknownResolved = block.getAllUnknownResolved();
+    if (!allUnknownResolved.empty()) {
+      INTERPRETER_DEBUG_LOG("  Unknown Resolution Status by Wave:\n");
+      for (const auto& [waveId, resolved] : allUnknownResolved) {
+        INTERPRETER_DEBUG_LOG("    Wave " << waveId << ": " << (resolved ? "Resolved" : "Unresolved") << "\n");
+      }
+    }
+  }
+}
+
+void ThreadgroupContext::printWaveState(WaveId waveId, bool verbose) const {
+  if (waveId >= waves.size()) {
+    INTERPRETER_DEBUG_LOG("Wave " << waveId << ": NOT FOUND\n");
+    return;
+  }
+  
+  const auto& wave = waves[waveId];
+  INTERPRETER_DEBUG_LOG("Wave " << waveId << ":\n");
+  INTERPRETER_DEBUG_LOG("  Wave Size: " << wave->waveSize << "\n");
+  INTERPRETER_DEBUG_LOG("  Lane Count: " << wave->lanes.size() << "\n");
+  INTERPRETER_DEBUG_LOG("  Active Lanes: " << wave->countActiveLanes() << "\n");
+  INTERPRETER_DEBUG_LOG("  Currently Active Lanes: " << wave->countCurrentlyActiveLanes() << "\n");
+  
+  if (verbose) {
+    // Lane to block mapping
+    INTERPRETER_DEBUG_LOG("  Lane to Block Mapping:\n");
+    for (const auto& [laneId, blockId] : wave->laneToCurrentBlock) {
+      INTERPRETER_DEBUG_LOG("    Lane " << laneId << " -> Block " << blockId << "\n");
+    }
+    
+    // Active wave operations
+    if (!wave->activeWaveOps.empty()) {
+      INTERPRETER_DEBUG_LOG("  Active Wave Operations (" << wave->activeWaveOps.size() << "):\n");
+      for (const auto& [opId, waveOp] : wave->activeWaveOps) {
+        INTERPRETER_DEBUG_LOG("    Op " << opId << ": Wave " << waveOp.waveId 
+                            << ", Participants: " << waveOp.participatingLanes.size()
+                            << ", Completed: " << waveOp.completedLanes.size() << "\n");
+      }
+    }
+    
+    // Active sync points
+    if (!wave->activeSyncPoints.empty()) {
+      INTERPRETER_DEBUG_LOG("  Active Sync Points (" << wave->activeSyncPoints.size() << "):\n");
+      for (const auto& [instruction, syncPoint] : wave->activeSyncPoints) {
+        INTERPRETER_DEBUG_LOG("    Instruction " << instruction << " (" << syncPoint.instructionType << "):\n");
+        INTERPRETER_DEBUG_LOG("      Expected: " << syncPoint.expectedParticipants.size() << " lanes\n");
+        INTERPRETER_DEBUG_LOG("      Arrived: " << syncPoint.arrivedParticipants.size() << " lanes\n");
+        INTERPRETER_DEBUG_LOG("      Complete: " << (syncPoint.isComplete ? "Yes" : "No") << "\n");
+      }
+    }
+  }
+}
+
+std::string ThreadgroupContext::getBlockSummary(uint32_t blockId) const {
+  auto it = executionBlocks.find(blockId);
+  if (it == executionBlocks.end()) {
+    return "Block " + std::to_string(blockId) + ": NOT FOUND";
+  }
+  
+  const auto& block = it->second;
+  size_t totalLanes = 0;
+  for (const auto& [waveId, laneSet] : block.getParticipatingLanes()) {
+    totalLanes += laneSet.size();
+  }
+  
+  std::stringstream ss;
+  ss << "Block " << blockId << " (Parent: " << block.getParentBlockId() 
+     << ", Lanes: " << totalLanes << ", Converged: " << (block.getIsConverged() ? "Y" : "N") << ")";
+  return ss.str();
 }
 
 } // namespace interpreter

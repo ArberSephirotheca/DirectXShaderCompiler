@@ -565,6 +565,12 @@ struct ThreadgroupContext {
     void popMergePoint(WaveId waveId, LaneId laneId);
     std::vector<MergeStackEntry> getCurrentMergeStack(WaveId waveId, LaneId laneId) const;
     void updateMergeStack(WaveId waveId, LaneId laneId, const std::vector<MergeStackEntry>& mergeStack);
+
+    // Debug and visualization methods
+    void printDynamicExecutionGraph(bool verbose = false) const;
+    void printBlockDetails(uint32_t blockId, bool verbose = false) const;
+    void printWaveState(WaveId waveId, bool verbose = false) const;
+    std::string getBlockSummary(uint32_t blockId) const;
 };
 
 // Thread execution ordering

@@ -63,6 +63,13 @@ add_executable(minihlsl-interpreter
   MiniHLSLInterpreter.cpp
   test_interpreter.cpp
 )
+
+# Standalone MiniHLSL Interpreter - takes HLSL files as command line input
+add_executable(minihlsl-standalone
+  MiniHLSLInterpreter.cpp
+  MiniHLSLValidator.cpp
+  minihlsl_interpreter_main.cpp
+)
 target_link_libraries(minihlsl-interpreter
   # Use pthread for std::thread and std::mutex
   Threads::Threads
@@ -79,8 +86,30 @@ target_link_libraries(minihlsl-interpreter
   LLVMCore
 )
 
-# Set C++17 standard for the interpreter (uses std::variant)
+target_link_libraries(minihlsl-standalone
+  # Use pthread for std::thread and std::mutex
+  Threads::Threads
+  # Clang/LLVM libraries needed for AST conversion and tooling
+  dxcompiler
+  clangAST
+  clangBasic
+  clangFrontend
+  clangLex
+  clangParse
+  clangSema
+  clangTooling
+  LLVMSupport
+  LLVMOption
+  LLVMCore
+)
+
+# Set C++17 standard for the interpreters (uses std::variant)
 set_target_properties(minihlsl-interpreter PROPERTIES
+  CXX_STANDARD 17
+  CXX_STANDARD_REQUIRED ON
+)
+
+set_target_properties(minihlsl-standalone PROPERTIES
   CXX_STANDARD 17
   CXX_STANDARD_REQUIRED ON
 )
