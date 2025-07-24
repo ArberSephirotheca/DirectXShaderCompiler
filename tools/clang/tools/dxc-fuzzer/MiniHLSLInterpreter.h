@@ -121,7 +121,23 @@ struct LaneContext {
     bool waveOpComplete = false;   // Whether current wave op is done
 };
 
-// Wave operation state for synchronization
+// Wave operation synchronization point for instruction-level coordination
+struct WaveOperationSyncPoint {
+    const void* instruction;              // Specific wave operation instruction pointer
+    uint32_t blockId;                     // Which execution block this sync point belongs to
+    std::set<LaneId> expectedParticipants; // Lanes that should participate (from block)
+    std::set<LaneId> arrivedParticipants;  // Lanes that have arrived at THIS instruction
+    std::map<LaneId, Value> pendingResults; // Results from arrived lanes
+    bool allParticipantsKnown = false;    // All unknown lanes resolved for this block
+    bool allParticipantsArrived = false;  // All expected participants arrived at instruction
+    bool isComplete = false;              // Ready to execute
+    
+    // Instruction identification
+    std::string instructionType;          // "WaveActiveSum", "WaveActiveAllTrue", etc.
+    const void* sourceExpression = nullptr; // Source AST expression
+};
+
+// Legacy wave operation state (keeping for compatibility)
 struct WaveOpState {
     uint32_t opId;
     WaveId waveId;
@@ -139,6 +155,90 @@ struct ThreadgroupBarrierState {
     bool isComplete = false;
 };
 
+// Instruction identity for tracking specific instructions within dynamic blocks
+struct InstructionIdentity {
+    const void* instruction = nullptr;       // Specific instruction pointer
+    std::string instructionType;            // "WaveActiveSum", "WaveActiveAllTrue", etc.
+    const void* sourceExpression = nullptr; // Source AST expression
+    
+    bool operator<(const InstructionIdentity& other) const {
+        if (instruction != other.instruction) return instruction < other.instruction;
+        if (instructionType != other.instructionType) return instructionType < other.instructionType;
+        return sourceExpression < other.sourceExpression;
+    }
+    
+    bool operator==(const InstructionIdentity& other) const {
+        return instruction == other.instruction &&
+               instructionType == other.instructionType &&
+               sourceExpression == other.sourceExpression;
+    }
+};
+
+// Merge stack entry for tracking control flow convergence points
+struct MergeStackEntry {
+    const void* sourceStatement = nullptr;  // Statement that created the divergence
+    uint32_t parentBlockId = 0;             // Block before divergence
+    std::set<uint32_t> divergentBlockIds;   // Blocks that will converge
+    
+    bool operator<(const MergeStackEntry& other) const {
+        if (sourceStatement != other.sourceStatement) return sourceStatement < other.sourceStatement;
+        if (parentBlockId != other.parentBlockId) return parentBlockId < other.parentBlockId;
+        return divergentBlockIds < other.divergentBlockIds;
+    }
+    
+    bool operator==(const MergeStackEntry& other) const {
+        return sourceStatement == other.sourceStatement &&
+               parentBlockId == other.parentBlockId &&
+               divergentBlockIds == other.divergentBlockIds;
+    }
+};
+
+// Block identity for deduplication based on execution path using merge stack
+struct BlockIdentity {
+    const void* sourceStatement = nullptr;  // Which statement created this block
+    bool conditionValue = true;             // Which branch (true/false)
+    uint32_t parentBlockId = 0;             // Parent block for nested control flow
+    std::vector<MergeStackEntry> mergeStack; // Stack of merge points for robust identification
+    
+    bool operator<(const BlockIdentity& other) const {
+        if (sourceStatement != other.sourceStatement) return sourceStatement < other.sourceStatement;
+        if (conditionValue != other.conditionValue) return conditionValue < other.conditionValue;
+        if (parentBlockId != other.parentBlockId) return parentBlockId < other.parentBlockId;
+        return mergeStack < other.mergeStack;
+    }
+    
+    bool operator==(const BlockIdentity& other) const {
+        return sourceStatement == other.sourceStatement &&
+               conditionValue == other.conditionValue &&
+               parentBlockId == other.parentBlockId &&
+               mergeStack == other.mergeStack;
+    }
+};
+
+// Dynamic execution block for SIMT control flow
+struct DynamicExecutionBlock {
+    uint32_t blockId;
+    BlockIdentity identity;               // Unique identity for this execution path
+    std::set<LaneId> participatingLanes;  // Lanes currently executing in this block
+    uint32_t programPoint;                // Current execution point within the block
+    uint32_t parentBlockId = 0;           // Parent block for nested control flow
+    bool isConverged = true;              // Whether all lanes in wave are in this block
+    
+    // Control flow context
+    const void* sourceStatement = nullptr; // Source AST statement for this block
+    int nestingLevel = 0;                 // Nesting depth for control flow
+    
+    // Instruction tracking for synchronized operations
+    std::vector<InstructionIdentity> instructionList; // Ordered list of instructions in this block
+    std::map<InstructionIdentity, std::set<LaneId>> instructionParticipants; // Which lanes participate in each instruction
+    
+    // Cooperative scheduling state
+    std::set<LaneId> unknownLanes;        // Lanes that haven't reached this control flow point yet
+    std::set<LaneId> arrivedLanes;        // Lanes that have arrived at this block
+    std::set<LaneId> waitingLanes;        // Lanes waiting for wave operations in this block
+    bool allUnknownResolved = false;      // Whether all unknown lanes are resolved
+};
+
 // Wave execution context
 struct WaveContext {
     WaveId waveId;
@@ -149,6 +249,20 @@ struct WaveContext {
     std::map<uint32_t, WaveOpState> activeWaveOps;
     uint32_t nextWaveOpId = 1;
     
+    // Instruction-level synchronization
+    std::map<const void*, WaveOperationSyncPoint> activeSyncPoints; // instruction -> sync point
+    std::map<LaneId, const void*> laneWaitingAtInstruction; // which instruction each lane is waiting at
+    
+    // Dynamic execution block tracking
+    std::map<uint32_t, DynamicExecutionBlock> executionBlocks;
+    std::map<BlockIdentity, uint32_t> identityToBlockId; // Deduplication map
+    uint32_t nextBlockId = 1;
+    std::map<LaneId, uint32_t> laneToCurrentBlock; // Which block each lane is in
+    
+    // Merge stack for tracking control flow convergence
+    std::vector<MergeStackEntry> globalMergeStack; // Global merge stack for all lanes
+    std::map<LaneId, std::vector<MergeStackEntry>> laneMergeStacks; // Per-lane merge stacks
+    
     // Get active lane mask (based on current control flow)
     uint64_t getActiveMask() const;
     std::vector<LaneId> getActiveLanes() const;
@@ -156,6 +270,59 @@ struct WaveContext {
     bool allLanesActive() const;
     uint32_t countActiveLanes() const;
     uint32_t countCurrentlyActiveLanes() const;
+    
+    // Dynamic execution block methods
+    uint32_t createExecutionBlock(const std::set<LaneId>& lanes, const void* sourceStmt = nullptr);
+    void assignLaneToBlock(LaneId laneId, uint32_t blockId);
+    std::vector<LaneId> getLanesInSameBlock(LaneId laneId) const;
+    uint32_t getCurrentBlock(LaneId laneId) const;
+    bool areInSameBlock(LaneId lane1, LaneId lane2) const;
+    void mergeExecutionPaths(const std::vector<uint32_t>& blockIds, uint32_t targetBlockId);
+    
+    // Cooperative scheduling methods
+    void markLaneArrived(LaneId laneId, uint32_t blockId);
+    void markLaneWaitingForWave(LaneId laneId, uint32_t blockId);
+    bool canExecuteWaveOperation(LaneId laneId) const;
+    std::vector<LaneId> getWaveOperationParticipants(LaneId laneId) const;
+    void resolveUnknownLane(LaneId laneId, uint32_t chosenBlockId);
+    bool areAllUnknownLanesResolved(uint32_t blockId) const;
+    
+    // Block deduplication methods
+    uint32_t findOrCreateBlockForPath(const BlockIdentity& identity, const std::set<LaneId>& unknownLanes);
+    uint32_t findBlockByIdentity(const BlockIdentity& identity) const;
+    BlockIdentity createBlockIdentity(const void* sourceStmt, bool conditionValue, 
+                                     uint32_t parentBlockId, const std::vector<MergeStackEntry>& mergeStack = {}) const;
+    
+    // Proactive block creation for control flow
+    std::pair<uint32_t, uint32_t> createIfBlocks(const void* ifStmt, uint32_t parentBlockId, 
+                                                  const std::vector<MergeStackEntry>& mergeStack, bool hasElse);
+    void moveThreadFromUnknownToParticipating(uint32_t blockId, LaneId laneId);
+    void removeThreadFromUnknown(uint32_t blockId, LaneId laneId);
+    void removeThreadFromNestedBlocks(uint32_t parentBlockId, LaneId laneId);
+    std::set<LaneId> getCurrentBlockParticipants(uint32_t blockId) const;
+    
+    // Merge stack management
+    void pushMergePoint(LaneId laneId, const void* sourceStmt, uint32_t parentBlockId, const std::set<uint32_t>& divergentBlocks);
+    void popMergePoint(LaneId laneId);
+    std::vector<MergeStackEntry> getCurrentMergeStack(LaneId laneId) const;
+    void updateMergeStack(LaneId laneId, const std::vector<MergeStackEntry>& mergeStack);
+    
+    // Instruction identity management
+    void addInstructionToBlock(uint32_t blockId, const InstructionIdentity& instruction, const std::set<LaneId>& participants);
+    InstructionIdentity createInstructionIdentity(const void* instruction, const std::string& instructionType, const void* sourceExpr = nullptr) const;
+    std::vector<InstructionIdentity> getBlockInstructions(uint32_t blockId) const;
+    std::set<LaneId> getInstructionParticipantsInBlock(uint32_t blockId, const InstructionIdentity& instruction) const;
+    bool canExecuteInstructionInBlock(uint32_t blockId, const InstructionIdentity& instruction) const;
+    std::set<LaneId> getExpectedParticipantsInBlock(uint32_t blockId, const InstructionIdentity& instruction) const;
+    
+    // Instruction-level synchronization methods
+    bool canExecuteWaveInstruction(LaneId laneId, const void* instruction) const;
+    void markLaneArrivedAtInstruction(LaneId laneId, const void* instruction, const std::string& instructionType);
+    bool areAllParticipantsKnownForInstruction(const void* instruction) const;
+    bool haveAllParticipantsArrivedAtInstruction(const void* instruction) const;
+    std::vector<LaneId> getInstructionParticipants(const void* instruction) const;
+    void createOrUpdateSyncPoint(const void* instruction, LaneId laneId, const std::string& instructionType);
+    void releaseSyncPoint(const void* instruction);
 };
 
 // Shared memory state
@@ -499,6 +666,12 @@ public:
     explicit ReturnStmt(std::unique_ptr<Expression> expr = nullptr);
     void execute(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg) override;
     std::string toString() const override;
+    
+private:
+    void handleGlobalEarlyReturn(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg);
+    void updateBlockResolutionStates(WaveContext& wave, LaneId returningLaneId);
+    void updateWaveOperationStates(WaveContext& wave, LaneId returningLaneId);
+    void updateBarrierStates(ThreadgroupContext& tg, LaneId returningLaneId);
 };
 
 class BarrierStmt : public Statement {
