@@ -215,14 +215,14 @@ struct BlockIdentity {
     }
 };
 
-// Dynamic execution block for SIMT control flow
+// Dynamic execution block for SIMT control flow (global across all waves, organized by wave)
 struct DynamicExecutionBlock {
     uint32_t blockId;
     BlockIdentity identity;               // Unique identity for this execution path
-    std::set<LaneId> participatingLanes;  // Lanes currently executing in this block
+    std::map<WaveId, std::set<LaneId>> participatingLanes;  // Lanes currently executing in this block, organized by wave
     uint32_t programPoint;                // Current execution point within the block
     uint32_t parentBlockId = 0;           // Parent block for nested control flow
-    bool isConverged = true;              // Whether all lanes in wave are in this block
+    bool isConverged = true;              // Whether all lanes in threadgroup are in this block
     
     // Control flow context
     const void* sourceStatement = nullptr; // Source AST statement for this block
@@ -230,12 +230,12 @@ struct DynamicExecutionBlock {
     
     // Instruction tracking for synchronized operations
     std::vector<InstructionIdentity> instructionList; // Ordered list of instructions in this block
-    std::map<InstructionIdentity, std::set<LaneId>> instructionParticipants; // Which lanes participate in each instruction
+    std::map<InstructionIdentity, std::map<WaveId, std::set<LaneId>>> instructionParticipants; // Which lanes participate in each instruction, organized by wave
     
     // Cooperative scheduling state
-    std::set<LaneId> unknownLanes;        // Lanes that haven't reached this control flow point yet
-    std::set<LaneId> arrivedLanes;        // Lanes that have arrived at this block
-    std::set<LaneId> waitingLanes;        // Lanes waiting for wave operations in this block
+    std::map<WaveId, std::set<LaneId>> unknownLanes;    // Lanes that haven't reached this control flow point yet, organized by wave
+    std::map<WaveId, std::set<LaneId>> arrivedLanes;    // Lanes that have arrived at this block, organized by wave
+    std::map<WaveId, std::set<LaneId>> waitingLanes;    // Lanes waiting for wave operations in this block, organized by wave
     bool allUnknownResolved = false;      // Whether all unknown lanes are resolved
 };
 
@@ -253,14 +253,10 @@ struct WaveContext {
     std::map<const void*, WaveOperationSyncPoint> activeSyncPoints; // instruction -> sync point
     std::map<LaneId, const void*> laneWaitingAtInstruction; // which instruction each lane is waiting at
     
-    // Dynamic execution block tracking
-    std::map<uint32_t, DynamicExecutionBlock> executionBlocks;
-    std::map<BlockIdentity, uint32_t> identityToBlockId; // Deduplication map
-    uint32_t nextBlockId = 1;
+    // Lane to block mapping for this wave only
     std::map<LaneId, uint32_t> laneToCurrentBlock; // Which block each lane is in
     
-    // Merge stack for tracking control flow convergence
-    std::vector<MergeStackEntry> globalMergeStack; // Global merge stack for all lanes
+    // Per-wave merge stack tracking
     std::map<LaneId, std::vector<MergeStackEntry>> laneMergeStacks; // Per-lane merge stacks
     
     // Get active lane mask (based on current control flow)
@@ -271,54 +267,12 @@ struct WaveContext {
     uint32_t countActiveLanes() const;
     uint32_t countCurrentlyActiveLanes() const;
     
-    // Dynamic execution block methods
-    uint32_t createExecutionBlock(const std::set<LaneId>& lanes, const void* sourceStmt = nullptr);
-    void assignLaneToBlock(LaneId laneId, uint32_t blockId);
-    std::vector<LaneId> getLanesInSameBlock(LaneId laneId) const;
-    uint32_t getCurrentBlock(LaneId laneId) const;
-    bool areInSameBlock(LaneId lane1, LaneId lane2) const;
-    void mergeExecutionPaths(const std::vector<uint32_t>& blockIds, uint32_t targetBlockId);
-    
-    // Cooperative scheduling methods
-    void markLaneArrived(LaneId laneId, uint32_t blockId);
-    void markLaneWaitingForWave(LaneId laneId, uint32_t blockId);
-    bool canExecuteWaveOperation(LaneId laneId) const;
-    std::vector<LaneId> getWaveOperationParticipants(LaneId laneId) const;
-    void resolveUnknownLane(LaneId laneId, uint32_t chosenBlockId);
-    bool areAllUnknownLanesResolved(uint32_t blockId) const;
-    
-    // Block deduplication methods
-    uint32_t findOrCreateBlockForPath(const BlockIdentity& identity, const std::set<LaneId>& unknownLanes);
-    uint32_t findBlockByIdentity(const BlockIdentity& identity) const;
-    BlockIdentity createBlockIdentity(const void* sourceStmt, bool conditionValue, 
-                                     uint32_t parentBlockId, const std::vector<MergeStackEntry>& mergeStack = {}) const;
-    
-    // Proactive block creation for control flow
-    std::pair<uint32_t, uint32_t> createIfBlocks(const void* ifStmt, uint32_t parentBlockId, 
-                                                  const std::vector<MergeStackEntry>& mergeStack, bool hasElse);
-    uint32_t createLoopIterationBlock(const void* loopStmt, uint32_t parentBlockId, 
-                                      const std::vector<MergeStackEntry>& mergeStack);
-    std::vector<uint32_t> createSwitchCaseBlocks(const void* switchStmt, uint32_t parentBlockId,
-                                                  const std::vector<MergeStackEntry>& mergeStack,
-                                                  const std::vector<int>& caseValues, bool hasDefault);
-    void moveThreadFromUnknownToParticipating(uint32_t blockId, LaneId laneId);
-    void removeThreadFromUnknown(uint32_t blockId, LaneId laneId);
-    void removeThreadFromNestedBlocks(uint32_t parentBlockId, LaneId laneId);
-    std::set<LaneId> getCurrentBlockParticipants(uint32_t blockId) const;
-    
     // Merge stack management
     void pushMergePoint(LaneId laneId, const void* sourceStmt, uint32_t parentBlockId, const std::set<uint32_t>& divergentBlocks);
     void popMergePoint(LaneId laneId);
     std::vector<MergeStackEntry> getCurrentMergeStack(LaneId laneId) const;
     void updateMergeStack(LaneId laneId, const std::vector<MergeStackEntry>& mergeStack);
     
-    // Instruction identity management
-    void addInstructionToBlock(uint32_t blockId, const InstructionIdentity& instruction, const std::set<LaneId>& participants);
-    InstructionIdentity createInstructionIdentity(const void* instruction, const std::string& instructionType, const void* sourceExpr = nullptr) const;
-    std::vector<InstructionIdentity> getBlockInstructions(uint32_t blockId) const;
-    std::set<LaneId> getInstructionParticipantsInBlock(uint32_t blockId, const InstructionIdentity& instruction) const;
-    bool canExecuteInstructionInBlock(uint32_t blockId, const InstructionIdentity& instruction) const;
-    std::set<LaneId> getExpectedParticipantsInBlock(uint32_t blockId, const InstructionIdentity& instruction) const;
     
     // Instruction-level synchronization methods
     bool canExecuteWaveInstruction(LaneId laneId, const void* instruction) const;
@@ -372,6 +326,11 @@ struct ThreadgroupContext {
     std::map<uint32_t, ThreadgroupBarrierState> activeBarriers;
     uint32_t nextBarrierId = 1;
     
+    // Global dynamic execution block management
+    std::map<uint32_t, DynamicExecutionBlock> executionBlocks;
+    std::map<BlockIdentity, uint32_t> identityToBlockId; // Deduplication map
+    uint32_t nextBlockId = 1;
+    
     ThreadgroupContext(uint32_t tgSize, uint32_t wSize);
     ThreadId getGlobalThreadId(WaveId wid, LaneId lid) const;
     std::pair<WaveId, LaneId> getWaveAndLane(ThreadId tid) const;
@@ -382,17 +341,49 @@ struct ThreadgroupContext {
     bool canExecuteWaveOp(WaveId waveId, const std::set<LaneId>& activeLanes) const;
     bool canReleaseBarrier(uint32_t barrierId) const;
     
-    // Global dynamic block creation methods (delegates to appropriate wave)
+    // Global dynamic execution block methods
+    uint32_t createExecutionBlock(const std::map<WaveId, std::set<LaneId>>& lanes, const void* sourceStmt = nullptr);
+    std::vector<LaneId> getLanesInSameBlock(WaveId waveId, LaneId laneId) const;
+    std::map<WaveId, std::set<LaneId>> getAllLanesInBlock(uint32_t blockId) const;
+    bool areInSameBlock(WaveId wave1, LaneId lane1, WaveId wave2, LaneId lane2) const;
+    void mergeExecutionPaths(const std::vector<uint32_t>& blockIds, uint32_t targetBlockId);
+    void assignLaneToBlock(WaveId waveId, LaneId laneId, uint32_t blockId);
+
+    // Cooperative scheduling methods
+    void markLaneArrived(WaveId waveId, LaneId laneId, uint32_t blockId);
+    void markLaneWaitingForWave(WaveId waveId, LaneId laneId, uint32_t blockId);
+    bool canExecuteWaveOperation(WaveId waveId, LaneId laneId) const;
+    std::vector<LaneId> getWaveOperationParticipants(WaveId waveId, LaneId laneId) const;
+    void resolveUnknownLane(WaveId waveId, LaneId laneId, uint32_t chosenBlockId);
+    bool areAllUnknownLanesResolved(uint32_t blockId) const;
+    
+    // Block deduplication methods
+    uint32_t findOrCreateBlockForPath(const BlockIdentity& identity, const std::map<WaveId, std::set<LaneId>>& unknownLanes);
+    uint32_t findBlockByIdentity(const BlockIdentity& identity) const;
+    BlockIdentity createBlockIdentity(const void* sourceStmt, bool conditionValue, 
+                                     uint32_t parentBlockId, const std::vector<MergeStackEntry>& mergeStack = {}) const;
+    
+    // Proactive block creation for control flow
     std::pair<uint32_t, uint32_t> createIfBlocks(const void* ifStmt, uint32_t parentBlockId, 
-                                                  const std::vector<MergeStackEntry>& mergeStack, bool hasElse, WaveId waveId);
+                                                  const std::vector<MergeStackEntry>& mergeStack, bool hasElse);
     uint32_t createLoopIterationBlock(const void* loopStmt, uint32_t parentBlockId, 
-                                      const std::vector<MergeStackEntry>& mergeStack, WaveId waveId);
+                                      const std::vector<MergeStackEntry>& mergeStack);
     std::vector<uint32_t> createSwitchCaseBlocks(const void* switchStmt, uint32_t parentBlockId,
                                                   const std::vector<MergeStackEntry>& mergeStack,
-                                                  const std::vector<int>& caseValues, bool hasDefault, WaveId waveId);
-    void moveThreadFromUnknownToParticipating(uint32_t blockId, LaneId laneId, WaveId waveId);
-    void removeThreadFromUnknown(uint32_t blockId, LaneId laneId, WaveId waveId);
-    void removeThreadFromNestedBlocks(uint32_t parentBlockId, LaneId laneId, WaveId waveId);
+                                                  const std::vector<int>& caseValues, bool hasDefault);
+    void moveThreadFromUnknownToParticipating(uint32_t blockId, WaveId waveId, LaneId laneId);
+    void removeThreadFromUnknown(uint32_t blockId, WaveId waveId, LaneId laneId);
+    void removeThreadFromNestedBlocks(uint32_t parentBlockId, WaveId waveId, LaneId laneId);
+    std::map<WaveId, std::set<LaneId>> getCurrentBlockParticipants(uint32_t blockId) const;
+    uint32_t getCurrentBlock(WaveId waveId, LaneId laneId) const ;
+    // Instruction identity management
+    void addInstructionToBlock(uint32_t blockId, const InstructionIdentity& instruction, 
+                               const std::map<WaveId, std::set<LaneId>>& participants);
+    InstructionIdentity createInstructionIdentity(const void* instruction, const std::string& instructionType, const void* sourceExpr = nullptr) const;
+    std::vector<InstructionIdentity> getBlockInstructions(uint32_t blockId) const;
+    std::map<WaveId, std::set<LaneId>> getInstructionParticipantsInBlock(uint32_t blockId, const InstructionIdentity& instruction) const;
+    bool canExecuteInstructionInBlock(uint32_t blockId, const InstructionIdentity& instruction) const;
+    std::map<WaveId, std::set<LaneId>> getExpectedParticipantsInBlock(uint32_t blockId, const InstructionIdentity& instruction) const;
 };
 
 // Thread execution ordering
