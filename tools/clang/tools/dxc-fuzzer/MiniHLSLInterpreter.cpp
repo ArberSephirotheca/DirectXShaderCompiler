@@ -280,6 +280,7 @@ ThreadgroupContext::ThreadgroupContext(uint32_t tgSize, uint32_t wSize)
       wave->lanes.push_back(std::move(lane));
       allLanes.insert(l);
     }
+    waves.push_back(std::move(wave));
     // Create initial execution block with all lanes as known participants
     if (!allLanes.empty()) {
       // Create identity for initial block (no condition, all lanes start here
@@ -287,10 +288,9 @@ ThreadgroupContext::ThreadgroupContext(uint32_t tgSize, uint32_t wSize)
       // Mark all lanes as arrived at the initial block
       for (LaneId laneId : allLanes) {
         // TODO: implement this function for WaveContext
-        wave->markLaneArrived(laneId, initialBlockId);
+        markLaneArrived(w, laneId, initialBlockId);
       }
     }
-    waves.push_back(std::move(wave));
   }
 
 
