@@ -2762,7 +2762,7 @@ std::vector<LaneId> ThreadgroupContext::getWaveOperationParticipants(WaveId wave
     return participants;
 }
 
-void ThreadgroupContext::resolveUnknownLane(LaneId laneId, uint32_t chosenBlockId) {
+void ThreadgroupContext::resolveUnknownLane(WaveId waveId, LaneId laneId, uint32_t chosenBlockId) {
     // Remove this lane from all blocks' unknown sets
     for (auto& [blockId, block] : executionBlocks) {
         block.unknownLanes.erase(laneId);
@@ -2772,7 +2772,7 @@ void ThreadgroupContext::resolveUnknownLane(LaneId laneId, uint32_t chosenBlockI
     }
     
     // Mark the lane as arrived at the chosen block
-    markLaneArrived(laneId, chosenBlockId);
+    markLaneArrived(waveId, laneId, chosenBlockId);
 }
 
 bool ThreadgroupContext::areAllUnknownLanesResolved(uint32_t blockId) const {
@@ -2835,9 +2835,9 @@ BlockIdentity ThreadgroupContext::createBlockIdentity(const void* sourceStmt, bo
 }
 
 // Instruction-level synchronization methods
-bool WaveContext::canExecuteWaveInstruction(LaneId laneId, const void* instruction) const {
+bool ThreadgroupContext::canExecuteWaveInstruction(WaveId waveId, LaneId laneId, const void* instruction) const {
     // Get the current block for this lane
-    uint32_t currentBlockId = getCurrentBlock(laneId);
+    uint32_t currentBlockId = getCurrentBlock(waveId, laneId);
     if (currentBlockId == 0) {
         return false; // Lane not assigned to any block
     }
@@ -2860,18 +2860,18 @@ bool WaveContext::canExecuteWaveInstruction(LaneId laneId, const void* instructi
     return canExecuteInBlock && canExecuteGlobal;
 }
 
-void WaveContext::markLaneArrivedAtInstruction(LaneId laneId, const void* instruction, const std::string& instructionType) {
+void ThreadgroupContext::markLaneArrivedAtInstruction(WaveId waveId, LaneId laneId, const void* instruction, const std::string& instructionType) {
     // Create instruction identity
     InstructionIdentity instrIdentity = createInstructionIdentity(instruction, instructionType, instruction);
     
     // Get current block for this lane
-    uint32_t currentBlockId = getCurrentBlock(laneId);
+    uint32_t currentBlockId = getCurrentBlock(waveId, laneId);
     if (currentBlockId == 0) {
         throw std::runtime_error("Lane not assigned to any block when arriving at instruction");
     }
     
     // Add instruction to block with this lane as participant
-    std::set<LaneId> participants = {laneId};
+    std::map<WaveId, std::set<LaneId>> participants = {{ waveId, { laneId } }};
     addInstructionToBlock(currentBlockId, instrIdentity, participants);
     
     // Create or update sync point for this instruction
@@ -2881,35 +2881,35 @@ void WaveContext::markLaneArrivedAtInstruction(LaneId laneId, const void* instru
     syncPoint.arrivedParticipants.insert(laneId);
     
     // Mark lane as waiting at this instruction
-    laneWaitingAtInstruction[laneId] = instruction;
-    lanes[laneId]->state = ThreadState::WaitingForWave;
+    waves[waveId]->laneWaitingAtInstruction[laneId] = instruction;
+    waves[waveId]->lanes[laneId]->state = ThreadState::WaitingForWave;
     
     // Update completion status
     syncPoint.allParticipantsArrived = (syncPoint.arrivedParticipants == syncPoint.expectedParticipants);
     syncPoint.isComplete = syncPoint.allParticipantsKnown && syncPoint.allParticipantsArrived;
 }
 
-bool WaveContext::areAllParticipantsKnownForInstruction(const void* instruction) const {
-    auto it = activeSyncPoints.find(instruction);
-    if (it == activeSyncPoints.end()) {
+bool ThreadgroupContext::areAllParticipantsKnownForWaveInstruction(WaveId waveId, const void* instruction) const {
+    auto it = waves[waveId]->activeSyncPoints.find(instruction);
+    if (it == waves[waveId]->activeSyncPoints.end()) {
         return false; // No sync point created yet
     }
     
     return it->second.allParticipantsKnown;
 }
 
-bool WaveContext::haveAllParticipantsArrivedAtInstruction(const void* instruction) const {
-    auto it = activeSyncPoints.find(instruction);
-    if (it == activeSyncPoints.end()) {
+bool ThreadgroupContext::haveAllParticipantsArrivedAtWaveInstruction(const void* instruction) const {
+    auto it = waves[waveId]->activeSyncPoints.find(instruction);
+    if (it == waves[waveId]->activeSyncPoints.end()) {
         return false; // No sync point created yet
     }
     
     return it->second.allParticipantsArrived;
 }
 
-std::vector<LaneId> WaveContext::getInstructionParticipants(const void* instruction) const {
-    auto it = activeSyncPoints.find(instruction);
-    if (it == activeSyncPoints.end()) {
+std::vector<LaneId> ThreadgroupContext::getWaveInstructionParticipants(const void* instruction) const {
+    auto it = waves[waveId]->activeSyncPoints.find(instruction);
+    if (it == waves[waveId]->activeSyncPoints.end()) {
         return {}; // No sync point
     }
     
@@ -2928,21 +2928,21 @@ std::vector<LaneId> WaveContext::getInstructionParticipants(const void* instruct
     return participants;
 }
 
-void WaveContext::createOrUpdateSyncPoint(const void* instruction, LaneId laneId, const std::string& instructionType) {
-    auto it = activeSyncPoints.find(instruction);
+void ThreadgroupContext::createOrUpdateWaveSyncPoint(const void* instruction, WaveId waveId, LaneId laneId, const std::string& instructionType) {
+    auto it = waves[waveId]->activeSyncPoints.find(instruction);
     
-    if (it == activeSyncPoints.end()) {
+    if (it == waves[waveId]->activeSyncPoints.end()) {
         // Create new sync point
         WaveOperationSyncPoint syncPoint;
         syncPoint.instruction = instruction;
         syncPoint.instructionType = instructionType;
         
         // Determine which block this lane is in and get expected participants
-        uint32_t blockId = getCurrentBlock(laneId);
+        uint32_t blockId = getCurrentBlock(waveId, laneId);
         syncPoint.blockId = blockId;
         
         // Get expected participants from the block
-        auto blockParticipants = getWaveOperationParticipants(laneId);
+        auto blockParticipants = getWaveOperationParticipants(waveId, laneId);
         for (LaneId participantId : blockParticipants) {
             syncPoint.expectedParticipants.insert(participantId);
         }
@@ -2967,7 +2967,7 @@ void WaveContext::createOrUpdateSyncPoint(const void* instruction, LaneId laneId
     }
 }
 
-void WaveContext::releaseSyncPoint(const void* instruction) {
+void ThreadgroupContext::releaseWaveSyncPoint(const void* instruction) {
     auto it = activeSyncPoints.find(instruction);
     if (it != activeSyncPoints.end()) {
         const auto& syncPoint = it->second;
@@ -2986,7 +2986,7 @@ void WaveContext::releaseSyncPoint(const void* instruction) {
 }
 
 // Merge stack management methods
-void WaveContext::pushMergePoint(LaneId laneId, const void* sourceStmt, uint32_t parentBlockId, const std::set<uint32_t>& divergentBlocks) {
+void ThreadgroupContext::pushMergePoint(LaneId laneId, const void* sourceStmt, uint32_t parentBlockId, const std::set<uint32_t>& divergentBlocks) {
     MergeStackEntry entry;
     entry.sourceStatement = sourceStmt;
     entry.parentBlockId = parentBlockId;
@@ -3003,7 +3003,7 @@ void WaveContext::popMergePoint(LaneId laneId) {
     }
 }
 
-std::vector<MergeStackEntry> WaveContext::getCurrentMergeStack(LaneId laneId) const {
+std::vector<MergeStackEntry> ThreadgroupContext::getCurrentMergeStack(LaneId laneId) const {
     auto it = laneMergeStacks.find(laneId);
     if (it != laneMergeStacks.end()) {
         return it->second;
@@ -3011,7 +3011,7 @@ std::vector<MergeStackEntry> WaveContext::getCurrentMergeStack(LaneId laneId) co
     return {};
 }
 
-void WaveContext::updateMergeStack(LaneId laneId, const std::vector<MergeStackEntry>& mergeStack) {
+void ThreadgroupContext::updateMergeStack(LaneId laneId, const std::vector<MergeStackEntry>& mergeStack) {
     laneMergeStacks[laneId] = mergeStack;
 }
 
@@ -3039,7 +3039,9 @@ void ThreadgroupContext::addInstructionToBlock(uint32_t blockId, const Instructi
     
     // Merge participants for this instruction (don't replace, add to existing)
     auto& existingParticipants = block.instructionParticipants[instruction];
-    existingParticipants.insert(participants.begin(), participants.end());
+    for (const auto& [waveId, newLanes] : participants) {
+      existingParticipants[waveId].insert(newLanes.begin(), newLanes.end());
+    }
 }
 
 InstructionIdentity ThreadgroupContext::createInstructionIdentity(const void* instruction, const std::string& instructionType, const void* sourceExpr) const {

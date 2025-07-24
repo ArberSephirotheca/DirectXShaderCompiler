@@ -267,21 +267,21 @@ struct WaveContext {
     uint32_t countActiveLanes() const;
     uint32_t countCurrentlyActiveLanes() const;
     
-    // Merge stack management
-    void pushMergePoint(LaneId laneId, const void* sourceStmt, uint32_t parentBlockId, const std::set<uint32_t>& divergentBlocks);
-    void popMergePoint(LaneId laneId);
-    std::vector<MergeStackEntry> getCurrentMergeStack(LaneId laneId) const;
-    void updateMergeStack(LaneId laneId, const std::vector<MergeStackEntry>& mergeStack);
+    // // Merge stack management
+    // void pushMergePoint(LaneId laneId, const void* sourceStmt, uint32_t parentBlockId, const std::set<uint32_t>& divergentBlocks);
+    // void popMergePoint(LaneId laneId);
+    // std::vector<MergeStackEntry> getCurrentMergeStack(LaneId laneId) const;
+    // void updateMergeStack(LaneId laneId, const std::vector<MergeStackEntry>& mergeStack);
     
     
-    // Instruction-level synchronization methods
-    bool canExecuteWaveInstruction(LaneId laneId, const void* instruction) const;
-    void markLaneArrivedAtInstruction(LaneId laneId, const void* instruction, const std::string& instructionType);
-    bool areAllParticipantsKnownForInstruction(const void* instruction) const;
-    bool haveAllParticipantsArrivedAtInstruction(const void* instruction) const;
-    std::vector<LaneId> getInstructionParticipants(const void* instruction) const;
-    void createOrUpdateSyncPoint(const void* instruction, LaneId laneId, const std::string& instructionType);
-    void releaseSyncPoint(const void* instruction);
+    // // Instruction-level synchronization methods
+    // bool canExecuteWaveInstruction(LaneId laneId, const void* instruction) const;
+    // void markLaneArrivedAtInstruction(LaneId laneId, const void* instruction, const std::string& instructionType);
+    // bool areAllParticipantsKnownForInstruction(const void* instruction) const;
+    // bool haveAllParticipantsArrivedAtInstruction(const void* instruction) const;
+    // std::vector<LaneId> getInstructionParticipants(const void* instruction) const;
+    // void createOrUpdateSyncPoint(const void* instruction, LaneId laneId, const std::string& instructionType);
+    // void releaseSyncPoint(const void* instruction);
 };
 
 // Shared memory state
@@ -376,6 +376,16 @@ struct ThreadgroupContext {
     void removeThreadFromNestedBlocks(uint32_t parentBlockId, WaveId waveId, LaneId laneId);
     std::map<WaveId, std::set<LaneId>> getCurrentBlockParticipants(uint32_t blockId) const;
     uint32_t getCurrentBlock(WaveId waveId, LaneId laneId) const ;
+
+    // Instruction-level synchronization methods
+    bool canExecuteWaveInstruction(WaveId waveId, LaneId laneId, const void* instruction) const;
+    void markLaneArrivedAtInstruction(WaveId waveId, LaneId laneId, const void* instruction, const std::string& instructionType);
+    bool areAllParticipantsKnownForInstruction(const void* instruction) const;
+    bool haveAllParticipantsArrivedAtInstruction(const void* instruction) const;
+    std::vector<LaneId> getInstructionParticipants(const void* instruction) const;
+    void createOrUpdateSyncPoint(const void* instruction, LaneId laneId, const std::string& instructionType);
+    void releaseSyncPoint(const void* instruction);
+
     // Instruction identity management
     void addInstructionToBlock(uint32_t blockId, const InstructionIdentity& instruction, 
                                const std::map<WaveId, std::set<LaneId>>& participants);
@@ -384,6 +394,12 @@ struct ThreadgroupContext {
     std::map<WaveId, std::set<LaneId>> getInstructionParticipantsInBlock(uint32_t blockId, const InstructionIdentity& instruction) const;
     bool canExecuteInstructionInBlock(uint32_t blockId, const InstructionIdentity& instruction) const;
     std::map<WaveId, std::set<LaneId>> getExpectedParticipantsInBlock(uint32_t blockId, const InstructionIdentity& instruction) const;
+
+    // Merge stack management
+    void pushMergePoint(LaneId laneId, const void* sourceStmt, uint32_t parentBlockId, const std::set<uint32_t>& divergentBlocks);
+    void popMergePoint(LaneId laneId);
+    std::vector<MergeStackEntry> getCurrentMergeStack(LaneId laneId) const;
+    void updateMergeStack(LaneId laneId, const std::vector<MergeStackEntry>& mergeStack);
 };
 
 // Thread execution ordering
