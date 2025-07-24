@@ -592,9 +592,9 @@ Value WaveActiveOp::evaluate(LaneContext &lane, WaveContext &wave,
   const void *instruction =
       static_cast<const void *>(this); // Use 'this' as instruction pointer
 
-  if (!wave.canExecuteWaveInstruction(lane.laneId, instruction)) {
+  if (!tg.canExecuteWaveInstruction(wave.waveId,lane.laneId, instruction)) {
     // Mark this lane as arrived at this specific instruction
-    wave.markLaneArrivedAtInstruction(lane.laneId, instruction, "WaveActiveOp");
+    tg.markLaneArrivedAtInstruction(lane.laneId, instruction, "WaveActiveOp");
 
     // In a full cooperative scheduler, this would suspend the lane and schedule
     // others For now, throw an exception to indicate we need to wait
@@ -604,14 +604,15 @@ Value WaveActiveOp::evaluate(LaneContext &lane, WaveContext &wave,
 
   // All participants known AND all have arrived at this instruction - safe to
   // execute
-  auto participants = wave.getInstructionParticipants(instruction);
+  auto blockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
+  auto participants = tg.getInstructionParticipantsInBlock(blockId, instruction);
   std::vector<Value> values;
   for (LaneId laneId : participants) {
     values.push_back(expr_->evaluate(*wave.lanes[laneId], wave, tg));
   }
 
   // Release the sync point after execution
-  wave.releaseSyncPoint(instruction);
+  tg.releaseWaveSyncPoint(wave.waveId, instruction);
 
   if (values.empty()) {
     throw std::runtime_error("No active lanes for wave operation");
@@ -747,12 +748,12 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
   // Push merge point for if/else divergence
   std::set<uint32_t>
       divergentBlocks; // Will be populated with then/else block IDs
-  wave.pushMergePoint(lane.laneId, static_cast<const void *>(this),
+  tg.pushMergePoint(wave.waveId, lane.laneId, static_cast<const void *>(this),
                       parentBlockId, divergentBlocks);
 
   // Get current merge stack for block creation
   std::vector<MergeStackEntry> currentMergeStack =
-      wave.getCurrentMergeStack(lane.laneId);
+      tg.getCurrentMergeStack(wave.waveId, lane.laneId);
 
   // PROACTIVE: Create blocks that actually exist in the code
   bool hasElse = !elseBlock_.empty();
@@ -778,7 +779,7 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
       for (auto &stmt : thenBlock_) {
         stmt->execute(lane, wave, tg);
         if (lane.hasReturned) {
-          wave.popMergePoint(lane.laneId);
+          tg.popMergePoint(wave.waveId, lane.laneId);
           return;
         }
       }
@@ -798,7 +799,7 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
         for (auto &stmt : elseBlock_) {
           stmt->execute(lane, wave, tg);
           if (lane.hasReturned) {
-            wave.popMergePoint(lane.laneId);
+            tg.popMergePoint(wave.waveId, lane.laneId);
             return;
           }
         }
@@ -813,7 +814,7 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
   }
 
   // Pop merge point and return to parent block (reconvergence)
-  wave.popMergePoint(lane.laneId);
+  tg.popMergePoint(wave.waveId, lane.laneId);
   tg.assignLaneToBlock(wave.waveId, lane.laneId, parentBlockId);
 
   // Restore active state (reconvergence)
@@ -869,7 +870,7 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
   // the loop
   std::set<uint32_t>
       divergentBlocks; // Will be populated as iterations create blocks
-  wave.pushMergePoint(lane.laneId, static_cast<const void *>(this),
+  tg.pushMergePoint(wave.waveId, lane.laneId, static_cast<const void *>(this),
                       parentBlockId, divergentBlocks);
 
   // Initialize loop variable
@@ -882,7 +883,7 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
     try {
       // PROACTIVE: Create iteration block for this iteration
       std::vector<MergeStackEntry> currentMergeStack =
-          wave.getCurrentMergeStack(lane.laneId);
+          tg.getCurrentMergeStack(wave.waveId, lane.laneId);
       uint32_t iterationBlockId = tg.createLoopIterationBlock(
           static_cast<const void *>(this), parentBlockId, currentMergeStack);
 
@@ -894,13 +895,13 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
       for (auto &stmt : body_) {
         stmt->execute(lane, wave, tg);
         if (lane.hasReturned) {
-          wave.popMergePoint(lane.laneId);
+          tg.popMergePoint(wave.waveId, lane.laneId);
           return;
         }
       }
     } catch (const ControlFlowException &e) {
       if (e.type == ControlFlowException::Break) {
-        wave.popMergePoint(lane.laneId);
+        tg.popMergePoint(wave.waveId, lane.laneId);
         tg.assignLaneToBlock(wave.waveId, lane.laneId, parentBlockId);
         return; // Exit the loop
       } else if (e.type == ControlFlowException::Continue) {
@@ -913,7 +914,7 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
   }
 
   // Pop merge point when exiting loop normally
-  wave.popMergePoint(lane.laneId);
+  tg.popMergePoint(wave.waveId, lane.laneId);
 
   // Return to parent block after loop completion
   tg.assignLaneToBlock(wave.waveId, lane.laneId, parentBlockId);
@@ -1007,7 +1008,7 @@ void ReturnStmt::updateBlockResolutionStates(ThreadgroupContext &tg, WaveContext
           auto waitingIt = wave.laneWaitingAtInstruction.find(laneId);
           if (waitingIt != wave.laneWaitingAtInstruction.end()) {
             const void *instruction = waitingIt->second;
-            canProceed = wave.canExecuteWaveInstruction(laneId, instruction);
+            canProceed = tg.canExecuteWaveInstruction(waveId, laneId, instruction);
           }
 
           if (canProceed) {
@@ -2483,7 +2484,7 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
     try {
       // PROACTIVE: Create iteration block for this iteration
       std::vector<MergeStackEntry> currentMergeStack =
-          wave.getCurrentMergeStack(lane.laneId);
+          tg.getCurrentMergeStack(wave.waveId, lane.laneId);
       uint32_t iterationBlockId = tg.createLoopIterationBlock(
           static_cast<const void *>(this), parentBlockId, currentMergeStack);
 
@@ -2534,7 +2535,7 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
     try {
       // PROACTIVE: Create iteration block for this iteration
       std::vector<MergeStackEntry> currentMergeStack =
-          wave.getCurrentMergeStack(lane.laneId);
+          tg.getCurrentMergeStack(wave.waveId, lane.laneId);
       uint32_t iterationBlockId = tg.createLoopIterationBlock(
           static_cast<const void *>(this), parentBlockId, currentMergeStack);
 
@@ -2608,7 +2609,7 @@ void SwitchStmt::execute(LaneContext &lane, WaveContext &wave,
   }
 
   std::vector<MergeStackEntry> currentMergeStack =
-      wave.getCurrentMergeStack(lane.laneId);
+      tg.getCurrentMergeStack(wave.waveId, lane.laneId);
   std::vector<uint32_t> caseBlockIds =
       tg.createSwitchCaseBlocks(static_cast<const void *>(this), parentBlockId,
                                 currentMergeStack, caseValues, hasDefault);

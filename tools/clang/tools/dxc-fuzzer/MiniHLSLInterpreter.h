@@ -432,20 +432,20 @@ struct WaveContext {
     uint32_t countCurrentlyActiveLanes() const;
     
     // // Merge stack management
-    void pushMergePoint(LaneId laneId, const void* sourceStmt, uint32_t parentBlockId, const std::set<uint32_t>& divergentBlocks);
-    void popMergePoint(LaneId laneId);
-    std::vector<MergeStackEntry> getCurrentMergeStack(LaneId laneId) const;
-    void updateMergeStack(LaneId laneId, const std::vector<MergeStackEntry>& mergeStack);
+    // void pushMergePoint(LaneId laneId, const void* sourceStmt, uint32_t parentBlockId, const std::set<uint32_t>& divergentBlocks);
+    // void popMergePoint(LaneId laneId);
+    // std::vector<MergeStackEntry> getCurrentMergeStack(LaneId laneId) const;
+    // void updateMergeStack(LaneId laneId, const std::vector<MergeStackEntry>& mergeStack);
     
     
     // // Instruction-level synchronization methods
-    bool canExecuteWaveInstruction(LaneId laneId, const void* instruction) const;
-    void markLaneArrivedAtInstruction(LaneId laneId, const void* instruction, const std::string& instructionType);
-    bool areAllParticipantsKnownForInstruction(const void* instruction) const;
-    bool haveAllParticipantsArrivedAtInstruction(const void* instruction) const;
-    std::vector<LaneId> getInstructionParticipants(const void* instruction) const;
-    void createOrUpdateSyncPoint(const void* instruction, LaneId laneId, const std::string& instructionType);
-    void releaseSyncPoint(const void* instruction);
+    // bool canExecuteWaveInstruction(LaneId laneId, const void* instruction) const;
+    // void markLaneArrivedAtInstruction(LaneId laneId, const void* instruction, const std::string& instructionType);
+    // bool areAllParticipantsKnownForInstruction(const void* instruction) const;
+    // bool haveAllParticipantsArrivedAtInstruction(const void* instruction) const;
+    // std::vector<LaneId> getInstructionParticipants(const void* instruction) const;
+    // void createOrUpdateSyncPoint(const void* instruction, LaneId laneId, const std::string& instructionType);
+    // void releaseSyncPoint(const void* instruction);
 };
 
 // Shared memory state
