@@ -287,7 +287,6 @@ ThreadgroupContext::ThreadgroupContext(uint32_t tgSize, uint32_t wSize)
 
       // Mark all lanes as arrived at the initial block
       for (LaneId laneId : allLanes) {
-        // TODO: implement this function for WaveContext
         markLaneArrived(w, laneId, initialBlockId);
       }
     }
