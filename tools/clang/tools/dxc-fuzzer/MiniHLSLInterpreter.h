@@ -216,27 +216,180 @@ struct BlockIdentity {
 };
 
 // Dynamic execution block for SIMT control flow (global across all waves, organized by wave)
-struct DynamicExecutionBlock {
-    uint32_t blockId;
-    BlockIdentity identity;               // Unique identity for this execution path
-    std::map<WaveId, std::set<LaneId>> participatingLanes;  // Lanes currently executing in this block, organized by wave
-    uint32_t programPoint;                // Current execution point within the block
-    uint32_t parentBlockId = 0;           // Parent block for nested control flow
-    bool isConverged = true;              // Whether all lanes in threadgroup are in this block
+class DynamicExecutionBlock {
+private:
+    uint32_t blockId_;
+    BlockIdentity identity_;               // Unique identity for this execution path
+    std::map<WaveId, std::set<LaneId>> participatingLanes_;  // Lanes currently executing in this block, organized by wave
+    uint32_t programPoint_;                // Current execution point within the block
+    uint32_t parentBlockId_ = 0;           // Parent block for nested control flow
+    bool isConverged_ = true;              // Whether all lanes in threadgroup are in this block
     
     // Control flow context
-    const void* sourceStatement = nullptr; // Source AST statement for this block
-    int nestingLevel = 0;                 // Nesting depth for control flow
+    const void* sourceStatement_ = nullptr; // Source AST statement for this block
+    int nestingLevel_ = 0;                 // Nesting depth for control flow
     
     // Instruction tracking for synchronized operations
-    std::vector<InstructionIdentity> instructionList; // Ordered list of instructions in this block
-    std::map<InstructionIdentity, std::map<WaveId, std::set<LaneId>>> instructionParticipants; // Which lanes participate in each instruction, organized by wave
+    std::vector<InstructionIdentity> instructionList_; // Ordered list of instructions in this block
+    std::map<InstructionIdentity, std::map<WaveId, std::set<LaneId>>> instructionParticipants_; // Which lanes participate in each instruction, organized by wave
     
     // Cooperative scheduling state
-    std::map<WaveId, std::set<LaneId>> unknownLanes;    // Lanes that haven't reached this control flow point yet, organized by wave
-    std::map<WaveId, std::set<LaneId>> arrivedLanes;    // Lanes that have arrived at this block, organized by wave
-    std::map<WaveId, std::set<LaneId>> waitingLanes;    // Lanes waiting for wave operations in this block, organized by wave
-    std::map<WaveId, bool> allUnknownResolved;      // Whether all unknown lanes are resolved
+    std::map<WaveId, std::set<LaneId>> unknownLanes_;    // Lanes that haven't reached this control flow point yet, organized by wave
+    std::map<WaveId, std::set<LaneId>> arrivedLanes_;    // Lanes that have arrived at this block, organized by wave
+    std::map<WaveId, std::set<LaneId>> waitingLanes_;    // Lanes waiting for wave operations in this block, organized by wave
+    std::map<WaveId, bool> allUnknownResolved_;      // Whether all unknown lanes are resolved
+
+public:
+    // Constructor
+    DynamicExecutionBlock() = default;
+    DynamicExecutionBlock(uint32_t id, const BlockIdentity& ident) 
+        : blockId_(id), identity_(ident) {}
+    
+    // Getters
+    uint32_t getBlockId() const { return blockId_; }
+    const BlockIdentity& getIdentity() const { return identity_; }
+    const std::map<WaveId, std::set<LaneId>>& getParticipatingLanes() const { return participatingLanes_; }
+    uint32_t getProgramPoint() const { return programPoint_; }
+    uint32_t getParentBlockId() const { return parentBlockId_; }
+    bool getIsConverged() const { return isConverged_; }
+    const void* getSourceStatement() const { return sourceStatement_; }
+    int getNestingLevel() const { return nestingLevel_; }
+    const std::vector<InstructionIdentity>& getInstructionList() const { return instructionList_; }
+    const std::map<InstructionIdentity, std::map<WaveId, std::set<LaneId>>>& getInstructionParticipants() const { return instructionParticipants_; }
+    const std::map<WaveId, std::set<LaneId>>& getUnknownLanes() const { return unknownLanes_; }
+    const std::map<WaveId, std::set<LaneId>>& getArrivedLanes() const { return arrivedLanes_; }
+    const std::map<WaveId, std::set<LaneId>>& getWaitingLanes() const { return waitingLanes_; }
+    const std::map<WaveId, bool>& getAllUnknownResolved() const { return allUnknownResolved_; }
+    
+    // Wave-specific getters
+    std::set<LaneId> getParticipatingLanesForWave(WaveId waveId) const {
+        auto it = participatingLanes_.find(waveId);
+        return (it != participatingLanes_.end()) ? it->second : std::set<LaneId>{};
+    }
+    
+    std::set<LaneId> getUnknownLanesForWave(WaveId waveId) const {
+        auto it = unknownLanes_.find(waveId);
+        return (it != unknownLanes_.end()) ? it->second : std::set<LaneId>{};
+    }
+    
+    std::set<LaneId> getArrivedLanesForWave(WaveId waveId) const {
+        auto it = arrivedLanes_.find(waveId);
+        return (it != arrivedLanes_.end()) ? it->second : std::set<LaneId>{};
+    }
+    
+    std::set<LaneId> getWaitingLanesForWave(WaveId waveId) const {
+        auto it = waitingLanes_.find(waveId);
+        return (it != waitingLanes_.end()) ? it->second : std::set<LaneId>{};
+    }
+    
+    bool isWaveAllUnknownResolved(WaveId waveId) const {
+        auto it = allUnknownResolved_.find(waveId);
+        return (it != allUnknownResolved_.end()) ? it->second : true;
+    }
+    
+    // Setters
+    void setBlockId(uint32_t id) { blockId_ = id; }
+    void setIdentity(const BlockIdentity& ident) { identity_ = ident; }
+    void setProgramPoint(uint32_t point) { programPoint_ = point; }
+    void setParentBlockId(uint32_t id) { parentBlockId_ = id; }
+    void setIsConverged(bool converged) { isConverged_ = converged; }
+    void setSourceStatement(const void* stmt) { sourceStatement_ = stmt; }
+    void setNestingLevel(int level) { nestingLevel_ = level; }
+    
+    // Lane management methods
+    void addParticipatingLane(WaveId waveId, LaneId laneId) {
+        participatingLanes_[waveId].insert(laneId);
+    }
+    
+    void removeParticipatingLane(WaveId waveId, LaneId laneId) {
+        participatingLanes_[waveId].erase(laneId);
+        if (participatingLanes_[waveId].empty()) {
+            participatingLanes_.erase(waveId);
+        }
+    }
+    
+    void addUnknownLane(WaveId waveId, LaneId laneId) {
+        unknownLanes_[waveId].insert(laneId);
+    }
+    
+    void removeUnknownLane(WaveId waveId, LaneId laneId) {
+        unknownLanes_[waveId].erase(laneId);
+        if (unknownLanes_[waveId].empty()) {
+            unknownLanes_.erase(waveId);
+        }
+    }
+    
+    void addArrivedLane(WaveId waveId, LaneId laneId) {
+        arrivedLanes_[waveId].insert(laneId);
+    }
+    
+    void removeArrivedLane(WaveId waveId, LaneId laneId) {
+        arrivedLanes_[waveId].erase(laneId);
+        if (arrivedLanes_[waveId].empty()) {
+            arrivedLanes_.erase(waveId);
+        }
+    }
+    
+    void addWaitingLane(WaveId waveId, LaneId laneId) {
+        waitingLanes_[waveId].insert(laneId);
+    }
+    
+    void removeWaitingLane(WaveId waveId, LaneId laneId) {
+        waitingLanes_[waveId].erase(laneId);
+        if (waitingLanes_[waveId].empty()) {
+            waitingLanes_.erase(waveId);
+        }
+    }
+    
+    void setWaveAllUnknownResolved(WaveId waveId, bool resolved) {
+        allUnknownResolved_[waveId] = resolved;
+    }
+    
+    // Instruction management methods
+    void addInstruction(const InstructionIdentity& instruction) {
+        instructionList_.push_back(instruction);
+    }
+    
+    void addInstructionParticipant(const InstructionIdentity& instruction, WaveId waveId, LaneId laneId) {
+        instructionParticipants_[instruction][waveId].insert(laneId);
+    }
+    
+    std::set<LaneId> getInstructionParticipantsForWave(const InstructionIdentity& instruction, WaveId waveId) const {
+        auto it = instructionParticipants_.find(instruction);
+        if (it != instructionParticipants_.end()) {
+            auto waveIt = it->second.find(waveId);
+            if (waveIt != it->second.end()) {
+                return waveIt->second;
+            }
+        }
+        return {};
+    }
+    
+    void removeInstructionParticipantsForWave(const InstructionIdentity& instruction, WaveId waveId) {
+        auto it = instructionParticipants_.find(instruction);
+        if (it != instructionParticipants_.end()) {
+            it->second.erase(waveId);
+            if (it->second.empty()) {
+                instructionParticipants_.erase(it);
+            }
+        }
+    }
+    
+    void removeInstructionParticipant(const InstructionIdentity& instruction, WaveId waveId, LaneId laneId) {
+        auto it = instructionParticipants_.find(instruction);
+        if (it != instructionParticipants_.end()) {
+            auto waveIt = it->second.find(waveId);
+            if (waveIt != it->second.end()) {
+                waveIt->second.erase(laneId);
+                if (waveIt->second.empty()) {
+                    it->second.erase(waveIt);
+                    if (it->second.empty()) {
+                        instructionParticipants_.erase(it);
+                    }
+                }
+            }
+        }
+    }
 };
 
 // Wave execution context

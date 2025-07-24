@@ -981,26 +981,26 @@ void ReturnStmt::updateBlockResolutionStates(ThreadgroupContext &tg, WaveContext
   WaveId waveId = wave.waveId;
   for (auto &[blockId, block] : tg.executionBlocks) {
     // Remove lane from all block participant sets
-    block.unknownLanes[waveId].erase(returningLaneId);
-    block.arrivedLanes[waveId].erase(returningLaneId);
-    block.waitingLanes[waveId].erase(returningLaneId);
-    block.participatingLanes[waveId].erase(returningLaneId);
+    block.removeUnknownLane(waveId, returningLaneId);
+    block.removeArrivedLane(waveId, returningLaneId);
+    block.removeWaitingLane(waveId, returningLaneId);
+    block.removeParticipatingLane(waveId, returningLaneId);
 
     // Remove from per-instruction participants in this block
-    for (auto &[instruction, participants] : block.instructionParticipants) {
-      participants[waveId].erase(returningLaneId);
+    for (auto &[instruction, participants] : block.getInstructionParticipants()) {
+        block.removeInstructionParticipant(instruction, waveId, returningLaneId);
     }
 
     // Check if block resolution state changed
     // Block is resolved when no unknown lanes remain (all lanes have chosen to
     // join or return)
-    bool wasResolved = block.allUnknownResolved;
-    block.allUnknownResolved = block.unknownLanes.empty();
+    bool wasResolved = block.isWaveAllUnknownResolved(waveId);
+    block.setWaveAllUnknownResolved(waveId, block.getUnknownLanesForWave(waveId).empty());
 
     // If block just became resolved, wake up any lanes waiting for resolution
-    if (!wasResolved && block.allUnknownResolved) {
+    if (!wasResolved && block.isWaveAllUnknownResolved(waveId)) {
       // All lanes in this block can now proceed with wave operations
-      for (LaneId laneId : block.waitingLanes) {
+      for (LaneId laneId : block.getWaitingLanesForWave(waveId)) {
         if (laneId < wave.lanes.size() && wave.lanes[laneId] &&
             wave.lanes[laneId]->state == ThreadState::WaitingForWave) {
           // Check if this lane's wave operations can now proceed
@@ -1020,7 +1020,7 @@ void ReturnStmt::updateBlockResolutionStates(ThreadgroupContext &tg, WaveContext
   }
 }
 
-void ReturnStmt::updateWaveOperationStates(WaveContext &wave,
+void ReturnStmt::updateWaveOperationStates(ThreadgroupContext &tg, WaveContext &wave,
                                            LaneId returningLaneId) {
   // Remove lane from ALL wave operation sync points and update completion
   // states
@@ -1045,9 +1045,9 @@ void ReturnStmt::updateWaveOperationStates(WaveContext &wave,
       // Check if all expected participants are now known by examining block
       // states
       uint32_t blockId = syncPoint.blockId;
-      auto blockIt = wave.executionBlocks.find(blockId);
-      if (blockIt != wave.executionBlocks.end()) {
-        syncPoint.allParticipantsKnown = blockIt->second.allUnknownResolved;
+      auto blockIt = tg.executionBlocks.find(blockId);
+      if (blockIt != tg.executionBlocks.end()) {
+        syncPoint.allParticipantsKnown = blockIt->second.isWaveAllUnknownResolved(wave.waveId);
       }
     }
 
@@ -2473,7 +2473,7 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
     return;
 
   // Get current block before entering loop
-  uint32_t parentBlockId = wave.getCurrentBlock(lane.laneId);
+  uint32_t parentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
 
   // Execute while loop with condition checking
   while (true) {
@@ -2528,7 +2528,7 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
     return;
 
   // Get current block before entering loop
-  uint32_t parentBlockId = wave.getCurrentBlock(lane.laneId);
+  uint32_t parentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
 
   // Execute do-while loop - body executes at least once
   do {
@@ -2591,7 +2591,7 @@ void SwitchStmt::execute(LaneContext &lane, WaveContext &wave,
     return;
 
   // Get current block before switch divergence
-  uint32_t parentBlockId = wave.getCurrentBlock(lane.laneId);
+  uint32_t parentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
 
   // Evaluate switch condition
   auto condValue = condition_->evaluate(lane, wave, tg);
