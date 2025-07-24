@@ -9,9 +9,13 @@
 
 // Clang AST includes for conversion
 #include "clang/AST/ASTContext.h"
+#include "clang/AST/Attr.h"
 #include "clang/AST/Decl.h"
 #include "clang/AST/Expr.h"
 #include "clang/AST/Stmt.h"
+#include "clang/AST/StmtCXX.h"
+#include "clang/AST/ExprCXX.h"
+#include "clang/Basic/OperatorKinds.h"
 
 namespace minihlsl {
 namespace interpreter {
@@ -719,6 +723,24 @@ void BarrierStmt::execute(LaneContext& lane, WaveContext& wave, ThreadgroupConte
     // In a real GPU, this would synchronize all threads in the threadgroup
 }
 
+ExprStmt::ExprStmt(std::unique_ptr<Expression> expr) : expr_(std::move(expr)) {}
+
+void ExprStmt::execute(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg) {
+    if (!lane.isActive) return;
+    
+    // Execute the expression (evaluate it but don't store the result)
+    if (expr_) {
+        expr_->evaluate(lane, wave, tg);
+    }
+}
+
+std::string ExprStmt::toString() const {
+    if (expr_) {
+        return expr_->toString() + ";";
+    }
+    return "ExprStmt();";
+}
+
 SharedWriteStmt::SharedWriteStmt(MemoryAddress addr, std::unique_ptr<Expression> expr)
     : addr_(addr), expr_(std::move(expr)) {}
 
@@ -1081,31 +1103,20 @@ MiniHLSLInterpreter::convertFromHLSLAST(const clang::FunctionDecl* func, clang::
     std::cout << "Converting HLSL function: " << func->getName().str() << std::endl;
     
     try {
-        // Set thread configuration (hardcoded for now)
-        result.program.numThreadsX = 32;
-        result.program.numThreadsY = 1;
-        result.program.numThreadsZ = 1;
+        // Extract thread configuration from function attributes
+        extractThreadConfiguration(func, result.program);
         
-        // For the proof-of-concept, create a simple program that represents our test case:
-        // buffer[tid] = tid * 2;
-        // GroupMemoryBarrierWithGroupSync();
-        // uint neg = buffer[(tid + 1) % 32];
+        // Get the function body
+        const clang::CompoundStmt* body = clang::dyn_cast<clang::CompoundStmt>(func->getBody());
+        if (!body) {
+            result.errorMessage = "Function body is not a compound statement";
+            return result;
+        }
         
-        // Statement 1: buffer[tid] = tid * 2;
-        auto tidVar = makeVariable("tid");
-        auto tidTimes2 = makeBinaryOp(std::move(tidVar), makeLiteral(Value(2)), BinaryOpExpr::Mul);
-        result.program.statements.push_back(makeAssign("buffer_write", std::move(tidTimes2)));
+        // Convert the function body to interpreter statements
+        convertCompoundStatement(body, result.program, context);
         
-        // Statement 2: GroupMemoryBarrierWithGroupSync();
-        result.program.statements.push_back(std::make_unique<BarrierStmt>());
-        
-        // Statement 3: uint neg = buffer[(tid + 1) % 32];
-        auto tidVar2 = makeVariable("tid");
-        auto tidPlus1 = makeBinaryOp(std::move(tidVar2), makeLiteral(Value(1)), BinaryOpExpr::Add);
-        auto modResult = makeBinaryOp(std::move(tidPlus1), makeLiteral(Value(32)), BinaryOpExpr::Mod);
-        result.program.statements.push_back(makeAssign("neg", std::move(modResult)));
-        
-        std::cout << "Created simplified interpreter program with " << result.program.statements.size() << " statements" << std::endl;
+        std::cout << "Converted AST to interpreter program with " << result.program.statements.size() << " statements" << std::endl;
         
         result.success = true;
         return result;
@@ -1116,17 +1127,683 @@ MiniHLSLInterpreter::convertFromHLSLAST(const clang::FunctionDecl* func, clang::
     }
 }
 
-// Stub methods for future full AST conversion
-std::unique_ptr<Statement> 
-MiniHLSLInterpreter::convertStatement(const clang::Stmt* stmt, clang::ASTContext& context) {
-    // Stub for now - full AST conversion would be implemented here
+// AST traversal helper methods
+void MiniHLSLInterpreter::extractThreadConfiguration(const clang::FunctionDecl* func, Program& program) {
+    // Default configuration
+    program.numThreadsX = 1;
+    program.numThreadsY = 1; 
+    program.numThreadsZ = 1;
+    
+    // Look for HLSLNumThreadsAttr
+    if (const clang::HLSLNumThreadsAttr *attr = func->getAttr<clang::HLSLNumThreadsAttr>()) {
+        program.numThreadsX = attr->getX();
+        program.numThreadsY = attr->getY();
+        program.numThreadsZ = attr->getZ();
+        std::cout << "Found numthreads attribute: [" << program.numThreadsX 
+                  << ", " << program.numThreadsY << ", " << program.numThreadsZ << "]" << std::endl;
+    } else {
+        std::cout << "No numthreads attribute found, using default [1, 1, 1]" << std::endl;
+    }
+}
+
+void MiniHLSLInterpreter::convertCompoundStatement(const clang::CompoundStmt* compound, 
+                                                  Program& program, 
+                                                  clang::ASTContext& context) {
+    std::cout << "Converting compound statement with " << compound->size() << " child statements" << std::endl;
+    
+    for (const auto* stmt : compound->children()) {
+        if (auto convertedStmt = convertStatement(stmt, context)) {
+            program.statements.push_back(std::move(convertedStmt));
+        }
+    }
+}
+
+std::unique_ptr<Statement> MiniHLSLInterpreter::convertStatement(const clang::Stmt* stmt, 
+                                                               clang::ASTContext& context) {
+    if (!stmt) return nullptr;
+    
+    std::cout << "Converting statement: " << stmt->getStmtClassName() << std::endl;
+    
+    // Handle different statement types
+    if (auto binOp = clang::dyn_cast<clang::BinaryOperator>(stmt)) {
+        return convertBinaryOperator(binOp, context);
+    }
+    else if (auto callExpr = clang::dyn_cast<clang::CallExpr>(stmt)) {
+        return convertCallExpression(callExpr, context);
+    }
+    else if (auto declStmt = clang::dyn_cast<clang::DeclStmt>(stmt)) {
+        return convertDeclarationStatement(declStmt, context);
+    }
+    // Note: ExprStmt doesn't exist in DXC's Clang fork
+    // Expression statements are handled differently or don't exist
+    else if (auto ifStmt = clang::dyn_cast<clang::IfStmt>(stmt)) {
+        return convertIfStatement(ifStmt, context);
+    }
+    else if (auto forStmt = clang::dyn_cast<clang::ForStmt>(stmt)) {
+        return convertForStatement(forStmt, context);
+    }
+    else if (auto compound = clang::dyn_cast<clang::CompoundStmt>(stmt)) {
+        // Nested compound statement - this should not happen in our current design
+        std::cout << "Warning: nested compound statement found, skipping" << std::endl;
+        return nullptr;
+    }
+    else {
+        std::cout << "Unsupported statement type: " << stmt->getStmtClassName() << std::endl;
+        return nullptr;
+    }
+}
+
+std::unique_ptr<Statement> MiniHLSLInterpreter::convertBinaryOperator(const clang::BinaryOperator* binOp,
+                                                                     clang::ASTContext& context) {
+    if (!binOp->isAssignmentOp()) {
+        std::cout << "Non-assignment binary operator, skipping" << std::endl;
+        return nullptr;
+    }
+    
+    // Handle assignment: LHS = RHS
+    auto lhs = convertExpression(binOp->getLHS(), context);
+    auto rhs = convertExpression(binOp->getRHS(), context);
+    
+    if (!rhs) {
+        std::cout << "Failed to convert assignment RHS" << std::endl;
+        return nullptr;
+    }
+    
+    // Determine the target variable name
+    std::string targetVar = "unknown";
+    if (auto declRef = clang::dyn_cast<clang::DeclRefExpr>(binOp->getLHS())) {
+        targetVar = declRef->getDecl()->getName().str();
+    } else if (clang::isa<clang::CXXOperatorCallExpr>(binOp->getLHS())) {
+        targetVar = "buffer_write"; // Array access assignment
+    }
+    
+    return makeAssign(targetVar, std::move(rhs));
+}
+
+std::unique_ptr<Statement> MiniHLSLInterpreter::convertCallExpression(const clang::CallExpr* callExpr,
+                                                                     clang::ASTContext& context) {
+    if (auto funcDecl = callExpr->getDirectCallee()) {
+        std::string funcName = funcDecl->getName().str();
+        std::cout << "Converting function call: " << funcName << std::endl;
+        
+        // Check for barrier functions
+        if (funcName == "GroupMemoryBarrierWithGroupSync" || 
+            funcName == "AllMemoryBarrierWithGroupSync" ||
+            funcName == "DeviceMemoryBarrierWithGroupSync") {
+            return std::make_unique<BarrierStmt>();
+        }
+        
+        // Check for wave intrinsic functions
+        if (funcName == "WaveActiveSum" && callExpr->getNumArgs() == 1) {
+            auto arg = convertExpression(callExpr->getArg(0), context);
+            if (arg) {
+                return std::make_unique<ExprStmt>(std::make_unique<WaveActiveOp>(std::move(arg), WaveActiveOp::Sum));
+            }
+        }
+        else if (funcName == "WaveActiveProduct" && callExpr->getNumArgs() == 1) {
+            auto arg = convertExpression(callExpr->getArg(0), context);
+            if (arg) {
+                return std::make_unique<ExprStmt>(std::make_unique<WaveActiveOp>(std::move(arg), WaveActiveOp::Product));
+            }
+        }
+        else if (funcName == "WaveActiveMin" && callExpr->getNumArgs() == 1) {
+            auto arg = convertExpression(callExpr->getArg(0), context);
+            if (arg) {
+                return std::make_unique<ExprStmt>(std::make_unique<WaveActiveOp>(std::move(arg), WaveActiveOp::Min));
+            }
+        }
+        else if (funcName == "WaveActiveMax" && callExpr->getNumArgs() == 1) {
+            auto arg = convertExpression(callExpr->getArg(0), context);
+            if (arg) {
+                return std::make_unique<ExprStmt>(std::make_unique<WaveActiveOp>(std::move(arg), WaveActiveOp::Max));
+            }
+        }
+        else if (funcName == "WaveActiveAnd" && callExpr->getNumArgs() == 1) {
+            auto arg = convertExpression(callExpr->getArg(0), context);
+            if (arg) {
+                return std::make_unique<ExprStmt>(std::make_unique<WaveActiveOp>(std::move(arg), WaveActiveOp::And));
+            }
+        }
+        else if (funcName == "WaveActiveOr" && callExpr->getNumArgs() == 1) {
+            auto arg = convertExpression(callExpr->getArg(0), context);
+            if (arg) {
+                return std::make_unique<ExprStmt>(std::make_unique<WaveActiveOp>(std::move(arg), WaveActiveOp::Or));
+            }
+        }
+        else if (funcName == "WaveActiveXor" && callExpr->getNumArgs() == 1) {
+            auto arg = convertExpression(callExpr->getArg(0), context);
+            if (arg) {
+                return std::make_unique<ExprStmt>(std::make_unique<WaveActiveOp>(std::move(arg), WaveActiveOp::Xor));
+            }
+        }
+        else if (funcName == "WaveActiveCountBits" && callExpr->getNumArgs() == 1) {
+            auto arg = convertExpression(callExpr->getArg(0), context);
+            if (arg) {
+                return std::make_unique<ExprStmt>(std::make_unique<WaveActiveOp>(std::move(arg), WaveActiveOp::CountBits));
+            }
+        }
+        else if (funcName == "WaveGetLaneIndex" && callExpr->getNumArgs() == 0) {
+            return std::make_unique<ExprStmt>(std::make_unique<LaneIndexExpr>());
+        }
+        else if (funcName == "WaveGetLaneCount" && callExpr->getNumArgs() == 0) {
+            return std::make_unique<ExprStmt>(std::make_unique<WaveGetLaneCountExpr>());
+        }
+        
+        // Handle other function calls as needed
+        std::cout << "Unsupported function call: " << funcName << std::endl;
+    }
+    
     return nullptr;
 }
 
-std::unique_ptr<Expression> 
-MiniHLSLInterpreter::convertExpression(const clang::Expr* expr, clang::ASTContext& context) {
-    // Stub for now - full AST conversion would be implemented here  
+std::unique_ptr<Statement> MiniHLSLInterpreter::convertDeclarationStatement(const clang::DeclStmt* declStmt,
+                                                                           clang::ASTContext& context) {
+    std::cout << "Converting declaration statement" << std::endl;
+    
+    for (const auto* decl : declStmt->decls()) {
+        if (auto varDecl = clang::dyn_cast<clang::VarDecl>(decl)) {
+            std::string varName = varDecl->getName().str();
+            std::cout << "Declaring variable: " << varName << std::endl;
+            
+            // If it has an initializer, create an assignment
+            if (varDecl->hasInit()) {
+                auto initExpr = convertExpression(varDecl->getInit(), context);
+                if (initExpr) {
+                    return makeAssign(varName, std::move(initExpr));
+                }
+            }
+        }
+    }
+    
     return nullptr;
+}
+
+std::unique_ptr<Statement> MiniHLSLInterpreter::convertIfStatement(const clang::IfStmt* ifStmt,
+                                                                  clang::ASTContext& context) {
+    std::cout << "Converting if statement" << std::endl;
+    
+    // Convert the condition expression
+    auto condition = convertExpression(ifStmt->getCond(), context);
+    if (!condition) {
+        std::cout << "Failed to convert if condition" << std::endl;
+        return nullptr;
+    }
+    
+    // Convert the then block
+    std::vector<std::unique_ptr<Statement>> thenBlock;
+    if (auto thenStmt = ifStmt->getThen()) {
+        if (auto compound = clang::dyn_cast<clang::CompoundStmt>(thenStmt)) {
+            // Handle compound statement (block with {})
+            for (auto stmt : compound->body()) {
+                if (auto convertedStmt = convertStatement(stmt, context)) {
+                    thenBlock.push_back(std::move(convertedStmt));
+                }
+            }
+        } else {
+            // Handle single statement
+            if (auto convertedStmt = convertStatement(thenStmt, context)) {
+                thenBlock.push_back(std::move(convertedStmt));
+            }
+        }
+    }
+    
+    // Convert the else block (if it exists)
+    std::vector<std::unique_ptr<Statement>> elseBlock;
+    if (auto elseStmt = ifStmt->getElse()) {
+        if (auto compound = clang::dyn_cast<clang::CompoundStmt>(elseStmt)) {
+            // Handle compound statement (block with {})
+            for (auto stmt : compound->body()) {
+                if (auto convertedStmt = convertStatement(stmt, context)) {
+                    elseBlock.push_back(std::move(convertedStmt));
+                }
+            }
+        } else {
+            // Handle single statement (including else if)
+            if (auto convertedStmt = convertStatement(elseStmt, context)) {
+                elseBlock.push_back(std::move(convertedStmt));
+            }
+        }
+    }
+    
+    return std::make_unique<IfStmt>(std::move(condition), std::move(thenBlock), std::move(elseBlock));
+}
+
+std::unique_ptr<Statement> MiniHLSLInterpreter::convertForStatement(const clang::ForStmt* forStmt,
+                                                                   clang::ASTContext& context) {
+    std::cout << "Converting for statement" << std::endl;
+    
+    // For loops in HLSL typically have the structure: for (init; condition; increment) { body }
+    // We need to extract each component
+    
+    // Extract the loop variable from the init statement
+    std::string loopVar;
+    std::unique_ptr<Expression> init = nullptr;
+    
+    if (auto initStmt = forStmt->getInit()) {
+        if (auto declStmt = clang::dyn_cast<clang::DeclStmt>(initStmt)) {
+            // Handle variable declaration: int i = 0
+            for (const auto* decl : declStmt->decls()) {
+                if (auto varDecl = clang::dyn_cast<clang::VarDecl>(decl)) {
+                    loopVar = varDecl->getName().str();
+                    if (varDecl->hasInit()) {
+                        init = convertExpression(varDecl->getInit(), context);
+                    }
+                    break; // Take the first variable
+                }
+            }
+        } else {
+            // Handle assignment: i = 0
+            std::cout << "For loop init is not a declaration statement" << std::endl;
+            return nullptr;
+        }
+    }
+    
+    // Convert the condition expression
+    std::unique_ptr<Expression> condition = nullptr;
+    if (auto condExpr = forStmt->getCond()) {
+        condition = convertExpression(condExpr, context);
+    }
+    
+    // Convert the increment expression
+    std::unique_ptr<Expression> increment = nullptr;
+    if (auto incExpr = forStmt->getInc()) {
+        increment = convertExpression(incExpr, context);
+    }
+    
+    // Convert the loop body
+    std::vector<std::unique_ptr<Statement>> body;
+    if (auto bodyStmt = forStmt->getBody()) {
+        if (auto compound = clang::dyn_cast<clang::CompoundStmt>(bodyStmt)) {
+            // Handle compound statement (block with {})
+            for (auto stmt : compound->body()) {
+                if (auto convertedStmt = convertStatement(stmt, context)) {
+                    body.push_back(std::move(convertedStmt));
+                }
+            }
+        } else {
+            // Handle single statement
+            if (auto convertedStmt = convertStatement(bodyStmt, context)) {
+                body.push_back(std::move(convertedStmt));
+            }
+        }
+    }
+    
+    // Validate that we have the required components
+    if (loopVar.empty() || !init || !condition || !increment) {
+        std::cout << "For loop missing required components (var: " << loopVar 
+                 << ", init: " << (init ? "yes" : "no")
+                 << ", condition: " << (condition ? "yes" : "no")  
+                 << ", increment: " << (increment ? "yes" : "no") << ")" << std::endl;
+        return nullptr;
+    }
+    
+    return std::make_unique<ForStmt>(loopVar, std::move(init), std::move(condition), 
+                                    std::move(increment), std::move(body));
+}
+
+std::unique_ptr<Expression> MiniHLSLInterpreter::convertExpression(const clang::Expr* expr, 
+                                                                  clang::ASTContext& context) {
+    if (!expr) return nullptr;
+    
+    std::cout << "Converting expression: " << expr->getStmtClassName() << std::endl;
+    
+    // Handle different expression types
+    if (auto binOp = clang::dyn_cast<clang::BinaryOperator>(expr)) {
+        return convertBinaryExpression(binOp, context);
+    }
+    else if (auto declRef = clang::dyn_cast<clang::DeclRefExpr>(expr)) {
+        std::string varName = declRef->getDecl()->getName().str();
+        return makeVariable(varName);
+    }
+    else if (auto intLit = clang::dyn_cast<clang::IntegerLiteral>(expr)) {
+        int64_t value = intLit->getValue().getSExtValue();
+        return makeLiteral(Value(static_cast<int>(value)));
+    }
+    else if (auto floatLit = clang::dyn_cast<clang::FloatingLiteral>(expr)) {
+        double value = floatLit->getValueAsApproximateDouble();
+        return makeLiteral(Value(static_cast<float>(value)));
+    }
+    else if (auto boolLit = clang::dyn_cast<clang::CXXBoolLiteralExpr>(expr)) {
+        bool value = boolLit->getValue();
+        return makeLiteral(Value(value));
+    }
+    else if (auto parenExpr = clang::dyn_cast<clang::ParenExpr>(expr)) {
+        return convertExpression(parenExpr->getSubExpr(), context);
+    }
+    else if (auto implicitCast = clang::dyn_cast<clang::ImplicitCastExpr>(expr)) {
+        return convertExpression(implicitCast->getSubExpr(), context);
+    }
+    else if (auto operatorCall = clang::dyn_cast<clang::CXXOperatorCallExpr>(expr)) {
+        return convertOperatorCall(operatorCall, context);
+    }
+    else if (auto callExpr = clang::dyn_cast<clang::CallExpr>(expr)) {
+        return convertCallExpressionToExpression(callExpr, context);
+    }
+    else if (auto condOp = clang::dyn_cast<clang::ConditionalOperator>(expr)) {
+        return convertConditionalOperator(condOp, context);
+    }
+    else {
+        std::cout << "Unsupported expression type: " << expr->getStmtClassName() << std::endl;
+        return nullptr;
+    }
+}
+
+std::unique_ptr<Expression> MiniHLSLInterpreter::convertCallExpressionToExpression(const clang::CallExpr* callExpr,
+                                                                                 clang::ASTContext& context) {
+    if (auto funcDecl = callExpr->getDirectCallee()) {
+        std::string funcName = funcDecl->getName().str();
+        std::cout << "Converting function call to expression: " << funcName << std::endl;
+        
+        // Check for wave intrinsic functions that return values
+        if (funcName == "WaveActiveSum" && callExpr->getNumArgs() == 1) {
+            auto arg = convertExpression(callExpr->getArg(0), context);
+            if (arg) {
+                return std::make_unique<WaveActiveOp>(std::move(arg), WaveActiveOp::Sum);
+            }
+        }
+        else if (funcName == "WaveActiveProduct" && callExpr->getNumArgs() == 1) {
+            auto arg = convertExpression(callExpr->getArg(0), context);
+            if (arg) {
+                return std::make_unique<WaveActiveOp>(std::move(arg), WaveActiveOp::Product);
+            }
+        }
+        else if (funcName == "WaveActiveMin" && callExpr->getNumArgs() == 1) {
+            auto arg = convertExpression(callExpr->getArg(0), context);
+            if (arg) {
+                return std::make_unique<WaveActiveOp>(std::move(arg), WaveActiveOp::Min);
+            }
+        }
+        else if (funcName == "WaveActiveMax" && callExpr->getNumArgs() == 1) {
+            auto arg = convertExpression(callExpr->getArg(0), context);
+            if (arg) {
+                return std::make_unique<WaveActiveOp>(std::move(arg), WaveActiveOp::Max);
+            }
+        }
+        else if (funcName == "WaveActiveAnd" && callExpr->getNumArgs() == 1) {
+            auto arg = convertExpression(callExpr->getArg(0), context);
+            if (arg) {
+                return std::make_unique<WaveActiveOp>(std::move(arg), WaveActiveOp::And);
+            }
+        }
+        else if (funcName == "WaveActiveOr" && callExpr->getNumArgs() == 1) {
+            auto arg = convertExpression(callExpr->getArg(0), context);
+            if (arg) {
+                return std::make_unique<WaveActiveOp>(std::move(arg), WaveActiveOp::Or);
+            }
+        }
+        else if (funcName == "WaveActiveXor" && callExpr->getNumArgs() == 1) {
+            auto arg = convertExpression(callExpr->getArg(0), context);
+            if (arg) {
+                return std::make_unique<WaveActiveOp>(std::move(arg), WaveActiveOp::Xor);
+            }
+        }
+        else if (funcName == "WaveActiveCountBits" && callExpr->getNumArgs() == 1) {
+            auto arg = convertExpression(callExpr->getArg(0), context);
+            if (arg) {
+                return std::make_unique<WaveActiveOp>(std::move(arg), WaveActiveOp::CountBits);
+            }
+        }
+        else if (funcName == "WaveGetLaneIndex" && callExpr->getNumArgs() == 0) {
+            return std::make_unique<LaneIndexExpr>();
+        }
+        else if (funcName == "WaveGetLaneCount" && callExpr->getNumArgs() == 0) {
+            return std::make_unique<WaveGetLaneCountExpr>();
+        }
+        else if (funcName == "WaveIsFirstLane" && callExpr->getNumArgs() == 0) {
+            return std::make_unique<WaveIsFirstLaneExpr>();
+        }
+        else if (funcName == "WaveActiveAllEqual" && callExpr->getNumArgs() == 1) {
+            auto arg = convertExpression(callExpr->getArg(0), context);
+            if (arg) {
+                return std::make_unique<WaveActiveAllEqualExpr>(std::move(arg));
+            }
+        }
+        else if (funcName == "WaveActiveAllTrue" && callExpr->getNumArgs() == 1) {
+            auto arg = convertExpression(callExpr->getArg(0), context);
+            if (arg) {
+                return std::make_unique<WaveActiveAllTrueExpr>(std::move(arg));
+            }
+        }
+        else if (funcName == "WaveActiveAnyTrue" && callExpr->getNumArgs() == 1) {
+            auto arg = convertExpression(callExpr->getArg(0), context);
+            if (arg) {
+                return std::make_unique<WaveActiveAnyTrueExpr>(std::move(arg));
+            }
+        }
+        
+        std::cout << "Unsupported function call in expression context: " << funcName << std::endl;
+    }
+    
+    return nullptr;
+}
+
+std::unique_ptr<Expression> MiniHLSLInterpreter::convertConditionalOperator(const clang::ConditionalOperator* condOp,
+                                                                          clang::ASTContext& context) {
+    std::cout << "Converting conditional operator (ternary)" << std::endl;
+    
+    // Convert the condition
+    auto condition = convertExpression(condOp->getCond(), context);
+    if (!condition) {
+        std::cout << "Failed to convert conditional operator condition" << std::endl;
+        return nullptr;
+    }
+    
+    // Convert the true expression
+    auto trueExpr = convertExpression(condOp->getTrueExpr(), context);
+    if (!trueExpr) {
+        std::cout << "Failed to convert conditional operator true expression" << std::endl;
+        return nullptr;
+    }
+    
+    // Convert the false expression
+    auto falseExpr = convertExpression(condOp->getFalseExpr(), context);
+    if (!falseExpr) {
+        std::cout << "Failed to convert conditional operator false expression" << std::endl;
+        return nullptr;
+    }
+    
+    return std::make_unique<ConditionalExpr>(std::move(condition), std::move(trueExpr), std::move(falseExpr));
+}
+
+std::unique_ptr<Expression> MiniHLSLInterpreter::convertBinaryExpression(const clang::BinaryOperator* binOp,
+                                                                        clang::ASTContext& context) {
+    auto lhs = convertExpression(binOp->getLHS(), context);
+    auto rhs = convertExpression(binOp->getRHS(), context);
+    
+    if (!lhs || !rhs) return nullptr;
+    
+    // Map Clang binary operator to interpreter binary operator
+    BinaryOpExpr::OpType opType;
+    switch (binOp->getOpcode()) {
+        case clang::BO_Add: opType = BinaryOpExpr::Add; break;
+        case clang::BO_Sub: opType = BinaryOpExpr::Sub; break; 
+        case clang::BO_Mul: opType = BinaryOpExpr::Mul; break;
+        case clang::BO_Div: opType = BinaryOpExpr::Div; break;
+        case clang::BO_Rem: opType = BinaryOpExpr::Mod; break;
+        default:
+            std::cout << "Unsupported binary operator" << std::endl;
+            return nullptr;
+    }
+    
+    return makeBinaryOp(std::move(lhs), std::move(rhs), opType);
+}
+
+std::unique_ptr<Expression> MiniHLSLInterpreter::convertOperatorCall(const clang::CXXOperatorCallExpr* opCall,
+                                                                    clang::ASTContext& context) {
+    clang::OverloadedOperatorKind op = opCall->getOperator();
+    
+    if (op == clang::OO_Subscript) {
+        // Array access: buffer[index]
+        std::cout << "Converting array access operator[]" << std::endl;
+        
+        if (opCall->getNumArgs() >= 2) {
+            // Get the base expression (the array/buffer being accessed)
+            auto baseExpr = opCall->getArg(0);
+            std::string bufferName;
+            
+            // Try to extract buffer name from DeclRefExpr
+            if (auto declRef = clang::dyn_cast<clang::DeclRefExpr>(baseExpr)) {
+                bufferName = declRef->getDecl()->getName().str();
+                std::cout << "Array access on buffer: " << bufferName << std::endl;
+            } else {
+                std::cout << "Complex base expression for array access" << std::endl;
+                bufferName = "unknown_buffer";
+            }
+            
+            // Convert the index expression
+            auto indexExpr = convertExpression(opCall->getArg(1), context);
+            if (indexExpr) {
+                // For shared memory buffers, we need to compute the memory address
+                // For now, we'll use a simple model where each buffer starts at address 0
+                // and each element is 4 bytes (size of int/float)
+                
+                // Create a shared memory read expression
+                // Note: In a real implementation, we'd need to track buffer base addresses
+                // and handle different data types/sizes
+                MemoryAddress baseAddr = 0; // Simplified: assume buffer starts at 0
+                
+                // Create an expression that computes: baseAddr + index * sizeof(element)
+                auto sizeofElement = makeLiteral(Value(4)); // Assume 4 bytes per element
+                auto offset = std::make_unique<BinaryOpExpr>(
+                    std::move(indexExpr), 
+                    std::move(sizeofElement), 
+                    BinaryOpExpr::Mul
+                );
+                
+                // For now, just use the index directly as the address (simplified)
+                // In a real implementation, we'd add the base address
+                return std::make_unique<SharedReadExpr>(0); // Placeholder
+                
+                // TODO: Properly implement SharedReadExpr that takes a dynamic address expression
+                // return std::make_unique<SharedReadExpr>(std::move(offset));
+            }
+        }
+    }
+    
+    std::cout << "Unsupported operator call" << std::endl;
+    return nullptr;
+}
+
+// ConditionalExpr implementation
+ConditionalExpr::ConditionalExpr(std::unique_ptr<Expression> condition, 
+                               std::unique_ptr<Expression> trueExpr, 
+                               std::unique_ptr<Expression> falseExpr)
+    : condition_(std::move(condition)), trueExpr_(std::move(trueExpr)), falseExpr_(std::move(falseExpr)) {}
+
+Value ConditionalExpr::evaluate(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg) const {
+    if (!lane.isActive) return Value(0);
+    
+    auto condValue = condition_->evaluate(lane, wave, tg);
+    bool cond = condValue.asBool();
+    
+    if (cond) {
+        return trueExpr_->evaluate(lane, wave, tg);
+    } else {
+        return falseExpr_->evaluate(lane, wave, tg);
+    }
+}
+
+bool ConditionalExpr::isDeterministic() const {
+    return condition_->isDeterministic() && trueExpr_->isDeterministic() && falseExpr_->isDeterministic();
+}
+
+std::string ConditionalExpr::toString() const {
+    return "(" + condition_->toString() + " ? " + trueExpr_->toString() + " : " + falseExpr_->toString() + ")";
+}
+
+// WaveIsFirstLaneExpr implementation
+Value WaveIsFirstLaneExpr::evaluate(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg) const {
+    if (!lane.isActive) return Value(false);
+    
+    // Find the first active lane in the wave
+    for (LaneId lid = 0; lid < wave.lanes.size(); ++lid) {
+        if (wave.lanes[lid]->isActive) {
+            return Value(lane.laneId == lid);
+        }
+    }
+    
+    return Value(false);
+}
+
+// WaveActiveAllEqualExpr implementation
+WaveActiveAllEqualExpr::WaveActiveAllEqualExpr(std::unique_ptr<Expression> expr)
+    : expr_(std::move(expr)) {}
+
+Value WaveActiveAllEqualExpr::evaluate(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg) const {
+    if (!lane.isActive) return Value(false);
+    
+    // Get value from the first active lane
+    Value firstValue;
+    bool foundFirst = false;
+    
+    for (auto& otherLane : wave.lanes) {
+        if (otherLane->isActive) {
+            Value val = expr_->evaluate(*otherLane, wave, tg);
+            if (!foundFirst) {
+                firstValue = val;
+                foundFirst = true;
+            } else {
+                // Compare with first value
+                if (val.asInt() != firstValue.asInt()) {
+                    return Value(false);
+                }
+            }
+        }
+    }
+    
+    return Value(true);
+}
+
+std::string WaveActiveAllEqualExpr::toString() const {
+    return "WaveActiveAllEqual(" + expr_->toString() + ")";
+}
+
+// WaveActiveAllTrueExpr implementation
+WaveActiveAllTrueExpr::WaveActiveAllTrueExpr(std::unique_ptr<Expression> expr)
+    : expr_(std::move(expr)) {}
+
+Value WaveActiveAllTrueExpr::evaluate(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg) const {
+    if (!lane.isActive) return Value(false);
+    
+    // Check if expression is true for all active lanes
+    for (auto& otherLane : wave.lanes) {
+        if (otherLane->isActive) {
+            Value val = expr_->evaluate(*otherLane, wave, tg);
+            if (!val.asBool()) {
+                return Value(false);
+            }
+        }
+    }
+    
+    return Value(true);
+}
+
+std::string WaveActiveAllTrueExpr::toString() const {
+    return "WaveActiveAllTrue(" + expr_->toString() + ")";
+}
+
+// WaveActiveAnyTrueExpr implementation
+WaveActiveAnyTrueExpr::WaveActiveAnyTrueExpr(std::unique_ptr<Expression> expr)
+    : expr_(std::move(expr)) {}
+
+Value WaveActiveAnyTrueExpr::evaluate(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg) const {
+    if (!lane.isActive) return Value(false);
+    
+    // Check if expression is true for any active lane
+    for (auto& otherLane : wave.lanes) {
+        if (otherLane->isActive) {
+            Value val = expr_->evaluate(*otherLane, wave, tg);
+            if (val.asBool()) {
+                return Value(true);
+            }
+        }
+    }
+    
+    return Value(false);
+}
+
+std::string WaveActiveAnyTrueExpr::toString() const {
+    return "WaveActiveAnyTrue(" + expr_->toString() + ")";
 }
 
 } // namespace interpreter

@@ -23,6 +23,16 @@ namespace clang {
     class ASTContext;
     class Stmt;
     class Expr;
+    class CompoundStmt;
+    class BinaryOperator;
+    class CallExpr;
+    class DeclStmt;
+    class CXXOperatorCallExpr;
+    class IfStmt;
+    class ForStmt;
+    class ConditionalOperator;
+    class FloatingLiteral;
+    class CXXBoolLiteralExpr;
 }
 
 namespace minihlsl {
@@ -293,6 +303,20 @@ public:
     std::string toString() const override;
 };
 
+class ConditionalExpr : public Expression {
+private:
+    std::unique_ptr<Expression> condition_;
+    std::unique_ptr<Expression> trueExpr_;
+    std::unique_ptr<Expression> falseExpr_;
+public:
+    ConditionalExpr(std::unique_ptr<Expression> condition, 
+                   std::unique_ptr<Expression> trueExpr, 
+                   std::unique_ptr<Expression> falseExpr);
+    Value evaluate(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg) const override;
+    bool isDeterministic() const override;
+    std::string toString() const override;
+};
+
 // Wave operations
 class WaveActiveOp : public Expression {
 public:
@@ -312,6 +336,43 @@ public:
     Value evaluate(LaneContext&, WaveContext& wave, ThreadgroupContext&) const override;
     bool isDeterministic() const override { return true; }
     std::string toString() const override { return "WaveGetLaneCount()"; }
+};
+
+class WaveIsFirstLaneExpr : public Expression {
+public:
+    Value evaluate(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg) const override;
+    bool isDeterministic() const override { return false; }
+    std::string toString() const override { return "WaveIsFirstLane()"; }
+};
+
+class WaveActiveAllEqualExpr : public Expression {
+private:
+    std::unique_ptr<Expression> expr_;
+public:
+    explicit WaveActiveAllEqualExpr(std::unique_ptr<Expression> expr);
+    Value evaluate(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg) const override;
+    bool isDeterministic() const override { return false; }
+    std::string toString() const override;
+};
+
+class WaveActiveAllTrueExpr : public Expression {
+private:
+    std::unique_ptr<Expression> expr_;
+public:
+    explicit WaveActiveAllTrueExpr(std::unique_ptr<Expression> expr);
+    Value evaluate(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg) const override;
+    bool isDeterministic() const override { return false; }
+    std::string toString() const override;
+};
+
+class WaveActiveAnyTrueExpr : public Expression {
+private:
+    std::unique_ptr<Expression> expr_;
+public:
+    explicit WaveActiveAnyTrueExpr(std::unique_ptr<Expression> expr);
+    Value evaluate(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg) const override;
+    bool isDeterministic() const override { return false; }
+    std::string toString() const override;
 };
 
 // Statement AST nodes
@@ -383,6 +444,14 @@ public:
     void execute(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg) override;
     bool requiresAllLanesActive() const override { return true; }
     std::string toString() const override { return "GroupMemoryBarrierWithGroupSync();"; }
+};
+
+class ExprStmt : public Statement {
+    std::unique_ptr<Expression> expr_;
+public:
+    explicit ExprStmt(std::unique_ptr<Expression> expr);
+    void execute(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg) override;
+    std::string toString() const override;
 };
 
 class SharedWriteStmt : public Statement {
@@ -468,6 +537,20 @@ public:
     
     // Convert Clang AST function to interpreter program
     ConversionResult convertFromHLSLAST(const clang::FunctionDecl* func, clang::ASTContext& context);
+
+private:
+    // AST conversion helper methods (already declared above: convertStatement, convertExpression)
+    void extractThreadConfiguration(const clang::FunctionDecl* func, Program& program);
+    void convertCompoundStatement(const clang::CompoundStmt* compound, Program& program, clang::ASTContext& context);
+    std::unique_ptr<Statement> convertBinaryOperator(const clang::BinaryOperator* binOp, clang::ASTContext& context);
+    std::unique_ptr<Statement> convertCallExpression(const clang::CallExpr* callExpr, clang::ASTContext& context);
+    std::unique_ptr<Statement> convertDeclarationStatement(const clang::DeclStmt* declStmt, clang::ASTContext& context);
+    std::unique_ptr<Statement> convertIfStatement(const clang::IfStmt* ifStmt, clang::ASTContext& context);
+    std::unique_ptr<Statement> convertForStatement(const clang::ForStmt* forStmt, clang::ASTContext& context);
+    std::unique_ptr<Expression> convertCallExpressionToExpression(const clang::CallExpr* callExpr, clang::ASTContext& context);
+    std::unique_ptr<Expression> convertConditionalOperator(const clang::ConditionalOperator* condOp, clang::ASTContext& context);
+    std::unique_ptr<Expression> convertBinaryExpression(const clang::BinaryOperator* binOp, clang::ASTContext& context);
+    std::unique_ptr<Expression> convertOperatorCall(const clang::CXXOperatorCallExpr* opCall, clang::ASTContext& context);
 };
 
 // Helper functions for building programs

@@ -2683,7 +2683,7 @@ MiniHLSLValidator::validate_source_with_ast_ownership(const string &hlsl_source,
     // Create CompilerInstance - this will be returned for ownership
     result.compiler_instance = std::make_unique<clang::CompilerInstance>();
     auto& CI = *result.compiler_instance;
-    
+  
     // Set up basic compiler instance (same as parse_and_validate_hlsl)
     CI.createDiagnostics();
     std::string abs_filename = filename;
