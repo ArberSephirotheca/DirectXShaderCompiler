@@ -2995,6 +2995,7 @@ bool ThreadgroupContext::areAllUnknownLanesResolved(uint32_t blockId) const {
 //   return it->second.allUnknownResolved;
 }
 
+// TODO: check the functional correctness
 // Block deduplication methods
 uint32_t ThreadgroupContext::findOrCreateBlockForPath(
     const BlockIdentity &identity,
@@ -3007,8 +3008,15 @@ uint32_t ThreadgroupContext::findOrCreateBlockForPath(
     auto &existingBlock = executionBlocks[existingBlockId];
 
     // Add new unknown lanes to existing block
-    existingBlock.unknownLanes.insert(unknownLanes.begin(), unknownLanes.end());
-    existingBlock.allUnknownResolved = existingBlock.unknownLanes.empty();
+    for (const auto& [waveId, laneSet] : unknownLanes) {
+      for (LaneId laneId : laneSet) {
+        existingBlock.addUnknownLane(waveId, laneId);
+      }
+    }
+    // Update resolution status for all waves
+    for (const auto& [waveId, _] : unknownLanes) {
+      existingBlock.setWaveAllUnknownResolved(waveId, existingBlock.areAllUnknownLanesResolvedForWave(waveId));
+    }
 
     return existingBlockId;
   }
@@ -3017,13 +3025,24 @@ uint32_t ThreadgroupContext::findOrCreateBlockForPath(
   uint32_t newBlockId = nextBlockId++;
 
   DynamicExecutionBlock newBlock;
-  newBlock.blockId = newBlockId;
-  newBlock.identity = identity;
-  newBlock.parentBlockId = identity.parentBlockId;
-  newBlock.sourceStatement = identity.sourceStatement;
-  newBlock.unknownLanes = unknownLanes;
-  newBlock.allUnknownResolved = unknownLanes.empty();
-  newBlock.isConverged = false; // Will be updated as lanes arrive
+  newBlock.setBlockId(newBlockId);
+  newBlock.setIdentity(identity);
+  newBlock.setParentBlockId(identity.parentBlockId);
+  newBlock.setSourceStatement(identity.sourceStatement);
+  
+  // Add unknown lanes
+  for (const auto& [waveId, laneSet] : unknownLanes) {
+    for (LaneId laneId : laneSet) {
+      newBlock.addUnknownLane(waveId, laneId);
+    }
+  }
+  
+  // Update resolution status for all waves
+  for (const auto& [waveId, _] : unknownLanes) {
+    newBlock.setWaveAllUnknownResolved(waveId, newBlock.areAllUnknownLanesResolvedForWave(waveId));
+  }
+  
+  newBlock.setIsConverged(false); // Will be updated as lanes arrive
 
   // Store the new block
   executionBlocks[newBlockId] = newBlock;
@@ -3264,7 +3283,7 @@ void ThreadgroupContext::addInstructionToBlock(
 
   // Add instruction to the ordered list if not already present
   bool found = false;
-  for (const auto &existingInstr : block.instructionList) {
+  for (const auto &existingInstr : block.getInstructionList()) {
     if (existingInstr == instruction) {
       found = true;
       break;
@@ -3272,13 +3291,14 @@ void ThreadgroupContext::addInstructionToBlock(
   }
 
   if (!found) {
-    block.instructionList.push_back(instruction);
+    block.addInstruction(instruction);
   }
 
   // Merge participants for this instruction (don't replace, add to existing)
-  auto &existingParticipants = block.instructionParticipants[instruction];
   for (const auto &[waveId, newLanes] : participants) {
-    existingParticipants[waveId].insert(newLanes.begin(), newLanes.end());
+    for (LaneId laneId : newLanes) {
+      block.addInstructionParticipant(instruction, waveId, laneId);
+    }
   }
 }
 
@@ -3296,7 +3316,7 @@ std::vector<InstructionIdentity>
 ThreadgroupContext::getBlockInstructions(uint32_t blockId) const {
   auto blockIt = executionBlocks.find(blockId);
   if (blockIt != executionBlocks.end()) {
-    return blockIt->second.instructionList;
+    return blockIt->second.getInstructionList();
   }
   return {};
 }
@@ -3306,8 +3326,9 @@ ThreadgroupContext::getInstructionParticipantsInBlock(
     uint32_t blockId, const InstructionIdentity &instruction) const {
   auto blockIt = executionBlocks.find(blockId);
   if (blockIt != executionBlocks.end()) {
-    auto instrIt = blockIt->second.instructionParticipants.find(instruction);
-    if (instrIt != blockIt->second.instructionParticipants.end()) {
+    const auto& instructionParticipants = blockIt->second.getInstructionParticipants();
+    auto instrIt = instructionParticipants.find(instruction);
+    if (instrIt != instructionParticipants.end()) {
       return instrIt->second;
     }
   }
@@ -3324,13 +3345,13 @@ bool ThreadgroupContext::canExecuteInstructionInBlock(
   const DynamicExecutionBlock &block = blockIt->second;
 
   // Check if all unknown lanes in this block are resolved
-  if (!block.allUnknownResolved) {
+  if (!block.areAllUnknownLanesResolved()) {
     return false; // Still have unknown lanes
   }
 
   // Get expected participants (all active lanes in the block)
   std::map<WaveId, std::set<LaneId>> expectedParticipants =
-      block.participatingLanes;
+      block.getParticipatingLanes();
 
   // Get actual participants who have arrived at this instruction
   auto arrivedParticipants =
@@ -3347,7 +3368,7 @@ ThreadgroupContext::getExpectedParticipantsInBlock(
   if (blockIt != executionBlocks.end()) {
     // For wave operations, all participating lanes in the block should
     // participate
-    return blockIt->second.participatingLanes;
+    return blockIt->second.getParticipatingLanes();
   }
   return {};
 }
@@ -3388,12 +3409,12 @@ void ThreadgroupContext::moveThreadFromUnknownToParticipating(uint32_t blockId,
   DynamicExecutionBlock &block = blockIt->second;
 
   // Move lane from unknown to participating and arrived
-  block.unknownLanes[waveId].erase(laneId);
-  block.participatingLanes[waveId].insert(laneId);
-  block.arrivedLanes[waveId].insert(laneId);
+  block.removeUnknownLane(waveId, laneId);
+  block.addParticipatingLane(waveId, laneId);
+  block.addArrivedLane(waveId, laneId);
 
   // Update resolution status
-  block.allUnknownResolved = block.unknownLanes.empty();
+  block.setWaveAllUnknownResolved(waveId, block.areAllUnknownLanesResolvedForWave(waveId));
 
   // Update lane assignment
   assignLaneToBlock(waveId, laneId, blockId);
@@ -3408,10 +3429,10 @@ void ThreadgroupContext::removeThreadFromUnknown(uint32_t blockId,
   DynamicExecutionBlock &block = blockIt->second;
 
   // Remove lane from unknown (it chose a different path)
-  block.unknownLanes[waveId].erase(laneId);
+  block.removeUnknownLane(waveId, laneId);
 
   // Update resolution status
-  block.allUnknownResolved = block.unknownLanes[waveId].empty();
+  block.setWaveAllUnknownResolved(waveId, block.areAllUnknownLanesResolvedForWave(waveId));
 }
 
 void ThreadgroupContext::removeThreadFromNestedBlocks(uint32_t parentBlockId,
@@ -3419,7 +3440,7 @@ void ThreadgroupContext::removeThreadFromNestedBlocks(uint32_t parentBlockId,
                                                       LaneId laneId) {
   // Find all blocks that are nested within the parent block and remove the lane
   for (auto &[blockId, block] : executionBlocks) {
-    if (block.parentBlockId == parentBlockId) {
+    if (block.getParentBlockId() == parentBlockId) {
       // This is a direct child of the parent block
       removeThreadFromUnknown(blockId, waveId, laneId);
 
@@ -3437,16 +3458,16 @@ ThreadgroupContext::getCurrentBlockParticipants(uint32_t blockId) const {
     std::map<WaveId, std::set<LaneId>> allLanes;
     const auto &block = blockIt->second;
 
-    for (const auto &[waveId, lanes] : block.participatingLanes) {
+    for (const auto &[waveId, lanes] : block.getParticipatingLanes()) {
       allLanes[waveId].insert(lanes.begin(), lanes.end());
     }
-    for (const auto &[waveId, lanes] : block.arrivedLanes) {
+    for (const auto &[waveId, lanes] : block.getArrivedLanes()) {
       allLanes[waveId].insert(lanes.begin(), lanes.end());
     }
-    for (const auto &[waveId, lanes] : block.waitingLanes) {
+    for (const auto &[waveId, lanes] : block.getWaitingLanes()) {
       allLanes[waveId].insert(lanes.begin(), lanes.end());
     }
-    for (const auto &[waveId, lanes] : block.unknownLanes) {
+    for (const auto &[waveId, lanes] : block.getUnknownLanes()) {
       allLanes[waveId].insert(lanes.begin(), lanes.end());
     }
 
