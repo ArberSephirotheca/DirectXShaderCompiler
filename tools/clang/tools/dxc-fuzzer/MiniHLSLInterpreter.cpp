@@ -592,9 +592,9 @@ Value WaveActiveOp::evaluate(LaneContext &lane, WaveContext &wave,
   const void *instruction =
       static_cast<const void *>(this); // Use 'this' as instruction pointer
 
-  if (!tg.canExecuteWaveInstruction(wave.waveId,lane.laneId, instruction)) {
+  if (!tg.canExecuteWaveInstruction(wave.waveId, lane.laneId, instruction)) {
     // Mark this lane as arrived at this specific instruction
-    tg.markLaneArrivedAtInstruction(lane.laneId, instruction, "WaveActiveOp");
+    tg.markLaneArrivedAtWaveInstruction(wave.waveId, lane.laneId, instruction, "WaveActiveOp");
 
     // In a full cooperative scheduler, this would suspend the lane and schedule
     // others For now, throw an exception to indicate we need to wait
@@ -604,11 +604,19 @@ Value WaveActiveOp::evaluate(LaneContext &lane, WaveContext &wave,
 
   // All participants known AND all have arrived at this instruction - safe to
   // execute
-  auto blockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
-  auto participants = tg.getInstructionParticipantsInBlock(blockId, instruction);
+  auto blockId = wave.laneToCurrentBlock.at(lane.laneId);
+  auto instructionIdentity = tg.createInstructionIdentity(instruction, "WaveActiveOp");
+  auto participantMap = tg.getInstructionParticipantsInBlock(blockId, instructionIdentity);
+  
   std::vector<Value> values;
-  for (LaneId laneId : participants) {
-    values.push_back(expr_->evaluate(*wave.lanes[laneId], wave, tg));
+  // Get participants for this wave only
+  auto waveParticipants = participantMap.find(wave.waveId);
+  if (waveParticipants != participantMap.end()) {
+    for (LaneId laneId : waveParticipants->second) {
+      if (laneId < wave.lanes.size()) {
+        values.push_back(expr_->evaluate(*wave.lanes[laneId], wave, tg));
+      }
+    }
   }
 
   // Release the sync point after execution
