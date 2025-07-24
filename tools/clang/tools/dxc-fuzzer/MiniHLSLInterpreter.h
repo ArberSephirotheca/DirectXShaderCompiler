@@ -296,6 +296,11 @@ struct WaveContext {
     // Proactive block creation for control flow
     std::pair<uint32_t, uint32_t> createIfBlocks(const void* ifStmt, uint32_t parentBlockId, 
                                                   const std::vector<MergeStackEntry>& mergeStack, bool hasElse);
+    uint32_t createLoopIterationBlock(const void* loopStmt, uint32_t parentBlockId, 
+                                      const std::vector<MergeStackEntry>& mergeStack);
+    std::vector<uint32_t> createSwitchCaseBlocks(const void* switchStmt, uint32_t parentBlockId,
+                                                  const std::vector<MergeStackEntry>& mergeStack,
+                                                  const std::vector<int>& caseValues, bool hasDefault);
     void moveThreadFromUnknownToParticipating(uint32_t blockId, LaneId laneId);
     void removeThreadFromUnknown(uint32_t blockId, LaneId laneId);
     void removeThreadFromNestedBlocks(uint32_t parentBlockId, LaneId laneId);
@@ -376,6 +381,18 @@ struct ThreadgroupContext {
     std::vector<ThreadId> getWaitingThreads() const;
     bool canExecuteWaveOp(WaveId waveId, const std::set<LaneId>& activeLanes) const;
     bool canReleaseBarrier(uint32_t barrierId) const;
+    
+    // Global dynamic block creation methods (delegates to appropriate wave)
+    std::pair<uint32_t, uint32_t> createIfBlocks(const void* ifStmt, uint32_t parentBlockId, 
+                                                  const std::vector<MergeStackEntry>& mergeStack, bool hasElse, WaveId waveId);
+    uint32_t createLoopIterationBlock(const void* loopStmt, uint32_t parentBlockId, 
+                                      const std::vector<MergeStackEntry>& mergeStack, WaveId waveId);
+    std::vector<uint32_t> createSwitchCaseBlocks(const void* switchStmt, uint32_t parentBlockId,
+                                                  const std::vector<MergeStackEntry>& mergeStack,
+                                                  const std::vector<int>& caseValues, bool hasDefault, WaveId waveId);
+    void moveThreadFromUnknownToParticipating(uint32_t blockId, LaneId laneId, WaveId waveId);
+    void removeThreadFromUnknown(uint32_t blockId, LaneId laneId, WaveId waveId);
+    void removeThreadFromNestedBlocks(uint32_t parentBlockId, LaneId laneId, WaveId waveId);
 };
 
 // Thread execution ordering
