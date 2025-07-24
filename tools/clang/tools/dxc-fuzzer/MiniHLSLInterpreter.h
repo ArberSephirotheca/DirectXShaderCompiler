@@ -287,6 +287,17 @@ public:
         return (it != allUnknownResolved_.end()) ? it->second : true;
     }
     
+    bool areAllUnknownLanesResolved() const {
+        // Check if all unknown lanes from all waves are resolved
+        return unknownLanes_.empty();
+    }
+    
+    bool areAllUnknownLanesResolvedForWave(WaveId waveId) const {
+        // Check if all unknown lanes for a specific wave are resolved
+        auto it = unknownLanes_.find(waveId);
+        return (it == unknownLanes_.end()) || it->second.empty();
+    }
+    
     // Setters
     void setBlockId(uint32_t id) { blockId_ = id; }
     void setIdentity(const BlockIdentity& ident) { identity_ = ident; }
@@ -496,7 +507,8 @@ struct ThreadgroupContext {
     
     // Global dynamic execution block methods
     uint32_t createExecutionBlock(const std::map<WaveId, std::set<LaneId>>& lanes, const void* sourceStmt = nullptr);
-    std::vector<LaneId> getLanesInSameBlock(WaveId waveId, LaneId laneId) const;
+    std::vector<LaneId> getWaveActiveLanesInSameBlock(WaveId waveId, LaneId laneId) const;
+    std::vector<LaneId> getActiveLanesInSameBlock(WaveId waveId, LaneId laneId) const;
     std::map<WaveId, std::set<LaneId>> getAllLanesInBlock(uint32_t blockId) const;
     bool areInSameBlock(WaveId wave1, LaneId lane1, WaveId wave2, LaneId lane2) const;
     void mergeExecutionPaths(const std::vector<uint32_t>& blockIds, uint32_t targetBlockId);
