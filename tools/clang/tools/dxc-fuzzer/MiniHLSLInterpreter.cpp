@@ -3730,6 +3730,9 @@ void ThreadgroupContext::removeThreadFromAllSets(uint32_t blockId, WaveId waveId
     blockIt->second.removeWaitingLane(waveId, laneId);
     blockIt->second.removeUnknownLane(waveId, laneId);
     
+    // Update unknown resolution status after removing unknown lane
+    blockIt->second.setWaveAllUnknownResolved(waveId, blockIt->second.areAllUnknownLanesResolvedForWave(waveId));
+    
     auto partLanesAfter = blockIt->second.getParticipatingLanes();
     size_t laneCountAfter = partLanesAfter.count(waveId) ? partLanesAfter.at(waveId).size() : 0;
     std::cout << "DEBUG: removeThreadFromAllSets - block " << blockId << " has " 

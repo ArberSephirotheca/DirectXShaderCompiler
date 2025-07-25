@@ -364,6 +364,8 @@ public:
     }
     
     void removeUnknownLane(WaveId waveId, LaneId laneId) {
+        std::cout << "DEBUG: removeUnknownLane - removing lane " << laneId 
+                  << " from unknown lanes of block " << blockId_ << std::endl;
         unknownLanes_[waveId].erase(laneId);
         if (unknownLanes_[waveId].empty()) {
             unknownLanes_.erase(waveId);
