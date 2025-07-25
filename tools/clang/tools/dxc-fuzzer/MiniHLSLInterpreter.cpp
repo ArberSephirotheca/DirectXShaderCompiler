@@ -915,6 +915,15 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
 
   // Move lane to merge block as participating (reconvergence)
   tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId, lane.laneId);
+  
+  // Clean up then/else blocks - lane will never return to them
+  tg.removeThreadFromAllSets(thenBlockId, wave.waveId, lane.laneId);
+  tg.removeThreadFromNestedBlocks(thenBlockId, wave.waveId, lane.laneId);
+  
+  if (hasElse && elseBlockId != 0) {
+    tg.removeThreadFromAllSets(elseBlockId, wave.waveId, lane.laneId);
+    tg.removeThreadFromNestedBlocks(elseBlockId, wave.waveId, lane.laneId);
+  }
 
   // Restore active state (reconvergence)
   lane.isActive = lane.isActive && !lane.hasReturned;
@@ -2962,6 +2971,12 @@ void SwitchStmt::execute(LaneContext &lane, WaveContext &wave,
         // Continue statements don't apply to switch
       }
     }
+  }
+  
+  // Clean up all case blocks - lane will never return to them
+  for (size_t i = 0; i < caseBlockIds.size(); ++i) {
+    tg.removeThreadFromAllSets(caseBlockIds[i], wave.waveId, lane.laneId);
+    tg.removeThreadFromNestedBlocks(caseBlockIds[i], wave.waveId, lane.laneId);
   }
 }
 
