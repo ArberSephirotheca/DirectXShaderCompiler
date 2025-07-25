@@ -272,7 +272,7 @@ ThreadgroupContext::ThreadgroupContext(uint32_t tgSize, uint32_t wSize)
 
     
       BlockIdentity initialIdentity =
-          createBlockIdentity(nullptr, true, 0, {});
+          createBlockIdentity(nullptr, BlockType::REGULAR, 0, {});
 
       // Create initial block with no unknown lanes (all lanes are guaranteed to
       // start here)
@@ -779,7 +779,7 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
 
   // PROACTIVE: Create blocks that actually exist in the code
   bool hasElse = !elseBlock_.empty();
-  auto [thenBlockId, elseBlockId] =
+  auto [thenBlockId, elseBlockId, mergeBlockId] =
       tg.createIfBlocks(static_cast<const void *>(this), parentBlockId,
                         currentMergeStack, hasElse);
 
@@ -795,6 +795,9 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
       // Also remove from nested blocks of else block
       tg.removeThreadFromNestedBlocks(elseBlockId, lane.laneId, wave.waveId);
     }
+    
+    // Remove from merge block's unknown set (will be added back during reconvergence)
+    tg.removeThreadFromUnknown(mergeBlockId, lane.laneId, wave.waveId);
 
     // Execute then block
     if (lane.isActive) {
@@ -815,6 +818,9 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
       tg.removeThreadFromUnknown(thenBlockId, lane.laneId, wave.waveId);
       // Also remove from nested blocks of then block
       tg.removeThreadFromNestedBlocks(thenBlockId, lane.laneId, wave.waveId);
+      
+      // Remove from merge block's unknown set (will be added back during reconvergence)
+      tg.removeThreadFromUnknown(mergeBlockId, lane.laneId, wave.waveId);
 
       // Execute else block
       if (lane.isActive) {
@@ -827,17 +833,21 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
         }
       }
     } else {
-      // No else block - lane stays in parent block and skips if entirely
+      // No else block - lane goes directly to merge block
       tg.removeThreadFromUnknown(thenBlockId, lane.laneId, wave.waveId);
       // Also remove from nested blocks of then block
       tg.removeThreadFromNestedBlocks(thenBlockId, lane.laneId, wave.waveId);
-      // Lane remains assigned to parentBlockId
+      // Move this lane directly to merge block since it's not taking then branch
+      tg.moveThreadFromUnknownToParticipating(mergeBlockId, lane.laneId, wave.waveId);
     }
   }
 
-  // Pop merge point and return to parent block (reconvergence)
+  // Pop merge point and reconverge at merge block
   tg.popMergePoint(wave.waveId, lane.laneId);
-  tg.assignLaneToBlock(wave.waveId, lane.laneId, parentBlockId);
+  tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
+
+  // Move lane to merge block as participating (reconvergence)
+  tg.moveThreadFromUnknownToParticipating(mergeBlockId, lane.laneId, wave.waveId);
 
   // Restore active state (reconvergence)
   lane.isActive = lane.isActive && !lane.hasReturned;
@@ -3080,10 +3090,11 @@ ThreadgroupContext::findBlockByIdentity(const BlockIdentity &identity) const {
 }
 
 BlockIdentity ThreadgroupContext::createBlockIdentity(
-    const void *sourceStmt, bool conditionValue, uint32_t parentBlockId,
-    const std::vector<MergeStackEntry> &mergeStack) const {
+    const void *sourceStmt, BlockType blockType, uint32_t parentBlockId,
+    const std::vector<MergeStackEntry> &mergeStack, bool conditionValue) const {
   BlockIdentity identity;
   identity.sourceStatement = sourceStmt;
+  identity.blockType = blockType;
   identity.conditionValue = conditionValue;
   identity.parentBlockId = parentBlockId;
   identity.mergeStack = mergeStack;
@@ -3396,7 +3407,7 @@ ThreadgroupContext::getExpectedParticipantsInBlock(
 }
 
 // Proactive block creation methods
-std::pair<uint32_t, uint32_t> ThreadgroupContext::createIfBlocks(
+std::tuple<uint32_t, uint32_t, uint32_t> ThreadgroupContext::createIfBlocks(
     const void *ifStmt, uint32_t parentBlockId,
     const std::vector<MergeStackEntry> &mergeStack, bool hasElse) {
   // Get all lanes that could potentially take either path
@@ -3405,7 +3416,7 @@ std::pair<uint32_t, uint32_t> ThreadgroupContext::createIfBlocks(
 
   // Always create the then block
   BlockIdentity thenIdentity =
-      createBlockIdentity(ifStmt, true, parentBlockId, mergeStack);
+      createBlockIdentity(ifStmt, BlockType::BRANCH_THEN, parentBlockId, mergeStack, true);
   uint32_t thenBlockId =
       findOrCreateBlockForPath(thenIdentity, allPotentialLanes);
 
@@ -3414,11 +3425,17 @@ std::pair<uint32_t, uint32_t> ThreadgroupContext::createIfBlocks(
   // Only create else block if it exists in the code
   if (hasElse) {
     BlockIdentity elseIdentity =
-        createBlockIdentity(ifStmt, false, parentBlockId, mergeStack);
+        createBlockIdentity(ifStmt, BlockType::BRANCH_ELSE, parentBlockId, mergeStack, false);
     elseBlockId = findOrCreateBlockForPath(elseIdentity, allPotentialLanes);
   }
 
-  return {thenBlockId, elseBlockId};
+  // Always create merge block for reconvergence
+  BlockIdentity mergeIdentity =
+      createBlockIdentity(ifStmt, BlockType::MERGE, parentBlockId, mergeStack);
+  uint32_t mergeBlockId =
+      findOrCreateBlockForPath(mergeIdentity, allPotentialLanes);
+
+  return {thenBlockId, elseBlockId, mergeBlockId};
 }
 
 void ThreadgroupContext::moveThreadFromUnknownToParticipating(uint32_t blockId,
@@ -3507,7 +3524,7 @@ uint32_t ThreadgroupContext::createLoopIterationBlock(
 
   // Create iteration block (always true condition for loop bodies)
   BlockIdentity iterationIdentity =
-      createBlockIdentity(loopStmt, true, parentBlockId, mergeStack);
+      createBlockIdentity(loopStmt, BlockType::LOOP_BODY, parentBlockId, mergeStack);
   return findOrCreateBlockForPath(iterationIdentity, allPotentialLanes);
 }
 
@@ -3524,7 +3541,7 @@ std::vector<uint32_t> ThreadgroupContext::createSwitchCaseBlocks(
   // Create a block for each case value
   for (int caseValue : caseValues) {
     BlockIdentity caseIdentity =
-        createBlockIdentity(switchStmt, true, parentBlockId, mergeStack);
+        createBlockIdentity(switchStmt, BlockType::SWITCH_CASE, parentBlockId, mergeStack);
     uint32_t caseBlockId =
         findOrCreateBlockForPath(caseIdentity, allPotentialLanes);
     caseBlockIds.push_back(caseBlockId);
@@ -3533,7 +3550,7 @@ std::vector<uint32_t> ThreadgroupContext::createSwitchCaseBlocks(
   // Create default block if it exists
   if (hasDefault) {
     BlockIdentity defaultIdentity =
-        createBlockIdentity(switchStmt, false, parentBlockId, mergeStack);
+        createBlockIdentity(switchStmt, BlockType::SWITCH_DEFAULT, parentBlockId, mergeStack);
     uint32_t defaultBlockId =
         findOrCreateBlockForPath(defaultIdentity, allPotentialLanes);
     caseBlockIds.push_back(defaultBlockId);

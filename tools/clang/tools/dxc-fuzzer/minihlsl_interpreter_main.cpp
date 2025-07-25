@@ -10,7 +10,7 @@
 #include "clang/Frontend/ASTUnit.h"
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendActions.h"
-#include "clang/Tooling/Tooling.h"
+// Removed clang/Tooling/Tooling.h - not needed, using MiniHLSLValidator instead
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/RecursiveASTVisitor.h"
@@ -120,35 +120,9 @@ std::string readFile(const std::string& filename) {
     return content;
 }
 
-// AST Visitor to find the main function
-class MainFunctionFinder : public RecursiveASTVisitor<MainFunctionFinder> {
-public:
-    FunctionDecl* mainFunction = nullptr;
-    
-    bool VisitFunctionDecl(FunctionDecl* func) {
-        if (func->getNameInfo().getAsString() == "main") {
-            mainFunction = func;
-            return false; // Stop traversal
-        }
-        return true;
-    }
-};
+// Removed MainFunctionFinder and HLSLASTConsumer - now using MiniHLSLValidator
 
-class HLSLASTConsumer : public ASTConsumer {
-public:
-    MainFunctionFinder finder;
-    
-    void HandleTranslationUnit(ASTContext& context) override {
-        finder.TraverseDecl(context.getTranslationUnitDecl());
-    }
-};
-
-class HLSLParseAction : public ASTFrontendAction {
-public:
-    std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance& CI, StringRef file) override {
-        return std::make_unique<HLSLASTConsumer>();
-    }
-};
+// Removed HLSLParseAction - now using MiniHLSLValidator
 
 void printExecutionResult(const ExecutionResult& result, const std::string& description, bool verbose) {
     std::cout << "=== " << description << " ===\n";
@@ -245,26 +219,25 @@ int main(int argc, char* argv[]) {
             std::cout << hlslSource << "\n";
         }
         
-        // Parse HLSL with Clang
-        std::vector<std::string> args = {
-            "-x", "hlsl",
-            "-std=hlsl2021",
-            "-fms-extensions",
-            "-fdelayed-template-parsing"
-        };
+        // Parse HLSL with MiniHLSLValidator
+        minihlsl::MiniHLSLValidator validator;
+        auto astResult = validator.validate_source_with_ast_ownership(hlslSource, config.inputFile);
         
-        auto astUnit = tooling::buildASTFromCodeWithArgs(hlslSource, args, config.inputFile);
-        if (!astUnit) {
-            std::cerr << "❌ Failed to parse HLSL file\n";
+        if (!astResult.is_valid()) {
+            std::cerr << "❌ HLSL validation failed:\n";
+            if (astResult.validation_result.is_err()) {
+                for (const auto& error : astResult.validation_result.unwrap_err()) {
+                    std::cerr << "  " << error.message << "\n";
+                }
+            }
             return 1;
         }
         
-        // Find main function
-        MainFunctionFinder finder;
-        finder.TraverseDecl(astUnit->getASTContext().getTranslationUnitDecl());
+        auto* astContext = astResult.get_ast_context();
+        auto* mainFunction = astResult.get_main_function();
         
-        if (!finder.mainFunction) {
-            std::cerr << "❌ No main function found in HLSL file\n";
+        if (!astContext || !mainFunction) {
+            std::cerr << "❌ Failed to get AST context or main function\n";
             return 1;
         }
         
@@ -274,7 +247,7 @@ int main(int argc, char* argv[]) {
         
         // Convert HLSL AST to interpreter program
         MiniHLSLInterpreter interpreter(42); // Fixed seed for reproducibility
-        auto conversionResult = interpreter.convertFromHLSLAST(finder.mainFunction, astUnit->getASTContext());
+        auto conversionResult = interpreter.convertFromHLSLAST(mainFunction, *astContext);
         
         if (!conversionResult.success) {
             std::cerr << "❌ Failed to convert HLSL to interpreter program: " 

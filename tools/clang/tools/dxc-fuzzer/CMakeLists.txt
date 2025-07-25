@@ -89,7 +89,7 @@ target_link_libraries(minihlsl-interpreter
 target_link_libraries(minihlsl-standalone
   # Use pthread for std::thread and std::mutex
   Threads::Threads
-  # Clang/LLVM libraries needed for AST conversion and tooling
+  # Clang/LLVM libraries needed for AST conversion
   dxcompiler
   clangAST
   clangBasic
@@ -97,7 +97,6 @@ target_link_libraries(minihlsl-standalone
   clangLex
   clangParse
   clangSema
-  clangTooling
   LLVMSupport
   LLVMOption
   LLVMCore

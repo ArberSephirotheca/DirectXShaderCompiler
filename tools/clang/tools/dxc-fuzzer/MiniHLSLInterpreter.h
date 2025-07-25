@@ -193,15 +193,30 @@ struct MergeStackEntry {
     }
 };
 
+// Block types for different control flow structures
+enum class BlockType {
+    REGULAR,        // Regular sequential block
+    BRANCH_THEN,    // Then branch of if statement
+    BRANCH_ELSE,    // Else branch of if statement
+    MERGE,          // Merge/reconvergence point after divergent control flow
+    LOOP_HEADER,    // Loop header/condition check
+    LOOP_BODY,      // Loop body iteration
+    LOOP_EXIT,      // Loop exit/merge point
+    SWITCH_CASE,    // Switch case block
+    SWITCH_DEFAULT  // Switch default block
+};
+
 // Block identity for deduplication based on execution path using merge stack
 struct BlockIdentity {
     const void* sourceStatement = nullptr;  // Which statement created this block
-    bool conditionValue = true;             // Which branch (true/false)
+    BlockType blockType = BlockType::REGULAR; // Type of block
+    bool conditionValue = true;             // Which branch (true/false) - used for branches
     uint32_t parentBlockId = 0;             // Parent block for nested control flow
     std::vector<MergeStackEntry> mergeStack; // Stack of merge points for robust identification
     
     bool operator<(const BlockIdentity& other) const {
         if (sourceStatement != other.sourceStatement) return sourceStatement < other.sourceStatement;
+        if (blockType != other.blockType) return blockType < other.blockType;
         if (conditionValue != other.conditionValue) return conditionValue < other.conditionValue;
         if (parentBlockId != other.parentBlockId) return parentBlockId < other.parentBlockId;
         return mergeStack < other.mergeStack;
@@ -209,6 +224,7 @@ struct BlockIdentity {
     
     bool operator==(const BlockIdentity& other) const {
         return sourceStatement == other.sourceStatement &&
+               blockType == other.blockType &&
                conditionValue == other.conditionValue &&
                parentBlockId == other.parentBlockId &&
                mergeStack == other.mergeStack;
@@ -525,12 +541,13 @@ struct ThreadgroupContext {
     // Block deduplication methods
     uint32_t findOrCreateBlockForPath(const BlockIdentity& identity, const std::map<WaveId, std::set<LaneId>>& unknownLanes);
     uint32_t findBlockByIdentity(const BlockIdentity& identity) const;
-    BlockIdentity createBlockIdentity(const void* sourceStmt, bool conditionValue, 
-                                     uint32_t parentBlockId, const std::vector<MergeStackEntry>& mergeStack = {}) const;
+    BlockIdentity createBlockIdentity(const void* sourceStmt, BlockType blockType,
+                                     uint32_t parentBlockId, const std::vector<MergeStackEntry>& mergeStack = {},
+                                     bool conditionValue = true) const;
     
-    // Proactive block creation for control flow
-    std::pair<uint32_t, uint32_t> createIfBlocks(const void* ifStmt, uint32_t parentBlockId, 
-                                                  const std::vector<MergeStackEntry>& mergeStack, bool hasElse);
+    // Proactive block creation for control flow - now returns then, else, and merge block IDs
+    std::tuple<uint32_t, uint32_t, uint32_t> createIfBlocks(const void* ifStmt, uint32_t parentBlockId, 
+                                                            const std::vector<MergeStackEntry>& mergeStack, bool hasElse);
     uint32_t createLoopIterationBlock(const void* loopStmt, uint32_t parentBlockId, 
                                       const std::vector<MergeStackEntry>& mergeStack);
     std::vector<uint32_t> createSwitchCaseBlocks(const void* switchStmt, uint32_t parentBlockId,
