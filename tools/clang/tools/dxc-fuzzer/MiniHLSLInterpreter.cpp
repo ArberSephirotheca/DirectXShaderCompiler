@@ -968,10 +968,10 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
   std::vector<MergeStackEntry> currentMergeStack =
       tg.getCurrentMergeStack(wave.waveId, lane.laneId);
 
-  // Create loop blocks (header, body, merge)
+  // Create loop blocks (header, body, merge) - pass current execution path
   auto [headerBlockId, bodyBlockId, mergeBlockId] =
       tg.createLoopBlocks(static_cast<const void *>(this), parentBlockId,
-                          currentMergeStack);
+                          currentMergeStack, lane.executionPath);
 
   // Push merge point for loop divergence
   std::set<uint32_t> divergentBlocks = {headerBlockId, bodyBlockId};
@@ -987,9 +987,17 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
 
   // Execute loop
   while (lane.isActive && condition_->evaluate(lane, wave, tg).asBool()) {
-    // Move to loop body block
-    tg.assignLaneToBlock(wave.waveId, lane.laneId, bodyBlockId);
-    tg.moveThreadFromUnknownToParticipating(bodyBlockId, wave.waveId, lane.laneId);
+    // Add current loop iteration to execution path to make each iteration unique
+    lane.executionPath.push_back(static_cast<const void*>(this));
+    
+    // Create unique body block for this iteration with current execution path
+    BlockIdentity bodyIdentity =
+        tg.createBlockIdentity(static_cast<const void*>(this), BlockType::LOOP_BODY, parentBlockId, currentMergeStack, true, lane.executionPath);
+    uint32_t iterationBodyBlockId = tg.findOrCreateBlockForPath(bodyIdentity, tg.getCurrentBlockParticipants(parentBlockId));
+    
+    // Move to this iteration's loop body block
+    tg.assignLaneToBlock(wave.waveId, lane.laneId, iterationBodyBlockId);
+    tg.moveThreadFromUnknownToParticipating(iterationBodyBlockId, wave.waveId, lane.laneId);
     tg.removeThreadFromUnknown(mergeBlockId, lane.laneId, wave.waveId);
 
     try {
@@ -2641,10 +2649,10 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
   std::vector<MergeStackEntry> currentMergeStack =
       tg.getCurrentMergeStack(wave.waveId, lane.laneId);
 
-  // Create loop blocks (header, body, merge)
+  // Create loop blocks (header, body, merge) - pass current execution path
   auto [headerBlockId, bodyBlockId, mergeBlockId] =
       tg.createLoopBlocks(static_cast<const void *>(this), parentBlockId,
-                          currentMergeStack);
+                          currentMergeStack, lane.executionPath);
 
   // Push merge point for loop divergence
   std::set<uint32_t> divergentBlocks = {headerBlockId, bodyBlockId};
@@ -3281,12 +3289,14 @@ ThreadgroupContext::findBlockByIdentity(const BlockIdentity &identity) const {
 
 BlockIdentity ThreadgroupContext::createBlockIdentity(
     const void *sourceStmt, BlockType blockType, uint32_t parentBlockId,
-    const std::vector<MergeStackEntry> &mergeStack, bool conditionValue) const {
+    const std::vector<MergeStackEntry> &mergeStack, bool conditionValue, 
+    const std::vector<const void*>& executionPath) const {
   BlockIdentity identity;
   identity.sourceStatement = sourceStmt;
   identity.blockType = blockType;
   identity.conditionValue = conditionValue;
   identity.parentBlockId = parentBlockId;
+  identity.executionPath = executionPath;
   identity.mergeStack = mergeStack;
   return identity;
 }
@@ -3711,24 +3721,25 @@ ThreadgroupContext::getCurrentBlockParticipants(uint32_t blockId) const {
 
 std::tuple<uint32_t, uint32_t, uint32_t> ThreadgroupContext::createLoopBlocks(
     const void *loopStmt, uint32_t parentBlockId,
-    const std::vector<MergeStackEntry> &mergeStack) {
+    const std::vector<MergeStackEntry> &mergeStack,
+    const std::vector<const void*>& executionPath) {
   // Get all lanes that could potentially enter the loop
   std::map<WaveId, std::set<LaneId>> allPotentialLanes =
       getCurrentBlockParticipants(parentBlockId);
 
-  // Create loop header block (where condition is checked)
+  // Create loop header block (where condition is checked) - no execution path for reuse
   BlockIdentity headerIdentity =
       createBlockIdentity(loopStmt, BlockType::LOOP_HEADER, parentBlockId, mergeStack);
   uint32_t headerBlockId =
       findOrCreateBlockForPath(headerIdentity, allPotentialLanes);
 
-  // Create loop body block
+  // Create loop body block - use execution path for unique blocks per iteration
   BlockIdentity bodyIdentity =
-      createBlockIdentity(loopStmt, BlockType::LOOP_BODY, parentBlockId, mergeStack);
+      createBlockIdentity(loopStmt, BlockType::LOOP_BODY, parentBlockId, mergeStack, true, executionPath);
   uint32_t bodyBlockId =
       findOrCreateBlockForPath(bodyIdentity, allPotentialLanes);
 
-  // Create loop exit/merge block (where threads reconverge after loop)
+  // Create loop exit/merge block (where threads reconverge after loop) - no execution path for convergence
   BlockIdentity mergeIdentity =
       createBlockIdentity(loopStmt, BlockType::LOOP_EXIT, parentBlockId, mergeStack);
   uint32_t mergeBlockId =

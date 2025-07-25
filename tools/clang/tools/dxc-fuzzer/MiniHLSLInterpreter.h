@@ -117,6 +117,9 @@ struct LaneContext {
     size_t currentStatement = 0;  // Index of next statement to execute
     std::string errorMessage;
     
+    // Execution path tracking for block deduplication
+    std::vector<const void*> executionPath;
+    
     // Wave operation synchronization
     uint32_t waveOpId = 0;        // Current wave operation ID
     bool waveOpComplete = false;   // Whether current wave op is done
@@ -213,21 +216,40 @@ struct BlockIdentity {
     BlockType blockType = BlockType::REGULAR; // Type of block
     bool conditionValue = true;             // Which branch (true/false) - used for branches
     uint32_t parentBlockId = 0;             // Parent block for nested control flow
+    std::vector<const void*> executionPath; // Actual sequence of statements executed to reach this point
     std::vector<MergeStackEntry> mergeStack; // Stack of merge points for robust identification
     
     bool operator<(const BlockIdentity& other) const {
         if (sourceStatement != other.sourceStatement) return sourceStatement < other.sourceStatement;
         if (blockType != other.blockType) return blockType < other.blockType;
+        
+        // For merge blocks, don't compare execution paths - different paths should merge
+        if (blockType == BlockType::MERGE || blockType == BlockType::LOOP_EXIT) {
+            if (parentBlockId != other.parentBlockId) return parentBlockId < other.parentBlockId;
+            return mergeStack < other.mergeStack;
+        }
+        
+        // For divergent blocks, compare execution paths to create unique blocks per iteration
         if (conditionValue != other.conditionValue) return conditionValue < other.conditionValue;
         if (parentBlockId != other.parentBlockId) return parentBlockId < other.parentBlockId;
+        if (executionPath != other.executionPath) return executionPath < other.executionPath;
         return mergeStack < other.mergeStack;
     }
     
     bool operator==(const BlockIdentity& other) const {
-        return sourceStatement == other.sourceStatement &&
-               blockType == other.blockType &&
-               conditionValue == other.conditionValue &&
+        if (sourceStatement != other.sourceStatement) return false;
+        if (blockType != other.blockType) return false;
+        
+        // For merge blocks, don't compare execution paths - different paths should merge
+        if (blockType == BlockType::MERGE || blockType == BlockType::LOOP_EXIT) {
+            return parentBlockId == other.parentBlockId &&
+                   mergeStack == other.mergeStack;
+        }
+        
+        // For divergent blocks, compare execution paths to create unique blocks per iteration
+        return conditionValue == other.conditionValue &&
                parentBlockId == other.parentBlockId &&
+               executionPath == other.executionPath &&
                mergeStack == other.mergeStack;
     }
 };
@@ -544,14 +566,15 @@ struct ThreadgroupContext {
     uint32_t findBlockByIdentity(const BlockIdentity& identity) const;
     BlockIdentity createBlockIdentity(const void* sourceStmt, BlockType blockType,
                                      uint32_t parentBlockId, const std::vector<MergeStackEntry>& mergeStack = {},
-                                     bool conditionValue = true) const;
+                                     bool conditionValue = true, const std::vector<const void*>& executionPath = {}) const;
     
     // Proactive block creation for control flow - now returns then, else, and merge block IDs
     std::tuple<uint32_t, uint32_t, uint32_t> createIfBlocks(const void* ifStmt, uint32_t parentBlockId, 
                                                             const std::vector<MergeStackEntry>& mergeStack, bool hasElse);
     // Create loop blocks - returns header, body, and merge block IDs
     std::tuple<uint32_t, uint32_t, uint32_t> createLoopBlocks(const void* loopStmt, uint32_t parentBlockId, 
-                                                               const std::vector<MergeStackEntry>& mergeStack);
+                                                               const std::vector<MergeStackEntry>& mergeStack,
+                                                               const std::vector<const void*>& executionPath = {});
     std::vector<uint32_t> createSwitchCaseBlocks(const void* switchStmt, uint32_t parentBlockId,
                                                   const std::vector<MergeStackEntry>& mergeStack,
                                                   const std::vector<int>& caseValues, bool hasDefault);
