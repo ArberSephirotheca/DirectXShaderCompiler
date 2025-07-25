@@ -986,19 +986,34 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
   tg.moveThreadFromUnknownToParticipating(headerBlockId, wave.waveId, lane.laneId);
 
   // Execute loop
-  while (lane.isActive && condition_->evaluate(lane, wave, tg).asBool()) {
+  while (lane.isActive) {
+    // Check loop condition
+    bool shouldContinue = condition_->evaluate(lane, wave, tg).asBool();
+    if (!shouldContinue) {
+      // Lane is exiting loop - remove from unknown lanes of all iteration blocks immediately
+      tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId);
+      break;
+    }
     // Add current loop iteration to execution path to make each iteration unique
     lane.executionPath.push_back(static_cast<const void*>(this));
     
     // Create unique body block for this iteration with current execution path
-    BlockIdentity bodyIdentity =
-        tg.createBlockIdentity(static_cast<const void*>(this), BlockType::LOOP_BODY, parentBlockId, currentMergeStack, true, lane.executionPath);
-    uint32_t iterationBodyBlockId = tg.findOrCreateBlockForPath(bodyIdentity, tg.getCurrentBlockParticipants(parentBlockId));
+    // Use same approach as if statements - pre-create with all potential lanes as unknown
+    // Use headerBlockId as parent since iteration blocks are children of header block
+    BlockIdentity iterationBodyIdentity =
+        tg.createBlockIdentity(static_cast<const void*>(this), BlockType::LOOP_BODY, headerBlockId, currentMergeStack, true, lane.executionPath);
     
-    // Move to this iteration's loop body block
+    // Get lanes that could potentially participate in this iteration
+    // Only include lanes that are currently in the loop header (actively deciding whether to continue)
+    std::map<WaveId, std::set<LaneId>> iterationUnknownLanes = tg.getCurrentBlockParticipants(headerBlockId);
+    // Remove this lane since we know it's participating
+    iterationUnknownLanes[wave.waveId].erase(lane.laneId);
+    
+    uint32_t iterationBodyBlockId = tg.findOrCreateBlockForPath(iterationBodyIdentity, iterationUnknownLanes);
+    
+    // Move to this iteration's loop body block (this lane chooses to participate)
     tg.assignLaneToBlock(wave.waveId, lane.laneId, iterationBodyBlockId);
     tg.moveThreadFromUnknownToParticipating(iterationBodyBlockId, wave.waveId, lane.laneId);
-    tg.removeThreadFromUnknown(mergeBlockId, lane.laneId, wave.waveId);
 
     try {
       // Execute body
@@ -1029,6 +1044,11 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
   tg.popMergePoint(wave.waveId, lane.laneId);
   tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
   tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId, lane.laneId);
+  
+  // Remove this lane from unknown lanes of all loop body blocks
+  // When lane exits loop, it won't participate in any future iterations
+  // Use headerBlockId since that's the parent of iteration blocks
+  tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId);
 
   // Restore active state
   lane.isActive = lane.isActive && !lane.hasReturned;
@@ -2980,12 +3000,24 @@ uint32_t ThreadgroupContext::createExecutionBlock(
 
 void ThreadgroupContext::assignLaneToBlock(WaveId waveId, LaneId laneId,
                                            uint32_t blockId) {
+  // Remove lane from its current block's arrived lanes first
+  auto currentBlockIt = waves[waveId]->laneToCurrentBlock.find(laneId);
+  if (currentBlockIt != waves[waveId]->laneToCurrentBlock.end()) {
+    uint32_t oldBlockId = currentBlockIt->second;
+    auto oldBlockIt = executionBlocks.find(oldBlockId);
+    if (oldBlockIt != executionBlocks.end()) {
+      oldBlockIt->second.removeArrivedLane(waveId, laneId);
+    }
+  }
+  
   waves[waveId]->laneToCurrentBlock[laneId] = blockId;
 
   // Add lane to the block's participating lanes
   auto it = executionBlocks.find(blockId);
   if (it != executionBlocks.end()) {
     it->second.addParticipatingLane(waveId, laneId);
+    // Also add to arrived lanes when assigned
+    it->second.addArrivedLane(waveId, laneId);
 
     // Check if converged - all lanes from all waves are in this block
     size_t totalLanesInBlock = 0;
@@ -3727,21 +3759,21 @@ std::tuple<uint32_t, uint32_t, uint32_t> ThreadgroupContext::createLoopBlocks(
   std::map<WaveId, std::set<LaneId>> allPotentialLanes =
       getCurrentBlockParticipants(parentBlockId);
 
-  // Create loop header block (where condition is checked) - no execution path for reuse
+  // Create loop header block (where condition is checked) - parent is the block before loop
   BlockIdentity headerIdentity =
       createBlockIdentity(loopStmt, BlockType::LOOP_HEADER, parentBlockId, mergeStack);
   uint32_t headerBlockId =
       findOrCreateBlockForPath(headerIdentity, allPotentialLanes);
 
-  // Create loop body block - use execution path for unique blocks per iteration
+  // Create loop body block - parent should be header block, use execution path for unique blocks per iteration
   BlockIdentity bodyIdentity =
-      createBlockIdentity(loopStmt, BlockType::LOOP_BODY, parentBlockId, mergeStack, true, executionPath);
+      createBlockIdentity(loopStmt, BlockType::LOOP_BODY, headerBlockId, mergeStack, true, executionPath);
   uint32_t bodyBlockId =
       findOrCreateBlockForPath(bodyIdentity, allPotentialLanes);
 
-  // Create loop exit/merge block (where threads reconverge after loop) - no execution path for convergence
+  // Create loop exit/merge block - parent should be header block (where threads reconverge after loop)
   BlockIdentity mergeIdentity =
-      createBlockIdentity(loopStmt, BlockType::LOOP_EXIT, parentBlockId, mergeStack);
+      createBlockIdentity(loopStmt, BlockType::LOOP_EXIT, headerBlockId, mergeStack);
   uint32_t mergeBlockId =
       findOrCreateBlockForPath(mergeIdentity, allPotentialLanes);
 
