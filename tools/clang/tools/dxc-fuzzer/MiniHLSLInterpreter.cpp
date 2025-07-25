@@ -3117,24 +3117,25 @@ bool ThreadgroupContext::areAllUnknownLanesResolved(uint32_t blockId) const {
 uint32_t ThreadgroupContext::findOrCreateBlockForPath(
     const BlockIdentity &identity,
     const std::map<WaveId, std::set<LaneId>> &unknownLanes) {
+  
+  std::cout << "DEBUG: findOrCreateBlockForPath called with " << unknownLanes.size() << " waves of unknown lanes" << std::endl;
+  for (const auto& [waveId, laneSet] : unknownLanes) {
+    std::cout << "  Wave " << waveId << ": {";
+    for (LaneId laneId : laneSet) {
+      std::cout << laneId << " ";
+    }
+    std::cout << "} (" << laneSet.size() << " lanes)" << std::endl;
+  }
+  
   // Check if block with this identity already exists
   auto it = identityToBlockId.find(identity);
   if (it != identityToBlockId.end()) {
-    // Block exists, add unknown lanes to it
+    // Block exists - don't modify its unknown lanes!
+    // The existing block already has the correct unknown lanes from when it was first created.
+    // Those lanes will be properly removed by removeThreadFromNestedBlocks when appropriate.
     uint32_t existingBlockId = it->second;
-    auto &existingBlock = executionBlocks[existingBlockId];
-
-    // Add new unknown lanes to existing block
-    for (const auto& [waveId, laneSet] : unknownLanes) {
-      for (LaneId laneId : laneSet) {
-        existingBlock.addUnknownLane(waveId, laneId);
-      }
-    }
-    // Update resolution status for all waves
-    for (const auto& [waveId, _] : unknownLanes) {
-      existingBlock.setWaveAllUnknownResolved(waveId, existingBlock.areAllUnknownLanesResolvedForWave(waveId));
-    }
-
+    std::cout << "DEBUG: Found existing block " << existingBlockId 
+              << " - not modifying unknown lanes" << std::endl;
     return existingBlockId;
   }
 
@@ -3150,6 +3151,8 @@ uint32_t ThreadgroupContext::findOrCreateBlockForPath(
   // Add unknown lanes
   for (const auto& [waveId, laneSet] : unknownLanes) {
     for (LaneId laneId : laneSet) {
+      std::cout << "DEBUG: addUnknownLane - adding lane " << laneId 
+                << " to new block " << newBlockId << std::endl;
       newBlock.addUnknownLane(waveId, laneId);
     }
   }
@@ -3553,6 +3556,8 @@ void ThreadgroupContext::removeThreadFromUnknown(uint32_t blockId,
   DynamicExecutionBlock &block = blockIt->second;
 
   // Remove lane from unknown (it chose a different path)
+  std::cout << "DEBUG: removeThreadFromUnknown - removing lane " << laneId 
+            << " from block " << blockId << std::endl;
   block.removeUnknownLane(waveId, laneId);
 
   // Update resolution status
@@ -3566,6 +3571,8 @@ void ThreadgroupContext::removeThreadFromNestedBlocks(uint32_t parentBlockId,
   for (auto &[blockId, block] : executionBlocks) {
     if (block.getParentBlockId() == parentBlockId) {
       // This is a direct child of the parent block
+      std::cout << "DEBUG: removeThreadFromNestedBlocks - removing lane " << laneId 
+                << " from block " << blockId << " (child of " << parentBlockId << ")" << std::endl;
       removeThreadFromUnknown(blockId, waveId, laneId);
 
       // Recursively remove from nested blocks of this child

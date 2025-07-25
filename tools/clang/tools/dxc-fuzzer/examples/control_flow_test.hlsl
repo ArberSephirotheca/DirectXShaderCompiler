@@ -9,6 +9,10 @@ void main(uint3 id : SV_DispatchThreadID) {
     // Deterministic branching - all lanes take predictable paths
     if (laneId < 16) {
         result = 1;  // First half of wave
+        if (laneId == 0) {
+            // Special case for lane 0
+            result += 10;  // Just an arbitrary operation
+        }
     } else {
         result = 2;  // Second half of wave
     }
