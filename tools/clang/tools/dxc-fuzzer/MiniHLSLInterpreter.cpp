@@ -2693,9 +2693,26 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
       break;
     }
 
-    // Move to loop body block
-    tg.assignLaneToBlock(wave.waveId, lane.laneId, bodyBlockId);
-    tg.moveThreadFromUnknownToParticipating(bodyBlockId, wave.waveId, lane.laneId);
+    // Add current loop iteration to execution path to make each iteration unique
+    lane.executionPath.push_back(static_cast<const void*>(this));
+    
+    // Create unique body block for this iteration with current execution path
+    // Use same approach as if statements - pre-create with all potential lanes as unknown
+    // Use headerBlockId as parent since iteration blocks are children of header block
+    BlockIdentity iterationBodyIdentity =
+        tg.createBlockIdentity(static_cast<const void*>(this), BlockType::LOOP_BODY, headerBlockId, currentMergeStack, true, lane.executionPath);
+    
+    // Get lanes that could potentially participate in this iteration
+    // Only include lanes that are currently in the loop header (actively deciding whether to continue)
+    std::map<WaveId, std::set<LaneId>> iterationUnknownLanes = tg.getCurrentBlockParticipants(headerBlockId);
+    // Remove this lane since we know it's participating
+    iterationUnknownLanes[wave.waveId].erase(lane.laneId);
+    
+    uint32_t iterationBodyBlockId = tg.findOrCreateBlockForPath(iterationBodyIdentity, iterationUnknownLanes);
+
+    // Move to this iteration's loop body block (this lane chooses to participate)
+    tg.assignLaneToBlock(wave.waveId, lane.laneId, iterationBodyBlockId);
+    tg.moveThreadFromUnknownToParticipating(iterationBodyBlockId, wave.waveId, lane.laneId);
     tg.removeThreadFromUnknown(mergeBlockId, lane.laneId, wave.waveId);
 
     try {
@@ -2755,11 +2772,11 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
   std::vector<MergeStackEntry> currentMergeStack =
       tg.getCurrentMergeStack(wave.waveId, lane.laneId);
 
-  // Create loop blocks (header, body, merge)
+  // Create loop blocks (header, body, merge) - pass current execution path
   // For do-while, body comes before header (condition check)
   auto [headerBlockId, bodyBlockId, mergeBlockId] =
       tg.createLoopBlocks(static_cast<const void *>(this), parentBlockId,
-                          currentMergeStack);
+                          currentMergeStack, lane.executionPath);
 
   // Push merge point for loop divergence
   std::set<uint32_t> divergentBlocks = {headerBlockId, bodyBlockId};
@@ -2768,9 +2785,24 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
 
   // Execute do-while loop - body executes at least once
   do {
-    // Move to loop body block
-    tg.assignLaneToBlock(wave.waveId, lane.laneId, bodyBlockId);
-    tg.moveThreadFromUnknownToParticipating(bodyBlockId, wave.waveId, lane.laneId);
+    // Add current loop iteration to execution path to make each iteration unique
+    lane.executionPath.push_back(static_cast<const void*>(this));
+    
+    // Create unique body block for this iteration with current execution path
+    // For do-while, we don't have a header to use as parent, so use parentBlockId
+    BlockIdentity iterationBodyIdentity =
+        tg.createBlockIdentity(static_cast<const void*>(this), BlockType::LOOP_BODY, parentBlockId, currentMergeStack, true, lane.executionPath);
+    
+    // Get lanes that could potentially participate in this iteration
+    std::map<WaveId, std::set<LaneId>> iterationUnknownLanes = tg.getCurrentBlockParticipants(parentBlockId);
+    // Remove this lane since we know it's participating
+    iterationUnknownLanes[wave.waveId].erase(lane.laneId);
+    
+    uint32_t iterationBodyBlockId = tg.findOrCreateBlockForPath(iterationBodyIdentity, iterationUnknownLanes);
+
+    // Move to this iteration's loop body block (this lane chooses to participate)
+    tg.assignLaneToBlock(wave.waveId, lane.laneId, iterationBodyBlockId);
+    tg.moveThreadFromUnknownToParticipating(iterationBodyBlockId, wave.waveId, lane.laneId);
     tg.removeThreadFromUnknown(mergeBlockId, lane.laneId, wave.waveId);
 
     try {
