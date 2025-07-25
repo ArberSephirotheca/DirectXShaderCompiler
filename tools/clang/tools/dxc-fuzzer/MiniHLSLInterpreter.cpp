@@ -848,7 +848,7 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
   bool hasElse = !elseBlock_.empty();
   auto [thenBlockId, elseBlockId, mergeBlockId] =
       tg.createIfBlocks(static_cast<const void *>(this), parentBlockId,
-                        currentMergeStack, hasElse);
+                        currentMergeStack, hasElse, lane.executionPath);
 
   // Update blocks based on this lane's condition result
   if (condValue) {
@@ -2892,7 +2892,7 @@ void SwitchStmt::execute(LaneContext &lane, WaveContext &wave,
       tg.getCurrentMergeStack(wave.waveId, lane.laneId);
   std::vector<uint32_t> caseBlockIds =
       tg.createSwitchCaseBlocks(static_cast<const void *>(this), parentBlockId,
-                                currentMergeStack, caseValues, hasDefault);
+                                currentMergeStack, caseValues, hasDefault, lane.executionPath);
 
   // Find which case this lane should execute
   size_t matchingCaseIndex = SIZE_MAX; // Use SIZE_MAX instead of -1
@@ -3679,14 +3679,15 @@ ThreadgroupContext::getExpectedParticipantsInBlock(
 // Proactive block creation methods
 std::tuple<uint32_t, uint32_t, uint32_t> ThreadgroupContext::createIfBlocks(
     const void *ifStmt, uint32_t parentBlockId,
-    const std::vector<MergeStackEntry> &mergeStack, bool hasElse) {
+    const std::vector<MergeStackEntry> &mergeStack, bool hasElse,
+    const std::vector<const void*>& executionPath) {
   // Get all lanes that could potentially take either path
   std::map<WaveId, std::set<LaneId>> allPotentialLanes =
       getCurrentBlockParticipants(parentBlockId);
 
   // Always create the then block
   BlockIdentity thenIdentity =
-      createBlockIdentity(ifStmt, BlockType::BRANCH_THEN, parentBlockId, mergeStack, true);
+      createBlockIdentity(ifStmt, BlockType::BRANCH_THEN, parentBlockId, mergeStack, true, executionPath);
   uint32_t thenBlockId =
       findOrCreateBlockForPath(thenIdentity, allPotentialLanes);
 
@@ -3695,13 +3696,13 @@ std::tuple<uint32_t, uint32_t, uint32_t> ThreadgroupContext::createIfBlocks(
   // Only create else block if it exists in the code
   if (hasElse) {
     BlockIdentity elseIdentity =
-        createBlockIdentity(ifStmt, BlockType::BRANCH_ELSE, parentBlockId, mergeStack, false);
+        createBlockIdentity(ifStmt, BlockType::BRANCH_ELSE, parentBlockId, mergeStack, false, executionPath);
     elseBlockId = findOrCreateBlockForPath(elseIdentity, allPotentialLanes);
   }
 
   // Always create merge block for reconvergence
   BlockIdentity mergeIdentity =
-      createBlockIdentity(ifStmt, BlockType::MERGE, parentBlockId, mergeStack);
+      createBlockIdentity(ifStmt, BlockType::MERGE, parentBlockId, mergeStack, true, executionPath);
   uint32_t mergeBlockId =
       findOrCreateBlockForPath(mergeIdentity, allPotentialLanes);
 
@@ -3854,7 +3855,8 @@ std::tuple<uint32_t, uint32_t, uint32_t> ThreadgroupContext::createLoopBlocks(
 std::vector<uint32_t> ThreadgroupContext::createSwitchCaseBlocks(
     const void *switchStmt, uint32_t parentBlockId,
     const std::vector<MergeStackEntry> &mergeStack,
-    const std::vector<int> &caseValues, bool hasDefault) {
+    const std::vector<int> &caseValues, bool hasDefault,
+    const std::vector<const void*>& executionPath) {
   // Get all lanes that could potentially take any case path
   std::map<WaveId, std::set<LaneId>> allPotentialLanes =
       getCurrentBlockParticipants(parentBlockId);
@@ -3864,7 +3866,7 @@ std::vector<uint32_t> ThreadgroupContext::createSwitchCaseBlocks(
   // Create a block for each case value
   for (size_t i = 0; i < caseValues.size(); ++i) {
     BlockIdentity caseIdentity =
-        createBlockIdentity(switchStmt, BlockType::SWITCH_CASE, parentBlockId, mergeStack);
+        createBlockIdentity(switchStmt, BlockType::SWITCH_CASE, parentBlockId, mergeStack, true, executionPath);
     uint32_t caseBlockId =
         findOrCreateBlockForPath(caseIdentity, allPotentialLanes);
     caseBlockIds.push_back(caseBlockId);
@@ -3873,7 +3875,7 @@ std::vector<uint32_t> ThreadgroupContext::createSwitchCaseBlocks(
   // Create default block if it exists
   if (hasDefault) {
     BlockIdentity defaultIdentity =
-        createBlockIdentity(switchStmt, BlockType::SWITCH_DEFAULT, parentBlockId, mergeStack);
+        createBlockIdentity(switchStmt, BlockType::SWITCH_DEFAULT, parentBlockId, mergeStack, true, executionPath);
     uint32_t defaultBlockId =
         findOrCreateBlockForPath(defaultIdentity, allPotentialLanes);
     caseBlockIds.push_back(defaultBlockId);

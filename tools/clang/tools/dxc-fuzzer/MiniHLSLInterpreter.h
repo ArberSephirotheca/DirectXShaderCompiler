@@ -573,14 +573,16 @@ struct ThreadgroupContext {
     
     // Proactive block creation for control flow - now returns then, else, and merge block IDs
     std::tuple<uint32_t, uint32_t, uint32_t> createIfBlocks(const void* ifStmt, uint32_t parentBlockId, 
-                                                            const std::vector<MergeStackEntry>& mergeStack, bool hasElse);
+                                                            const std::vector<MergeStackEntry>& mergeStack, bool hasElse,
+                                                            const std::vector<const void*>& executionPath = {});
     // Create loop blocks - returns header, body, and merge block IDs
     std::tuple<uint32_t, uint32_t, uint32_t> createLoopBlocks(const void* loopStmt, uint32_t parentBlockId, 
                                                                const std::vector<MergeStackEntry>& mergeStack,
                                                                const std::vector<const void*>& executionPath = {});
     std::vector<uint32_t> createSwitchCaseBlocks(const void* switchStmt, uint32_t parentBlockId,
                                                   const std::vector<MergeStackEntry>& mergeStack,
-                                                  const std::vector<int>& caseValues, bool hasDefault);
+                                                  const std::vector<int>& caseValues, bool hasDefault,
+                                                  const std::vector<const void*>& executionPath = {});
     void moveThreadFromUnknownToParticipating(uint32_t blockId, WaveId waveId, LaneId laneId);
     void removeThreadFromUnknown(uint32_t blockId, WaveId waveId, LaneId laneId);
     void removeThreadFromAllSets(uint32_t blockId, WaveId waveId, LaneId laneId);
