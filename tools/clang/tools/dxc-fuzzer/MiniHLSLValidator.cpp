@@ -3742,7 +3742,7 @@ ValidationResult MemorySafetyAnalyzer::analyze_function(clang::FunctionDecl *fun
   build_dynamic_execution_graph(func);
   
   // Debug output
-  bool enableDebug = true; // Could be controlled by a flag
+  bool enableDebug = false; // Could be controlled by a flag
   if (enableDebug) {
     llvm::errs() << "\n=== DBEG Analysis for Function ===\n";
     llvm::errs() << "Function: " << func->getName().str() << "\n";

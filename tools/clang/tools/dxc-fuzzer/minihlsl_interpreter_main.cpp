@@ -223,15 +223,16 @@ int main(int argc, char* argv[]) {
         minihlsl::MiniHLSLValidator validator;
         auto astResult = validator.validate_source_with_ast_ownership(hlslSource, config.inputFile);
         
-        if (!astResult.is_valid()) {
-            std::cerr << "❌ HLSL validation failed:\n";
-            if (astResult.validation_result.is_err()) {
-                for (const auto& error : astResult.validation_result.unwrap_err()) {
-                    std::cerr << "  " << error.message << "\n";
-                }
-            }
-            return 1;
-        }
+        // we don't care about validaiton result for now
+        // if (!astResult.is_valid()) {
+        //     std::cerr << "❌ HLSL validation failed:\n";
+        //     if (astResult.validation_result.is_err()) {
+        //         for (const auto& error : astResult.validation_result.unwrap_err()) {
+        //             std::cerr << "  " << error.message << "\n";
+        //         }
+        //     }
+        //     return 1;
+        // }
         
         auto* astContext = astResult.get_ast_context();
         auto* mainFunction = astResult.get_main_function();
