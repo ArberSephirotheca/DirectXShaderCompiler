@@ -25,6 +25,7 @@ namespace clang {
     class Expr;
     class CompoundStmt;
     class BinaryOperator;
+    class UnaryOperator;
     class CallExpr;
     class DeclStmt;
     class CXXOperatorCallExpr;
@@ -679,7 +680,7 @@ public:
 
 class UnaryOpExpr : public Expression {
 public:
-    enum OpType { Neg, Not };
+    enum OpType { Neg, Not, PreIncrement, PostIncrement, PreDecrement, PostDecrement, Plus, Minus, LogicalNot };
 private:
     std::unique_ptr<Expression> expr_;
     OpType op_;
@@ -1003,6 +1004,7 @@ private:
     std::unique_ptr<Expression> convertCallExpressionToExpression(const clang::CallExpr* callExpr, clang::ASTContext& context);
     std::unique_ptr<Expression> convertConditionalOperator(const clang::ConditionalOperator* condOp, clang::ASTContext& context);
     std::unique_ptr<Expression> convertBinaryExpression(const clang::BinaryOperator* binOp, clang::ASTContext& context);
+    std::unique_ptr<Expression> convertUnaryExpression(const clang::UnaryOperator* unaryOp, clang::ASTContext& context);
     std::unique_ptr<Expression> convertOperatorCall(const clang::CXXOperatorCallExpr* opCall, clang::ASTContext& context);
 };
 

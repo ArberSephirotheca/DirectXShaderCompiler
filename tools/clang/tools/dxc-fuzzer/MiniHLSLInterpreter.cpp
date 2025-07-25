@@ -572,13 +572,63 @@ UnaryOpExpr::UnaryOpExpr(std::unique_ptr<Expression> expr, OpType op)
 
 Value UnaryOpExpr::evaluate(LaneContext &lane, WaveContext &wave,
                             ThreadgroupContext &tg) const {
-  Value val = expr_->evaluate(lane, wave, tg);
-
   switch (op_) {
   case Neg:
+  case Minus: {
+    Value val = expr_->evaluate(lane, wave, tg);
     return Value(-val.asFloat());
+  }
   case Not:
+  case LogicalNot: {
+    Value val = expr_->evaluate(lane, wave, tg);
     return !val;
+  }
+  case Plus: {
+    Value val = expr_->evaluate(lane, wave, tg);
+    return val; // Unary plus does nothing
+  }
+  case PreIncrement: {
+    // ++i: increment first, then return new value
+    if (auto varExpr = dynamic_cast<const VariableExpr*>(expr_.get())) {
+      std::string varName = varExpr->toString(); // Use toString() to get variable name
+      Value& var = lane.variables[varName];
+      var = Value(var.asInt() + 1);
+      return var;
+    }
+    throw std::runtime_error("Pre-increment requires a variable");
+  }
+  case PostIncrement: {
+    // i++: return old value, then increment
+    if (auto varExpr = dynamic_cast<const VariableExpr*>(expr_.get())) {
+      std::string varName = varExpr->toString(); // Use toString() to get variable name
+      Value& var = lane.variables[varName];
+      Value oldValue = var;
+      var = Value(var.asInt() + 1);
+      return oldValue;
+    }
+    throw std::runtime_error("Post-increment requires a variable");
+  }
+  case PreDecrement: {
+    // --i: decrement first, then return new value
+    if (auto varExpr = dynamic_cast<const VariableExpr*>(expr_.get())) {
+      std::string varName = varExpr->toString(); // Use toString() to get variable name
+      Value& var = lane.variables[varName];
+      var = Value(var.asInt() - 1);
+      return var;
+    }
+    throw std::runtime_error("Pre-decrement requires a variable");
+  }
+  case PostDecrement: {
+    // i--: return old value, then decrement
+    if (auto varExpr = dynamic_cast<const VariableExpr*>(expr_.get())) {
+      std::string varName = varExpr->toString(); // Use toString() to get variable name
+      Value& var = lane.variables[varName];
+      Value oldValue = var;
+      var = Value(var.asInt() - 1);
+      return oldValue;
+    }
+    throw std::runtime_error("Post-decrement requires a variable");
+  }
   }
   throw std::runtime_error("Unknown unary operator");
 }
@@ -586,8 +636,25 @@ Value UnaryOpExpr::evaluate(LaneContext &lane, WaveContext &wave,
 bool UnaryOpExpr::isDeterministic() const { return expr_->isDeterministic(); }
 
 std::string UnaryOpExpr::toString() const {
-  static const char *opStrings[] = {"-", "!"};
-  return opStrings[op_] + expr_->toString();
+  switch (op_) {
+    case Neg:
+    case Minus:
+      return "-" + expr_->toString();
+    case Not:
+    case LogicalNot:
+      return "!" + expr_->toString();
+    case Plus:
+      return "+" + expr_->toString();
+    case PreIncrement:
+      return "++" + expr_->toString();
+    case PostIncrement:
+      return expr_->toString() + "++";
+    case PreDecrement:
+      return "--" + expr_->toString();
+    case PostDecrement:
+      return expr_->toString() + "--";
+  }
+  return "?UnaryOp?";
 }
 
 // Wave operation implementations
@@ -2152,10 +2219,45 @@ MiniHLSLInterpreter::convertExpression(const clang::Expr *expr,
     return convertCallExpressionToExpression(callExpr, context);
   } else if (auto condOp = clang::dyn_cast<clang::ConditionalOperator>(expr)) {
     return convertConditionalOperator(condOp, context);
+  } else if (auto unaryOp = clang::dyn_cast<clang::UnaryOperator>(expr)) {
+    return convertUnaryExpression(unaryOp, context);
   } else {
     std::cout << "Unsupported expression type: " << expr->getStmtClassName()
               << std::endl;
     return nullptr;
+  }
+}
+
+std::unique_ptr<Expression>
+MiniHLSLInterpreter::convertUnaryExpression(const clang::UnaryOperator *unaryOp,
+                                            clang::ASTContext &context) {
+  auto operand = convertExpression(unaryOp->getSubExpr(), context);
+  if (!operand) {
+    std::cout << "Failed to convert unary operand" << std::endl;
+    return nullptr;
+  }
+
+  // Map Clang unary operator to interpreter unary operator
+  switch (unaryOp->getOpcode()) {
+    case clang::UO_PreInc:  // ++i
+      return std::make_unique<UnaryOpExpr>(std::move(operand), UnaryOpExpr::PreIncrement);
+    case clang::UO_PostInc: // i++
+      return std::make_unique<UnaryOpExpr>(std::move(operand), UnaryOpExpr::PostIncrement);
+    case clang::UO_PreDec:  // --i
+      return std::make_unique<UnaryOpExpr>(std::move(operand), UnaryOpExpr::PreDecrement);
+    case clang::UO_PostDec: // i--
+      return std::make_unique<UnaryOpExpr>(std::move(operand), UnaryOpExpr::PostDecrement);
+    case clang::UO_Plus:    // +expr
+      return std::make_unique<UnaryOpExpr>(std::move(operand), UnaryOpExpr::Plus);
+    case clang::UO_Minus:   // -expr
+      return std::make_unique<UnaryOpExpr>(std::move(operand), UnaryOpExpr::Minus);
+    case clang::UO_Not:     // !expr
+      return std::make_unique<UnaryOpExpr>(std::move(operand), UnaryOpExpr::LogicalNot);
+    case clang::UO_LNot:    // !expr (logical not)
+      return std::make_unique<UnaryOpExpr>(std::move(operand), UnaryOpExpr::LogicalNot);
+    default:
+      std::cout << "Unsupported unary operator: " << unaryOp->getOpcodeStr(unaryOp->getOpcode()).str() << std::endl;
+      return nullptr;
   }
 }
 
