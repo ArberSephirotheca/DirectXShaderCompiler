@@ -990,8 +990,9 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
     // Check loop condition
     bool shouldContinue = condition_->evaluate(lane, wave, tg).asBool();
     if (!shouldContinue) {
-      // Lane is exiting loop - remove from unknown lanes of all iteration blocks immediately
-      tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId);
+      // Lane is exiting loop - comprehensive cleanup from header and all iteration blocks
+      tg.removeThreadFromAllSets(headerBlockId, wave.waveId, lane.laneId);      // Remove from header
+      tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId); // Remove from iteration blocks
       break;
     }
     // Add current loop iteration to execution path to make each iteration unique
@@ -1045,10 +1046,10 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
   tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
   tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId, lane.laneId);
   
-  // Remove this lane from unknown lanes of all loop body blocks
+  // Remove this lane from all sets of header and iteration blocks
   // When lane exits loop, it won't participate in any future iterations
-  // Use headerBlockId since that's the parent of iteration blocks
-  tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId);
+  tg.removeThreadFromAllSets(headerBlockId, wave.waveId, lane.laneId);      // Remove from header
+  tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId); // Remove from iteration blocks
 
   // Restore active state
   lane.isActive = lane.isActive && !lane.hasReturned;
@@ -3015,9 +3016,14 @@ void ThreadgroupContext::assignLaneToBlock(WaveId waveId, LaneId laneId,
   // Add lane to the block's participating lanes
   auto it = executionBlocks.find(blockId);
   if (it != executionBlocks.end()) {
+    std::cout << "DEBUG: assignLaneToBlock - adding lane " << laneId << " to block " << blockId << std::endl;
     it->second.addParticipatingLane(waveId, laneId);
     // Also add to arrived lanes when assigned
     it->second.addArrivedLane(waveId, laneId);
+    auto partLanes = it->second.getParticipatingLanes();
+    size_t laneCount = partLanes.count(waveId) ? partLanes.at(waveId).size() : 0;
+    std::cout << "DEBUG: assignLaneToBlock - block " << blockId << " now has " 
+              << laneCount << " participating lanes" << std::endl;
 
     // Check if converged - all lanes from all waves are in this block
     size_t totalLanesInBlock = 0;
@@ -3708,16 +3714,46 @@ void ThreadgroupContext::removeThreadFromUnknown(uint32_t blockId,
   block.setWaveAllUnknownResolved(waveId, block.areAllUnknownLanesResolvedForWave(waveId));
 }
 
+// Helper method to completely remove a lane from all sets of a specific block
+void ThreadgroupContext::removeThreadFromAllSets(uint32_t blockId, WaveId waveId, LaneId laneId) {
+  auto blockIt = executionBlocks.find(blockId);
+  if (blockIt != executionBlocks.end()) {
+    std::cout << "DEBUG: removeThreadFromAllSets - removing lane " << laneId 
+              << " from all sets of block " << blockId << std::endl;
+    auto partLanesBefore = blockIt->second.getParticipatingLanes();
+    size_t laneCountBefore = partLanesBefore.count(waveId) ? partLanesBefore.at(waveId).size() : 0;
+    std::cout << "DEBUG: removeThreadFromAllSets - block " << blockId << " had " 
+              << laneCountBefore << " participating lanes before removal" << std::endl;
+    
+    blockIt->second.removeParticipatingLane(waveId, laneId);
+    blockIt->second.removeArrivedLane(waveId, laneId);
+    blockIt->second.removeWaitingLane(waveId, laneId);
+    blockIt->second.removeUnknownLane(waveId, laneId);
+    
+    auto partLanesAfter = blockIt->second.getParticipatingLanes();
+    size_t laneCountAfter = partLanesAfter.count(waveId) ? partLanesAfter.at(waveId).size() : 0;
+    std::cout << "DEBUG: removeThreadFromAllSets - block " << blockId << " has " 
+              << laneCountAfter << " participating lanes after removal" << std::endl;
+  }
+}
+
 void ThreadgroupContext::removeThreadFromNestedBlocks(uint32_t parentBlockId,
                                                       WaveId waveId,
                                                       LaneId laneId) {
   // Find all blocks that are nested within the parent block and remove the lane
   for (auto &[blockId, block] : executionBlocks) {
     if (block.getParentBlockId() == parentBlockId) {
-      // This is a direct child of the parent block
+      // Skip LOOP_EXIT/MERGE blocks - those are where lanes go when they exit the loop!
+      if (block.getBlockType() == BlockType::LOOP_EXIT || block.getBlockType() == BlockType::MERGE) {
+        std::cout << "DEBUG: removeThreadFromNestedBlocks - skipping " << blockId 
+                  << " (LOOP_EXIT/MERGE block where lanes should go)" << std::endl;
+        continue;
+      }
+      
+      // This is a direct child of the parent block - remove from all sets
       std::cout << "DEBUG: removeThreadFromNestedBlocks - removing lane " << laneId 
                 << " from block " << blockId << " (child of " << parentBlockId << ")" << std::endl;
-      removeThreadFromUnknown(blockId, waveId, laneId);
+      removeThreadFromAllSets(blockId, waveId, laneId);
 
       // Recursively remove from nested blocks of this child
       removeThreadFromNestedBlocks(blockId, waveId, laneId);

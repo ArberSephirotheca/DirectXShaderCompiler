@@ -286,6 +286,7 @@ public:
     
     // Getters
     uint32_t getBlockId() const { return blockId_; }
+    BlockType getBlockType() const { return identity_.blockType; }
     const BlockIdentity& getIdentity() const { return identity_; }
     const std::map<WaveId, std::set<LaneId>>& getParticipatingLanes() const { return participatingLanes_; }
     uint32_t getProgramPoint() const { return programPoint_; }
@@ -580,6 +581,7 @@ struct ThreadgroupContext {
                                                   const std::vector<int>& caseValues, bool hasDefault);
     void moveThreadFromUnknownToParticipating(uint32_t blockId, WaveId waveId, LaneId laneId);
     void removeThreadFromUnknown(uint32_t blockId, WaveId waveId, LaneId laneId);
+    void removeThreadFromAllSets(uint32_t blockId, WaveId waveId, LaneId laneId);
     void removeThreadFromNestedBlocks(uint32_t parentBlockId, WaveId waveId, LaneId laneId);
     std::map<WaveId, std::set<LaneId>> getCurrentBlockParticipants(uint32_t blockId) const;
     uint32_t getCurrentBlock(WaveId waveId, LaneId laneId) const ;
