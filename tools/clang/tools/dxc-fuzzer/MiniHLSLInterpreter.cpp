@@ -1793,6 +1793,13 @@ MiniHLSLInterpreter::convertStatement(const clang::Stmt *stmt,
     return convertBreakStatement(breakStmt, context);
   } else if (auto continueStmt = clang::dyn_cast<clang::ContinueStmt>(stmt)) {
     return convertContinueStatement(continueStmt, context);
+  } else if (auto unaryOp = clang::dyn_cast<clang::UnaryOperator>(stmt)) {
+    // Handle unary operators like i++ as expression statements
+    auto expr = convertExpression(unaryOp, context);
+    if (expr) {
+      return std::make_unique<ExprStmt>(std::move(expr));
+    }
+    return nullptr;
   } else if (auto compound = clang::dyn_cast<clang::CompoundStmt>(stmt)) {
     // Nested compound statement - this should not happen in our current design
     std::cout << "Warning: nested compound statement found, skipping"
@@ -1920,12 +1927,15 @@ std::unique_ptr<Statement> MiniHLSLInterpreter::convertDeclarationStatement(
       std::string varName = varDecl->getName().str();
       std::cout << "Declaring variable: " << varName << std::endl;
 
-      // If it has an initializer, create an assignment
+      // Create a variable declaration with or without initializer
       if (varDecl->hasInit()) {
         auto initExpr = convertExpression(varDecl->getInit(), context);
         if (initExpr) {
-          return makeAssign(varName, std::move(initExpr));
+          return makeVarDecl(varName, std::move(initExpr));
         }
+      } else {
+        // Variable declaration without initializer
+        return makeVarDecl(varName, nullptr);
       }
     }
   }

@@ -13,8 +13,9 @@ void main(uint3 id : SV_DispatchThreadID) {
         if (laneId == 0) {
             // Special case for lane 0
             result += 10;  // Just an arbitrary operation
+        } else{
+            result += 1;
         }
-        result += 1;
     } else {
         result = 2;  // Second half of wave
     }
