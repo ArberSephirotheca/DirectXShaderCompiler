@@ -1021,6 +1021,11 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
     
     uint32_t iterationBodyBlockId = tg.findOrCreateBlockForPath(iterationBodyIdentity, iterationUnknownLanes);
     
+    // Register this iteration body block as a divergent block for proper merge point tracking
+    std::set<uint32_t> iterationDivergentBlocks = {iterationBodyBlockId};
+    tg.pushMergePoint(wave.waveId, lane.laneId, static_cast<const void *>(this),
+                      headerBlockId, iterationDivergentBlocks);
+
     // Move to this iteration's loop body block (this lane chooses to participate)
     tg.assignLaneToBlock(wave.waveId, lane.laneId, iterationBodyBlockId);
     tg.moveThreadFromUnknownToParticipating(iterationBodyBlockId, wave.waveId, lane.laneId);
@@ -1030,18 +1035,24 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
       for (auto &stmt : body_) {
         stmt->execute(lane, wave, tg);
         if (lane.hasReturned) {
-          tg.popMergePoint(wave.waveId, lane.laneId);
+          tg.popMergePoint(wave.waveId, lane.laneId); // Pop iteration merge point
+          tg.popMergePoint(wave.waveId, lane.laneId); // Pop loop merge point
           return;
         }
       }
     } catch (const ControlFlowException &e) {
       if (e.type == ControlFlowException::Break) {
         // Break - go directly to merge block
+        tg.popMergePoint(wave.waveId, lane.laneId); // Pop iteration merge point
         break;
       } else if (e.type == ControlFlowException::Continue) {
         // Continue - go back to header for next iteration
+        tg.popMergePoint(wave.waveId, lane.laneId); // Pop iteration merge point
       }
     }
+
+    // Pop iteration merge point before going back to header
+    tg.popMergePoint(wave.waveId, lane.laneId);
 
     // Increment
     lane.variables[loopVar_] = increment_->evaluate(lane, wave, tg);
@@ -2729,6 +2740,11 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
     
     uint32_t iterationBodyBlockId = tg.findOrCreateBlockForPath(iterationBodyIdentity, iterationUnknownLanes);
 
+    // Register this iteration body block as a divergent block for proper merge point tracking
+    std::set<uint32_t> iterationDivergentBlocks = {iterationBodyBlockId};
+    tg.pushMergePoint(wave.waveId, lane.laneId, static_cast<const void *>(this),
+                      headerBlockId, iterationDivergentBlocks);
+
     // Move to this iteration's loop body block (this lane chooses to participate)
     tg.assignLaneToBlock(wave.waveId, lane.laneId, iterationBodyBlockId);
     tg.moveThreadFromUnknownToParticipating(iterationBodyBlockId, wave.waveId, lane.laneId);
@@ -2739,18 +2755,24 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
       for (auto &stmt : body_) {
         stmt->execute(lane, wave, tg);
         if (lane.hasReturned) {
-          tg.popMergePoint(wave.waveId, lane.laneId);
+          tg.popMergePoint(wave.waveId, lane.laneId); // Pop iteration merge point
+          tg.popMergePoint(wave.waveId, lane.laneId); // Pop loop merge point
           return;
         }
       }
     } catch (const ControlFlowException &e) {
       if (e.type == ControlFlowException::Break) {
         // Break - go directly to merge block
+        tg.popMergePoint(wave.waveId, lane.laneId); // Pop iteration merge point
         break;
       } else if (e.type == ControlFlowException::Continue) {
         // Continue - go back to header for next iteration
+        tg.popMergePoint(wave.waveId, lane.laneId); // Pop iteration merge point
       }
     }
+
+    // Pop iteration merge point before going back to header
+    tg.popMergePoint(wave.waveId, lane.laneId);
 
     // Go back to header for condition check
     tg.assignLaneToBlock(wave.waveId, lane.laneId, headerBlockId);
@@ -2819,6 +2841,11 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
     
     uint32_t iterationBodyBlockId = tg.findOrCreateBlockForPath(iterationBodyIdentity, iterationUnknownLanes);
 
+    // Register this iteration body block as a divergent block for proper merge point tracking
+    std::set<uint32_t> iterationDivergentBlocks = {iterationBodyBlockId};
+    tg.pushMergePoint(wave.waveId, lane.laneId, static_cast<const void *>(this),
+                      parentBlockId, iterationDivergentBlocks);
+
     // Move to this iteration's loop body block (this lane chooses to participate)
     tg.assignLaneToBlock(wave.waveId, lane.laneId, iterationBodyBlockId);
     tg.moveThreadFromUnknownToParticipating(iterationBodyBlockId, wave.waveId, lane.laneId);
@@ -2829,18 +2856,24 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
       for (auto &stmt : body_) {
         stmt->execute(lane, wave, tg);
         if (lane.hasReturned) {
-          tg.popMergePoint(wave.waveId, lane.laneId);
+          tg.popMergePoint(wave.waveId, lane.laneId); // Pop iteration merge point
+          tg.popMergePoint(wave.waveId, lane.laneId); // Pop loop merge point
           return;
         }
       }
     } catch (const ControlFlowException &e) {
       if (e.type == ControlFlowException::Break) {
         // Break - go directly to merge block
+        tg.popMergePoint(wave.waveId, lane.laneId); // Pop iteration merge point
         break;
       } else if (e.type == ControlFlowException::Continue) {
         // Continue to condition check
+        tg.popMergePoint(wave.waveId, lane.laneId); // Pop iteration merge point
       }
     }
+
+    // Pop iteration merge point before condition check
+    tg.popMergePoint(wave.waveId, lane.laneId);
 
     // Move to header block for condition check
     tg.assignLaneToBlock(wave.waveId, lane.laneId, headerBlockId);
