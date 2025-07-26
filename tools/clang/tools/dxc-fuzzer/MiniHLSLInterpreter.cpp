@@ -3788,6 +3788,7 @@ void ThreadgroupContext::removeThreadFromAllSets(uint32_t blockId, WaveId waveId
   }
 }
 
+// TODO: verify the functional correctness of this method
 void ThreadgroupContext::removeThreadFromNestedBlocks(uint32_t parentBlockId,
                                                       WaveId waveId,
                                                       LaneId laneId) {
@@ -3795,9 +3796,10 @@ void ThreadgroupContext::removeThreadFromNestedBlocks(uint32_t parentBlockId,
   for (auto &[blockId, block] : executionBlocks) {
     if (block.getParentBlockId() == parentBlockId) {
       // Skip LOOP_EXIT/MERGE blocks - those are where lanes go when they exit the loop!
-      if (block.getBlockType() == BlockType::LOOP_EXIT || block.getBlockType() == BlockType::MERGE) {
+      // if (block.getBlockType() == BlockType::LOOP_EXIT || block.getBlockType() == BlockType::MERGE) {
+      if (block.getBlockType() == BlockType::LOOP_EXIT) {
         std::cout << "DEBUG: removeThreadFromNestedBlocks - skipping " << blockId 
-                  << " (LOOP_EXIT/MERGE block where lanes should go)" << std::endl;
+                  << " (LOOP_EXIT block where lanes should go)" << std::endl;
         continue;
       }
       
