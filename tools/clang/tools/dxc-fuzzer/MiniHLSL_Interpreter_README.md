@@ -6,10 +6,12 @@ A complete interpreter implementation for the MiniHLSL language subset, designed
 
 The MiniHLSL Interpreter provides:
 - **Parallel execution simulation** with configurable thread orderings
-- **Order independence verification** by testing multiple execution orderings
+- **Order independence verification** by testing multiple execution orderings  
 - **Wave operation support** (reductions, lane queries)
 - **Shared memory model** with barrier synchronization
-- **Deterministic control flow** handling
+- **Global buffer support** (RWBuffer, StructuredBuffer) with atomic operations
+- **Deterministic control flow** handling with dynamic execution blocks
+- **SIMT divergence modeling** for break/continue in loops
 - **Memory safety analysis** with data race detection
 
 ## Key Features
@@ -32,8 +34,10 @@ Instead of testing all possible orderings (which would explode exponentially), t
 - Lane intrinsics: `WaveGetLaneIndex()`, `WaveGetLaneCount()`
 - Thread intrinsics: `GetThreadIndex()`, `WaveGetWaveIndex()`
 - Arithmetic: `+`, `-`, `*`, `/`, `%`
+- Compound assignments: `+=`, `-=`, `*=`, `/=`, `%=`
 - Comparisons: `==`, `!=`, `<`, `<=`, `>`, `>=`
 - Logical: `&&`, `||`, `!`
+- Buffer access: `buffer[index]` for global buffers
 
 #### Wave Operations (Order-Independent)
 - `WaveActiveSum(expr)`
@@ -41,15 +45,21 @@ Instead of testing all possible orderings (which would explode exponentially), t
 - `WaveActiveMin(expr)`, `WaveActiveMax(expr)`
 - `WaveActiveAnd(expr)`, `WaveActiveOr(expr)`, `WaveActiveXor(expr)`
 - `WaveActiveCountBits(expr)`
+- `WaveIsFirstLane()`, `WaveActiveAllEqual(expr)`
+- `WaveActiveAllTrue(expr)`, `WaveActiveAnyTrue(expr)`
 
 #### Statements
 - Variable declarations: `var name = expr;`
 - Assignments: `name = expr;`
+- Compound assignments: `name += expr;`, `name -= expr;`, etc.
 - Deterministic if statements: `if (deterministicCondition) { ... }`
 - For loops: `for (i = 0; i < count; i++) { ... }`
+- While loops: `while (condition) { ... }`
+- Break and continue statements in loops
 - Return statements: `return expr;`
 - Barriers: `GroupMemoryBarrierWithGroupSync();`
 - Shared memory: `g_shared[addr] = value;`, `value = g_shared[addr];`
+- Global buffers: `RWBuffer<uint> buffer; buffer[index] = value;`
 
 ## Building
 
@@ -175,9 +185,11 @@ This provides good coverage of potential ordering issues without the exponential
 
 - **Value**: Variant type supporting int, float, bool with automatic conversions
 - **LaneContext**: Per-thread execution state and variables
-- **WaveContext**: SIMD execution unit containing multiple lanes
+- **WaveContext**: SIMD execution unit containing multiple lanes  
 - **ThreadgroupContext**: GPU threadgroup with multiple waves and shared memory
 - **SharedMemory**: Thread-safe shared memory with access tracking
+- **GlobalBuffer**: Device-wide memory buffers (RWBuffer, StructuredBuffer) with atomic operations
+- **DynamicExecutionBlock**: SIMT execution blocks with reconvergence handling
 - **Expression/Statement**: AST nodes for program representation
 
 ### Execution Model
@@ -192,17 +204,20 @@ This provides good coverage of potential ordering issues without the exponential
 
 ### Current Limitations
 - Fixed wave size (32 threads)
-- Simplified barrier model
-- No texture/buffer operations
+- Sequential execution model (no true parallelism)
+- Limited buffer types (basic RWBuffer support)
+- No texture operations
 - Limited to compute shader model
 
 ### Potential Extensions
 - Dynamic wave sizes
-- More sophisticated barrier synchronization
-- Texture and buffer operations
+- True parallel execution with threading
+- Advanced buffer types (ByteAddressBuffer, texture buffers)
+- Texture and sampler operations
 - Graphics shader support (vertex, pixel)
-- Performance profiling
-- Debugging and visualization tools
+- Performance profiling and metrics
+- Interactive debugging and visualization tools
+- Enhanced atomic operation support
 
 ## Integration with Validation
 

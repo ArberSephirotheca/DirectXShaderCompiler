@@ -105,5 +105,5 @@ The interpreter provides detailed error messages for:
 The standalone interpreter can be integrated into:
 - CI/CD pipelines for HLSL validation
 - Automated testing frameworks
-- Shader debugging workflows
+- Shader debugging workflowss
 - Research and educational tools
