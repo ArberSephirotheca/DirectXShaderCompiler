@@ -619,6 +619,7 @@ struct ThreadgroupContext {
     void printBlockDetails(uint32_t blockId, bool verbose = false) const;
     void printWaveState(WaveId waveId, bool verbose = false) const;
     std::string getBlockSummary(uint32_t blockId) const;
+    void printFinalVariableValues() const;
 };
 
 // Thread execution ordering
@@ -746,6 +747,10 @@ public:
     Value evaluate(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg) const override;
     bool isDeterministic() const override { return false; }
     std::string toString() const override;
+    
+    // Helper methods for collective execution
+    const Expression* getExpression() const { return expr_.get(); }
+    Value computeWaveOperation(const std::vector<Value>& values) const;
 };
 
 class WaveGetLaneCountExpr : public Expression {
@@ -891,6 +896,14 @@ public:
     explicit ControlFlowException(Type t) : type(t) {}
 };
 
+// Wave operation wait exception
+class WaveOperationWaitException : public std::exception {
+public:
+    const char* what() const noexcept override {
+        return "Wave operation waiting for synchronization";
+    }
+};
+
 class BreakStmt : public Statement {
 public:
     void execute(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg) override;
@@ -972,6 +985,8 @@ private:
     // Cooperative execution engine
     bool executeOneStep(ThreadId tid, const Program& program, ThreadgroupContext& tgContext);
     void processWaveOperations(ThreadgroupContext& tgContext);
+    void executeCollectiveWaveOperation(ThreadgroupContext& tgContext, WaveId waveId, 
+                                       const void* instruction, WaveOperationSyncPoint& syncPoint);
     void processBarriers(ThreadgroupContext& tgContext);
     ThreadId selectNextThread(const std::vector<ThreadId>& readyThreads, 
                              const ThreadOrdering& ordering, 

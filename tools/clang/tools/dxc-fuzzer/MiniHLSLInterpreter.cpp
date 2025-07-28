@@ -668,41 +668,44 @@ Value WaveActiveOp::evaluate(LaneContext &lane, WaveContext &wave,
     throw std::runtime_error("Inactive lane executing wave operation");
   }
 
-  // Use instruction-level synchronization: both participants known AND all
-  // arrived
-  const void *instruction =
-      static_cast<const void *>(this); // Use 'this' as instruction pointer
+  const void *instruction = static_cast<const void *>(this);
 
+  // Check if there's already a computed result for this lane
+  auto syncPointIt = wave.activeSyncPoints.find(instruction);
+  if (syncPointIt != wave.activeSyncPoints.end()) {
+    auto& syncPoint = syncPointIt->second;
+    auto resultIt = syncPoint.pendingResults.find(lane.laneId);
+    if (resultIt != syncPoint.pendingResults.end()) {
+      // We have a result from collective execution - return it
+      Value result = resultIt->second;
+      INTERPRETER_DEBUG_LOG("Lane " << lane.laneId << " retrieving stored wave result: " 
+                           << result.toString() << "\n");
+      
+      // Remove this result to indicate it's been consumed
+      syncPoint.pendingResults.erase(resultIt);
+      
+      return result;
+    }
+  }
+
+  // No stored result - check if we can execute or need to wait
   if (!tg.canExecuteWaveInstruction(wave.waveId, lane.laneId, instruction)) {
     // Mark this lane as arrived at this specific instruction
     tg.markLaneArrivedAtWaveInstruction(wave.waveId, lane.laneId, instruction, "WaveActiveOp");
 
-    // In a full cooperative scheduler, this would suspend the lane and schedule
-    // others For now, throw an exception to indicate we need to wait
-    throw std::runtime_error("Lane must wait: participants unknown or not all "
-                             "arrived at instruction");
+    // Get current block and mark lane as waiting
+    uint32_t currentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
+    tg.markLaneWaitingForWave(wave.waveId, lane.laneId, currentBlockId);
+    
+    // Throw a special exception to indicate we need to wait
+    throw WaveOperationWaitException();
   }
 
-  // All participants known AND all have arrived at this instruction - safe to
-  // execute
-  auto blockId = wave.laneToCurrentBlock.at(lane.laneId);
-  auto instructionIdentity = tg.createInstructionIdentity(instruction, "WaveActiveOp");
-  auto participantMap = tg.getInstructionParticipantsInBlock(blockId, instructionIdentity);
-  
-  std::vector<Value> values;
-  // Get participants for this wave only
-  auto waveParticipants = participantMap.find(wave.waveId);
-  if (waveParticipants != participantMap.end()) {
-    for (LaneId laneId : waveParticipants->second) {
-      if (laneId < wave.lanes.size()) {
-        values.push_back(expr_->evaluate(*wave.lanes[laneId], wave, tg));
-      }
-    }
-  }
+  // This shouldn't happen in the new collective model, but keep as fallback
+  throw std::runtime_error("Wave operation fallback path - should not reach here");
+}
 
-  // Release the sync point after execution
-  tg.releaseWaveSyncPoint(wave.waveId, instruction);
-
+Value WaveActiveOp::computeWaveOperation(const std::vector<Value>& values) const {
   if (values.empty()) {
     throw std::runtime_error("No active lanes for wave operation");
   }
@@ -794,8 +797,13 @@ void VarDeclStmt::execute(LaneContext &lane, WaveContext &wave,
   if (!lane.isActive)
     return;
 
-  Value initVal = init_ ? init_->evaluate(lane, wave, tg) : Value(0);
-  lane.variables[name_] = initVal;
+  try {
+    Value initVal = init_ ? init_->evaluate(lane, wave, tg) : Value(0);
+    lane.variables[name_] = initVal;
+  } catch (const WaveOperationWaitException&) {
+    // Do nothing - lane is already marked as waiting
+    // Statement will be retried when lane becomes ready
+  }
 }
 
 std::string VarDeclStmt::toString() const {
@@ -811,7 +819,13 @@ void AssignStmt::execute(LaneContext &lane, WaveContext &wave,
   if (!lane.isActive)
     return;
 
-  lane.variables[name_] = expr_->evaluate(lane, wave, tg);
+  try {
+    Value val = expr_->evaluate(lane, wave, tg);
+    lane.variables[name_] = val;
+  } catch (const WaveOperationWaitException&) {
+    // Do nothing - lane is already marked as waiting
+    // Statement will be retried when lane becomes ready
+  }
 }
 
 std::string AssignStmt::toString() const {
@@ -1369,31 +1383,34 @@ MiniHLSLInterpreter::executeWithOrdering(const Program &program,
       if (readyThreads.empty()) {
         // Check if all threads are completed
         bool allCompleted = true;
+        bool hasWaitingThreads = false;
         for (const auto &wave : tgContext.waves) {
           for (const auto &lane : wave->lanes) {
+            if (lane->state == ThreadState::WaitingForWave ||
+                lane->state == ThreadState::WaitingAtBarrier) {
+              hasWaitingThreads = true;
+            }
             if (lane->state != ThreadState::Completed &&
                 lane->state != ThreadState::Error) {
               allCompleted = false;
-              break;
             }
           }
-          if (!allCompleted)
-            break;
         }
 
         if (allCompleted) {
           break; // All threads finished
         }
 
-        // Check for deadlock
-        auto waitingThreads = tgContext.getWaitingThreads();
-        if (!waitingThreads.empty()) {
-          result.errorMessage =
-              "Deadlock detected: threads waiting but no progress possible";
-          break;
+        // If we have waiting threads but no ready threads, 
+        // continue to let processWaveOperations wake them up
+        if (hasWaitingThreads) {
+          continue; // Let synchronization complete
         }
 
-        continue; // Wait for synchronization to complete
+        // Check for true deadlock (no waiting, no ready, not completed)
+        result.errorMessage =
+            "Deadlock detected: no threads ready or waiting";
+        break;
       }
 
       // Select next thread to execute according to ordering
@@ -1437,6 +1454,9 @@ MiniHLSLInterpreter::executeWithOrdering(const Program &program,
   // Print Dynamic Block Execution Graph (DBEG) for debugging merge blocks
   tgContext.printDynamicExecutionGraph(true);
 
+  // Print final variable values for all lanes
+  tgContext.printFinalVariableValues();
+
   return result;
 }
 
@@ -1467,11 +1487,18 @@ bool MiniHLSLInterpreter::executeOneStep(ThreadId tid, const Program &program,
   try {
     const auto &stmt = program.statements[lane.currentStatement];
     stmt->execute(lane, wave, tgContext);
-    lane.currentStatement++;
+    
+    // Only increment if the lane is not waiting
+    if (lane.state == ThreadState::Ready) {
+      lane.currentStatement++;
+    }
 
     if (lane.hasReturned) {
       lane.state = ThreadState::Completed;
     }
+  } catch (const WaveOperationWaitException&) {
+    // Wave operation is waiting - do nothing, statement will be retried
+    // Lane state should already be set to WaitingForWave
   } catch (const std::exception &e) {
     lane.state = ThreadState::Error;
     lane.errorMessage = e.what();
@@ -1481,8 +1508,85 @@ bool MiniHLSLInterpreter::executeOneStep(ThreadId tid, const Program &program,
 }
 
 void MiniHLSLInterpreter::processWaveOperations(ThreadgroupContext &tgContext) {
-  // Phase 1: Simple implementation - wave ops complete immediately
-  // TODO: Add proper cooperative scheduling in Phase 2
+  // Process wave operations for each wave
+  for (size_t waveId = 0; waveId < tgContext.waves.size(); ++waveId) {
+    auto& wave = *tgContext.waves[waveId];
+    
+    // Check active sync points for this wave
+    std::vector<const void*> completedSyncPoints;
+    
+    // Find sync points that are ready to execute
+    for (auto& [instruction, syncPoint] : wave.activeSyncPoints) {
+      // Check if this sync point is complete (all participants known and arrived)
+      if (syncPoint.isComplete && syncPoint.pendingResults.empty()) {
+        INTERPRETER_DEBUG_LOG("Executing collective wave operation for wave " << waveId 
+                             << " at instruction " << instruction << "\n");
+        
+        // Execute the wave operation collectively
+        executeCollectiveWaveOperation(tgContext, waveId, instruction, syncPoint);
+        
+        // Don't release yet - let lanes retrieve results first
+      } else if (syncPoint.isComplete && !syncPoint.pendingResults.empty()) {
+        // Results are available, wake up lanes so they can retrieve them
+        INTERPRETER_DEBUG_LOG("Waking up lanes to retrieve wave operation results for wave " << waveId << "\n");
+        for (LaneId laneId : syncPoint.arrivedParticipants) {
+          if (laneId < wave.lanes.size() && 
+              wave.lanes[laneId]->state == ThreadState::WaitingForWave) {
+            INTERPRETER_DEBUG_LOG("  Waking up lane " << laneId 
+                                 << " from WaitingForWave to Ready\n");
+            wave.lanes[laneId]->state = ThreadState::Ready;
+            // Also remove from the waiting instruction map
+            wave.laneWaitingAtInstruction.erase(laneId);
+          }
+        }
+        
+        // Mark for release after lanes retrieve results
+        completedSyncPoints.push_back(instruction);
+      }
+    }
+    
+    // Release completed sync points after lanes have retrieved their results
+    for (const void* instruction : completedSyncPoints) {
+      // Only release if all results have been consumed
+      auto& syncPoint = wave.activeSyncPoints[instruction];
+      
+      if (syncPoint.pendingResults.empty()) {
+        INTERPRETER_DEBUG_LOG("All results consumed, releasing sync point for wave " << waveId 
+                             << " at instruction " << instruction << "\n");
+        tgContext.releaseWaveSyncPoint(waveId, instruction);
+      }
+    }
+  }
+}
+
+void MiniHLSLInterpreter::executeCollectiveWaveOperation(ThreadgroupContext &tgContext, 
+                                                       WaveId waveId, 
+                                                       const void* instruction, 
+                                                       WaveOperationSyncPoint &syncPoint) {
+  // Get the actual WaveActiveOp object from the instruction pointer
+  const WaveActiveOp* waveOp = static_cast<const WaveActiveOp*>(instruction);
+  
+  // Collect values from all participating lanes
+  std::vector<Value> values;
+  auto& wave = *tgContext.waves[waveId];
+  
+  for (LaneId laneId : syncPoint.arrivedParticipants) {
+    if (laneId < wave.lanes.size()) {
+      // Evaluate the expression for this lane
+      Value value = waveOp->getExpression()->evaluate(*wave.lanes[laneId], wave, tgContext);
+      values.push_back(value);
+    }
+  }
+  
+  // Execute the wave operation on the collected values
+  Value result = waveOp->computeWaveOperation(values);
+  
+  // Store the result for all participating lanes
+  for (LaneId laneId : syncPoint.arrivedParticipants) {
+    syncPoint.pendingResults[laneId] = result;
+  }
+  
+  INTERPRETER_DEBUG_LOG("Collective wave operation result: " << result.toString() << "\n");
 }
 
 void MiniHLSLInterpreter::processBarriers(ThreadgroupContext &tgContext) {
@@ -2484,6 +2588,12 @@ MiniHLSLInterpreter::convertBinaryExpression(const clang::BinaryOperator *binOp,
     break;
   case clang::BO_NE:
     opType = BinaryOpExpr::Ne;
+    break;
+  case clang::BO_LAnd:
+    opType = BinaryOpExpr::And;
+    break;
+  case clang::BO_LOr:
+    opType = BinaryOpExpr::Or;
     break;
   default:
     std::cout << "Unsupported binary operator" << std::endl;
@@ -3584,9 +3694,15 @@ void ThreadgroupContext::releaseWaveSyncPoint(WaveId waveId,
   if (it != waves[waveId]->activeSyncPoints.end()) {
     const auto &syncPoint = it->second;
 
+    INTERPRETER_DEBUG_LOG("Releasing sync point: " << syncPoint.arrivedParticipants.size() 
+                         << " participants\n");
+
     // Release all waiting lanes
     for (LaneId laneId : syncPoint.arrivedParticipants) {
       if (laneId < waves[waveId]->lanes.size()) {
+        INTERPRETER_DEBUG_LOG("  Waking up lane " << laneId 
+                             << " (was " << (waves[waveId]->lanes[laneId]->state == ThreadState::WaitingForWave ? "WaitingForWave" : "other") 
+                             << ")\n");
         waves[waveId]->lanes[laneId]->state = ThreadState::Ready;
       }
       waves[waveId]->laneWaitingAtInstruction.erase(laneId);
@@ -3594,6 +3710,9 @@ void ThreadgroupContext::releaseWaveSyncPoint(WaveId waveId,
 
     // Remove the sync point
     waves[waveId]->activeSyncPoints.erase(it);
+    INTERPRETER_DEBUG_LOG("  Sync point removed from active list\n");
+  } else {
+    INTERPRETER_DEBUG_LOG("WARNING: Sync point not found for instruction " << instruction << "\n");
   }
 }
 
@@ -4152,6 +4271,52 @@ std::string ThreadgroupContext::getBlockSummary(uint32_t blockId) const {
   ss << "Block " << blockId << " (Parent: " << block.getParentBlockId() 
      << ", Lanes: " << totalLanes << ", Converged: " << (block.getIsConverged() ? "Y" : "N") << ")";
   return ss.str();
+}
+
+void ThreadgroupContext::printFinalVariableValues() const {
+  INTERPRETER_DEBUG_LOG("\n=== Final Variable Values ===\n");
+  
+  for (size_t waveId = 0; waveId < waves.size(); ++waveId) {
+    const auto& wave = waves[waveId];
+    INTERPRETER_DEBUG_LOG("Wave " << waveId << ":\n");
+    
+    for (size_t laneId = 0; laneId < wave->lanes.size(); ++laneId) {
+      const auto& lane = wave->lanes[laneId];
+      INTERPRETER_DEBUG_LOG("  Lane " << laneId << ":\n");
+      
+      // Print all variables for this lane
+      if (lane->variables.empty()) {
+        INTERPRETER_DEBUG_LOG("    (no variables)\n");
+      } else {
+        for (const auto& [varName, value] : lane->variables) {
+          INTERPRETER_DEBUG_LOG("    " << varName << " = " << value.toString() << "\n");
+        }
+      }
+      
+      // Print return value if present
+      if (lane->hasReturned) {
+        INTERPRETER_DEBUG_LOG("    (returned: " << lane->returnValue.toString() << ")\n");
+      }
+      
+      // Print thread state
+      const char* stateStr = "Unknown";
+      switch (lane->state) {
+        case ThreadState::Ready: stateStr = "Ready"; break;
+        case ThreadState::WaitingAtBarrier: stateStr = "WaitingAtBarrier"; break;
+        case ThreadState::WaitingForWave: stateStr = "WaitingForWave"; break;
+        case ThreadState::Completed: stateStr = "Completed"; break;
+        case ThreadState::Error: stateStr = "Error"; break;
+      }
+      INTERPRETER_DEBUG_LOG("    (state: " << stateStr << ")\n");
+      
+      // Print error message if in error state
+      if (lane->state == ThreadState::Error && !lane->errorMessage.empty()) {
+        INTERPRETER_DEBUG_LOG("    (error: " << lane->errorMessage << ")\n");
+      }
+    }
+  }
+  
+  INTERPRETER_DEBUG_LOG("=== End Variable Values ===\n\n");
 }
 
 } // namespace interpreter
