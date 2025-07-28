@@ -651,6 +651,8 @@ struct ThreadgroupContext {
     InstructionIdentity createInstructionIdentity(const void* instruction, const std::string& instructionType, const void* sourceExpr = nullptr) const;
     std::vector<InstructionIdentity> getBlockInstructions(uint32_t blockId) const;
     std::map<WaveId, std::set<LaneId>> getInstructionParticipantsInBlock(uint32_t blockId, const InstructionIdentity& instruction) const;
+    bool canExecuteWaveInstructionInBlock(uint32_t blockId, WaveId waveId, const InstructionIdentity& instruction) const;
+    bool canExecuteBarrierInstructionInBlock(uint32_t blockId, const InstructionIdentity& instruction) const;
     bool canExecuteInstructionInBlock(uint32_t blockId, const InstructionIdentity& instruction) const;
     std::map<WaveId, std::set<LaneId>> getExpectedParticipantsInBlock(uint32_t blockId, const InstructionIdentity& instruction) const;
 

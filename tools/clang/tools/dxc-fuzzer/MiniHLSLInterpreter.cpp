@@ -4053,9 +4053,20 @@ bool ThreadgroupContext::canExecuteWaveInstruction(
                       // implementation
   instrIdentity.sourceExpression = instruction;
 
-  // Use the new per-block approach for instruction synchronization
+  // Use the wave-specific approach for instruction synchronization
   bool canExecuteInBlock =
-      canExecuteInstructionInBlock(currentBlockId, instrIdentity);
+      canExecuteWaveInstructionInBlock(currentBlockId, waveId, instrIdentity);
+  
+  // Debug unknown lanes state
+  auto blockIt = executionBlocks.find(currentBlockId);
+  if (blockIt != executionBlocks.end()) {
+    auto unknownLanes = blockIt->second.getUnknownLanesForWave(waveId);
+    std::cout << "DEBUG: Block " << currentBlockId << " wave " << waveId << " unknown lanes: {";
+    for (LaneId uid : unknownLanes) {
+      std::cout << uid << " ";
+    }
+    std::cout << "}" << std::endl;
+  }
 
   // Check using compound key for the new system
   std::pair<const void*, uint32_t> instructionKey = {instruction, currentBlockId};
@@ -4166,17 +4177,21 @@ void ThreadgroupContext::createOrUpdateWaveSyncPoint(
       syncPoint.expectedParticipants.insert(participantId);
     }
 
-    // Check if all participants are known (no unknown lanes in block)
-    syncPoint.allParticipantsKnown = areAllUnknownLanesResolved(blockId);
+    // Check if all participants are known (no unknown lanes for this wave in block)
+    auto blockIt = executionBlocks.find(blockId);
+    syncPoint.allParticipantsKnown = blockIt != executionBlocks.end() && 
+                                     blockIt->second.areAllUnknownLanesResolvedForWave(waveId);
 
     waves[waveId]->activeSyncPoints[instructionKey] = syncPoint;
   } else {
     // Update existing sync point
     auto &syncPoint = it->second;
 
-    // Update participants knowledge if block resolved more lanes
+    // Update participants knowledge if block resolved more lanes for this wave
     uint32_t blockId = getCurrentBlock(waveId, laneId);
-    syncPoint.allParticipantsKnown = areAllUnknownLanesResolved(blockId);
+    auto blockIt = executionBlocks.find(blockId);
+    syncPoint.allParticipantsKnown = blockIt != executionBlocks.end() && 
+                                     blockIt->second.areAllUnknownLanesResolvedForWave(waveId);
 
     // Update expected participants if needed
     auto blockParticipants = getWaveOperationParticipants(waveId, laneId);
@@ -4313,7 +4328,24 @@ ThreadgroupContext::getInstructionParticipantsInBlock(
   return {};
 }
 
-bool ThreadgroupContext::canExecuteInstructionInBlock(
+bool ThreadgroupContext::canExecuteWaveInstructionInBlock(
+    uint32_t blockId, WaveId waveId, const InstructionIdentity &instruction) const {
+  auto blockIt = executionBlocks.find(blockId);
+  if (blockIt == executionBlocks.end()) {
+    return false; // Block doesn't exist
+  }
+
+  const DynamicExecutionBlock &block = blockIt->second;
+
+  // For wave operations, only check if unknown lanes for this specific wave are resolved
+  if (!block.areAllUnknownLanesResolvedForWave(waveId)) {
+    return false; // Still have unknown lanes for this wave
+  }
+
+  return true; // Wave operation can proceed when all lanes from this wave are known
+}
+
+bool ThreadgroupContext::canExecuteBarrierInstructionInBlock(
     uint32_t blockId, const InstructionIdentity &instruction) const {
   auto blockIt = executionBlocks.find(blockId);
   if (blockIt == executionBlocks.end()) {
@@ -4322,7 +4354,7 @@ bool ThreadgroupContext::canExecuteInstructionInBlock(
 
   const DynamicExecutionBlock &block = blockIt->second;
 
-  // Check if all unknown lanes in this block are resolved
+  // For barriers, check if all unknown lanes across all waves are resolved
   if (!block.areAllUnknownLanesResolved()) {
     return false; // Still have unknown lanes
   }
@@ -4337,6 +4369,12 @@ bool ThreadgroupContext::canExecuteInstructionInBlock(
 
   // Check if all expected participants have arrived
   return arrivedParticipants == expectedParticipants;
+}
+
+bool ThreadgroupContext::canExecuteInstructionInBlock(
+    uint32_t blockId, const InstructionIdentity &instruction) const {
+  // Legacy function - delegate to barrier logic for backward compatibility
+  return canExecuteBarrierInstructionInBlock(blockId, instruction);
 }
 
 std::map<WaveId, std::set<LaneId>>
