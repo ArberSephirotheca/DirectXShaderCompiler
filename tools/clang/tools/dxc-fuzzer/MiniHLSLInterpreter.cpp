@@ -246,6 +246,128 @@ void SharedMemory::clear() {
   accessHistory_.clear();
 }
 
+// GlobalBuffer implementation
+GlobalBuffer::GlobalBuffer(uint32_t size, const std::string& type) 
+    : size_(size), bufferType_(type) {
+  // Initialize buffer with default values (0)
+  for (uint32_t i = 0; i < size_; ++i) {
+    data_[i] = Value(0);
+  }
+}
+
+Value GlobalBuffer::load(uint32_t index) {
+  if (index >= size_) {
+    INTERPRETER_DEBUG_LOG("ERROR: Global buffer access out of bounds: " << index << " >= " << size_);
+    return Value(0);
+  }
+  return data_[index];
+}
+
+void GlobalBuffer::store(uint32_t index, const Value& value) {
+  if (index >= size_) {
+    INTERPRETER_DEBUG_LOG("ERROR: Global buffer access out of bounds: " << index << " >= " << size_);
+    return;
+  }
+  data_[index] = value;
+}
+
+Value GlobalBuffer::atomicAdd(uint32_t index, const Value& value) {
+  if (index >= size_) {
+    INTERPRETER_DEBUG_LOG("ERROR: Global buffer atomic access out of bounds: " << index << " >= " << size_);
+    return Value(0);
+  }
+  
+  Value oldValue = data_[index];
+  if (std::holds_alternative<int32_t>(oldValue.data) && std::holds_alternative<int32_t>(value.data)) {
+    data_[index] = Value(std::get<int32_t>(oldValue.data) + std::get<int32_t>(value.data));
+  } else if (std::holds_alternative<float>(oldValue.data) && std::holds_alternative<float>(value.data)) {
+    data_[index] = Value(std::get<float>(oldValue.data) + std::get<float>(value.data));
+  } else {
+    INTERPRETER_DEBUG_LOG("ERROR: Type mismatch in atomic add operation");
+  }
+  return oldValue;
+}
+
+Value GlobalBuffer::atomicSub(uint32_t index, const Value& value) {
+  if (index >= size_) return Value(0);
+  
+  Value oldValue = data_[index];
+  if (std::holds_alternative<int32_t>(oldValue.data) && std::holds_alternative<int32_t>(value.data)) {
+    data_[index] = Value(std::get<int32_t>(oldValue.data) - std::get<int32_t>(value.data));
+  } else if (std::holds_alternative<float>(oldValue.data) && std::holds_alternative<float>(value.data)) {
+    data_[index] = Value(std::get<float>(oldValue.data) - std::get<float>(value.data));
+  }
+  return oldValue;
+}
+
+Value GlobalBuffer::atomicMin(uint32_t index, const Value& value) {
+  if (index >= size_) return Value(0);
+  
+  Value oldValue = data_[index];
+  if (std::holds_alternative<int32_t>(oldValue.data) && std::holds_alternative<int32_t>(value.data)) {
+    data_[index] = Value(std::min(std::get<int32_t>(oldValue.data), std::get<int32_t>(value.data)));
+  } else if (std::holds_alternative<float>(oldValue.data) && std::holds_alternative<float>(value.data)) {
+    data_[index] = Value(std::min(std::get<float>(oldValue.data), std::get<float>(value.data)));
+  }
+  return oldValue;
+}
+
+Value GlobalBuffer::atomicMax(uint32_t index, const Value& value) {
+  if (index >= size_) return Value(0);
+  
+  Value oldValue = data_[index];
+  if (std::holds_alternative<int32_t>(oldValue.data) && std::holds_alternative<int32_t>(value.data)) {
+    data_[index] = Value(std::max(std::get<int32_t>(oldValue.data), std::get<int32_t>(value.data)));
+  } else if (std::holds_alternative<float>(oldValue.data) && std::holds_alternative<float>(value.data)) {
+    data_[index] = Value(std::max(std::get<float>(oldValue.data), std::get<float>(value.data)));
+  }
+  return oldValue;
+}
+
+Value GlobalBuffer::atomicExchange(uint32_t index, const Value& value) {
+  if (index >= size_) return Value(0);
+  
+  Value oldValue = data_[index];
+  data_[index] = value;
+  return oldValue;
+}
+
+Value GlobalBuffer::atomicCompareExchange(uint32_t index, const Value& compareValue, const Value& value) {
+  if (index >= size_) return Value(0);
+  
+  Value oldValue = data_[index];
+  if (oldValue.toString() == compareValue.toString()) {
+    data_[index] = value;
+  }
+  return oldValue;
+}
+
+bool GlobalBuffer::hasConflictingAccess(uint32_t index, ThreadId tid1, ThreadId tid2) const {
+  auto it = accessHistory_.find(index);
+  if (it == accessHistory_.end()) return false;
+  
+  return it->second.count(tid1) > 0 && it->second.count(tid2) > 0;
+}
+
+std::map<uint32_t, Value> GlobalBuffer::getSnapshot() const {
+  return data_;
+}
+
+void GlobalBuffer::clear() {
+  data_.clear();
+  accessHistory_.clear();
+  for (uint32_t i = 0; i < size_; ++i) {
+    data_[i] = Value(0);
+  }
+}
+
+void GlobalBuffer::printContents() const {
+  INTERPRETER_DEBUG_LOG("=== Global Buffer Contents (" << bufferType_ << ", size=" << size_ << ") ===");
+  for (const auto& [index, value] : data_) {
+    INTERPRETER_DEBUG_LOG("  [" << index << "] = " << value.toString());
+  }
+}
+
 // BarrierState implementation
 void BarrierState::reset(uint32_t totalThreads) {
   std::lock_guard<std::mutex> lock(mutex);
@@ -1428,6 +1550,24 @@ Value SharedReadExpr::evaluate(LaneContext &lane, WaveContext &wave,
 
 std::string SharedReadExpr::toString() const {
   return "g_shared[" + std::to_string(addr_) + "]";
+}
+
+Value BufferAccessExpr::evaluate(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg) const {
+  // Evaluate the index expression
+  Value indexValue = indexExpr_->evaluate(lane, wave, tg);
+  uint32_t index = indexValue.asInt();
+  
+  // Look up the global buffer
+  auto bufferIt = tg.globalBuffers.find(bufferName_);
+  if (bufferIt == tg.globalBuffers.end()) {
+    throw std::runtime_error("Global buffer not found: " + bufferName_);
+  }
+  
+  return bufferIt->second->load(index);
+}
+
+std::string BufferAccessExpr::toString() const {
+  return bufferName_ + "[" + indexExpr_->toString() + "]";
 }
 
 // MiniHLSLInterpreter implementation with cooperative scheduling
@@ -2861,29 +3001,9 @@ std::unique_ptr<Expression> MiniHLSLInterpreter::convertOperatorCall(
       // Convert the index expression
       auto indexExpr = convertExpression(opCall->getArg(1), context);
       if (indexExpr) {
-        // For shared memory buffers, we need to compute the memory address
-        // For now, we'll use a simple model where each buffer starts at address
-        // 0 and each element is 4 bytes (size of int/float)
-
-        // Create a shared memory read expression
-        // Note: In a real implementation, we'd need to track buffer base
-        // addresses and handle different data types/sizes MemoryAddress
-        // baseAddr = 0; // Simplified: assume buffer starts at 0 (unused for
-        // now)
-
-        // Create an expression that computes: index * sizeof(element)
-        auto sizeofElement =
-            makeLiteral(Value(4)); // Assume 4 bytes per element
-        auto offset = std::make_unique<BinaryOpExpr>(
-            std::move(indexExpr), std::move(sizeofElement), BinaryOpExpr::Mul);
-
-        // For now, just use the index directly as the address (simplified)
-        // In a real implementation, we'd add the base address
-        return std::make_unique<SharedReadExpr>(0); // Placeholder
-
-        // TODO: Properly implement SharedReadExpr that takes a dynamic address
-        // expression return
-        // std::make_unique<SharedReadExpr>(std::move(offset));
+        // Create a buffer access expression for global buffers (RWBuffer, etc.)
+        std::cout << "Creating BufferAccessExpr for buffer: " << bufferName << std::endl;
+        return std::make_unique<BufferAccessExpr>(bufferName, std::move(indexExpr));
       }
     }
   }

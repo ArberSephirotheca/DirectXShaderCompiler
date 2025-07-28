@@ -513,6 +513,45 @@ public:
     void clear();
 };
 
+// Global buffer for device-wide storage (RWBuffer, StructuredBuffer, etc.)
+class GlobalBuffer {
+private:
+    std::map<uint32_t, Value> data_;
+    std::map<uint32_t, std::set<ThreadId>> accessHistory_;
+    uint32_t size_;
+    std::string bufferType_;  // "RWBuffer", "StructuredBuffer", etc.
+    
+public:
+    GlobalBuffer(uint32_t size, const std::string& type);
+    
+    // Basic access
+    Value load(uint32_t index);
+    void store(uint32_t index, const Value& value);
+    
+    // Atomic operations
+    Value atomicAdd(uint32_t index, const Value& value);
+    Value atomicSub(uint32_t index, const Value& value);
+    Value atomicMin(uint32_t index, const Value& value);
+    Value atomicMax(uint32_t index, const Value& value);
+    Value atomicAnd(uint32_t index, const Value& value);
+    Value atomicOr(uint32_t index, const Value& value);
+    Value atomicXor(uint32_t index, const Value& value);
+    Value atomicExchange(uint32_t index, const Value& value);
+    Value atomicCompareExchange(uint32_t index, const Value& compareValue, const Value& value);
+    
+    // Properties
+    uint32_t getSize() const { return size_; }
+    std::string getType() const { return bufferType_; }
+    
+    // Race condition detection
+    bool hasConflictingAccess(uint32_t index, ThreadId tid1, ThreadId tid2) const;
+    std::map<uint32_t, Value> getSnapshot() const;
+    void clear();
+    
+    // Debug
+    void printContents() const;
+};
+
 // Barrier synchronization state
 struct BarrierState {
     std::set<ThreadId> waitingThreads;
@@ -532,6 +571,9 @@ struct ThreadgroupContext {
     uint32_t waveCount;
     std::vector<std::unique_ptr<WaveContext>> waves;
     std::shared_ptr<SharedMemory> sharedMemory;
+    
+    // Global buffers (device-wide, shared across threadgroups)
+    std::map<std::string, std::shared_ptr<GlobalBuffer>> globalBuffers;
     
     // Barrier synchronization
     std::map<uint32_t, ThreadgroupBarrierState> activeBarriers;
@@ -963,6 +1005,17 @@ class SharedReadExpr : public Expression {
     MemoryAddress addr_;
 public:
     explicit SharedReadExpr(MemoryAddress addr) : addr_(addr) {}
+    Value evaluate(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg) const override;
+    bool isDeterministic() const override { return false; }
+    std::string toString() const override;
+};
+
+class BufferAccessExpr : public Expression {
+    std::string bufferName_;
+    std::unique_ptr<Expression> indexExpr_;
+public:
+    BufferAccessExpr(std::string bufferName, std::unique_ptr<Expression> indexExpr) 
+        : bufferName_(std::move(bufferName)), indexExpr_(std::move(indexExpr)) {}
     Value evaluate(LaneContext& lane, WaveContext& wave, ThreadgroupContext& tg) const override;
     bool isDeterministic() const override { return false; }
     std::string toString() const override;
