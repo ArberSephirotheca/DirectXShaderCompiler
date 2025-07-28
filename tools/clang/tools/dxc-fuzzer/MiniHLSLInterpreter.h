@@ -25,6 +25,7 @@ namespace clang {
     class Expr;
     class CompoundStmt;
     class BinaryOperator;
+    class CompoundAssignOperator;
     class UnaryOperator;
     class CallExpr;
     class DeclStmt;
@@ -1036,6 +1037,7 @@ private:
     void extractThreadConfiguration(const clang::FunctionDecl* func, Program& program);
     void convertCompoundStatement(const clang::CompoundStmt* compound, Program& program, clang::ASTContext& context);
     std::unique_ptr<Statement> convertBinaryOperator(const clang::BinaryOperator* binOp, clang::ASTContext& context);
+std::unique_ptr<Statement> convertCompoundAssignOperator(const clang::CompoundAssignOperator* compoundOp, clang::ASTContext& context);
     std::unique_ptr<Statement> convertCallExpression(const clang::CallExpr* callExpr, clang::ASTContext& context);
     std::unique_ptr<Statement> convertDeclarationStatement(const clang::DeclStmt* declStmt, clang::ASTContext& context);
     std::unique_ptr<Statement> convertIfStatement(const clang::IfStmt* ifStmt, clang::ASTContext& context);

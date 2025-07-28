@@ -882,12 +882,18 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
 
     // Execute then block
     if (lane.isActive) {
-      for (auto &stmt : thenBlock_) {
-        stmt->execute(lane, wave, tg);
-        if (lane.hasReturned) {
-          tg.popMergePoint(wave.waveId, lane.laneId);
-          return;
+      try {
+        for (auto &stmt : thenBlock_) {
+          stmt->execute(lane, wave, tg);
+          if (lane.hasReturned) {
+            tg.popMergePoint(wave.waveId, lane.laneId);
+            return;
+          }
         }
+      } catch (const ControlFlowException &e) {
+        // Propagate break/continue to enclosing loop
+        tg.popMergePoint(wave.waveId, lane.laneId);
+        throw;
       }
     }
   } else {
@@ -905,12 +911,18 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
 
       // Execute else block
       if (lane.isActive) {
-        for (auto &stmt : elseBlock_) {
-          stmt->execute(lane, wave, tg);
-          if (lane.hasReturned) {
-            tg.popMergePoint(wave.waveId, lane.laneId);
-            return;
+        try {
+          for (auto &stmt : elseBlock_) {
+            stmt->execute(lane, wave, tg);
+            if (lane.hasReturned) {
+              tg.popMergePoint(wave.waveId, lane.laneId);
+              return;
+            }
           }
+        } catch (const ControlFlowException &e) {
+          // Propagate break/continue to enclosing loop
+          tg.popMergePoint(wave.waveId, lane.laneId);
+          throw;
         }
       }
     } else {
@@ -1885,7 +1897,10 @@ MiniHLSLInterpreter::convertStatement(const clang::Stmt *stmt,
             << std::endl;
 
   // Handle different statement types
-  if (auto binOp = clang::dyn_cast<clang::BinaryOperator>(stmt)) {
+  // Check CompoundAssignOperator first since it inherits from BinaryOperator
+  if (auto compoundOp = clang::dyn_cast<clang::CompoundAssignOperator>(stmt)) {
+    return convertCompoundAssignOperator(compoundOp, context);
+  } else if (auto binOp = clang::dyn_cast<clang::BinaryOperator>(stmt)) {
     return convertBinaryOperator(binOp, context);
   } else if (auto callExpr = clang::dyn_cast<clang::CallExpr>(stmt)) {
     return convertCallExpression(callExpr, context);
@@ -1953,6 +1968,53 @@ MiniHLSLInterpreter::convertBinaryOperator(const clang::BinaryOperator *binOp,
   }
 
   return makeAssign(targetVar, std::move(rhs));
+}
+
+std::unique_ptr<Statement>
+MiniHLSLInterpreter::convertCompoundAssignOperator(const clang::CompoundAssignOperator *compoundOp,
+                                                   clang::ASTContext &context) {
+  std::cout << "Converting compound assignment operator" << std::endl;
+  
+  // Get the target variable name
+  std::string targetVar = "unknown";
+  if (auto declRef = clang::dyn_cast<clang::DeclRefExpr>(compoundOp->getLHS())) {
+    targetVar = declRef->getDecl()->getName().str();
+  }
+  
+  // Convert compound assignment to regular assignment
+  // For example: result += 1 becomes result = result + 1
+  auto lhs = convertExpression(compoundOp->getLHS(), context);
+  auto rhs = convertExpression(compoundOp->getRHS(), context);
+  
+  if (!lhs || !rhs) {
+    std::cout << "Failed to convert compound assignment operands" << std::endl;
+    return nullptr;
+  }
+  
+  // Determine the binary operation based on compound assignment type
+  BinaryOpExpr::OpType opType;
+  switch (compoundOp->getOpcode()) {
+    case clang::BO_AddAssign:
+      opType = BinaryOpExpr::Add;
+      break;
+    case clang::BO_SubAssign:
+      opType = BinaryOpExpr::Sub;
+      break;
+    case clang::BO_MulAssign:
+      opType = BinaryOpExpr::Mul;
+      break;
+    case clang::BO_DivAssign:
+      opType = BinaryOpExpr::Div;
+      break;
+    default:
+      std::cout << "Unsupported compound assignment operator" << std::endl;
+      return nullptr;
+  }
+  
+  // Create the binary expression: lhs op rhs
+  auto binaryExpr = std::make_unique<BinaryOpExpr>(std::move(lhs), std::move(rhs), opType);
+  
+  return makeAssign(targetVar, std::move(binaryExpr));
 }
 
 std::unique_ptr<Statement>
