@@ -22,8 +22,7 @@ ninja minihlsl-standalone
 - `-g, --debug-graph` - Print dynamic execution graph (planned feature)
 - `-n, --no-verify` - Skip order independence verification
 - `-o, --orderings N` - Number of thread orderings to test (default: 10)
-- `-t, --threads N` - Number of threads in threadgroup (default: 32)
-- `-w, --wave-size N` - Wave size (default: 32)
+- `-w, --wave-size N` - Wave size (default: 32, must be power of 2)
 
 ### Examples
 
@@ -31,14 +30,14 @@ ninja minihlsl-standalone
 # Basic execution
 ./minihlsl-standalone examples/simple_wave_sum.hlsl
 
-# Verbose output with custom thread count
-./minihlsl-standalone -v --threads 64 examples/control_flow_test.hlsl
+# Verbose output with custom wave size
+./minihlsl-standalone -v --wave-size 16 examples/control_flow_test.hlsl
 
 # Skip verification for quick testing
 ./minihlsl-standalone --no-verify examples/shared_memory_test.hlsl
 
-# Test with many orderings for thorough verification
-./minihlsl-standalone --orderings 50 examples/simple_wave_sum.hlsl
+# Test with many orderings and smaller wave size
+./minihlsl-standalone --orderings 50 --wave-size 8 examples/simple_wave_sum.hlsl
 ```
 
 ## Features
@@ -71,7 +70,8 @@ ninja minihlsl-standalone
 MiniHLSL Interpreter
 ====================
 Input file: examples/simple_wave_sum.hlsl
-Threads: 32, Wave size: 32
+Wave size: 32
+Thread configuration: [32, 1, 1]
 Order verification: 10 orderings
 
 ✅ Found main function in HLSL source

@@ -26,7 +26,6 @@ struct Config {
     bool debugGraph = false;
     bool verifyOrder = true;
     uint32_t numOrderings = 10;
-    uint32_t threadCount = 32;
     uint32_t waveSize = 32;
     bool showHelp = false;
 };
@@ -40,11 +39,10 @@ void printUsage(const char* progName) {
               << "  -g, --debug-graph    Print dynamic execution graph\n"
               << "  -n, --no-verify      Skip order independence verification\n"
               << "  -o, --orderings N    Number of thread orderings to test (default: 10)\n"
-              << "  -t, --threads N      Number of threads in threadgroup (default: 32)\n"
-              << "  -w, --wave-size N    Wave size (default: 32)\n\n"
+              << "  -w, --wave-size N    Wave size (default: 32, must be power of 2)\n\n"
               << "Examples:\n"
               << "  " << progName << " wave_reduction.hlsl\n"
-              << "  " << progName << " -v -g --threads 64 complex_shader.hlsl\n"
+              << "  " << progName << " -v -g --wave-size 16 complex_shader.hlsl\n"
               << "  " << progName << " --no-verify simple_test.hlsl\n";
 }
 
@@ -57,7 +55,6 @@ Config parseCommandLine(int argc, char* argv[]) {
         {"debug-graph", no_argument,       0, 'g'},
         {"no-verify",   no_argument,       0, 'n'},
         {"orderings",   required_argument, 0, 'o'},
-        {"threads",     required_argument, 0, 't'},
         {"wave-size",   required_argument, 0, 'w'},
         {0, 0, 0, 0}
     };
@@ -65,7 +62,7 @@ Config parseCommandLine(int argc, char* argv[]) {
     int opt;
     int option_index = 0;
     
-    while ((opt = getopt_long(argc, argv, "hvgno:t:w:", long_options, &option_index)) != -1) {
+    while ((opt = getopt_long(argc, argv, "hvgno:w:", long_options, &option_index)) != -1) {
         switch (opt) {
             case 'h':
                 config.showHelp = true;
@@ -82,11 +79,13 @@ Config parseCommandLine(int argc, char* argv[]) {
             case 'o':
                 config.numOrderings = std::stoul(optarg);
                 break;
-            case 't':
-                config.threadCount = std::stoul(optarg);
-                break;
             case 'w':
                 config.waveSize = std::stoul(optarg);
+                // Validate wave size is power of 2
+                if (config.waveSize == 0 || (config.waveSize & (config.waveSize - 1)) != 0) {
+                    std::cerr << "Error: Wave size must be a power of 2 (e.g., 8, 16, 32, 64)\n";
+                    config.showHelp = true;
+                }
                 break;
             case '?':
                 std::cerr << "Unknown option or missing argument.\n";
@@ -204,7 +203,7 @@ int main(int argc, char* argv[]) {
     std::cout << "MiniHLSL Interpreter\n";
     std::cout << "====================\n";
     std::cout << "Input file: " << config.inputFile << "\n";
-    std::cout << "Threads: " << config.threadCount << ", Wave size: " << config.waveSize << "\n";
+    std::cout << "Wave size: " << config.waveSize << "\n";
     if (config.verifyOrder) {
         std::cout << "Order verification: " << config.numOrderings << " orderings\n";
     }
@@ -261,16 +260,15 @@ int main(int argc, char* argv[]) {
             std::cout << "Program has " << conversionResult.program.statements.size() << " statements\n\n";
         }
         
-        // Override thread configuration if specified
-        if (config.threadCount != 32) {
-            conversionResult.program.numThreadsX = config.threadCount;
-            conversionResult.program.numThreadsY = 1;
-            conversionResult.program.numThreadsZ = 1;
-        }
+        // Thread configuration is now determined solely by the HLSL [numthreads] attribute
+        std::cout << "Thread configuration: [" << conversionResult.program.numThreadsX << ", "
+                  << conversionResult.program.numThreadsY << ", " 
+                  << conversionResult.program.numThreadsZ << "]\n\n";
         
         // Execute program with sequential ordering first
         auto sequentialResult = interpreter.execute(conversionResult.program, 
-                                                   ThreadOrdering::sequential(conversionResult.program.getTotalThreads()));
+                                                   ThreadOrdering::sequential(conversionResult.program.getTotalThreads()),
+                                                   config.waveSize);
         printExecutionResult(sequentialResult, "Sequential Execution", config.verbose);
         
         // Print dynamic execution graph if requested
@@ -284,7 +282,7 @@ int main(int argc, char* argv[]) {
         
         // Verify order independence if requested
         if (config.verifyOrder) {
-            auto verification = interpreter.verifyOrderIndependence(conversionResult.program, config.numOrderings);
+            auto verification = interpreter.verifyOrderIndependence(conversionResult.program, config.numOrderings, config.waveSize);
             printVerificationResult(verification, config.verbose);
         }
         

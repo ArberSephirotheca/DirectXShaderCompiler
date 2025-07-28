@@ -1573,11 +1573,11 @@ std::string BufferAccessExpr::toString() const {
 // MiniHLSLInterpreter implementation with cooperative scheduling
 ExecutionResult
 MiniHLSLInterpreter::executeWithOrdering(const Program &program,
-                                         const ThreadOrdering &ordering) {
+                                         const ThreadOrdering &ordering,
+                                         uint32_t waveSize) {
   ExecutionResult result;
 
   // Create threadgroup context
-  const uint32_t waveSize = 32; // Standard wave size
   ThreadgroupContext tgContext(program.getTotalThreads(), waveSize);
 
   try {
@@ -1978,7 +1978,8 @@ bool MiniHLSLInterpreter::areResultsEquivalent(const ExecutionResult &r1,
 
 MiniHLSLInterpreter::VerificationResult
 MiniHLSLInterpreter::verifyOrderIndependence(const Program &program,
-                                             uint32_t numOrderings) {
+                                             uint32_t numOrderings,
+                                             uint32_t waveSize) {
   VerificationResult verification;
 
   // Generate test orderings
@@ -1987,7 +1988,7 @@ MiniHLSLInterpreter::verifyOrderIndependence(const Program &program,
 
   // Execute with each ordering
   for (const auto &ordering : verification.orderings) {
-    verification.results.push_back(executeWithOrdering(program, ordering));
+    verification.results.push_back(executeWithOrdering(program, ordering, waveSize));
   }
 
   // Check if all results are equivalent
@@ -2018,8 +2019,9 @@ MiniHLSLInterpreter::verifyOrderIndependence(const Program &program,
 }
 
 ExecutionResult MiniHLSLInterpreter::execute(const Program &program,
-                                             const ThreadOrdering &ordering) {
-  return executeWithOrdering(program, ordering);
+                                             const ThreadOrdering &ordering,
+                                             uint32_t waveSize) {
+  return executeWithOrdering(program, ordering, waveSize);
 }
 
 std::vector<ThreadOrdering>

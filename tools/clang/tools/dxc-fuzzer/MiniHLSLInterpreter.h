@@ -1038,7 +1038,8 @@ private:
     std::mt19937 rng_;
     
     ExecutionResult executeWithOrdering(const Program& program, 
-                                      const ThreadOrdering& ordering);
+                                      const ThreadOrdering& ordering,
+                                      uint32_t waveSize = 32);
     
     // Cooperative execution engine
     bool executeOneStep(ThreadId tid, const Program& program, ThreadgroupContext& tgContext);
@@ -1071,10 +1072,11 @@ public:
     };
     
     VerificationResult verifyOrderIndependence(const Program& program, 
-                                              uint32_t numOrderings = DEFAULT_NUM_ORDERINGS);
+                                              uint32_t numOrderings = DEFAULT_NUM_ORDERINGS,
+                                              uint32_t waveSize = 32);
     
     // Execute with a specific ordering
-    ExecutionResult execute(const Program& program, const ThreadOrdering& ordering);
+    ExecutionResult execute(const Program& program, const ThreadOrdering& ordering, uint32_t waveSize = 32);
     
     // Generate test orderings
     std::vector<ThreadOrdering> generateTestOrderings(uint32_t threadCount, 

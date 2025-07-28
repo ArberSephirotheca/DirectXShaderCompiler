@@ -72,8 +72,7 @@ make -f Makefile_interpreter
 ```bash
 mkdir build
 cd build
-cmake .. -f ../CMakeLists_interpreter.txt
-make
+cmake --build . --target minihlsl-interpreter
 ```
 
 ### Manual Compilation
