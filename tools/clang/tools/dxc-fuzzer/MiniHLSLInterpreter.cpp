@@ -1274,18 +1274,33 @@ void ReturnStmt::updateBarrierStates(ThreadgroupContext &tg,
       completedBarriers; // Track barriers that become complete
 
   for (auto &[barrierId, barrier] : tg.activeBarriers) {
-    barrier.participatingThreads.erase(returningThreadId);
-    barrier.arrivedThreads.erase(returningThreadId);
-
-    // Update barrier completion status
-    bool wasComplete = barrier.isComplete;
-    barrier.isComplete =
-        (barrier.arrivedThreads == barrier.participatingThreads);
-
-    // If barrier just became complete, mark it for processing
-    if (!wasComplete && barrier.isComplete) {
-      completedBarriers.push_back(barrierId);
+    // Check if this thread was supposed to participate in the barrier
+    if (barrier.participatingThreads.count(returningThreadId) > 0) {
+      // DEADLOCK ERROR: Thread returned early without hitting barrier
+      std::stringstream errorMsg;
+      errorMsg << "Deadlock: Thread " << returningThreadId 
+               << " returned early without reaching barrier " << barrierId
+               << ". All threads must reach the same barrier.";
+      
+      INTERPRETER_DEBUG_LOG("ERROR: " << errorMsg.str());
+      
+      // Mark ALL remaining threads as error state - this is undefined behavior
+      for (auto& wave : tg.waves) {
+        for (auto& lane : wave->lanes) {
+          if (lane->state != ThreadState::Completed && lane->state != ThreadState::Error) {
+            lane->state = ThreadState::Error;
+            lane->errorMessage = errorMsg.str();
+          }
+        }
+      }
+      
+      // Clear all barriers since the program is now in error state
+      tg.activeBarriers.clear();
+      return;
     }
+    
+    // If thread wasn't participating in this barrier, just remove it from arrived list
+    barrier.arrivedThreads.erase(returningThreadId);
   }
 
   // Wake up threads waiting at newly completed barriers
@@ -1309,13 +1324,62 @@ std::string ReturnStmt::toString() const {
 
 void BarrierStmt::execute(LaneContext &lane, WaveContext &wave,
                           ThreadgroupContext &tg) {
-  // Phase 1: Simple barrier implementation
-  // TODO: Add proper cooperative barrier handling in Phase 2
-
-  // For now, barriers are no-ops since we don't have full cooperative
-  // scheduling In a real GPU, this would synchronize all threads in the
-  // threadgroup ThreadId tid = tg.getGlobalThreadId(wave.waveId, lane.laneId);
-  // // Would be used in full implementation
+  if (!lane.isActive)
+    return;
+    
+  INTERPRETER_DEBUG_LOG("Lane " << lane.laneId << " in wave " << wave.waveId << " hitting barrier");
+  
+  ThreadId tid = tg.getGlobalThreadId(wave.waveId, lane.laneId);
+  
+  // Create a new barrier or join existing one for collective execution
+  uint32_t barrierId = tg.nextBarrierId;
+  
+  // Check if there's already an active barrier for this threadgroup
+  bool foundActiveBarrier = false;
+  for (auto& [id, barrier] : tg.activeBarriers) {
+    // Join the first active barrier (since all threads must reach the same barrier)
+    barrierId = id;
+    foundActiveBarrier = true;
+    break;
+  }
+  
+  if (!foundActiveBarrier) {
+    // Create new barrier for collective execution
+    ThreadgroupBarrierState newBarrier;
+    newBarrier.barrierId = barrierId;
+    
+    // ALL threads in threadgroup must participate in barriers (even if some returned early)
+    // This is different from wave operations which only include active lanes
+    // Barriers require ALL threads that started execution to reach the barrier
+    for (size_t waveId = 0; waveId < tg.waves.size(); ++waveId) {
+      for (size_t laneId = 0; laneId < tg.waves[waveId]->lanes.size(); ++laneId) {
+        // Include ALL threads, regardless of current state
+        // If a thread returned early, it will trigger deadlock detection
+        ThreadId participantTid = tg.getGlobalThreadId(waveId, laneId);
+        newBarrier.participatingThreads.insert(participantTid);
+      }
+    }
+    
+    tg.activeBarriers[barrierId] = newBarrier;
+    tg.nextBarrierId++;
+    
+    INTERPRETER_DEBUG_LOG("Created collective barrier " << barrierId << " expecting " 
+                         << newBarrier.participatingThreads.size() << " threads");
+  }
+  
+  // Add this thread to the barrier for collective execution
+  auto& barrier = tg.activeBarriers[barrierId];
+  barrier.arrivedThreads.insert(tid);
+  
+  // Set thread state to waiting for collective barrier execution
+  lane.state = ThreadState::WaitingAtBarrier;
+  lane.waitingBarrierId = barrierId;
+  
+  INTERPRETER_DEBUG_LOG("Thread " << tid << " waiting for collective barrier " << barrierId 
+                       << " (" << barrier.arrivedThreads.size() << "/" 
+                       << barrier.participatingThreads.size() << " arrived)");
+  
+  // If all threads have arrived, the barrier will execute collectively in processBarriers()
 }
 
 ExprStmt::ExprStmt(std::unique_ptr<Expression> expr) : expr_(std::move(expr)) {}
@@ -1601,9 +1665,101 @@ void MiniHLSLInterpreter::executeCollectiveWaveOperation(ThreadgroupContext &tgC
   INTERPRETER_DEBUG_LOG("Collective wave operation result: " << result.toString() << "\n");
 }
 
+void MiniHLSLInterpreter::executeCollectiveBarrier(ThreadgroupContext &tgContext, 
+                                                   uint32_t barrierId, 
+                                                   const ThreadgroupBarrierState &barrier) {
+  INTERPRETER_DEBUG_LOG("Executing collective barrier " << barrierId 
+                       << " with " << barrier.arrivedThreads.size() << " threads");
+  
+  // Collective barrier execution:
+  // 1. Memory fence - ensure all prior memory operations are visible
+  // 2. Synchronization point - all threads wait here
+  // 3. Barrier semantics - GroupMemoryBarrierWithGroupSync()
+  
+  // In a real GPU, this would:
+  // - Flush caches
+  // - Ensure memory consistency across threadgroup
+  // - Synchronize all threads at this execution point
+  
+  // For our interpreter, the collective barrier execution is conceptual
+  // The important part is that ALL threads execute this together
+  INTERPRETER_DEBUG_LOG("Collective barrier " << barrierId << " memory fence and sync complete");
+}
+
 void MiniHLSLInterpreter::processBarriers(ThreadgroupContext &tgContext) {
-  // Phase 1: Simple implementation - barriers complete immediately
-  // TODO: Add proper barrier analysis in Phase 2
+  std::vector<uint32_t> completedBarriers;
+  
+  // Check each active barrier to see if it's complete or deadlocked
+  for (auto& [barrierId, barrier] : tgContext.activeBarriers) {
+    if (barrier.arrivedThreads.size() == barrier.participatingThreads.size()) {
+      // All threads have arrived - execute barrier collectively
+      INTERPRETER_DEBUG_LOG("Collective barrier " << barrierId << " executing! All " 
+                           << barrier.arrivedThreads.size() << " threads synchronized");
+      
+      // Execute barrier collectively (memory fence, synchronization point)
+      executeCollectiveBarrier(tgContext, barrierId, barrier);
+      
+      // Release all waiting threads simultaneously
+      for (ThreadId tid : barrier.arrivedThreads) {
+        auto [waveId, laneId] = tgContext.getWaveAndLane(tid);
+        if (waveId < tgContext.waves.size() && laneId < tgContext.waves[waveId]->lanes.size()) {
+          auto& lane = tgContext.waves[waveId]->lanes[laneId];
+          if (lane->state == ThreadState::WaitingAtBarrier && lane->waitingBarrierId == barrierId) {
+            lane->state = ThreadState::Ready;
+            lane->waitingBarrierId = 0;
+            // Advance to next statement after barrier completion
+            lane->currentStatement++;
+            INTERPRETER_DEBUG_LOG("Released thread " << tid << " from barrier " << barrierId 
+                                 << " and advanced to statement " << lane->currentStatement);
+          }
+        }
+      }
+      
+      completedBarriers.push_back(barrierId);
+    } else {
+      // Check for deadlock - if some threads are completed/error but not all expected threads arrived
+      std::set<ThreadId> stillExecutingThreads;
+      for (ThreadId tid : barrier.participatingThreads) {
+        auto [waveId, laneId] = tgContext.getWaveAndLane(tid);
+        if (waveId < tgContext.waves.size() && laneId < tgContext.waves[waveId]->lanes.size()) {
+          auto& lane = tgContext.waves[waveId]->lanes[laneId];
+          if (lane->state != ThreadState::Completed && lane->state != ThreadState::Error) {
+            stillExecutingThreads.insert(tid);
+          }
+        }
+      }
+      
+      // If some threads that should participate are no longer executing, we have a deadlock
+      if (stillExecutingThreads.size() < barrier.participatingThreads.size() && 
+          barrier.arrivedThreads.size() < stillExecutingThreads.size()) {
+        // Deadlock detected - some threads completed without hitting barrier
+        std::stringstream errorMsg;
+        errorMsg << "Barrier deadlock detected! Barrier " << barrierId 
+                 << " expected " << barrier.participatingThreads.size() << " threads, "
+                 << "but only " << barrier.arrivedThreads.size() << " arrived. "
+                 << "Some threads completed execution without reaching the barrier.";
+        
+        INTERPRETER_DEBUG_LOG("ERROR: " << errorMsg.str());
+        
+        // Mark all remaining threads as error state
+        for (ThreadId tid : stillExecutingThreads) {
+          auto [waveId, laneId] = tgContext.getWaveAndLane(tid);
+          if (waveId < tgContext.waves.size() && laneId < tgContext.waves[waveId]->lanes.size()) {
+            auto& lane = tgContext.waves[waveId]->lanes[laneId];
+            lane->state = ThreadState::Error;
+            lane->errorMessage = errorMsg.str();
+          }
+        }
+        
+        completedBarriers.push_back(barrierId);
+      }
+    }
+  }
+  
+  // Remove completed barriers
+  for (uint32_t barrierId : completedBarriers) {
+    tgContext.activeBarriers.erase(barrierId);
+  }
 }
 
 ThreadId
@@ -1923,6 +2079,8 @@ MiniHLSLInterpreter::convertStatement(const clang::Stmt *stmt,
     return convertBreakStatement(breakStmt, context);
   } else if (auto continueStmt = clang::dyn_cast<clang::ContinueStmt>(stmt)) {
     return convertContinueStatement(continueStmt, context);
+  } else if (auto returnStmt = clang::dyn_cast<clang::ReturnStmt>(stmt)) {
+    return convertReturnStatement(returnStmt, context);
   } else if (auto unaryOp = clang::dyn_cast<clang::UnaryOperator>(stmt)) {
     // Handle unary operators like i++ as expression statements
     auto expr = convertExpression(unaryOp, context);
@@ -2406,6 +2564,19 @@ std::unique_ptr<Statement> MiniHLSLInterpreter::convertContinueStatement(
     const clang::ContinueStmt *continueStmt, clang::ASTContext &context) {
   std::cout << "Converting continue statement" << std::endl;
   return std::make_unique<ContinueStmt>();
+}
+
+std::unique_ptr<Statement> MiniHLSLInterpreter::convertReturnStatement(
+    const clang::ReturnStmt *returnStmt, clang::ASTContext &context) {
+  std::cout << "Converting return statement" << std::endl;
+  
+  // Handle return value if present
+  std::unique_ptr<Expression> returnExpr = nullptr;
+  if (auto retVal = returnStmt->getRetValue()) {
+    returnExpr = convertExpression(retVal, context);
+  }
+  
+  return std::make_unique<ReturnStmt>(std::move(returnExpr));
 }
 
 std::unique_ptr<Expression>

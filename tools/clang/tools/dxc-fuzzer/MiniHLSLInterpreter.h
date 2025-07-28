@@ -24,6 +24,7 @@ namespace clang {
     class Stmt;
     class Expr;
     class CompoundStmt;
+    class ReturnStmt;
     class BinaryOperator;
     class CompoundAssignOperator;
     class UnaryOperator;
@@ -124,6 +125,9 @@ struct LaneContext {
     // Wave operation synchronization
     uint32_t waveOpId = 0;        // Current wave operation ID
     bool waveOpComplete = false;   // Whether current wave op is done
+    
+    // Barrier synchronization
+    uint32_t waitingBarrierId = 0; // Which barrier this thread is waiting for
 };
 
 // Wave operation synchronization point for instruction-level coordination
@@ -988,6 +992,7 @@ private:
     void processWaveOperations(ThreadgroupContext& tgContext);
     void executeCollectiveWaveOperation(ThreadgroupContext& tgContext, WaveId waveId, 
                                        const void* instruction, WaveOperationSyncPoint& syncPoint);
+    void executeCollectiveBarrier(ThreadgroupContext& tgContext, uint32_t barrierId, const ThreadgroupBarrierState& barrier);
     void processBarriers(ThreadgroupContext& tgContext);
     ThreadId selectNextThread(const std::vector<ThreadId>& readyThreads, 
                              const ThreadOrdering& ordering, 
@@ -1047,6 +1052,7 @@ std::unique_ptr<Statement> convertCompoundAssignOperator(const clang::CompoundAs
     std::unique_ptr<Statement> convertSwitchStatement(const clang::SwitchStmt* switchStmt, clang::ASTContext& context);
     std::unique_ptr<Statement> convertBreakStatement(const clang::BreakStmt* breakStmt, clang::ASTContext& context);
     std::unique_ptr<Statement> convertContinueStatement(const clang::ContinueStmt* continueStmt, clang::ASTContext& context);
+    std::unique_ptr<Statement> convertReturnStatement(const clang::ReturnStmt* returnStmt, clang::ASTContext& context);
     std::unique_ptr<Expression> convertCallExpressionToExpression(const clang::CallExpr* callExpr, clang::ASTContext& context);
     std::unique_ptr<Expression> convertConditionalOperator(const clang::ConditionalOperator* condOp, clang::ASTContext& context);
     std::unique_ptr<Expression> convertBinaryExpression(const clang::BinaryOperator* binOp, clang::ASTContext& context);
