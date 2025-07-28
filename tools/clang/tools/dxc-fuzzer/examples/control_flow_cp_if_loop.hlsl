@@ -7,9 +7,9 @@ void main(uint3 id : SV_DispatchThreadID) {
     uint result = 0;
     
     // Deterministic branching - all lanes take predictable paths
-    for (int i = 0; i < 2; ++i) {
+    for (int i = 0; i < 1; ++i) {
     if (laneId < 2) {
-        result = 1;  // First half of wave
+        // result = 1;  // First half of wave
         if (laneId == 0) {
             // Special case for lane 0
             result += WaveActiveSum(10);

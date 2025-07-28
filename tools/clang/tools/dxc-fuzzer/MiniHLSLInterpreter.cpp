@@ -793,6 +793,10 @@ Value WaveActiveOp::evaluate(LaneContext &lane, WaveContext &wave,
   // Create block-scoped instruction identity using compound key
   uint32_t currentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
   std::pair<const void*, uint32_t> instructionKey = {static_cast<const void*>(this), currentBlockId};
+  
+  std::cout << "DEBUG: WAVE_OP: Lane " << lane.laneId << " executing WaveActiveSum in block " 
+            << currentBlockId << ", instruction key=(" << static_cast<const void*>(this) 
+            << "," << currentBlockId << ")" << std::endl;
 
   // Check if there's already a computed result for this lane
   auto syncPointIt = wave.activeSyncPoints.find(instructionKey);
@@ -812,10 +816,10 @@ Value WaveActiveOp::evaluate(LaneContext &lane, WaveContext &wave,
     }
   }
 
+      // Mark this lane as arrived at this specific instruction  
+    tg.markLaneArrivedAtWaveInstruction(wave.waveId, lane.laneId, static_cast<const void*>(this), "WaveActiveOp");
   // No stored result - check if we can execute or need to wait
   if (!tg.canExecuteWaveInstruction(wave.waveId, lane.laneId, static_cast<const void*>(this))) {
-    // Mark this lane as arrived at this specific instruction  
-    tg.markLaneArrivedAtWaveInstruction(wave.waveId, lane.laneId, static_cast<const void*>(this), "WaveActiveOp");
     
     // Store the compound key in the sync point for proper tracking
     auto& syncPoint = wave.activeSyncPoints[instructionKey];
@@ -823,6 +827,9 @@ Value WaveActiveOp::evaluate(LaneContext &lane, WaveContext &wave,
 
     // Get current block and mark lane as waiting
     tg.markLaneWaitingForWave(wave.waveId, lane.laneId, currentBlockId);
+    
+    std::cout << "DEBUG: WAVE_OP: Lane " << lane.laneId << " cannot execute, starting to wait in block " 
+              << currentBlockId << std::endl;
     
     // Throw a special exception to indicate we need to wait
     throw WaveOperationWaitException();
@@ -1212,8 +1219,63 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
         tg.createBlockIdentity(static_cast<const void*>(this), BlockType::LOOP_BODY, headerBlockId, currentMergeStack, true, lane.executionPath);
     
     // Get lanes that could potentially participate in this iteration
-    // Only include lanes that are currently in the loop header (actively deciding whether to continue)
+    // Use ALL lanes that originally entered the loop, not just currently active ones
+    // This prevents infinite block creation when some lanes are waiting in previous iterations
     std::map<WaveId, std::set<LaneId>> iterationUnknownLanes = tg.getCurrentBlockParticipants(headerBlockId);
+    
+    // IMPORTANT: Always include ALL lanes that could participate in this iteration
+    // This includes lanes waiting in previous iteration blocks of the same loop
+    std::cout << "DEBUG: Before fix, iterationUnknownLanes has:";
+    for (const auto& [waveId, laneSet] : iterationUnknownLanes) {
+        std::cout << " Wave " << waveId << ": {";
+        for (LaneId laneId : laneSet) std::cout << laneId << " ";
+        std::cout << "}";
+    }
+    std::cout << std::endl;
+    
+    // Add lanes from header's arrivedLanes (those who entered the loop)
+    auto headerBlockIt = tg.executionBlocks.find(headerBlockId);
+    if (headerBlockIt != tg.executionBlocks.end()) {
+        for (const auto& [waveId, laneSet] : headerBlockIt->second.getArrivedLanes()) {
+            for (LaneId laneId : laneSet) {
+                iterationUnknownLanes[waveId].insert(laneId);
+            }
+        }
+    }
+    
+    // CRITICAL: Also add lanes waiting in existing iteration blocks of this loop
+    // These lanes might complete their wave operations and join this iteration
+    for (const auto& [blockId, block] : tg.executionBlocks) {
+        // Check if this is a LOOP_BODY block that belongs to our loop
+        if (block.getBlockType() == BlockType::LOOP_BODY && 
+            block.getParentBlockId() == headerBlockId) {
+            
+            // Add waiting lanes from this iteration block
+            for (const auto& [waveId, laneSet] : block.getWaitingLanes()) {
+                for (LaneId laneId : laneSet) {
+                    iterationUnknownLanes[waveId].insert(laneId);
+                    std::cout << "DEBUG: Added waiting lane " << laneId << " from iteration block " << blockId << std::endl;
+                }
+            }
+            
+            // Also add participating lanes that might still be executing
+            for (const auto& [waveId, laneSet] : block.getParticipatingLanes()) {
+                for (LaneId laneId : laneSet) {
+                    iterationUnknownLanes[waveId].insert(laneId);
+                    std::cout << "DEBUG: Added participating lane " << laneId << " from iteration block " << blockId << std::endl;
+                }
+            }
+        }
+    }
+    
+    std::cout << "DEBUG: After fix, iterationUnknownLanes has:";
+    for (const auto& [waveId, laneSet] : iterationUnknownLanes) {
+        std::cout << " Wave " << waveId << ": {";
+        for (LaneId laneId : laneSet) std::cout << laneId << " ";
+        std::cout << "}";
+    }
+    std::cout << std::endl;
+    
     // Remove this lane since we know it's participating
     iterationUnknownLanes[wave.waveId].erase(lane.laneId);
     
@@ -1765,6 +1827,8 @@ bool MiniHLSLInterpreter::executeOneStep(ThreadId tid, const Program &program,
   } catch (const WaveOperationWaitException&) {
     // Wave operation is waiting - do nothing, statement will be retried
     // Lane state should already be set to WaitingForWave
+    std::cout << "DEBUG: WAVE_WAIT: Lane " << (tid % 32) << " caught WaveOperationWaitException, state=" 
+              << (int)lane.state << std::endl;
   } catch (const std::exception &e) {
     lane.state = ThreadState::Error;
     lane.errorMessage = e.what();
@@ -3195,8 +3259,63 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
         tg.createBlockIdentity(static_cast<const void*>(this), BlockType::LOOP_BODY, headerBlockId, currentMergeStack, true, lane.executionPath);
     
     // Get lanes that could potentially participate in this iteration
-    // Only include lanes that are currently in the loop header (actively deciding whether to continue)
+    // Use ALL lanes that originally entered the loop, not just currently active ones
+    // This prevents infinite block creation when some lanes are waiting in previous iterations
     std::map<WaveId, std::set<LaneId>> iterationUnknownLanes = tg.getCurrentBlockParticipants(headerBlockId);
+    
+    // IMPORTANT: Always include ALL lanes that could participate in this iteration
+    // This includes lanes waiting in previous iteration blocks of the same loop
+    std::cout << "DEBUG: Before fix, iterationUnknownLanes has:";
+    for (const auto& [waveId, laneSet] : iterationUnknownLanes) {
+        std::cout << " Wave " << waveId << ": {";
+        for (LaneId laneId : laneSet) std::cout << laneId << " ";
+        std::cout << "}";
+    }
+    std::cout << std::endl;
+    
+    // Add lanes from header's arrivedLanes (those who entered the loop)
+    auto headerBlockIt = tg.executionBlocks.find(headerBlockId);
+    if (headerBlockIt != tg.executionBlocks.end()) {
+        for (const auto& [waveId, laneSet] : headerBlockIt->second.getArrivedLanes()) {
+            for (LaneId laneId : laneSet) {
+                iterationUnknownLanes[waveId].insert(laneId);
+            }
+        }
+    }
+    
+    // CRITICAL: Also add lanes waiting in existing iteration blocks of this loop
+    // These lanes might complete their wave operations and join this iteration
+    for (const auto& [blockId, block] : tg.executionBlocks) {
+        // Check if this is a LOOP_BODY block that belongs to our loop
+        if (block.getBlockType() == BlockType::LOOP_BODY && 
+            block.getParentBlockId() == headerBlockId) {
+            
+            // Add waiting lanes from this iteration block
+            for (const auto& [waveId, laneSet] : block.getWaitingLanes()) {
+                for (LaneId laneId : laneSet) {
+                    iterationUnknownLanes[waveId].insert(laneId);
+                    std::cout << "DEBUG: Added waiting lane " << laneId << " from iteration block " << blockId << std::endl;
+                }
+            }
+            
+            // Also add participating lanes that might still be executing
+            for (const auto& [waveId, laneSet] : block.getParticipatingLanes()) {
+                for (LaneId laneId : laneSet) {
+                    iterationUnknownLanes[waveId].insert(laneId);
+                    std::cout << "DEBUG: Added participating lane " << laneId << " from iteration block " << blockId << std::endl;
+                }
+            }
+        }
+    }
+    
+    std::cout << "DEBUG: After fix, iterationUnknownLanes has:";
+    for (const auto& [waveId, laneSet] : iterationUnknownLanes) {
+        std::cout << " Wave " << waveId << ": {";
+        for (LaneId laneId : laneSet) std::cout << laneId << " ";
+        std::cout << "}";
+    }
+    std::cout << std::endl;
+    
     // Remove this lane since we know it's participating
     iterationUnknownLanes[wave.waveId].erase(lane.laneId);
     
@@ -3553,13 +3672,39 @@ uint32_t ThreadgroupContext::createExecutionBlock(
 
 void ThreadgroupContext::assignLaneToBlock(WaveId waveId, LaneId laneId,
                                            uint32_t blockId) {
+  // Don't move lanes that are waiting for wave operations or barriers
+  if (waveId < waves.size() && laneId < waves[waveId]->lanes.size()) {
+    auto state = waves[waveId]->lanes[laneId]->state;
+    if (state == ThreadState::WaitingForWave || state == ThreadState::WaitingAtBarrier) {
+      std::cout << "DEBUG: Preventing move of waiting lane " << laneId << " (state=" << (int)state << ") to block " << blockId << std::endl;
+      return;
+    }
+  }
+  
   // Remove lane from its current block's arrived lanes first
   auto currentBlockIt = waves[waveId]->laneToCurrentBlock.find(laneId);
   if (currentBlockIt != waves[waveId]->laneToCurrentBlock.end()) {
     uint32_t oldBlockId = currentBlockIt->second;
     auto oldBlockIt = executionBlocks.find(oldBlockId);
     if (oldBlockIt != executionBlocks.end()) {
-      oldBlockIt->second.removeArrivedLane(waveId, laneId);
+      // NEW: Don't remove from arrivedLanes if moving from header to iteration block
+      // This keeps lanes in header's arrivedLanes until they exit the loop entirely
+      auto newBlockIt = executionBlocks.find(blockId);
+      bool isHeaderToLoopBody = (oldBlockIt->second.getBlockType() == BlockType::LOOP_HEADER && 
+                                 newBlockIt != executionBlocks.end() &&
+                                 newBlockIt->second.getBlockType() == BlockType::LOOP_BODY);
+      
+      std::cout << "DEBUG: assignLaneToBlock - moving lane " << laneId 
+                << " from block " << oldBlockId << " (type " << (int)oldBlockIt->second.getBlockType() 
+                << ") to block " << blockId << " (type " << (int)newBlockIt->second.getBlockType() 
+                << "), isHeaderToLoopBody=" << isHeaderToLoopBody << std::endl;
+      
+      if (!isHeaderToLoopBody) {
+        oldBlockIt->second.removeArrivedLane(waveId, laneId);
+        std::cout << "DEBUG: Removed lane " << laneId << " from arrivedLanes of block " << oldBlockId << std::endl;
+      } else {
+        std::cout << "DEBUG: Keeping lane " << laneId << " in arrivedLanes of header block " << oldBlockId << std::endl;
+      }
     }
   }
   
@@ -3914,9 +4059,15 @@ bool ThreadgroupContext::canExecuteWaveInstruction(
 
   // Check using compound key for the new system
   std::pair<const void*, uint32_t> instructionKey = {instruction, currentBlockId};
-  bool canExecuteGlobal =
-      areAllParticipantsKnownForWaveInstruction(waveId, instructionKey) &&
-      haveAllParticipantsArrivedAtWaveInstruction(waveId, instructionKey);
+  bool allParticipantsKnown = areAllParticipantsKnownForWaveInstruction(waveId, instructionKey);
+  bool allParticipantsArrived = haveAllParticipantsArrivedAtWaveInstruction(waveId, instructionKey);
+  bool canExecuteGlobal = allParticipantsKnown && allParticipantsArrived;
+
+  std::cout << "DEBUG: canExecuteWaveInstruction for lane " << laneId << " in block " << currentBlockId 
+            << ": canExecuteInBlock=" << canExecuteInBlock 
+            << ", allParticipantsKnown=" << allParticipantsKnown 
+            << ", allParticipantsArrived=" << allParticipantsArrived
+            << ", canExecuteGlobal=" << canExecuteGlobal << std::endl;
 
   // Both approaches should agree for proper synchronization
   return canExecuteInBlock && canExecuteGlobal;
@@ -3964,7 +4115,16 @@ bool ThreadgroupContext::areAllParticipantsKnownForWaveInstruction(
     WaveId waveId, const std::pair<const void*, uint32_t>& instructionKey) const {
   auto it = waves[waveId]->activeSyncPoints.find(instructionKey);
   if (it == waves[waveId]->activeSyncPoints.end()) {
-    return false; // No sync point created yet
+    // No sync point created yet - check if only one lane is in the block
+    uint32_t blockId = instructionKey.second;
+    auto blockIt = executionBlocks.find(blockId);
+    if (blockIt != executionBlocks.end()) {
+      auto arrivedLanes = blockIt->second.getArrivedLanesForWave(waveId);
+      if (arrivedLanes.size() == 1) {
+        return true; // Single lane can proceed immediately
+      }
+    }
+    return false;
   }
 
   return it->second.allParticipantsKnown;
