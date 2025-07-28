@@ -892,6 +892,49 @@ Value WaveActiveOp::computeWaveOperation(const std::vector<Value>& values) const
     }
     return Value(count);
   }
+  case AllTrue: {
+    // Return true only if ALL participating lanes evaluate to true
+    for (const auto &val : values) {
+      if (!val.asBool()) {
+        return Value(false);
+      }
+    }
+    return Value(true);
+  }
+  case AnyTrue: {
+    // Return true if ANY participating lane evaluates to true
+    for (const auto &val : values) {
+      if (val.asBool()) {
+        return Value(true);
+      }
+    }
+    return Value(false);
+  }
+  case AllEqual: {
+    // Return true if all participating lanes have the same value
+    if (values.empty()) {
+      return Value(true);
+    }
+    const Value& firstValue = values[0];
+    for (size_t i = 1; i < values.size(); ++i) {
+      if (!(values[i] == firstValue)) {
+        return Value(false);
+      }
+    }
+    return Value(true);
+  }
+  case Ballot: {
+    // Return a bitmask where bit N is set if lane N evaluates to true
+    // Note: This is a simplified implementation that returns an integer
+    // In real HLSL, this would return a 32-bit or 64-bit mask depending on wave size
+    uint32_t ballot = 0;
+    for (size_t i = 0; i < values.size() && i < 32; ++i) {
+      if (values[i].asBool()) {
+        ballot |= (1u << i);
+      }
+    }
+    return Value(static_cast<int32_t>(ballot));
+  }
   }
   throw std::runtime_error("Unknown wave operation");
 }
@@ -899,8 +942,10 @@ Value WaveActiveOp::computeWaveOperation(const std::vector<Value>& values) const
 std::string WaveActiveOp::toString() const {
   static const char *opNames[] = {"WaveActiveSum", "WaveActiveProduct",
                                   "WaveActiveMin", "WaveActiveMax",
-                                  "WaveActiveAnd", "WaveActiveOr",
-                                  "WaveActiveXor", "WaveActiveCountBits"};
+                                  "WaveActiveBitAnd", "WaveActiveBitOr",
+                                  "WaveActiveBitXor", "WaveActiveCountBits",
+                                  "WaveActiveAllTrue", "WaveActiveAnyTrue",
+                                  "WaveActiveAllEqual", "WaveActiveBallot"};
   return std::string(opNames[op_]) + "(" + expr_->toString() + ")";
 }
 
@@ -2356,19 +2401,19 @@ MiniHLSLInterpreter::convertCallExpression(const clang::CallExpr *callExpr,
         return std::make_unique<ExprStmt>(
             std::make_unique<WaveActiveOp>(std::move(arg), WaveActiveOp::Max));
       }
-    } else if (funcName == "WaveActiveAnd" && callExpr->getNumArgs() == 1) {
+    } else if (funcName == "WaveActiveBitAnd" && callExpr->getNumArgs() == 1) {
       auto arg = convertExpression(callExpr->getArg(0), context);
       if (arg) {
         return std::make_unique<ExprStmt>(
             std::make_unique<WaveActiveOp>(std::move(arg), WaveActiveOp::And));
       }
-    } else if (funcName == "WaveActiveOr" && callExpr->getNumArgs() == 1) {
+    } else if (funcName == "WaveActiveBitOr" && callExpr->getNumArgs() == 1) {
       auto arg = convertExpression(callExpr->getArg(0), context);
       if (arg) {
         return std::make_unique<ExprStmt>(
             std::make_unique<WaveActiveOp>(std::move(arg), WaveActiveOp::Or));
       }
-    } else if (funcName == "WaveActiveXor" && callExpr->getNumArgs() == 1) {
+    } else if (funcName == "WaveActiveBitXor" && callExpr->getNumArgs() == 1) {
       auto arg = convertExpression(callExpr->getArg(0), context);
       if (arg) {
         return std::make_unique<ExprStmt>(
@@ -2380,6 +2425,30 @@ MiniHLSLInterpreter::convertCallExpression(const clang::CallExpr *callExpr,
       if (arg) {
         return std::make_unique<ExprStmt>(std::make_unique<WaveActiveOp>(
             std::move(arg), WaveActiveOp::CountBits));
+      }
+    } else if (funcName == "WaveActiveAllTrue" && callExpr->getNumArgs() == 1) {
+      auto arg = convertExpression(callExpr->getArg(0), context);
+      if (arg) {
+        return std::make_unique<ExprStmt>(std::make_unique<WaveActiveOp>(
+            std::move(arg), WaveActiveOp::AllTrue));
+      }
+    } else if (funcName == "WaveActiveAnyTrue" && callExpr->getNumArgs() == 1) {
+      auto arg = convertExpression(callExpr->getArg(0), context);
+      if (arg) {
+        return std::make_unique<ExprStmt>(std::make_unique<WaveActiveOp>(
+            std::move(arg), WaveActiveOp::AnyTrue));
+      }
+    } else if (funcName == "WaveActiveAllEqual" && callExpr->getNumArgs() == 1) {
+      auto arg = convertExpression(callExpr->getArg(0), context);
+      if (arg) {
+        return std::make_unique<ExprStmt>(std::make_unique<WaveActiveOp>(
+            std::move(arg), WaveActiveOp::AllEqual));
+      }
+    } else if (funcName == "WaveActiveBallot" && callExpr->getNumArgs() == 1) {
+      auto arg = convertExpression(callExpr->getArg(0), context);
+      if (arg) {
+        return std::make_unique<ExprStmt>(std::make_unique<WaveActiveOp>(
+            std::move(arg), WaveActiveOp::Ballot));
       }
     } else if (funcName == "WaveGetLaneIndex" && callExpr->getNumArgs() == 0) {
       return std::make_unique<ExprStmt>(std::make_unique<LaneIndexExpr>());
@@ -2832,18 +2901,18 @@ MiniHLSLInterpreter::convertCallExpressionToExpression(
         return std::make_unique<WaveActiveOp>(std::move(arg),
                                               WaveActiveOp::Max);
       }
-    } else if (funcName == "WaveActiveAnd" && callExpr->getNumArgs() == 1) {
+    } else if (funcName == "WaveActiveBitAnd" && callExpr->getNumArgs() == 1) {
       auto arg = convertExpression(callExpr->getArg(0), context);
       if (arg) {
         return std::make_unique<WaveActiveOp>(std::move(arg),
                                               WaveActiveOp::And);
       }
-    } else if (funcName == "WaveActiveOr" && callExpr->getNumArgs() == 1) {
+    } else if (funcName == "WaveActiveBitOr" && callExpr->getNumArgs() == 1) {
       auto arg = convertExpression(callExpr->getArg(0), context);
       if (arg) {
         return std::make_unique<WaveActiveOp>(std::move(arg), WaveActiveOp::Or);
       }
-    } else if (funcName == "WaveActiveXor" && callExpr->getNumArgs() == 1) {
+    } else if (funcName == "WaveActiveBitXor" && callExpr->getNumArgs() == 1) {
       auto arg = convertExpression(callExpr->getArg(0), context);
       if (arg) {
         return std::make_unique<WaveActiveOp>(std::move(arg),
@@ -2866,17 +2935,26 @@ MiniHLSLInterpreter::convertCallExpressionToExpression(
                callExpr->getNumArgs() == 1) {
       auto arg = convertExpression(callExpr->getArg(0), context);
       if (arg) {
-        return std::make_unique<WaveActiveAllEqualExpr>(std::move(arg));
+        return std::make_unique<WaveActiveOp>(std::move(arg),
+                                              WaveActiveOp::AllEqual);
       }
     } else if (funcName == "WaveActiveAllTrue" && callExpr->getNumArgs() == 1) {
       auto arg = convertExpression(callExpr->getArg(0), context);
       if (arg) {
-        return std::make_unique<WaveActiveAllTrueExpr>(std::move(arg));
+        return std::make_unique<WaveActiveOp>(std::move(arg),
+                                              WaveActiveOp::AllTrue);
       }
     } else if (funcName == "WaveActiveAnyTrue" && callExpr->getNumArgs() == 1) {
       auto arg = convertExpression(callExpr->getArg(0), context);
       if (arg) {
-        return std::make_unique<WaveActiveAnyTrueExpr>(std::move(arg));
+        return std::make_unique<WaveActiveOp>(std::move(arg),
+                                              WaveActiveOp::AnyTrue);
+      }
+    } else if (funcName == "WaveActiveBallot" && callExpr->getNumArgs() == 1) {
+      auto arg = convertExpression(callExpr->getArg(0), context);
+      if (arg) {
+        return std::make_unique<WaveActiveOp>(std::move(arg),
+                                              WaveActiveOp::Ballot);
       }
     }
 

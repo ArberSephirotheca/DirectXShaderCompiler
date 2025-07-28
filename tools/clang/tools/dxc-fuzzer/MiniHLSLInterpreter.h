@@ -785,7 +785,7 @@ public:
 // Wave operations
 class WaveActiveOp : public Expression {
 public:
-    enum OpType { Sum, Product, Min, Max, And, Or, Xor, CountBits };
+    enum OpType { Sum, Product, Min, Max, And, Or, Xor, CountBits, AllTrue, AnyTrue, AllEqual, Ballot };
 private:
     std::unique_ptr<Expression> expr_;
     OpType op_;
