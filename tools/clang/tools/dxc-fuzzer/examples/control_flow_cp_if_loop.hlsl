@@ -12,7 +12,8 @@ void main(uint3 id : SV_DispatchThreadID) {
         result = 1;  // First half of wave
         if (laneId == 0) {
             // Special case for lane 0
-            result += 10;  // Just an arbitrary operation
+            result += WaveActiveSum(10);
+            // result += 10;  // Just an arbitrary operation
         } else{
             result += 1;
         }
@@ -20,7 +21,6 @@ void main(uint3 id : SV_DispatchThreadID) {
         result = 2;  // Second half of wave
     }
     }
-    
-    // Wave sum should be: (16 * 1) + (16 * 2) = 48
+    // 11 + 2 + 2 + 2 = 17
     uint totalSum = WaveActiveSum(result);
 }

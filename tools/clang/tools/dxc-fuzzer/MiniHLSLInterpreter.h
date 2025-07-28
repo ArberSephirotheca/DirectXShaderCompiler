@@ -461,8 +461,8 @@ struct WaveContext {
     uint32_t nextWaveOpId = 1;
     
     // Instruction-level synchronization
-    std::map<const void*, WaveOperationSyncPoint> activeSyncPoints; // instruction -> sync point
-    std::map<LaneId, const void*> laneWaitingAtInstruction; // which instruction each lane is waiting at
+    std::map<std::pair<const void*, uint32_t>, WaveOperationSyncPoint> activeSyncPoints; // (instruction, blockId) -> sync point
+    std::map<LaneId, std::pair<const void*, uint32_t>> laneWaitingAtInstruction; // which (instruction, blockId) each lane is waiting at
     
     // Lane to block mapping for this wave only
     std::map<LaneId, uint32_t> laneToCurrentBlock; // Which block each lane is in
@@ -640,11 +640,10 @@ struct ThreadgroupContext {
     // Instruction-level synchronization methods for wave operation
     bool canExecuteWaveInstruction(WaveId waveId, LaneId laneId, const void* instruction) const;
     void markLaneArrivedAtWaveInstruction(WaveId waveId, LaneId laneId, const void* instruction, const std::string& instructionType);
-    bool areAllParticipantsKnownForWaveInstruction(WaveId waveId, const void* instruction) const;
-    bool haveAllParticipantsArrivedAtWaveInstruction(WaveId waveId, const void* instruction) const;
-    std::vector<LaneId> getWaveInstructionParticipants(WaveId waveId, const void* instruction) const;
+    bool areAllParticipantsKnownForWaveInstruction(WaveId waveId, const std::pair<const void*, uint32_t>& instructionKey) const;
+    bool haveAllParticipantsArrivedAtWaveInstruction(WaveId waveId, const std::pair<const void*, uint32_t>& instructionKey) const;
     void createOrUpdateWaveSyncPoint(const void* instruction, WaveId waveId, LaneId laneId, const std::string& instructionType);
-    void releaseWaveSyncPoint(WaveId waveId, const void* instruction);
+    void releaseWaveSyncPoint(WaveId waveId, const std::pair<const void*, uint32_t>& instructionKey);
 
     // Instruction identity management
     void addInstructionToBlock(uint32_t blockId, const InstructionIdentity& instruction, 
@@ -1045,7 +1044,7 @@ private:
     bool executeOneStep(ThreadId tid, const Program& program, ThreadgroupContext& tgContext);
     void processWaveOperations(ThreadgroupContext& tgContext);
     void executeCollectiveWaveOperation(ThreadgroupContext& tgContext, WaveId waveId, 
-                                       const void* instruction, WaveOperationSyncPoint& syncPoint);
+                                       const std::pair<const void*, uint32_t>& instructionKey, WaveOperationSyncPoint& syncPoint);
     void executeCollectiveBarrier(ThreadgroupContext& tgContext, uint32_t barrierId, const ThreadgroupBarrierState& barrier);
     void processBarriers(ThreadgroupContext& tgContext);
     ThreadId selectNextThread(const std::vector<ThreadId>& readyThreads, 

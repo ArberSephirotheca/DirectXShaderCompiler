@@ -790,10 +790,12 @@ Value WaveActiveOp::evaluate(LaneContext &lane, WaveContext &wave,
     throw std::runtime_error("Inactive lane executing wave operation");
   }
 
-  const void *instruction = static_cast<const void *>(this);
+  // Create block-scoped instruction identity using compound key
+  uint32_t currentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
+  std::pair<const void*, uint32_t> instructionKey = {static_cast<const void*>(this), currentBlockId};
 
   // Check if there's already a computed result for this lane
-  auto syncPointIt = wave.activeSyncPoints.find(instruction);
+  auto syncPointIt = wave.activeSyncPoints.find(instructionKey);
   if (syncPointIt != wave.activeSyncPoints.end()) {
     auto& syncPoint = syncPointIt->second;
     auto resultIt = syncPoint.pendingResults.find(lane.laneId);
@@ -811,12 +813,15 @@ Value WaveActiveOp::evaluate(LaneContext &lane, WaveContext &wave,
   }
 
   // No stored result - check if we can execute or need to wait
-  if (!tg.canExecuteWaveInstruction(wave.waveId, lane.laneId, instruction)) {
-    // Mark this lane as arrived at this specific instruction
-    tg.markLaneArrivedAtWaveInstruction(wave.waveId, lane.laneId, instruction, "WaveActiveOp");
+  if (!tg.canExecuteWaveInstruction(wave.waveId, lane.laneId, static_cast<const void*>(this))) {
+    // Mark this lane as arrived at this specific instruction  
+    tg.markLaneArrivedAtWaveInstruction(wave.waveId, lane.laneId, static_cast<const void*>(this), "WaveActiveOp");
+    
+    // Store the compound key in the sync point for proper tracking
+    auto& syncPoint = wave.activeSyncPoints[instructionKey];
+    syncPoint.instruction = static_cast<const void*>(this);  // Store original instruction pointer
 
     // Get current block and mark lane as waiting
-    uint32_t currentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
     tg.markLaneWaitingForWave(wave.waveId, lane.laneId, currentBlockId);
     
     // Throw a special exception to indicate we need to wait
@@ -1355,8 +1360,8 @@ void ReturnStmt::updateBlockResolutionStates(ThreadgroupContext &tg, WaveContext
           bool canProceed = true;
           auto waitingIt = wave.laneWaitingAtInstruction.find(laneId);
           if (waitingIt != wave.laneWaitingAtInstruction.end()) {
-            const void *instruction = waitingIt->second;
-            canProceed = tg.canExecuteWaveInstruction(waveId, laneId, instruction);
+            const auto& instructionKey = waitingIt->second;
+            canProceed = tg.canExecuteWaveInstruction(waveId, laneId, instructionKey.first);
           }
 
           if (canProceed) {
@@ -1372,10 +1377,10 @@ void ReturnStmt::updateWaveOperationStates(ThreadgroupContext &tg, WaveContext &
                                            LaneId returningLaneId) {
   // Remove lane from ALL wave operation sync points and update completion
   // states
-  std::vector<const void *>
+  std::vector<std::pair<const void*, uint32_t>>
       completedInstructions; // Track instructions that become complete
 
-  for (auto &[instruction, syncPoint] : wave.activeSyncPoints) {
+  for (auto &[instructionKey, syncPoint] : wave.activeSyncPoints) {
     bool wasExpected =
         syncPoint.expectedParticipants.count(returningLaneId) > 0;
 
@@ -1404,13 +1409,13 @@ void ReturnStmt::updateWaveOperationStates(ThreadgroupContext &tg, WaveContext &
 
     // If sync point just became complete, mark it for processing
     if (!wasComplete && syncPoint.isComplete) {
-      completedInstructions.push_back(instruction);
+      completedInstructions.push_back(instructionKey);
     }
   }
 
   // Wake up lanes waiting at newly completed sync points
-  for (const void *instruction : completedInstructions) {
-    auto &syncPoint = wave.activeSyncPoints[instruction];
+  for (const auto& instructionKey : completedInstructions) {
+    auto &syncPoint = wave.activeSyncPoints[instructionKey];
     for (LaneId waitingLaneId : syncPoint.arrivedParticipants) {
       if (waitingLaneId < wave.lanes.size() && wave.lanes[waitingLaneId] &&
           wave.lanes[waitingLaneId]->state == ThreadState::WaitingForWave) {
@@ -1774,17 +1779,17 @@ void MiniHLSLInterpreter::processWaveOperations(ThreadgroupContext &tgContext) {
     auto& wave = *tgContext.waves[waveId];
     
     // Check active sync points for this wave
-    std::vector<const void*> completedSyncPoints;
+    std::vector<std::pair<const void*, uint32_t>> completedSyncPoints;
     
     // Find sync points that are ready to execute
-    for (auto& [instruction, syncPoint] : wave.activeSyncPoints) {
+    for (auto& [instructionKey, syncPoint] : wave.activeSyncPoints) {
       // Check if this sync point is complete (all participants known and arrived)
       if (syncPoint.isComplete && syncPoint.pendingResults.empty()) {
         INTERPRETER_DEBUG_LOG("Executing collective wave operation for wave " << waveId 
-                             << " at instruction " << instruction << "\n");
+                             << " at instruction " << instructionKey.first << " block " << instructionKey.second << "\n");
         
         // Execute the wave operation collectively
-        executeCollectiveWaveOperation(tgContext, waveId, instruction, syncPoint);
+        executeCollectiveWaveOperation(tgContext, waveId, instructionKey, syncPoint);
         
         // Don't release yet - let lanes retrieve results first
       } else if (syncPoint.isComplete && !syncPoint.pendingResults.empty()) {
@@ -1802,19 +1807,19 @@ void MiniHLSLInterpreter::processWaveOperations(ThreadgroupContext &tgContext) {
         }
         
         // Mark for release after lanes retrieve results
-        completedSyncPoints.push_back(instruction);
+        completedSyncPoints.push_back(instructionKey);
       }
     }
     
     // Release completed sync points after lanes have retrieved their results
-    for (const void* instruction : completedSyncPoints) {
+    for (const auto& instructionKey : completedSyncPoints) {
       // Only release if all results have been consumed
-      auto& syncPoint = wave.activeSyncPoints[instruction];
+      auto& syncPoint = wave.activeSyncPoints[instructionKey];
       
       if (syncPoint.pendingResults.empty()) {
         INTERPRETER_DEBUG_LOG("All results consumed, releasing sync point for wave " << waveId 
-                             << " at instruction " << instruction << "\n");
-        tgContext.releaseWaveSyncPoint(waveId, instruction);
+                             << " at instruction " << instructionKey.first << " block " << instructionKey.second << "\n");
+        tgContext.releaseWaveSyncPoint(waveId, instructionKey);
       }
     }
   }
@@ -1822,10 +1827,10 @@ void MiniHLSLInterpreter::processWaveOperations(ThreadgroupContext &tgContext) {
 
 void MiniHLSLInterpreter::executeCollectiveWaveOperation(ThreadgroupContext &tgContext, 
                                                        WaveId waveId, 
-                                                       const void* instruction, 
+                                                       const std::pair<const void*, uint32_t>& instructionKey, 
                                                        WaveOperationSyncPoint &syncPoint) {
-  // Get the actual WaveActiveOp object from the instruction pointer
-  const WaveActiveOp* waveOp = static_cast<const WaveActiveOp*>(instruction);
+  // Get the actual WaveActiveOp object from the original instruction pointer stored in syncPoint
+  const WaveActiveOp* waveOp = static_cast<const WaveActiveOp*>(syncPoint.instruction);
   
   // Collect values from all participating lanes
   std::vector<Value> values;
@@ -3907,11 +3912,11 @@ bool ThreadgroupContext::canExecuteWaveInstruction(
   bool canExecuteInBlock =
       canExecuteInstructionInBlock(currentBlockId, instrIdentity);
 
-  // Also check the global sync point system for backward compatibility
-  // This allows gradual migration to the new system
+  // Check using compound key for the new system
+  std::pair<const void*, uint32_t> instructionKey = {instruction, currentBlockId};
   bool canExecuteGlobal =
-      areAllParticipantsKnownForWaveInstruction(waveId, instruction) &&
-      haveAllParticipantsArrivedAtWaveInstruction(waveId, instruction);
+      areAllParticipantsKnownForWaveInstruction(waveId, instructionKey) &&
+      haveAllParticipantsArrivedAtWaveInstruction(waveId, instructionKey);
 
   // Both approaches should agree for proper synchronization
   return canExecuteInBlock && canExecuteGlobal;
@@ -3938,11 +3943,14 @@ void ThreadgroupContext::markLaneArrivedAtWaveInstruction(
   // Create or update sync point for this instruction
   createOrUpdateWaveSyncPoint(instruction, waveId, laneId, instructionType);
 
-  auto &syncPoint = waves[waveId]->activeSyncPoints[instruction];
+  // Create compound key using existing currentBlockId
+  std::pair<const void*, uint32_t> instructionKey = {instruction, currentBlockId};
+  
+  auto &syncPoint = waves[waveId]->activeSyncPoints[instructionKey];
   syncPoint.arrivedParticipants.insert(laneId);
 
-  // Mark lane as waiting at this instruction
-  waves[waveId]->laneWaitingAtInstruction[laneId] = instruction;
+  // Mark lane as waiting at this instruction with compound key
+  waves[waveId]->laneWaitingAtInstruction[laneId] = instructionKey;
   waves[waveId]->lanes[laneId]->state = ThreadState::WaitingForWave;
 
   // Update completion status
@@ -3953,8 +3961,8 @@ void ThreadgroupContext::markLaneArrivedAtWaveInstruction(
 }
 
 bool ThreadgroupContext::areAllParticipantsKnownForWaveInstruction(
-    WaveId waveId, const void *instruction) const {
-  auto it = waves[waveId]->activeSyncPoints.find(instruction);
+    WaveId waveId, const std::pair<const void*, uint32_t>& instructionKey) const {
+  auto it = waves[waveId]->activeSyncPoints.find(instructionKey);
   if (it == waves[waveId]->activeSyncPoints.end()) {
     return false; // No sync point created yet
   }
@@ -3963,8 +3971,8 @@ bool ThreadgroupContext::areAllParticipantsKnownForWaveInstruction(
 }
 
 bool ThreadgroupContext::haveAllParticipantsArrivedAtWaveInstruction(
-    WaveId waveId, const void *instruction) const {
-  auto it = waves[waveId]->activeSyncPoints.find(instruction);
+    WaveId waveId, const std::pair<const void*, uint32_t>& instructionKey) const {
+  auto it = waves[waveId]->activeSyncPoints.find(instructionKey);
   if (it == waves[waveId]->activeSyncPoints.end()) {
     return false; // No sync point created yet
   }
@@ -3972,32 +3980,16 @@ bool ThreadgroupContext::haveAllParticipantsArrivedAtWaveInstruction(
   return it->second.allParticipantsArrived;
 }
 
-std::vector<LaneId> ThreadgroupContext::getWaveInstructionParticipants(
-    WaveId waveId, const void *instruction) const {
-  auto it = waves[waveId]->activeSyncPoints.find(instruction);
-  if (it == waves[waveId]->activeSyncPoints.end()) {
-    return {}; // No sync point
-  }
-
-  const auto &syncPoint = it->second;
-  std::vector<LaneId> participants;
-
-  // Return expected participants (from the execution block)
-  for (LaneId laneId : syncPoint.expectedParticipants) {
-    if (laneId < waves[waveId]->lanes.size() &&
-        waves[waveId]->lanes[laneId]->isActive &&
-        !waves[waveId]->lanes[laneId]->hasReturned) {
-      participants.push_back(laneId);
-    }
-  }
-
-  return participants;
-}
+// getWaveInstructionParticipants removed - functionality replaced by compound key system
 
 void ThreadgroupContext::createOrUpdateWaveSyncPoint(
     const void *instruction, WaveId waveId, LaneId laneId,
     const std::string &instructionType) {
-  auto it = waves[waveId]->activeSyncPoints.find(instruction);
+  // Create compound key with current block ID
+  uint32_t blockId = getCurrentBlock(waveId, laneId);
+  std::pair<const void*, uint32_t> instructionKey = {instruction, blockId};
+  
+  auto it = waves[waveId]->activeSyncPoints.find(instructionKey);
 
   if (it == waves[waveId]->activeSyncPoints.end()) {
     // Create new sync point
@@ -4005,8 +3997,7 @@ void ThreadgroupContext::createOrUpdateWaveSyncPoint(
     syncPoint.instruction = instruction;
     syncPoint.instructionType = instructionType;
 
-    // Determine which block this lane is in and get expected participants
-    uint32_t blockId = getCurrentBlock(waveId, laneId);
+    // Use blockId from compound key
     syncPoint.blockId = blockId;
 
     // Get expected participants from the block
@@ -4018,7 +4009,7 @@ void ThreadgroupContext::createOrUpdateWaveSyncPoint(
     // Check if all participants are known (no unknown lanes in block)
     syncPoint.allParticipantsKnown = areAllUnknownLanesResolved(blockId);
 
-    waves[waveId]->activeSyncPoints[instruction] = syncPoint;
+    waves[waveId]->activeSyncPoints[instructionKey] = syncPoint;
   } else {
     // Update existing sync point
     auto &syncPoint = it->second;
@@ -4036,8 +4027,8 @@ void ThreadgroupContext::createOrUpdateWaveSyncPoint(
 }
 
 void ThreadgroupContext::releaseWaveSyncPoint(WaveId waveId,
-                                              const void *instruction) {
-  auto it = waves[waveId]->activeSyncPoints.find(instruction);
+                                              const std::pair<const void*, uint32_t>& instructionKey) {
+  auto it = waves[waveId]->activeSyncPoints.find(instructionKey);
   if (it != waves[waveId]->activeSyncPoints.end()) {
     const auto &syncPoint = it->second;
 
@@ -4059,7 +4050,7 @@ void ThreadgroupContext::releaseWaveSyncPoint(WaveId waveId,
     waves[waveId]->activeSyncPoints.erase(it);
     INTERPRETER_DEBUG_LOG("  Sync point removed from active list\n");
   } else {
-    INTERPRETER_DEBUG_LOG("WARNING: Sync point not found for instruction " << instruction << "\n");
+    INTERPRETER_DEBUG_LOG("WARNING: Sync point not found for instruction " << instructionKey.first << " block " << instructionKey.second << "\n");
   }
 }
 
@@ -4592,8 +4583,8 @@ void ThreadgroupContext::printWaveState(WaveId waveId, bool verbose) const {
     // Active sync points
     if (!wave->activeSyncPoints.empty()) {
       INTERPRETER_DEBUG_LOG("  Active Sync Points (" << wave->activeSyncPoints.size() << "):\n");
-      for (const auto& [instruction, syncPoint] : wave->activeSyncPoints) {
-        INTERPRETER_DEBUG_LOG("    Instruction " << instruction << " (" << syncPoint.instructionType << "):\n");
+      for (const auto& [instructionKey, syncPoint] : wave->activeSyncPoints) {
+        INTERPRETER_DEBUG_LOG("    Instruction " << instructionKey.first << " block " << instructionKey.second << " (" << syncPoint.instructionType << "):\n");
         INTERPRETER_DEBUG_LOG("      Expected: " << syncPoint.expectedParticipants.size() << " lanes\n");
         INTERPRETER_DEBUG_LOG("      Arrived: " << syncPoint.arrivedParticipants.size() << " lanes\n");
         INTERPRETER_DEBUG_LOG("      Complete: " << (syncPoint.isComplete ? "Yes" : "No") << "\n");
