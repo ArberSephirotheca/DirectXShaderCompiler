@@ -11,7 +11,7 @@ void main(uint3 id : SV_DispatchThreadID) {
         if (laneId == i || laneId == 1) {
             continue;
         }
-        result += 1;
+        result += WaveActiveSum(1);
     }
     
     // Expected per-lane results:
