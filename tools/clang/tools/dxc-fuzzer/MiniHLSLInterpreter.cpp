@@ -1101,8 +1101,7 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
   auto& execState = lane.executionStack.back();
   bool hasElse = !elseBlock_.empty();
   uint32_t parentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
-  uint32_t thenBlockId = 0, elseBlockId = 0, mergeBlockId = 0;
-  bool setupComplete = false;
+  bool setupComplete = (thenBlockId != 0 || elseBlockId != 0 || mergeBlockId != 0);
 
   try {
     while (lane.isActive) {

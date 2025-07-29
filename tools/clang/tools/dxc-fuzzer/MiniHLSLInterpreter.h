@@ -923,6 +923,12 @@ class IfStmt : public Statement {
     std::unique_ptr<Expression> condition_;
     std::vector<std::unique_ptr<Statement>> thenBlock_;
     std::vector<std::unique_ptr<Statement>> elseBlock_;
+    
+    // Block IDs for control flow - preserved across wave operation resumptions
+    mutable uint32_t thenBlockId = 0;
+    mutable uint32_t elseBlockId = 0; 
+    mutable uint32_t mergeBlockId = 0;
+    
 public:
     IfStmt(std::unique_ptr<Expression> cond, 
            std::vector<std::unique_ptr<Statement>> thenBlock,
