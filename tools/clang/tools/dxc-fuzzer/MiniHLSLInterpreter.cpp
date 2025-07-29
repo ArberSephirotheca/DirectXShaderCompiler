@@ -1110,19 +1110,27 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
   if (!lane.isActive)
     return;
 
-  // Check if we're resuming from a previous execution
-  bool isResuming = !lane.executionStack.empty() && 
-                    lane.executionStack.back().statement == static_cast<const void*>(this);
+  // Find our entry in the execution stack (if any)
+  int ourStackIndex = -1;
+  for (int i = 0; i < lane.executionStack.size(); i++) {
+    if (lane.executionStack[i].statement == static_cast<const void*>(this)) {
+      ourStackIndex = i;
+      break;
+    }
+  }
+  
+  bool isResuming = (ourStackIndex >= 0);
 
   if (!isResuming) {
     // Starting fresh - push initial state for condition evaluation
     lane.executionStack.emplace_back(static_cast<const void*>(this), 
                                      LaneContext::ControlFlowPhase::EvaluatingCondition);
+    ourStackIndex = lane.executionStack.size() - 1;
     std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " starting fresh execution (pushed to stack depth=" 
               << lane.executionStack.size() << ", this=" << this << ")" << std::endl;
   } else {
-    std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " resuming execution (current stack depth=" 
-              << lane.executionStack.size() << ", this=" << this << ")" << std::endl;
+    std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " resuming execution (found at stack index=" 
+              << ourStackIndex << ", current stack depth=" << lane.executionStack.size() << ", this=" << this << ")" << std::endl;
   }
 
   // Don't hold reference to vector element - it can be invalidated during nested execution
@@ -1132,22 +1140,24 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
 
   try {
     while (lane.isActive) {
-      std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " in phase " << LaneContext::getPhaseString(lane.executionStack.back().phase) 
-                << " (stack depth=" << lane.executionStack.size() << ", this=" << this << ")" << std::endl;
-      switch (lane.executionStack.back().phase) {
+      // Use our entry, not back()
+      auto& ourEntry = lane.executionStack[ourStackIndex];
+      std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " in phase " << LaneContext::getPhaseString(ourEntry.phase) 
+                << " (stack depth=" << lane.executionStack.size() << ", our index=" << ourStackIndex << ", this=" << this << ")" << std::endl;
+      switch (ourEntry.phase) {
       
         case LaneContext::ControlFlowPhase::EvaluatingCondition: {
           std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " evaluating condition" << std::endl;
           
           // Only evaluate condition if not already evaluated (avoid re-evaluation on resume)
-          if (!lane.executionStack.back().conditionEvaluated) {
+          if (!ourEntry.conditionEvaluated) {
             std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " evaluating condition for first time" << std::endl;
             // Evaluate condition (can throw WaveOperationWaitException)
-            lane.executionStack.back().conditionResult = condition_->evaluate(lane, wave, tg).asBool();
-            lane.executionStack.back().conditionEvaluated = true;
-            std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " condition result=" << lane.executionStack.back().conditionResult << std::endl;
+            ourEntry.conditionResult = condition_->evaluate(lane, wave, tg).asBool();
+            ourEntry.conditionEvaluated = true;
+            std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " condition result=" << ourEntry.conditionResult << std::endl;
           } else {
-            std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " using cached condition result=" << lane.executionStack.back().conditionResult << std::endl;
+            std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " using cached condition result=" << ourEntry.conditionResult << std::endl;
           }
           
           // Condition evaluated successfully - set up blocks
@@ -1164,7 +1174,7 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
           setupComplete = true;
 
           // Update blocks based on condition result
-          if (lane.executionStack.back().conditionResult) {
+          if (ourEntry.conditionResult) {
             tg.moveThreadFromUnknownToParticipating(thenBlockId, wave.waveId, lane.laneId);
             if (hasElse) {
               tg.removeThreadFromUnknown(elseBlockId, wave.waveId, lane.laneId);
@@ -1172,40 +1182,40 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
             }
             // Don't remove from merge block yet - lane will reconverge there later
             
-            lane.executionStack.back().phase = LaneContext::ControlFlowPhase::ExecutingThenBlock;
-            lane.executionStack.back().inThenBranch = true;
-            lane.executionStack.back().blockId = thenBlockId;
+            ourEntry.phase = LaneContext::ControlFlowPhase::ExecutingThenBlock;
+            ourEntry.inThenBranch = true;
+            ourEntry.blockId = thenBlockId;
           } else if (hasElse) {
             tg.moveThreadFromUnknownToParticipating(elseBlockId, wave.waveId, lane.laneId);
             tg.removeThreadFromUnknown(thenBlockId, wave.waveId, lane.laneId);
             tg.removeThreadFromNestedBlocks(thenBlockId, wave.waveId, lane.laneId);
             // Don't remove from merge block yet - lane will reconverge there later
             
-            lane.executionStack.back().phase = LaneContext::ControlFlowPhase::ExecutingElseBlock;
-            lane.executionStack.back().inThenBranch = false;
-            lane.executionStack.back().blockId = elseBlockId;
+            ourEntry.phase = LaneContext::ControlFlowPhase::ExecutingElseBlock;
+            ourEntry.inThenBranch = false;
+            ourEntry.blockId = elseBlockId;
           } else {
             // No else block
             tg.removeThreadFromUnknown(thenBlockId, wave.waveId, lane.laneId);
             tg.removeThreadFromNestedBlocks(thenBlockId, wave.waveId, lane.laneId);
             tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId, lane.laneId);
             
-            lane.executionStack.back().phase = LaneContext::ControlFlowPhase::Reconverging;
+            ourEntry.phase = LaneContext::ControlFlowPhase::Reconverging;
           }
           
-          lane.executionStack.back().statementIndex = 0;
-          std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " condition=" << lane.executionStack.back().conditionResult 
-                    << ", moving to phase=" << LaneContext::getPhaseString(lane.executionStack.back().phase) << std::endl;
+          ourEntry.statementIndex = 0;
+          std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " condition=" << ourEntry.conditionResult 
+                    << ", moving to phase=" << LaneContext::getPhaseString(ourEntry.phase) << std::endl;
           break;
         }
 
         case LaneContext::ControlFlowPhase::ExecutingThenBlock: {
           std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " executing then block from statement " 
-                    << lane.executionStack.back().statementIndex << std::endl;
+                    << ourEntry.statementIndex << std::endl;
           
           // Execute statements in then block from saved position
-          for (size_t i = lane.executionStack.back().statementIndex; i < thenBlock_.size(); i++) {
-            lane.executionStack.back().statementIndex = i;
+          for (size_t i = ourEntry.statementIndex; i < thenBlock_.size(); i++) {
+            ourEntry.statementIndex = i;
             thenBlock_[i]->execute(lane, wave, tg);
             
             if (lane.hasReturned) {
@@ -1216,22 +1226,22 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
               return;
             }
             
-            lane.executionStack.back().statementIndex = i + 1;
+            ourEntry.statementIndex = i + 1;
           }
           
           // Completed then block
-          lane.executionStack.back().phase = LaneContext::ControlFlowPhase::Reconverging;
+          ourEntry.phase = LaneContext::ControlFlowPhase::Reconverging;
           std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " completed then block, moving to reconvergence" << std::endl;
           break;
         }
 
         case LaneContext::ControlFlowPhase::ExecutingElseBlock: {
           std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " executing else block from statement " 
-                    << lane.executionStack.back().statementIndex << std::endl;
+                    << ourEntry.statementIndex << std::endl;
           
           // Execute statements in else block from saved position
-          for (size_t i = lane.executionStack.back().statementIndex; i < elseBlock_.size(); i++) {
-            lane.executionStack.back().statementIndex = i;
+          for (size_t i = ourEntry.statementIndex; i < elseBlock_.size(); i++) {
+            ourEntry.statementIndex = i;
             elseBlock_[i]->execute(lane, wave, tg);
             
             if (lane.hasReturned) {
@@ -1242,11 +1252,11 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
               return;
             }
             
-            lane.executionStack.back().statementIndex = i + 1;
+            ourEntry.statementIndex = i + 1;
           }
           
           // Completed else block
-          lane.executionStack.back().phase = LaneContext::ControlFlowPhase::Reconverging;
+          ourEntry.phase = LaneContext::ControlFlowPhase::Reconverging;
           std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " completed else block, moving to reconvergence" << std::endl;
           break;
         }
@@ -1291,8 +1301,9 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
 
   } catch (const WaveOperationWaitException&) {
     // Wave operation is waiting - execution state is already saved
+    // Note: ourEntry might be out of scope here, so we need to access via ourStackIndex
     std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " waiting for wave operation in phase " 
-              << (int)lane.executionStack.back().phase << " at statement " << lane.executionStack.back().statementIndex << std::endl;
+              << (int)lane.executionStack[ourStackIndex].phase << " at statement " << lane.executionStack[ourStackIndex].statementIndex << std::endl;
     throw; // Re-throw to pause parent control flow statements
   } catch (const ControlFlowException &e) {
     // Propagate break/continue to enclosing loop
@@ -4665,10 +4676,31 @@ void ThreadgroupContext::removeThreadFromUnknown(uint32_t blockId,
   // Remove lane from unknown (it chose a different path)
   std::cout << "DEBUG: removeThreadFromUnknown - removing lane " << laneId 
             << " from block " << blockId << std::endl;
+  
+  // Show unknown lanes before removal
+  auto unknownBefore = block.getUnknownLanesForWave(waveId);
+  std::cout << "DEBUG: Block " << blockId << " unknown lanes before removal: {";
+  for (auto it = unknownBefore.begin(); it != unknownBefore.end(); ++it) {
+    if (it != unknownBefore.begin()) std::cout << " ";
+    std::cout << *it;
+  }
+  std::cout << "}" << std::endl;
+  
   block.removeUnknownLane(waveId, laneId);
+  
+  // Show unknown lanes after removal
+  auto unknownAfter = block.getUnknownLanesForWave(waveId);
+  std::cout << "DEBUG: Block " << blockId << " unknown lanes after removal: {";
+  for (auto it = unknownAfter.begin(); it != unknownAfter.end(); ++it) {
+    if (it != unknownAfter.begin()) std::cout << " ";
+    std::cout << *it;
+  }
+  std::cout << "}" << std::endl;
 
   // Update resolution status
-  block.setWaveAllUnknownResolved(waveId, block.areAllUnknownLanesResolvedForWave(waveId));
+  bool allResolved = block.areAllUnknownLanesResolvedForWave(waveId);
+  std::cout << "DEBUG: Block " << blockId << " areAllUnknownLanesResolvedForWave(" << waveId << ") = " << allResolved << std::endl;
+  block.setWaveAllUnknownResolved(waveId, allResolved);
   
   // CRITICAL: Check if removing this unknown lane allows any waiting wave operations to proceed
   // This handles the case where lanes 0,1 are waiting in block 2 for a wave op,
@@ -4732,7 +4764,45 @@ void ThreadgroupContext::removeThreadFromAllSets(uint32_t blockId, WaveId waveId
     blockIt->second.removeUnknownLane(waveId, laneId);
     
     // Update unknown resolution status after removing unknown lane
-    blockIt->second.setWaveAllUnknownResolved(waveId, blockIt->second.areAllUnknownLanesResolvedForWave(waveId));
+    bool allResolved = blockIt->second.areAllUnknownLanesResolvedForWave(waveId);
+    blockIt->second.setWaveAllUnknownResolved(waveId, allResolved);
+    
+    // CRITICAL: Add the same wakeup logic as removeThreadFromUnknown
+    // Check if removing this unknown lane allows any waiting wave operations to proceed
+    if (allResolved) {
+      std::cout << "DEBUG: removeThreadFromAllSets - Block " << blockId << " now has all unknowns resolved for wave " << waveId 
+                << " - checking for ready wave operations" << std::endl;
+      
+      // Check all waiting lanes in this block to see if their wave operations can now proceed
+      auto waitingLanes = blockIt->second.getWaitingLanesForWave(waveId);
+      for (LaneId waitingLaneId : waitingLanes) {
+        // Check if this lane is waiting for a wave operation in this block
+        if (waves[waveId]->laneWaitingAtInstruction.count(waitingLaneId)) {
+          auto& instructionKey = waves[waveId]->laneWaitingAtInstruction[waitingLaneId];
+          // Only process if the instruction is in this block
+          if (instructionKey.second == blockId) {
+            std::cout << "DEBUG: removeThreadFromAllSets - Checking if waiting lane " << waitingLaneId 
+                      << " can now execute wave operation in block " << blockId << std::endl;
+            
+            // Update the sync point to reflect that all participants are now known
+            auto syncIt = waves[waveId]->activeSyncPoints.find(instructionKey);
+            if (syncIt != waves[waveId]->activeSyncPoints.end()) {
+              syncIt->second.allParticipantsKnown = true;
+              std::cout << "DEBUG: removeThreadFromAllSets - Updated sync point allParticipantsKnown=true for instruction " 
+                        << instructionKey.first << " in block " << blockId << std::endl;
+            }
+            
+            // Check if the wave operation can now proceed
+            if (canExecuteWaveInstruction(waveId, waitingLaneId, instructionKey.first)) {
+              std::cout << "DEBUG: removeThreadFromAllSets - Waking up lane " << waitingLaneId 
+                        << " in block " << blockId << " - wave operation can now proceed" << std::endl;
+              waves[waveId]->lanes[waitingLaneId]->state = ThreadState::Ready;
+              waves[waveId]->lanes[waitingLaneId]->isResumingFromWaveOp = true;
+            }
+          }
+        }
+      }
+    }
     
     auto partLanesAfter = blockIt->second.getParticipatingLanes();
     size_t laneCountAfter = partLanesAfter.count(waveId) ? partLanesAfter.at(waveId).size() : 0;
