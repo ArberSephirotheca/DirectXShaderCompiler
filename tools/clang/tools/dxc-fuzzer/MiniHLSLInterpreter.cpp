@@ -831,6 +831,40 @@ Value WaveActiveOp::evaluate(LaneContext &lane, WaveContext &wave,
     std::cout << "DEBUG: WAVE_OP: Lane " << lane.laneId << " cannot execute, starting to wait in block " 
               << currentBlockId << std::endl;
     
+    // CRITICAL: Force refresh of block resolution status after marking lane as waiting
+    // This is essential because the block needs to know all participants are now resolved
+    auto blockIt = tg.executionBlocks.find(currentBlockId);
+    if (blockIt != tg.executionBlocks.end()) {
+      blockIt->second.setWaveAllUnknownResolved(wave.waveId, 
+        blockIt->second.areAllUnknownLanesResolvedForWave(wave.waveId));
+      std::cout << "DEBUG: WAVE_OP: Refreshed block " << currentBlockId << " resolution status" << std::endl;
+    }
+    
+    // CRITICAL: 3-step logic for wave operation re-evaluation
+    // Step 1: Check if this newly waiting lane completes the participant set
+    // Step 2: Re-evaluate if wave operations can now execute with all participants waiting  
+    // Step 3: If ready, mark sync point as complete so main loop will execute and wake lanes
+    
+    if (tg.canExecuteWaveInstruction(wave.waveId, lane.laneId, static_cast<const void*>(this))) {
+      std::cout << "DEBUG: WAVE_OP: After lane " << lane.laneId << " started waiting, wave operation can now execute!" << std::endl;
+      
+      // Update the sync point to mark it as ready for execution
+      syncPoint.allParticipantsArrived = (syncPoint.arrivedParticipants == syncPoint.expectedParticipants);
+      
+      // Re-check if all participants are known by checking block state
+      auto blockIt = tg.executionBlocks.find(currentBlockId);
+      if (blockIt != tg.executionBlocks.end()) {
+        syncPoint.allParticipantsKnown = blockIt->second.isWaveAllUnknownResolved(wave.waveId);
+      }
+      
+      // Mark as complete if both conditions are met
+      syncPoint.isComplete = syncPoint.allParticipantsKnown && syncPoint.allParticipantsArrived;
+      
+      std::cout << "DEBUG: WAVE_OP: Updated sync point - allParticipantsKnown=" << syncPoint.allParticipantsKnown 
+                << ", allParticipantsArrived=" << syncPoint.allParticipantsArrived 
+                << ", isComplete=" << syncPoint.isComplete << std::endl;
+    }
+    
     // Throw a special exception to indicate we need to wait
     throw WaveOperationWaitException();
   }
@@ -4458,10 +4492,54 @@ void ThreadgroupContext::removeThreadFromUnknown(uint32_t blockId,
 
   // Update resolution status
   block.setWaveAllUnknownResolved(waveId, block.areAllUnknownLanesResolvedForWave(waveId));
+  
+  // CRITICAL: Check if removing this unknown lane allows any waiting wave operations to proceed
+  // This handles the case where lanes 0,1 are waiting in block 2 for a wave op,
+  // and lanes 2,3 choosing the else branch resolves all unknowns
+  if (block.areAllUnknownLanesResolvedForWave(waveId)) {
+    std::cout << "DEBUG: Block " << blockId << " now has all unknowns resolved for wave " << waveId 
+              << " - checking for ready wave operations" << std::endl;
+    
+    // Check all waiting lanes in this block to see if their wave operations can now proceed
+    auto waitingLanes = block.getWaitingLanesForWave(waveId);
+    for (LaneId waitingLaneId : waitingLanes) {
+      // Check if this lane is waiting for a wave operation in this block
+      if (waves[waveId]->laneWaitingAtInstruction.count(waitingLaneId)) {
+        auto& instructionKey = waves[waveId]->laneWaitingAtInstruction[waitingLaneId];
+        // Only process if the instruction is in this block
+        if (instructionKey.second == blockId) {
+          std::cout << "DEBUG: Checking if waiting lane " << waitingLaneId 
+                    << " can now execute wave operation in block " << blockId << std::endl;
+          
+          // Re-evaluate the sync point for this instruction
+          auto& syncPoint = waves[waveId]->activeSyncPoints[instructionKey];
+          syncPoint.allParticipantsKnown = true;  // All unknowns are now resolved
+          syncPoint.allParticipantsArrived = (syncPoint.arrivedParticipants == syncPoint.expectedParticipants);
+          
+          if (syncPoint.allParticipantsArrived) {
+            syncPoint.isComplete = true;
+            std::cout << "DEBUG: Wave operation in block " << blockId 
+                      << " is now ready to execute - all participants known and arrived!" << std::endl;
+          }
+        }
+      }
+    }
+  }
 }
 
 // Helper method to completely remove a lane from all sets of a specific block
 void ThreadgroupContext::removeThreadFromAllSets(uint32_t blockId, WaveId waveId, LaneId laneId) {
+  // CRITICAL: Don't remove lanes that are waiting for wave operations
+  // They need to stay in their blocks until the wave operation completes
+  if (waveId < waves.size() && laneId < waves[waveId]->lanes.size()) {
+    auto state = waves[waveId]->lanes[laneId]->state;
+    if (state == ThreadState::WaitingForWave || state == ThreadState::WaitingAtBarrier) {
+      std::cout << "DEBUG: removeThreadFromAllSets - NOT removing waiting lane " << laneId 
+                << " (state=" << (int)state << ") from block " << blockId << std::endl;
+      return;
+    }
+  }
+  
   auto blockIt = executionBlocks.find(blockId);
   if (blockIt != executionBlocks.end()) {
     std::cout << "DEBUG: removeThreadFromAllSets - removing lane " << laneId 
