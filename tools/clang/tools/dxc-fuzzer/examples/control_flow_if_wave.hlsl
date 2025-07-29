@@ -8,7 +8,11 @@ void main(uint3 id : SV_DispatchThreadID) {
     
     // Deterministic branching - all lanes take predictable paths
     if (laneId < 2) {
-        result += WaveActiveSum(5);
+        if (laneId == 0){
+            result += WaveActiveSum(5);
+        } else {
+            result += WaveActiveSum(1);
+        }
     } else {
         result = 2;  // Second half of wave
     }

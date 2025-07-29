@@ -823,7 +823,20 @@ Value WaveActiveOp::evaluate(LaneContext &lane, WaveContext &wave,
     }
     
     // No stored result found - clear flag and continue with normal execution
-    std::cout << "DEBUG: WAVE_OP: Lane " << lane.laneId << " no stored result found, continuing with normal execution" << std::endl;
+    std::cout << "DEBUG: WAVE_OP: Lane " << lane.laneId << " no stored result found for key (" << instructionKey.first << "," << instructionKey.second << "), continuing with normal execution" << std::endl;
+    
+    // Debug: show what results are actually available
+    auto debugSyncPointIt = wave.activeSyncPoints.find(instructionKey);
+    if (debugSyncPointIt != wave.activeSyncPoints.end()) {
+      std::cout << "DEBUG: WAVE_OP: Available results for lanes: ";
+      for (const auto& [availableLaneId, value] : debugSyncPointIt->second.pendingResults) {
+        std::cout << availableLaneId << " ";
+      }
+      std::cout << std::endl;
+    } else {
+      std::cout << "DEBUG: WAVE_OP: No sync point found for this instruction key" << std::endl;
+    }
+    
     const_cast<LaneContext&>(lane).isResumingFromWaveOp = false;
   }
 
@@ -848,7 +861,9 @@ Value WaveActiveOp::evaluate(LaneContext &lane, WaveContext &wave,
       // Mark this lane as arrived at this specific instruction  
     tg.markLaneArrivedAtWaveInstruction(wave.waveId, lane.laneId, static_cast<const void*>(this), "WaveActiveOp");
   // No stored result - check if we can execute or need to wait
-  if (!tg.canExecuteWaveInstruction(wave.waveId, lane.laneId, static_cast<const void*>(this))) {
+  // In collective execution model, all lanes should wait for processWaveOperations to handle collective execution
+  // Only skip waiting if we're resuming from a previous wave operation
+  if (!lane.isResumingFromWaveOp) {
     
     // Store the compound key in the sync point for proper tracking
     auto& syncPoint = wave.activeSyncPoints[instructionKey];
@@ -899,6 +914,14 @@ Value WaveActiveOp::evaluate(LaneContext &lane, WaveContext &wave,
   }
 
   // This shouldn't happen in the new collective model, but keep as fallback
+  std::cout << "DEBUG: WAVE_OP: Lane " << lane.laneId << " hit fallback path for instruction " 
+            << instructionKey.first << " block " << instructionKey.second << std::endl;
+  std::cout << "DEBUG: WAVE_OP: Lane state - isResumingFromWaveOp=" << lane.isResumingFromWaveOp << std::endl;
+  std::cout << "DEBUG: WAVE_OP: Available sync points: " << wave.activeSyncPoints.size() << std::endl;
+  for (const auto& [key, syncPoint] : wave.activeSyncPoints) {
+    std::cout << "DEBUG: WAVE_OP: Sync point (" << key.first << "," << key.second << ") has " 
+              << syncPoint.pendingResults.size() << " pending results" << std::endl;
+  }
   throw std::runtime_error("Wave operation fallback path - should not reach here");
 }
 
@@ -1133,7 +1156,7 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
               tg.removeThreadFromUnknown(elseBlockId, wave.waveId, lane.laneId);
               tg.removeThreadFromNestedBlocks(elseBlockId, wave.waveId, lane.laneId);
             }
-            tg.removeThreadFromUnknown(mergeBlockId, wave.waveId, lane.laneId);
+            // Don't remove from merge block yet - lane will reconverge there later
             
             execState.phase = LaneContext::ControlFlowPhase::ExecutingThenBlock;
             execState.inThenBranch = true;
@@ -1142,7 +1165,7 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
             tg.moveThreadFromUnknownToParticipating(elseBlockId, wave.waveId, lane.laneId);
             tg.removeThreadFromUnknown(thenBlockId, wave.waveId, lane.laneId);
             tg.removeThreadFromNestedBlocks(thenBlockId, wave.waveId, lane.laneId);
-            tg.removeThreadFromUnknown(mergeBlockId, wave.waveId, lane.laneId);
+            // Don't remove from merge block yet - lane will reconverge there later
             
             execState.phase = LaneContext::ControlFlowPhase::ExecutingElseBlock;
             execState.inThenBranch = false;
@@ -1989,8 +2012,27 @@ void MiniHLSLInterpreter::processWaveOperations(ThreadgroupContext &tgContext) {
     
     // Find sync points that are ready to execute
     for (auto& [instructionKey, syncPoint] : wave.activeSyncPoints) {
-      // Check if this sync point is complete (all participants known and arrived)
+      // Before checking if complete, update participants to include all current lanes in the block
       if (syncPoint.isComplete && syncPoint.pendingResults.empty()) {
+        // Update arrivedParticipants to include all lanes currently in this block
+        uint32_t blockId = instructionKey.second;
+        auto blockIt = tgContext.executionBlocks.find(blockId);
+        if (blockIt != tgContext.executionBlocks.end()) {
+          const auto& blockLanes = blockIt->second.getParticipatingLanes();
+          auto waveIt = blockLanes.find(waveId);
+          if (waveIt != blockLanes.end()) {
+            // Update participants to include all current lanes in block
+            for (LaneId laneId : waveIt->second) {
+              syncPoint.arrivedParticipants.insert(laneId);
+              syncPoint.expectedParticipants.insert(laneId);
+            }
+            std::cout << "DEBUG: WAVE_OP: Updated participants before execution to include all current block lanes: ";
+            for (LaneId laneId : syncPoint.arrivedParticipants) {
+              std::cout << laneId << " ";
+            }
+            std::cout << std::endl;
+          }
+        }
         INTERPRETER_DEBUG_LOG("Executing collective wave operation for wave " << waveId 
                              << " at instruction " << instructionKey.first << " block " << instructionKey.second << "\n");
         
@@ -2055,9 +2097,12 @@ void MiniHLSLInterpreter::executeCollectiveWaveOperation(ThreadgroupContext &tgC
   Value result = waveOp->computeWaveOperation(values);
   
   // Store the result for all participating lanes
+  std::cout << "DEBUG: WAVE_OP: Storing collective result for lanes: ";
   for (LaneId laneId : syncPoint.arrivedParticipants) {
+    std::cout << laneId << " ";
     syncPoint.pendingResults[laneId] = result;
   }
+  std::cout << std::endl;
   
   INTERPRETER_DEBUG_LOG("Collective wave operation result: " << result.toString() << "\n");
 }
