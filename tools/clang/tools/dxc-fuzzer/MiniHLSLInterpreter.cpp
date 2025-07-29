@@ -1214,13 +1214,8 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
         case LaneContext::ControlFlowPhase::Reconverging: {
           std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " performing reconvergence" << std::endl;
           
-          // Get merge block ID (need to recreate blocks to get IDs if resuming)
-          if (!setupComplete) {
-            std::vector<MergeStackEntry> currentMergeStack = tg.getCurrentMergeStack(wave.waveId, lane.laneId);
-            auto blockIds = tg.createIfBlocks(static_cast<const void *>(this), parentBlockId,
-                                             currentMergeStack, hasElse, lane.executionPath);
-            mergeBlockId = std::get<2>(blockIds);
-          }
+          // Use stored merge block ID - don't recreate blocks during reconvergence
+          // mergeBlockId should already be set from initial setup
           
           // Clean up execution state
           lane.executionStack.pop_back();
