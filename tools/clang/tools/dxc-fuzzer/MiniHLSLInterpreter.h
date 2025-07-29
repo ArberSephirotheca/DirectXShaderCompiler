@@ -146,6 +146,24 @@ struct LaneContext {
         ExecutingDefault
     };
     
+    // Helper function to convert ControlFlowPhase to string for debugging
+    static const char* getPhaseString(ControlFlowPhase phase) {
+        switch (phase) {
+            case ControlFlowPhase::EvaluatingCondition: return "EvaluatingCondition";
+            case ControlFlowPhase::Reconverging: return "Reconverging";
+            case ControlFlowPhase::ExecutingThenBlock: return "ExecutingThenBlock";
+            case ControlFlowPhase::ExecutingElseBlock: return "ExecutingElseBlock";
+            case ControlFlowPhase::EvaluatingInit: return "EvaluatingInit";
+            case ControlFlowPhase::ExecutingBody: return "ExecutingBody";
+            case ControlFlowPhase::EvaluatingIncrement: return "EvaluatingIncrement";
+            case ControlFlowPhase::ExecutingWhileBody: return "ExecutingWhileBody";
+            case ControlFlowPhase::EvaluatingSwitch: return "EvaluatingSwitch";
+            case ControlFlowPhase::ExecutingCase: return "ExecutingCase";
+            case ControlFlowPhase::ExecutingDefault: return "ExecutingDefault";
+            default: return "Unknown";
+        }
+    }
+    
     struct BlockExecutionState {
         const void* statement;           // Which control flow statement
         ControlFlowPhase phase;          // Current execution phase
@@ -153,6 +171,7 @@ struct LaneContext {
         
         // Saved evaluation results to avoid re-evaluation
         bool conditionResult = false;    // For if/while conditions
+        bool conditionEvaluated = false; // Whether condition has been evaluated
         Value initValue;                 // For loop init
         Value incrementValue;            // For loop increment
         
