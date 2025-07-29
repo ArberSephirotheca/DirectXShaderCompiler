@@ -1540,6 +1540,11 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
       std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " breaking from loop" << std::endl;
       lane.executionStack.pop_back();
       tg.popMergePoint(wave.waveId, lane.laneId);
+      
+      // Clean up - remove from blocks this lane will never reach
+      tg.removeThreadFromAllSets(headerBlockId, wave.waveId, lane.laneId);
+      tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId);
+      
       tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
       tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId, lane.laneId);
       return;
@@ -3603,6 +3608,11 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
       std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " breaking from while loop" << std::endl;
       lane.executionStack.pop_back();
       tg.popMergePoint(wave.waveId, lane.laneId);
+      
+      // Clean up - remove from blocks this lane will never reach
+      tg.removeThreadFromAllSets(headerBlockId, wave.waveId, lane.laneId);
+      tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId);
+      
       tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
       tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId, lane.laneId);
       return;
@@ -3774,6 +3784,11 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
       std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId << " breaking from do-while loop" << std::endl;
       lane.executionStack.pop_back();
       tg.popMergePoint(wave.waveId, lane.laneId);
+      
+      // Clean up - remove from blocks this lane will never reach
+      tg.removeThreadFromAllSets(headerBlockId, wave.waveId, lane.laneId);
+      tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId);
+      
       tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
       tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId, lane.laneId);
       return;
