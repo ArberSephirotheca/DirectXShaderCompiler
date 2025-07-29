@@ -122,9 +122,56 @@ struct LaneContext {
     // Execution path tracking for block deduplication
     std::vector<const void*> executionPath;
     
+    // Control flow resumption state for wave operations
+    enum class ControlFlowPhase {
+        // Common phases
+        EvaluatingCondition,
+        Reconverging,
+        
+        // If statement phases
+        ExecutingThenBlock,
+        ExecutingElseBlock,
+        
+        // For loop phases
+        EvaluatingInit,
+        ExecutingBody,
+        EvaluatingIncrement,
+        
+        // While loop phases
+        ExecutingWhileBody,
+        
+        // Switch statement phases
+        EvaluatingSwitch,
+        ExecutingCase,
+        ExecutingDefault
+    };
+    
+    struct BlockExecutionState {
+        const void* statement;           // Which control flow statement
+        ControlFlowPhase phase;          // Current execution phase
+        size_t statementIndex;           // Statement within current block
+        
+        // Saved evaluation results to avoid re-evaluation
+        bool conditionResult = false;    // For if/while conditions
+        Value initValue;                 // For loop init
+        Value incrementValue;            // For loop increment
+        
+        // Block and branch tracking
+        uint32_t blockId = 0;            // Current execution block
+        bool inThenBranch = false;       // For if statements
+        size_t loopIteration = 0;        // For loop tracking
+        Value switchValue;               // For switch statements
+        size_t caseIndex = 0;            // Which case we're executing
+        
+        BlockExecutionState(const void* stmt, ControlFlowPhase ph, size_t idx = 0, uint32_t blkId = 0)
+            : statement(stmt), phase(ph), statementIndex(idx), blockId(blkId) {}
+    };
+    std::vector<BlockExecutionState> executionStack;  // Stack for nested control flow
+    
     // Wave operation synchronization
     uint32_t waveOpId = 0;        // Current wave operation ID
     bool waveOpComplete = false;   // Whether current wave op is done
+    bool isResumingFromWaveOp = false;  // Lane should check for stored wave results first
     
     // Barrier synchronization
     uint32_t waitingBarrierId = 0; // Which barrier this thread is waiting for
