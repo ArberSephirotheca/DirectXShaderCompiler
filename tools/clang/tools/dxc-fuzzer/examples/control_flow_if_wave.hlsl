@@ -8,13 +8,17 @@ void main(uint3 id : SV_DispatchThreadID) {
     
     // Deterministic branching - all lanes take predictable paths
     if (laneId < 2) {
+        // result += WaveActiveSum(2);
         if (laneId == 0){
+            return;
             result += WaveActiveSum(5);
         } else {
             result += WaveActiveSum(1);
+            result += WaveActiveSum(2);
         }
+        result += WaveActiveSum(2);
     } else {
-        result = 2;  // Second half of wave
+        result += WaveActiveSum(2);  // Second half of wave
     }
     
     // Wave sum should be: (16 * 1) + (16 * 2) = 48

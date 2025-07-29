@@ -1112,7 +1112,7 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
 
   // Find our entry in the execution stack (if any)
   int ourStackIndex = -1;
-  for (int i = 0; i < lane.executionStack.size(); i++) {
+  for (size_t i = 0; i < lane.executionStack.size(); i++) {
     if (lane.executionStack[i].statement == static_cast<const void*>(this)) {
       ourStackIndex = i;
       break;
@@ -1203,7 +1203,7 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
             ourEntry.phase = LaneContext::ControlFlowPhase::Reconverging;
           }
           
-          ourEntry.statementIndex = 0;
+          lane.executionStack[ourStackIndex].statementIndex = 0;
           std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " condition=" << ourEntry.conditionResult 
                     << ", moving to phase=" << LaneContext::getPhaseString(ourEntry.phase) << std::endl;
           break;
@@ -1215,7 +1215,7 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
           
           // Execute statements in then block from saved position
           for (size_t i = ourEntry.statementIndex; i < thenBlock_.size(); i++) {
-            ourEntry.statementIndex = i;
+            lane.executionStack[ourStackIndex].statementIndex = i;
             thenBlock_[i]->execute(lane, wave, tg);
             
             if (lane.hasReturned) {
@@ -1226,11 +1226,11 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
               return;
             }
             
-            ourEntry.statementIndex = i + 1;
+            lane.executionStack[ourStackIndex].statementIndex = i + 1;
           }
           
           // Completed then block
-          ourEntry.phase = LaneContext::ControlFlowPhase::Reconverging;
+          lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::Reconverging;
           std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " completed then block, moving to reconvergence" << std::endl;
           break;
         }
@@ -1241,7 +1241,7 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
           
           // Execute statements in else block from saved position
           for (size_t i = ourEntry.statementIndex; i < elseBlock_.size(); i++) {
-            ourEntry.statementIndex = i;
+            lane.executionStack[ourStackIndex].statementIndex = i;
             elseBlock_[i]->execute(lane, wave, tg);
             
             if (lane.hasReturned) {
@@ -1252,11 +1252,11 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
               return;
             }
             
-            ourEntry.statementIndex = i + 1;
+            lane.executionStack[ourStackIndex].statementIndex = i + 1;
           }
           
           // Completed else block
-          ourEntry.phase = LaneContext::ControlFlowPhase::Reconverging;
+          lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::Reconverging;
           std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " completed else block, moving to reconvergence" << std::endl;
           break;
         }
@@ -1371,164 +1371,194 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
   if (!lane.isActive)
     return;
 
-  // Get current block before entering loop
-  uint32_t parentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
-
-  // Get current merge stack for block creation
-  std::vector<MergeStackEntry> currentMergeStack =
-      tg.getCurrentMergeStack(wave.waveId, lane.laneId);
-
-  // Create loop blocks (header, merge) - pass current execution path
-  auto [headerBlockId, mergeBlockId] =
-      tg.createLoopBlocks(static_cast<const void *>(this), parentBlockId,
-                          currentMergeStack, lane.executionPath);
-
-  // Push merge point for loop divergence
-  std::set<uint32_t> divergentBlocks = {headerBlockId};
-  tg.pushMergePoint(wave.waveId, lane.laneId, static_cast<const void *>(this),
-                    parentBlockId, divergentBlocks);
-
-  // Initialize loop variable
-  lane.variables[loopVar_] = init_->evaluate(lane, wave, tg);
-
-  // Move to loop header block
-  tg.assignLaneToBlock(wave.waveId, lane.laneId, headerBlockId);
-  tg.moveThreadFromUnknownToParticipating(headerBlockId, wave.waveId, lane.laneId);
-
-  // Execute loop
-  while (lane.isActive) {
-    // Check loop condition
-    bool shouldContinue = condition_->evaluate(lane, wave, tg).asBool();
-    if (!shouldContinue) {
-      // Lane is exiting loop - comprehensive cleanup from header and all iteration blocks
-      tg.removeThreadFromAllSets(headerBlockId, wave.waveId, lane.laneId);      // Remove from header
-      tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId); // Remove from iteration blocks
+  // Find our entry in the execution stack (if any)
+  int ourStackIndex = -1;
+  for (size_t i = 0; i < lane.executionStack.size(); i++) {
+    if (lane.executionStack[i].statement == static_cast<const void*>(this)) {
+      ourStackIndex = i;
       break;
     }
-    // Add current loop iteration to execution path to make each iteration unique
-    lane.executionPath.push_back(static_cast<const void*>(this));
+  }
+  
+  bool isResuming = (ourStackIndex >= 0);
+  uint32_t headerBlockId = 0;
+  uint32_t mergeBlockId = 0;
+  uint32_t parentBlockId = 0;
+
+  if (!isResuming) {
+    // Starting fresh - push initial state for initialization
+    lane.executionStack.emplace_back(static_cast<const void*>(this), 
+                                     LaneContext::ControlFlowPhase::EvaluatingInit);
+    ourStackIndex = lane.executionStack.size() - 1;
+    std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " starting fresh execution (pushed to stack depth=" 
+              << lane.executionStack.size() << ", this=" << this << ")" << std::endl;
+              
+    // Get current block before entering loop
+    parentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
+
+    // Get current merge stack for block creation
+    std::vector<MergeStackEntry> currentMergeStack =
+        tg.getCurrentMergeStack(wave.waveId, lane.laneId);
+
+    // Create loop blocks (header, merge) - pass current execution path
+    auto [hBlockId, mBlockId] =
+        tg.createLoopBlocks(static_cast<const void *>(this), parentBlockId,
+                            currentMergeStack, lane.executionPath);
+    headerBlockId = hBlockId;
+    mergeBlockId = mBlockId;
     
-    // Create unique body block for this iteration with current execution path
-    // Use same approach as if statements - pre-create with all potential lanes as unknown
-    // Use headerBlockId as parent since iteration blocks are children of header block
-    BlockIdentity iterationBodyIdentity =
-        tg.createBlockIdentity(static_cast<const void*>(this), BlockType::LOOP_BODY, headerBlockId, currentMergeStack, true, lane.executionPath);
-    
-    // Get lanes that could potentially participate in this iteration
-    // Use ALL lanes that originally entered the loop, not just currently active ones
-    // This prevents infinite block creation when some lanes are waiting in previous iterations
-    std::map<WaveId, std::set<LaneId>> iterationUnknownLanes = tg.getCurrentBlockParticipants(headerBlockId);
-    
-    // IMPORTANT: Always include ALL lanes that could participate in this iteration
-    // This includes lanes waiting in previous iteration blocks of the same loop
-    std::cout << "DEBUG: Before fix, iterationUnknownLanes has:";
-    for (const auto& [waveId, laneSet] : iterationUnknownLanes) {
-        std::cout << " Wave " << waveId << ": {";
-        for (LaneId laneId : laneSet) std::cout << laneId << " ";
-        std::cout << "}";
-    }
-    std::cout << std::endl;
-    
-    // Add lanes from header's arrivedLanes (those who entered the loop)
-    auto headerBlockIt = tg.executionBlocks.find(headerBlockId);
-    if (headerBlockIt != tg.executionBlocks.end()) {
-        for (const auto& [waveId, laneSet] : headerBlockIt->second.getArrivedLanes()) {
-            for (LaneId laneId : laneSet) {
-                iterationUnknownLanes[waveId].insert(laneId);
-            }
-        }
-    }
-    
-    // CRITICAL: Also add lanes waiting in existing iteration blocks of this loop
-    // These lanes might complete their wave operations and join this iteration
-    for (const auto& [blockId, block] : tg.executionBlocks) {
-        // Check if this is a LOOP_BODY block that belongs to our loop
-        if (block.getBlockType() == BlockType::LOOP_BODY && 
-            block.getParentBlockId() == headerBlockId) {
-            
-            // Add waiting lanes from this iteration block
-            for (const auto& [waveId, laneSet] : block.getWaitingLanes()) {
-                for (LaneId laneId : laneSet) {
-                    iterationUnknownLanes[waveId].insert(laneId);
-                    std::cout << "DEBUG: Added waiting lane " << laneId << " from iteration block " << blockId << std::endl;
-                }
-            }
-            
-            // Also add participating lanes that might still be executing
-            for (const auto& [waveId, laneSet] : block.getParticipatingLanes()) {
-                for (LaneId laneId : laneSet) {
-                    iterationUnknownLanes[waveId].insert(laneId);
-                    std::cout << "DEBUG: Added participating lane " << laneId << " from iteration block " << blockId << std::endl;
-                }
-            }
-        }
-    }
-    
-    std::cout << "DEBUG: After fix, iterationUnknownLanes has:";
-    for (const auto& [waveId, laneSet] : iterationUnknownLanes) {
-        std::cout << " Wave " << waveId << ": {";
-        for (LaneId laneId : laneSet) std::cout << laneId << " ";
-        std::cout << "}";
-    }
-    std::cout << std::endl;
-    
-    // Remove this lane since we know it's participating
-    iterationUnknownLanes[wave.waveId].erase(lane.laneId);
-    
-    uint32_t iterationBodyBlockId = tg.findOrCreateBlockForPath(iterationBodyIdentity, iterationUnknownLanes);
-    
-    // Register this iteration body block as a divergent block for proper merge point tracking
-    std::set<uint32_t> iterationDivergentBlocks = {iterationBodyBlockId};
+    // Save block IDs in our stack entry
+    lane.executionStack[ourStackIndex].loopHeaderBlockId = headerBlockId;
+    lane.executionStack[ourStackIndex].loopMergeBlockId = mergeBlockId;
+
+    // Push merge point for loop divergence
+    std::set<uint32_t> divergentBlocks = {headerBlockId};
     tg.pushMergePoint(wave.waveId, lane.laneId, static_cast<const void *>(this),
-                      headerBlockId, iterationDivergentBlocks);
-
-    // Move to this iteration's loop body block (this lane chooses to participate)
-    tg.assignLaneToBlock(wave.waveId, lane.laneId, iterationBodyBlockId);
-    tg.moveThreadFromUnknownToParticipating(iterationBodyBlockId, wave.waveId, lane.laneId);
-
-    try {
-      // Execute body
-      for (auto &stmt : body_) {
-        stmt->execute(lane, wave, tg);
-        if (lane.hasReturned) {
-          tg.popMergePoint(wave.waveId, lane.laneId); // Pop iteration merge point
-          tg.popMergePoint(wave.waveId, lane.laneId); // Pop loop merge point
-          return;
-        }
-      }
-    } catch (const ControlFlowException &e) {
-      if (e.type == ControlFlowException::Break) {
-        // Break - go directly to merge block
-        tg.popMergePoint(wave.waveId, lane.laneId); // Pop iteration merge point
-        break;
-      } else if (e.type == ControlFlowException::Continue) {
-        // Continue - go back to header for next iteration
-        tg.popMergePoint(wave.waveId, lane.laneId); // Pop iteration merge point
-      }
-    }
-
-    // Pop iteration merge point before going back to header
-    tg.popMergePoint(wave.waveId, lane.laneId);
-
-    // Increment
-    lane.variables[loopVar_] = increment_->evaluate(lane, wave, tg);
-
-    // Go back to header for condition check
-    tg.assignLaneToBlock(wave.waveId, lane.laneId, headerBlockId);
+                      parentBlockId, divergentBlocks);
+  } else {
+    std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " resuming execution (found at stack index=" 
+              << ourStackIndex << ", current stack depth=" << lane.executionStack.size() << ", this=" << this << ")" << std::endl;
+    
+    // Restore saved block IDs
+    headerBlockId = lane.executionStack[ourStackIndex].loopHeaderBlockId;
+    mergeBlockId = lane.executionStack[ourStackIndex].loopMergeBlockId;
   }
 
-  // Pop merge point and move to merge block
-  tg.popMergePoint(wave.waveId, lane.laneId);
-  tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
-  tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId, lane.laneId);
+  // Execute loop with state machine
+  try {
+    while (lane.isActive) {
+      auto& ourEntry = lane.executionStack[ourStackIndex];
+      std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " in phase " << LaneContext::getPhaseString(ourEntry.phase) 
+                << " (stack depth=" << lane.executionStack.size() << ", our index=" << ourStackIndex << ", this=" << this << ")" << std::endl;
+                
+      switch (ourEntry.phase) {
+        case LaneContext::ControlFlowPhase::EvaluatingInit: {
+          std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " evaluating init" << std::endl;
+          
+          // Initialize loop variable
+          lane.variables[loopVar_] = init_->evaluate(lane, wave, tg);
+          
+          // Move to loop header block
+          tg.assignLaneToBlock(wave.waveId, lane.laneId, headerBlockId);
+          tg.moveThreadFromUnknownToParticipating(headerBlockId, wave.waveId, lane.laneId);
+          
+          // Move to condition evaluation phase
+          lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingCondition;
+          ourEntry.loopIteration = 0;
+          break;
+        }
+        
+        case LaneContext::ControlFlowPhase::EvaluatingCondition: {
+          std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " evaluating condition for iteration " 
+                    << ourEntry.loopIteration << std::endl;
+          
+          // Check loop condition
+          bool shouldContinue = condition_->evaluate(lane, wave, tg).asBool();
+          if (!shouldContinue) {
+            // Lane is exiting loop - comprehensive cleanup from header and all iteration blocks
+            tg.removeThreadFromAllSets(headerBlockId, wave.waveId, lane.laneId);      // Remove from header
+            tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId); // Remove from iteration blocks
+            
+            // Move to reconverging phase
+            ourEntry.phase = LaneContext::ControlFlowPhase::Reconverging;
+            break;
+          }
+          
+          // Condition passed, move to body execution
+          ourEntry.phase = LaneContext::ControlFlowPhase::ExecutingBody;
+          lane.executionStack[ourStackIndex].statementIndex = 0;
+          break;
+        }
+        
+        case LaneContext::ControlFlowPhase::ExecutingBody: {
+          std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " executing body for iteration " 
+                    << ourEntry.loopIteration << " from statement " << ourEntry.statementIndex << std::endl;
+          
+          // Execute statements in body from saved position
+          for (size_t i = ourEntry.statementIndex; i < body_.size(); i++) {
+            lane.executionStack[ourStackIndex].statementIndex = i;
+            body_[i]->execute(lane, wave, tg);
+            
+            if (lane.hasReturned) {
+              lane.executionStack.pop_back();
+              tg.popMergePoint(wave.waveId, lane.laneId);
+              return;
+            }
+            
+            // Re-fetch reference in case vector reallocated during statement execution
+            lane.executionStack[ourStackIndex].statementIndex = i + 1;
+          }
+          
+          // Body completed, move to increment phase
+          lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingIncrement;
+          break;
+        }
+        
+        case LaneContext::ControlFlowPhase::EvaluatingIncrement: {
+          std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " evaluating increment for iteration " 
+                    << ourEntry.loopIteration << std::endl;
+          
+          // Increment loop variable
+          lane.variables[loopVar_] = increment_->evaluate(lane, wave, tg);
+          
+          // Move to next iteration
+          lane.executionStack[ourStackIndex].loopIteration++;
+          lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingCondition;
+          break;
+        }
+        
+        case LaneContext::ControlFlowPhase::Reconverging: {
+          std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " exiting loop after " 
+                    << ourEntry.loopIteration << " iterations" << std::endl;
+          
+          // Clean up execution state
+          lane.executionStack.pop_back();
+          
+          // Pop merge point and move to merge block
+          tg.popMergePoint(wave.waveId, lane.laneId);
+          tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
+          tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId, lane.laneId);
+          return;
+        }
+        
+        
+        default:
+          std::cout << "ERROR: ForStmt - Unexpected phase " << static_cast<int>(ourEntry.phase) << std::endl;
+          return;
+      }
+    }
+  } catch (const WaveOperationWaitException&) {
+    // Wave operation is waiting - execution state is already saved
+    auto& ourEntry = lane.executionStack[ourStackIndex];
+    std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " waiting for wave operation in phase " 
+              << static_cast<int>(ourEntry.phase) << " at statement " << ourEntry.statementIndex 
+              << ", iteration " << ourEntry.loopIteration << std::endl;
+    throw; // Re-throw to pause parent control flow statements
+  } catch (const ControlFlowException &e) {
+    if (e.type == ControlFlowException::Break) {
+      // Break - exit loop
+      std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " breaking from loop" << std::endl;
+      lane.executionStack.pop_back();
+      tg.popMergePoint(wave.waveId, lane.laneId);
+      tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
+      tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId, lane.laneId);
+      return;
+    } else if (e.type == ControlFlowException::Continue) {
+      // Continue - go to increment phase
+      std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " continuing loop" << std::endl;
+      auto& ourEntry = lane.executionStack[ourStackIndex];
+      lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingIncrement;
+    }
+  }
   
-  // Remove this lane from all sets of header and iteration blocks
-  // When lane exits loop, it won't participate in any future iterations
-  tg.removeThreadFromAllSets(headerBlockId, wave.waveId, lane.laneId);      // Remove from header
-  tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId); // Remove from iteration blocks
-
-  // Restore active state
-  lane.isActive = lane.isActive && !lane.hasReturned;
+  // If we reach here, continue the loop by recursively calling execute
+  // This handles the state machine transitions
+  try {
+    execute(lane, wave, tg);
+  } catch (const WaveOperationWaitException& e) {
+    // Propagate wave operation wait to parent
+    throw;
+  }
 }
 
 std::string ForStmt::toString() const {
@@ -3440,153 +3470,160 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
   if (!lane.isActive)
     return;
 
-  // Get current block before entering loop
-  uint32_t parentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
-
-  // Get current merge stack for block creation
-  std::vector<MergeStackEntry> currentMergeStack =
-      tg.getCurrentMergeStack(wave.waveId, lane.laneId);
-
-  // Create loop blocks (header, merge) - pass current execution path
-  auto [headerBlockId, mergeBlockId] =
-      tg.createLoopBlocks(static_cast<const void *>(this), parentBlockId,
-                          currentMergeStack, lane.executionPath);
-
-  // Push merge point for loop divergence
-  std::set<uint32_t> divergentBlocks = {headerBlockId};
-  tg.pushMergePoint(wave.waveId, lane.laneId, static_cast<const void *>(this),
-                    parentBlockId, divergentBlocks);
-
-  // Move to loop header block
-  tg.assignLaneToBlock(wave.waveId, lane.laneId, headerBlockId);
-  tg.moveThreadFromUnknownToParticipating(headerBlockId, wave.waveId, lane.laneId);
-
-  // Execute while loop with condition checking
-  while (lane.isActive) {
-    // Check condition in header block
-    auto condValue = condition_->evaluate(lane, wave, tg);
-    if (!condValue.asBool()) {
-      // Exit loop - go to merge block
+  // Find our entry in the execution stack (if any)
+  int ourStackIndex = -1;
+  for (size_t i = 0; i < lane.executionStack.size(); i++) {
+    if (lane.executionStack[i].statement == static_cast<const void*>(this)) {
+      ourStackIndex = i;
       break;
     }
+  }
+  bool isResuming = (ourStackIndex >= 0);
 
-    // Add current loop iteration to execution path to make each iteration unique
-    lane.executionPath.push_back(static_cast<const void*>(this));
-    
-    // Create unique body block for this iteration with current execution path
-    // Use same approach as if statements - pre-create with all potential lanes as unknown
-    // Use headerBlockId as parent since iteration blocks are children of header block
-    BlockIdentity iterationBodyIdentity =
-        tg.createBlockIdentity(static_cast<const void*>(this), BlockType::LOOP_BODY, headerBlockId, currentMergeStack, true, lane.executionPath);
-    
-    // Get lanes that could potentially participate in this iteration
-    // Use ALL lanes that originally entered the loop, not just currently active ones
-    // This prevents infinite block creation when some lanes are waiting in previous iterations
-    std::map<WaveId, std::set<LaneId>> iterationUnknownLanes = tg.getCurrentBlockParticipants(headerBlockId);
-    
-    // IMPORTANT: Always include ALL lanes that could participate in this iteration
-    // This includes lanes waiting in previous iteration blocks of the same loop
-    std::cout << "DEBUG: Before fix, iterationUnknownLanes has:";
-    for (const auto& [waveId, laneSet] : iterationUnknownLanes) {
-        std::cout << " Wave " << waveId << ": {";
-        for (LaneId laneId : laneSet) std::cout << laneId << " ";
-        std::cout << "}";
-    }
-    std::cout << std::endl;
-    
-    // Add lanes from header's arrivedLanes (those who entered the loop)
-    auto headerBlockIt = tg.executionBlocks.find(headerBlockId);
-    if (headerBlockIt != tg.executionBlocks.end()) {
-        for (const auto& [waveId, laneSet] : headerBlockIt->second.getArrivedLanes()) {
-            for (LaneId laneId : laneSet) {
-                iterationUnknownLanes[waveId].insert(laneId);
-            }
-        }
-    }
-    
-    // CRITICAL: Also add lanes waiting in existing iteration blocks of this loop
-    // These lanes might complete their wave operations and join this iteration
-    for (const auto& [blockId, block] : tg.executionBlocks) {
-        // Check if this is a LOOP_BODY block that belongs to our loop
-        if (block.getBlockType() == BlockType::LOOP_BODY && 
-            block.getParentBlockId() == headerBlockId) {
-            
-            // Add waiting lanes from this iteration block
-            for (const auto& [waveId, laneSet] : block.getWaitingLanes()) {
-                for (LaneId laneId : laneSet) {
-                    iterationUnknownLanes[waveId].insert(laneId);
-                    std::cout << "DEBUG: Added waiting lane " << laneId << " from iteration block " << blockId << std::endl;
-                }
-            }
-            
-            // Also add participating lanes that might still be executing
-            for (const auto& [waveId, laneSet] : block.getParticipatingLanes()) {
-                for (LaneId laneId : laneSet) {
-                    iterationUnknownLanes[waveId].insert(laneId);
-                    std::cout << "DEBUG: Added participating lane " << laneId << " from iteration block " << blockId << std::endl;
-                }
-            }
-        }
-    }
-    
-    std::cout << "DEBUG: After fix, iterationUnknownLanes has:";
-    for (const auto& [waveId, laneSet] : iterationUnknownLanes) {
-        std::cout << " Wave " << waveId << ": {";
-        for (LaneId laneId : laneSet) std::cout << laneId << " ";
-        std::cout << "}";
-    }
-    std::cout << std::endl;
-    
-    // Remove this lane since we know it's participating
-    iterationUnknownLanes[wave.waveId].erase(lane.laneId);
-    
-    uint32_t iterationBodyBlockId = tg.findOrCreateBlockForPath(iterationBodyIdentity, iterationUnknownLanes);
+  std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " " 
+            << (isResuming ? "resuming" : "starting") << " while loop" << std::endl;
 
-    // Register this iteration body block as a divergent block for proper merge point tracking
-    std::set<uint32_t> iterationDivergentBlocks = {iterationBodyBlockId};
+  if (!isResuming) {
+    // First time execution - setup blocks and push onto execution stack
+    
+    // Get current block before entering loop
+    uint32_t parentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
+
+    // Get current merge stack for block creation
+    std::vector<MergeStackEntry> currentMergeStack =
+        tg.getCurrentMergeStack(wave.waveId, lane.laneId);
+
+    // Create loop blocks (header, merge) - pass current execution path
+    auto [headerBlockId, mergeBlockId] =
+        tg.createLoopBlocks(static_cast<const void *>(this), parentBlockId,
+                            currentMergeStack, lane.executionPath);
+
+    // Push merge point for loop divergence
+    std::set<uint32_t> divergentBlocks = {headerBlockId};
     tg.pushMergePoint(wave.waveId, lane.laneId, static_cast<const void *>(this),
-                      headerBlockId, iterationDivergentBlocks);
+                      parentBlockId, divergentBlocks);
 
-    // Move to this iteration's loop body block (this lane chooses to participate)
-    tg.assignLaneToBlock(wave.waveId, lane.laneId, iterationBodyBlockId);
-    tg.moveThreadFromUnknownToParticipating(iterationBodyBlockId, wave.waveId, lane.laneId);
-    tg.removeThreadFromUnknown(mergeBlockId, lane.laneId, wave.waveId);
-
-    try {
-      // Execute body
-      for (auto &stmt : body_) {
-        stmt->execute(lane, wave, tg);
-        if (lane.hasReturned) {
-          tg.popMergePoint(wave.waveId, lane.laneId); // Pop iteration merge point
-          tg.popMergePoint(wave.waveId, lane.laneId); // Pop loop merge point
-          return;
-        }
-      }
-    } catch (const ControlFlowException &e) {
-      if (e.type == ControlFlowException::Break) {
-        // Break - go directly to merge block
-        tg.popMergePoint(wave.waveId, lane.laneId); // Pop iteration merge point
-        break;
-      } else if (e.type == ControlFlowException::Continue) {
-        // Continue - go back to header for next iteration
-        tg.popMergePoint(wave.waveId, lane.laneId); // Pop iteration merge point
-      }
-    }
-
-    // Pop iteration merge point before going back to header
-    tg.popMergePoint(wave.waveId, lane.laneId);
-
-    // Go back to header for condition check
+    // Move to loop header block
     tg.assignLaneToBlock(wave.waveId, lane.laneId, headerBlockId);
+    tg.moveThreadFromUnknownToParticipating(headerBlockId, wave.waveId, lane.laneId);
+
+    // Push execution state onto stack
+    LaneContext::BlockExecutionState newState(static_cast<const void*>(this), 
+                                               LaneContext::ControlFlowPhase::EvaluatingCondition, 
+                                               0);
+    newState.loopIteration = 0;
+    newState.loopHeaderBlockId = headerBlockId;
+    newState.loopMergeBlockId = mergeBlockId;
+    
+    lane.executionStack.push_back(newState);
+    ourStackIndex = lane.executionStack.size() - 1;
   }
 
-  // Pop merge point and move to merge block
-  tg.popMergePoint(wave.waveId, lane.laneId);
-  tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
-  tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId, lane.laneId);
+  // Get our execution state
+  auto& ourEntry = lane.executionStack[ourStackIndex];
+  uint32_t headerBlockId = ourEntry.loopHeaderBlockId;
+  uint32_t mergeBlockId = ourEntry.loopMergeBlockId;
 
-  // Restore active state
-  lane.isActive = lane.isActive && !lane.hasReturned;
+  try {
+    // State machine for while loop execution
+    switch (ourEntry.phase) {
+      case LaneContext::ControlFlowPhase::EvaluatingCondition: {
+        std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " evaluating condition for iteration " 
+                  << ourEntry.loopIteration << std::endl;
+        
+        // Check loop condition
+        bool shouldContinue = condition_->evaluate(lane, wave, tg).asBool();
+        if (!shouldContinue) {
+          // Lane is exiting loop - move to reconverging phase
+          ourEntry.phase = LaneContext::ControlFlowPhase::Reconverging;
+          break;
+        }
+        
+        // Condition passed, move to body execution
+        ourEntry.phase = LaneContext::ControlFlowPhase::ExecutingBody;
+        lane.executionStack[ourStackIndex].statementIndex = 0;
+        break;
+      }
+      
+      case LaneContext::ControlFlowPhase::ExecutingBody: {
+        std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " executing body for iteration " 
+                  << ourEntry.loopIteration << " at statement " << ourEntry.statementIndex << std::endl;
+        
+        // Execute statements from where we left off
+        for (size_t i = ourEntry.statementIndex; i < body_.size(); i++) {
+          lane.executionStack[ourStackIndex].statementIndex = i;
+          body_[i]->execute(lane, wave, tg);
+          
+          if (lane.hasReturned) {
+            // Pop our entry and return from loop
+            lane.executionStack.pop_back();
+            tg.popMergePoint(wave.waveId, lane.laneId);
+            return;
+          }
+        }
+        
+        // Completed body execution - move to next iteration
+        std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " completed iteration " 
+                  << lane.executionStack[ourStackIndex].loopIteration << std::endl;
+        lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingCondition;
+        lane.executionStack[ourStackIndex].loopIteration++;
+        lane.executionStack[ourStackIndex].statementIndex = 0;
+        break;
+      }
+      
+      case LaneContext::ControlFlowPhase::Reconverging: {
+        std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " reconverging from while loop" << std::endl;
+        
+        // Pop our entry from execution stack
+        lane.executionStack.pop_back();
+        
+        // Pop merge point and move to merge block
+        tg.popMergePoint(wave.waveId, lane.laneId);
+        tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
+        tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId, lane.laneId);
+        
+        // Loop has completed, restore active state
+        lane.isActive = lane.isActive && !lane.hasReturned;
+        return;
+      }
+      
+      default:
+        std::cout << "ERROR: WhileStmt - Unexpected phase " << static_cast<int>(ourEntry.phase) << std::endl;
+        return;
+    }
+  } catch (const WaveOperationWaitException&) {
+    // Wave operation is waiting - execution state is already saved
+    std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " waiting for wave operation in phase " 
+              << static_cast<int>(ourEntry.phase) << " at statement " << ourEntry.statementIndex 
+              << ", iteration " << ourEntry.loopIteration << std::endl;
+    throw; // Re-throw to pause parent control flow statements
+  } catch (const ControlFlowException &e) {
+    if (e.type == ControlFlowException::Break) {
+      // Break - exit loop
+      std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " breaking from while loop" << std::endl;
+      lane.executionStack.pop_back();
+      tg.popMergePoint(wave.waveId, lane.laneId);
+      tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
+      tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId, lane.laneId);
+      return;
+    } else if (e.type == ControlFlowException::Continue) {
+      // Continue - go to next iteration
+      std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " continuing while loop" << std::endl;
+      auto& ourEntry = lane.executionStack[ourStackIndex];
+      lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingCondition;
+      lane.executionStack[ourStackIndex].loopIteration++;
+      lane.executionStack[ourStackIndex].statementIndex = 0;
+    }
+  }
+  
+  // If we reach here, continue the loop by recursively calling execute
+  // This handles the state machine transitions
+  try {
+    execute(lane, wave, tg);
+  } catch (const WaveOperationWaitException& e) {
+    // Propagate wave operation wait to parent
+    throw;
+  }
 }
 
 std::string WhileStmt::toString() const {
@@ -3608,93 +3645,154 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
   if (!lane.isActive)
     return;
 
-  // Get current block before entering loop
-  uint32_t parentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
-
-  // Get current merge stack for block creation
-  std::vector<MergeStackEntry> currentMergeStack =
-      tg.getCurrentMergeStack(wave.waveId, lane.laneId);
-
-  // Create loop blocks (header, merge) - pass current execution path
-  // For do-while, header is where condition is checked
-  auto [headerBlockId, mergeBlockId] =
-      tg.createLoopBlocks(static_cast<const void *>(this), parentBlockId,
-                          currentMergeStack, lane.executionPath);
-
-  // Push merge point for loop divergence
-  std::set<uint32_t> divergentBlocks = {headerBlockId};
-  tg.pushMergePoint(wave.waveId, lane.laneId, static_cast<const void *>(this),
-                    parentBlockId, divergentBlocks);
-
-  // Execute do-while loop - body executes at least once
-  do {
-    // Add current loop iteration to execution path to make each iteration unique
-    lane.executionPath.push_back(static_cast<const void*>(this));
-    
-    // Create unique body block for this iteration with current execution path
-    // For do-while, we don't have a header to use as parent, so use parentBlockId
-    BlockIdentity iterationBodyIdentity =
-        tg.createBlockIdentity(static_cast<const void*>(this), BlockType::LOOP_BODY, parentBlockId, currentMergeStack, true, lane.executionPath);
-    
-    // Get lanes that could potentially participate in this iteration
-    std::map<WaveId, std::set<LaneId>> iterationUnknownLanes = tg.getCurrentBlockParticipants(parentBlockId);
-    // Remove this lane since we know it's participating
-    iterationUnknownLanes[wave.waveId].erase(lane.laneId);
-    
-    uint32_t iterationBodyBlockId = tg.findOrCreateBlockForPath(iterationBodyIdentity, iterationUnknownLanes);
-
-    // Register this iteration body block as a divergent block for proper merge point tracking
-    std::set<uint32_t> iterationDivergentBlocks = {iterationBodyBlockId};
-    tg.pushMergePoint(wave.waveId, lane.laneId, static_cast<const void *>(this),
-                      parentBlockId, iterationDivergentBlocks);
-
-    // Move to this iteration's loop body block (this lane chooses to participate)
-    tg.assignLaneToBlock(wave.waveId, lane.laneId, iterationBodyBlockId);
-    tg.moveThreadFromUnknownToParticipating(iterationBodyBlockId, wave.waveId, lane.laneId);
-    tg.removeThreadFromUnknown(mergeBlockId, lane.laneId, wave.waveId);
-
-    try {
-      // Execute body
-      for (auto &stmt : body_) {
-        stmt->execute(lane, wave, tg);
-        if (lane.hasReturned) {
-          tg.popMergePoint(wave.waveId, lane.laneId); // Pop iteration merge point
-          tg.popMergePoint(wave.waveId, lane.laneId); // Pop loop merge point
-          return;
-        }
-      }
-    } catch (const ControlFlowException &e) {
-      if (e.type == ControlFlowException::Break) {
-        // Break - go directly to merge block
-        tg.popMergePoint(wave.waveId, lane.laneId); // Pop iteration merge point
-        break;
-      } else if (e.type == ControlFlowException::Continue) {
-        // Continue to condition check
-        tg.popMergePoint(wave.waveId, lane.laneId); // Pop iteration merge point
-      }
-    }
-
-    // Pop iteration merge point before condition check
-    tg.popMergePoint(wave.waveId, lane.laneId);
-
-    // Move to header block for condition check
-    tg.assignLaneToBlock(wave.waveId, lane.laneId, headerBlockId);
-
-    // Check condition
-    auto condValue = condition_->evaluate(lane, wave, tg);
-    if (!condValue.asBool() || !lane.isActive) {
-      // Exit loop
+  // Find our entry in the execution stack (if any)
+  int ourStackIndex = -1;
+  for (size_t i = 0; i < lane.executionStack.size(); i++) {
+    if (lane.executionStack[i].statement == static_cast<const void*>(this)) {
+      ourStackIndex = i;
       break;
     }
-  } while (true);
+  }
+  bool isResuming = (ourStackIndex >= 0);
 
-  // Pop merge point and move to merge block
-  tg.popMergePoint(wave.waveId, lane.laneId);
-  tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
-  tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId, lane.laneId);
+  std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId << " " 
+            << (isResuming ? "resuming" : "starting") << " do-while loop" << std::endl;
 
-  // Restore active state
-  lane.isActive = lane.isActive && !lane.hasReturned;
+  if (!isResuming) {
+    // First time execution - setup blocks and push onto execution stack
+    
+    // Get current block before entering loop
+    uint32_t parentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
+
+    // Get current merge stack for block creation
+    std::vector<MergeStackEntry> currentMergeStack =
+        tg.getCurrentMergeStack(wave.waveId, lane.laneId);
+
+    // Create loop blocks (header, merge) - pass current execution path
+    // For do-while, header is where condition is checked
+    auto [headerBlockId, mergeBlockId] =
+        tg.createLoopBlocks(static_cast<const void *>(this), parentBlockId,
+                            currentMergeStack, lane.executionPath);
+
+    // Push merge point for loop divergence
+    std::set<uint32_t> divergentBlocks = {headerBlockId};
+    tg.pushMergePoint(wave.waveId, lane.laneId, static_cast<const void *>(this),
+                      parentBlockId, divergentBlocks);
+
+    // Push execution state onto stack - DoWhile starts with body execution
+    LaneContext::BlockExecutionState newState(static_cast<const void*>(this), 
+                                               LaneContext::ControlFlowPhase::ExecutingBody, 
+                                               0);
+    newState.loopIteration = 0;
+    newState.loopHeaderBlockId = headerBlockId;
+    newState.loopMergeBlockId = mergeBlockId;
+    
+    lane.executionStack.push_back(newState);
+    ourStackIndex = lane.executionStack.size() - 1;
+  }
+
+  // Get our execution state
+  auto& ourEntry = lane.executionStack[ourStackIndex];
+  uint32_t headerBlockId = ourEntry.loopHeaderBlockId;
+  uint32_t mergeBlockId = ourEntry.loopMergeBlockId;
+
+  try {
+    // State machine for do-while loop execution
+    switch (ourEntry.phase) {
+      case LaneContext::ControlFlowPhase::ExecutingBody: {
+        std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId << " executing body for iteration " 
+                  << ourEntry.loopIteration << " at statement " << ourEntry.statementIndex << std::endl;
+        
+        // Execute statements from where we left off
+        for (size_t i = ourEntry.statementIndex; i < body_.size(); i++) {
+          lane.executionStack[ourStackIndex].statementIndex = i;
+          body_[i]->execute(lane, wave, tg);
+          
+          if (lane.hasReturned) {
+            // Pop our entry and return from loop
+            lane.executionStack.pop_back();
+            tg.popMergePoint(wave.waveId, lane.laneId);
+            return;
+          }
+        }
+        
+        // Completed body execution - move to condition evaluation
+        std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId << " completed body for iteration " 
+                  << lane.executionStack[ourStackIndex].loopIteration << std::endl;
+        lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingCondition;
+        break;
+      }
+      
+      case LaneContext::ControlFlowPhase::EvaluatingCondition: {
+        std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId << " evaluating condition after iteration " 
+                  << ourEntry.loopIteration << std::endl;
+        
+        // Check loop condition
+        bool shouldContinue = condition_->evaluate(lane, wave, tg).asBool();
+        if (!shouldContinue) {
+          // Lane is exiting loop - move to reconverging phase
+          ourEntry.phase = LaneContext::ControlFlowPhase::Reconverging;
+          break;
+        }
+        
+        // Condition passed, move to next iteration body execution
+        lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::ExecutingBody;
+        lane.executionStack[ourStackIndex].loopIteration++;
+        lane.executionStack[ourStackIndex].statementIndex = 0;
+        break;
+      }
+      
+      case LaneContext::ControlFlowPhase::Reconverging: {
+        std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId << " reconverging from do-while loop" << std::endl;
+        
+        // Pop our entry from execution stack
+        lane.executionStack.pop_back();
+        
+        // Pop merge point and move to merge block
+        tg.popMergePoint(wave.waveId, lane.laneId);
+        tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
+        tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId, lane.laneId);
+        
+        // Loop has completed, restore active state
+        lane.isActive = lane.isActive && !lane.hasReturned;
+        return;
+      }
+      
+      default:
+        std::cout << "ERROR: DoWhileStmt - Unexpected phase " << static_cast<int>(ourEntry.phase) << std::endl;
+        return;
+    }
+  } catch (const WaveOperationWaitException&) {
+    // Wave operation is waiting - execution state is already saved
+    std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId << " waiting for wave operation in phase " 
+              << static_cast<int>(ourEntry.phase) << " at statement " << ourEntry.statementIndex 
+              << ", iteration " << ourEntry.loopIteration << std::endl;
+    throw; // Re-throw to pause parent control flow statements
+  } catch (const ControlFlowException &e) {
+    if (e.type == ControlFlowException::Break) {
+      // Break - exit loop
+      std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId << " breaking from do-while loop" << std::endl;
+      lane.executionStack.pop_back();
+      tg.popMergePoint(wave.waveId, lane.laneId);
+      tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
+      tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId, lane.laneId);
+      return;
+    } else if (e.type == ControlFlowException::Continue) {
+      // Continue - go to condition evaluation
+      std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId << " continuing do-while loop" << std::endl;
+      auto& ourEntry = lane.executionStack[ourStackIndex];
+      lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingCondition;
+    }
+  }
+  
+  // If we reach here, continue the loop by recursively calling execute
+  // This handles the state machine transitions
+  try {
+    execute(lane, wave, tg);
+  } catch (const WaveOperationWaitException& e) {
+    // Propagate wave operation wait to parent
+    throw;
+  }
 }
 
 std::string DoWhileStmt::toString() const {
