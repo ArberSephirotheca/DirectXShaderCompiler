@@ -14,7 +14,6 @@ void main(uint3 id : SV_DispatchThreadID) {
             result += WaveActiveSum(5);
         } else {
             result += WaveActiveSum(1);
-            result += WaveActiveSum(2);
         }
         result += WaveActiveSum(2);
     } else {
