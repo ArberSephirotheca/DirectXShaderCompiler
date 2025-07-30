@@ -4056,8 +4056,22 @@ void SwitchStmt::execute(LaneContext &lane, WaveContext &wave,
     throw; // Re-throw to pause parent control flow statements
   } catch (const ControlFlowException &e) {
     if (e.type == ControlFlowException::Break) {
-      // Break - exit switch
+      // Break - exit switch and clean up subsequent case blocks
       std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId << " breaking from switch" << std::endl;
+      
+      auto& ourEntry = lane.executionStack[ourStackIndex];
+      size_t currentCaseIndex = ourEntry.caseIndex;
+      
+      // Remove this lane from all subsequent case blocks (cases it will never reach due to break)
+      for (size_t i = currentCaseIndex + 1; i < ourEntry.switchCaseBlockIds.size(); ++i) {
+        uint32_t subsequentCaseBlockId = ourEntry.switchCaseBlockIds[i];
+        std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId 
+                  << " removing from unreachable case block " << subsequentCaseBlockId 
+                  << " (case " << i << ") due to break" << std::endl;
+        tg.removeThreadFromUnknown(subsequentCaseBlockId, wave.waveId, lane.laneId);
+        tg.removeThreadFromNestedBlocks(subsequentCaseBlockId, wave.waveId, lane.laneId);
+      }
+      
       lane.executionStack.pop_back();
       return;
     }
