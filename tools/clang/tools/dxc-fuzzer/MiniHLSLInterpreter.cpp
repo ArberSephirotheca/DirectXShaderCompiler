@@ -3062,7 +3062,7 @@ MiniHLSLInterpreter::convertSwitchStatement(const clang::SwitchStmt *switchStmt,
               currentCase.push_back(std::move(converted));
             }
           }
-        } else if (clang::isa<clang::DefaultStmt>(stmt)) {
+        } else if (auto defaultStmt = clang::dyn_cast<clang::DefaultStmt>(stmt)) {
           std::cout << "DEBUG: Switch parsing - found default case" << std::endl;
           // Save previous case if any
           if (currentCaseValue.has_value() || isDefault) {
@@ -3077,6 +3077,13 @@ MiniHLSLInterpreter::convertSwitchStatement(const clang::SwitchStmt *switchStmt,
 
           isDefault = true;
           currentCaseValue.reset();
+          
+          // Process the default statement's sub-statement
+          if (auto substmt = defaultStmt->getSubStmt()) {
+            if (auto converted = convertStatement(substmt, context)) {
+              currentCase.push_back(std::move(converted));
+            }
+          }
         } else {
           // Regular statement in current case
           if (auto converted = convertStatement(stmt, context)) {
