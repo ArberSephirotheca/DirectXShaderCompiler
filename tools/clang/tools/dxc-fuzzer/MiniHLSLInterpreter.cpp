@@ -1537,8 +1537,8 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
           std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " evaluating increment for iteration " 
                     << ourEntry.loopIteration << std::endl;
           
-          // Increment loop variable
-          lane.variables[loopVar_] = increment_->evaluate(lane, wave, tg);
+          // Increment loop variable (side effect, don't assign result)
+          increment_->evaluate(lane, wave, tg);
           
           // Move to next iteration
           lane.executionStack[ourStackIndex].loopIteration++;
