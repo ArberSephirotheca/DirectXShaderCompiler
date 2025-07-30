@@ -1307,11 +1307,27 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
               << (int)lane.executionStack[ourStackIndex].phase << " at statement " << lane.executionStack[ourStackIndex].statementIndex << std::endl;
     throw; // Re-throw to pause parent control flow statements
   } catch (const ControlFlowException &e) {
-    // Propagate break/continue to enclosing loop
+    // Propagate break/continue to enclosing loop - do NOT move to merge block
     std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " popping stack due to ControlFlowException (depth " 
               << lane.executionStack.size() << "->" << (lane.executionStack.size()-1) << ", this=" << this << ")" << std::endl;
     lane.executionStack.pop_back();
     tg.popMergePoint(wave.waveId, lane.laneId);
+  
+  // Clean up then/else blocks - lane will never return to them
+  tg.removeThreadFromAllSets(thenBlockId, wave.waveId, lane.laneId);
+  tg.removeThreadFromNestedBlocks(thenBlockId, wave.waveId, lane.laneId);
+  
+  if (hasElse && elseBlockId != 0) {
+    tg.removeThreadFromAllSets(elseBlockId, wave.waveId, lane.laneId);
+    tg.removeThreadFromNestedBlocks(elseBlockId, wave.waveId, lane.laneId);
+  }
+  
+  // Also clean up merge block since we're not going there
+  tg.removeThreadFromAllSets(mergeBlockId, wave.waveId, lane.laneId);
+  tg.removeThreadFromNestedBlocks(mergeBlockId, wave.waveId, lane.laneId);
+
+  // Restore active state (reconvergence)
+  lane.isActive = lane.isActive && !lane.hasReturned;
     throw;
   }
 
@@ -1589,20 +1605,14 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
       tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId, lane.laneId);
       return;
     } else if (e.type == ControlFlowException::Continue) {
-      // Continue - go to increment phase
+      // Continue - go to increment phase and move back to header block
       std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " continuing loop" << std::endl;
-      auto& ourEntry = lane.executionStack[ourStackIndex];
       lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingIncrement;
+      
+      // Move lane back to header block for proper context
+      tg.assignLaneToBlock(wave.waveId, lane.laneId, headerBlockId);
+      // The while loop will continue and handle the next phase
     }
-  }
-  
-  // If we reach here, continue the loop by recursively calling execute
-  // This handles the state machine transitions
-  try {
-    execute(lane, wave, tg);
-  } catch (const WaveOperationWaitException& e) {
-    // Propagate wave operation wait to parent
-    throw;
   }
 }
 

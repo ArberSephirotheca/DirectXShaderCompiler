@@ -15,11 +15,11 @@ void main(uint3 id : SV_DispatchThreadID) {
     }
     
     // Expected per-lane results:
-    // Lane 0: skip at i=0, result=3
+    // Lane 0: skip at i=0, result= 3 + 2 + 2 = 7
     // Lane 1: skip all iterations, result=0
-    // Lane 2: skip at i=2, result=5
-    // Lane 3: skip at i=3, result=5
-    // WaveActiveSum: 3+0+5+5 = 13
+    // Lane 2: skip at i=2, result= 3 + 2 + 2 = 7
+    // Lane 3: skip at i=3, result= 3 + 2 + 2 = 7
+    // WaveActiveSum: 7+0+7+7 = 21 
     
     uint totalSum = WaveActiveSum(result);
 }
