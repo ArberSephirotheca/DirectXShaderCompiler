@@ -3951,12 +3951,26 @@ void SwitchStmt::execute(LaneContext &lane, WaveContext &wave,
           ourEntry.statementIndex = 0;
           ourEntry.phase = LaneContext::ControlFlowPhase::ExecutingCase;
           
-          // Move lane to the appropriate case block
+          // Move lane to the appropriate case block and remove from previous cases
           if (matchingCaseIndex < ourEntry.switchCaseBlockIds.size()) {
-            uint32_t caseBlockId = ourEntry.switchCaseBlockIds[matchingCaseIndex];
+            uint32_t chosenCaseBlockId = ourEntry.switchCaseBlockIds[matchingCaseIndex];
             std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId 
-                      << " moving to case block " << caseBlockId << " for case " << matchingCaseIndex << std::endl;
-            tg.moveThreadFromUnknownToParticipating(caseBlockId, wave.waveId, lane.laneId);
+                      << " moving to case block " << chosenCaseBlockId << " for case " << matchingCaseIndex << std::endl;
+            
+            // Move to the chosen case block
+            tg.moveThreadFromUnknownToParticipating(chosenCaseBlockId, wave.waveId, lane.laneId);
+            
+            // Remove from all previous case blocks (cases before the matching one)
+            // because those cases won't be executed
+            for (size_t i = 0; i < matchingCaseIndex; ++i) {
+              uint32_t previousCaseBlockId = ourEntry.switchCaseBlockIds[i];
+              std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId 
+                        << " removing from previous case block " << previousCaseBlockId << " (case " << i << ")" << std::endl;
+              tg.removeThreadFromUnknown(previousCaseBlockId, wave.waveId, lane.laneId);
+              tg.removeThreadFromNestedBlocks(previousCaseBlockId, wave.waveId, lane.laneId);
+            }
+            
+            // Note: Lane remains in subsequent case blocks due to potential fallthrough
           }
           break;
         }
@@ -3980,6 +3994,25 @@ void SwitchStmt::execute(LaneContext &lane, WaveContext &wave,
             // Current case completed - move to next case (fallthrough)
             std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId 
                       << " completed case " << caseLabel << ", falling through to next" << std::endl;
+            
+            size_t nextCaseIndex = ourEntry.caseIndex + 1;
+            
+            // Move lane to next case block if it exists
+            if (nextCaseIndex < ourEntry.switchCaseBlockIds.size()) {
+              uint32_t currentCaseBlockId = ourEntry.switchCaseBlockIds[ourEntry.caseIndex];
+              uint32_t nextCaseBlockId = ourEntry.switchCaseBlockIds[nextCaseIndex];
+              
+              std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId 
+                        << " moving from case block " << currentCaseBlockId 
+                        << " to case block " << nextCaseBlockId << " (fallthrough)" << std::endl;
+              
+              // Remove from current case block
+              tg.removeThreadFromAllSets(currentCaseBlockId, wave.waveId, lane.laneId);
+              
+              // Move to next case block
+              tg.moveThreadFromUnknownToParticipating(nextCaseBlockId, wave.waveId, lane.laneId);
+            }
+            
             ourEntry.caseIndex++;
             ourEntry.statementIndex = 0;
             break;
