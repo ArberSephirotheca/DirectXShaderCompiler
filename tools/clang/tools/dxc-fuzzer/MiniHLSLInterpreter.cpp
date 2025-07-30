@@ -1153,8 +1153,9 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
           if (!ourEntry.conditionEvaluated) {
             std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " evaluating condition for first time" << std::endl;
             // Evaluate condition (can throw WaveOperationWaitException)
-            ourEntry.conditionResult = condition_->evaluate(lane, wave, tg).asBool();
-            ourEntry.conditionEvaluated = true;
+            bool conditionResult = condition_->evaluate(lane, wave, tg).asBool();
+            lane.executionStack[ourStackIndex].conditionResult = conditionResult;
+            lane.executionStack[ourStackIndex].conditionEvaluated = true;
             std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " condition result=" << ourEntry.conditionResult << std::endl;
           } else {
             std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " using cached condition result=" << ourEntry.conditionResult << std::endl;
@@ -1444,7 +1445,7 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
           
           // Move to condition evaluation phase
           lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingCondition;
-          ourEntry.loopIteration = 0;
+          lane.executionStack[ourStackIndex].loopIteration = 0;
           break;
         }
         
@@ -1460,12 +1461,12 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
             tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId); // Remove from iteration blocks
             
             // Move to reconverging phase
-            ourEntry.phase = LaneContext::ControlFlowPhase::Reconverging;
+            lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::Reconverging;
             break;
           }
           
           // Condition passed, move to body execution
-          ourEntry.phase = LaneContext::ControlFlowPhase::ExecutingBody;
+          lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::ExecutingBody;
           lane.executionStack[ourStackIndex].statementIndex = 0;
           break;
         }
@@ -1477,25 +1478,30 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
           // Create or get LOOP_BODY block for this iteration
           uint32_t bodyBlockId = ourEntry.loopBodyBlockId;
           if (bodyBlockId == 0) {
-            // Create LOOP_BODY block for this iteration
-            uint32_t parentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
             std::vector<MergeStackEntry> currentMergeStack = tg.getCurrentMergeStack(wave.waveId, lane.laneId);
             
             // Create unique identity for this iteration's body block
             const void* iterationPtr = reinterpret_cast<const void*>(
-                reinterpret_cast<uintptr_t>(this) + ourEntry.loopIteration + 1);
+                reinterpret_cast<uintptr_t>(this) + (ourEntry.loopIteration << 16) + 0x1000);
             
             BlockIdentity bodyIdentity = tg.createBlockIdentity(
                 iterationPtr, BlockType::LOOP_BODY, headerBlockId, currentMergeStack, true, lane.executionPath);
-                
-            std::map<WaveId, std::set<LaneId>> expectedLanes;
-            expectedLanes[wave.waveId].insert(lane.laneId);
             
-            bodyBlockId = tg.findOrCreateBlockForPath(bodyIdentity, expectedLanes);
+            // Try to find existing block first
+            bodyBlockId = tg.findBlockByIdentity(bodyIdentity);
+            
+            if (bodyBlockId == 0) {
+              // Create new block only if none exists
+              std::map<WaveId, std::set<LaneId>> expectedLanes; // Empty - let block grow dynamically
+              bodyBlockId = tg.findOrCreateBlockForPath(bodyIdentity, expectedLanes);
+              std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " created new body block " 
+                        << bodyBlockId << " for iteration " << ourEntry.loopIteration << std::endl;
+            } else {
+              std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " found existing body block " 
+                        << bodyBlockId << " for iteration " << ourEntry.loopIteration << std::endl;
+            }
+            
             ourEntry.loopBodyBlockId = bodyBlockId;
-            
-            std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " created body block " 
-                      << bodyBlockId << " for iteration " << ourEntry.loopIteration << std::endl;
           }
           
           // Move to body block if not already there
@@ -1522,7 +1528,7 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
           
           // Body completed, move back to header block and to increment phase
           tg.moveThreadFromUnknownToParticipating(headerBlockId, wave.waveId, lane.laneId);
-          ourEntry.loopBodyBlockId = 0; // Reset for next iteration
+          lane.executionStack[ourStackIndex].loopBodyBlockId = 0; // Reset for next iteration
           lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingIncrement;
           break;
         }
@@ -3591,12 +3597,12 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
         bool shouldContinue = condition_->evaluate(lane, wave, tg).asBool();
         if (!shouldContinue) {
           // Lane is exiting loop - move to reconverging phase
-          ourEntry.phase = LaneContext::ControlFlowPhase::Reconverging;
+          lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::Reconverging;
           break;
         }
         
         // Condition passed, move to body execution
-        ourEntry.phase = LaneContext::ControlFlowPhase::ExecutingBody;
+        lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::ExecutingBody;
         lane.executionStack[ourStackIndex].statementIndex = 0;
         break;
       }
@@ -3608,25 +3614,30 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
         // Create or get LOOP_BODY block for this iteration
         uint32_t bodyBlockId = ourEntry.loopBodyBlockId;
         if (bodyBlockId == 0) {
-          // Create LOOP_BODY block for this iteration
-          uint32_t parentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
           std::vector<MergeStackEntry> currentMergeStack = tg.getCurrentMergeStack(wave.waveId, lane.laneId);
           
           // Create unique identity for this iteration's body block
           const void* iterationPtr = reinterpret_cast<const void*>(
-              reinterpret_cast<uintptr_t>(this) + ourEntry.loopIteration + 1);
+              reinterpret_cast<uintptr_t>(this) + (ourEntry.loopIteration << 16) + 0x1000);
           
           BlockIdentity bodyIdentity = tg.createBlockIdentity(
               iterationPtr, BlockType::LOOP_BODY, headerBlockId, currentMergeStack, true, lane.executionPath);
-              
-          std::map<WaveId, std::set<LaneId>> expectedLanes;
-          expectedLanes[wave.waveId].insert(lane.laneId);
           
-          bodyBlockId = tg.findOrCreateBlockForPath(bodyIdentity, expectedLanes);
+          // Try to find existing block first
+          bodyBlockId = tg.findBlockByIdentity(bodyIdentity);
+          
+          if (bodyBlockId == 0) {
+            // Create new block only if none exists
+            std::map<WaveId, std::set<LaneId>> expectedLanes; // Empty - let block grow dynamically
+            bodyBlockId = tg.findOrCreateBlockForPath(bodyIdentity, expectedLanes);
+            std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " created new body block " 
+                      << bodyBlockId << " for iteration " << ourEntry.loopIteration << std::endl;
+          } else {
+            std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " found existing body block " 
+                      << bodyBlockId << " for iteration " << ourEntry.loopIteration << std::endl;
+          }
+          
           ourEntry.loopBodyBlockId = bodyBlockId;
-          
-          std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " created body block " 
-                    << bodyBlockId << " for iteration " << ourEntry.loopIteration << std::endl;
         }
         
         // Move to body block if not already there
@@ -3651,7 +3662,7 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
         
         // Completed body execution - move back to header block and to next iteration
         tg.moveThreadFromUnknownToParticipating(headerBlockId, wave.waveId, lane.laneId);
-        ourEntry.loopBodyBlockId = 0; // Reset for next iteration
+        lane.executionStack[ourStackIndex].loopBodyBlockId = 0; // Reset for next iteration
         std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " completed iteration " 
                   << lane.executionStack[ourStackIndex].loopIteration << std::endl;
         lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingCondition;
@@ -3683,8 +3694,8 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
   } catch (const WaveOperationWaitException&) {
     // Wave operation is waiting - execution state is already saved
     std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " waiting for wave operation in phase " 
-              << static_cast<int>(ourEntry.phase) << " at statement " << ourEntry.statementIndex 
-              << ", iteration " << ourEntry.loopIteration << std::endl;
+              << static_cast<int>(lane.executionStack[ourStackIndex].phase) << " at statement " << lane.executionStack[ourStackIndex].statementIndex 
+              << ", iteration " << lane.executionStack[ourStackIndex].loopIteration << std::endl;
     throw; // Re-throw to pause parent control flow statements
   } catch (const ControlFlowException &e) {
     if (e.type == ControlFlowException::Break) {
@@ -3800,25 +3811,30 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
         // Create or get LOOP_BODY block for this iteration
         uint32_t bodyBlockId = ourEntry.loopBodyBlockId;
         if (bodyBlockId == 0) {
-          // Create LOOP_BODY block for this iteration
-          uint32_t parentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
           std::vector<MergeStackEntry> currentMergeStack = tg.getCurrentMergeStack(wave.waveId, lane.laneId);
           
           // Create unique identity for this iteration's body block
           const void* iterationPtr = reinterpret_cast<const void*>(
-              reinterpret_cast<uintptr_t>(this) + ourEntry.loopIteration + 1);
+              reinterpret_cast<uintptr_t>(this) + (ourEntry.loopIteration << 16) + 0x1000);
           
           BlockIdentity bodyIdentity = tg.createBlockIdentity(
               iterationPtr, BlockType::LOOP_BODY, headerBlockId, currentMergeStack, true, lane.executionPath);
-              
-          std::map<WaveId, std::set<LaneId>> expectedLanes;
-          expectedLanes[wave.waveId].insert(lane.laneId);
           
-          bodyBlockId = tg.findOrCreateBlockForPath(bodyIdentity, expectedLanes);
+          // Try to find existing block first
+          bodyBlockId = tg.findBlockByIdentity(bodyIdentity);
+          
+          if (bodyBlockId == 0) {
+            // Create new block only if none exists
+            std::map<WaveId, std::set<LaneId>> expectedLanes; // Empty - let block grow dynamically
+            bodyBlockId = tg.findOrCreateBlockForPath(bodyIdentity, expectedLanes);
+            std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId << " created new body block " 
+                      << bodyBlockId << " for iteration " << ourEntry.loopIteration << std::endl;
+          } else {
+            std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId << " found existing body block " 
+                      << bodyBlockId << " for iteration " << ourEntry.loopIteration << std::endl;
+          }
+          
           ourEntry.loopBodyBlockId = bodyBlockId;
-          
-          std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId << " created body block " 
-                    << bodyBlockId << " for iteration " << ourEntry.loopIteration << std::endl;
         }
         
         // Move to body block if not already there
@@ -3843,7 +3859,7 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
         
         // Completed body execution - move back to header block and to condition evaluation
         tg.moveThreadFromUnknownToParticipating(headerBlockId, wave.waveId, lane.laneId);
-        ourEntry.loopBodyBlockId = 0; // Reset for next iteration
+        lane.executionStack[ourStackIndex].loopBodyBlockId = 0; // Reset for next iteration
         std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId << " completed body for iteration " 
                   << lane.executionStack[ourStackIndex].loopIteration << std::endl;
         lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingCondition;
@@ -3858,7 +3874,7 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
         bool shouldContinue = condition_->evaluate(lane, wave, tg).asBool();
         if (!shouldContinue) {
           // Lane is exiting loop - move to reconverging phase
-          ourEntry.phase = LaneContext::ControlFlowPhase::Reconverging;
+          lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::Reconverging;
           break;
         }
         
@@ -4018,8 +4034,8 @@ void SwitchStmt::execute(LaneContext &lane, WaveContext &wave,
           if (!ourEntry.conditionEvaluated) {
             std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId << " evaluating condition for first time" << std::endl;
             auto condValue = condition_->evaluate(lane, wave, tg);
-            ourEntry.switchValue = condValue;
-            ourEntry.conditionEvaluated = true;
+            lane.executionStack[ourStackIndex].switchValue = condValue;
+            lane.executionStack[ourStackIndex].conditionEvaluated = true;
             std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId << " switch condition evaluated to: " << condValue.asInt() << std::endl;
           } else {
             std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId << " using cached condition result=" << ourEntry.switchValue.asInt() << std::endl;
