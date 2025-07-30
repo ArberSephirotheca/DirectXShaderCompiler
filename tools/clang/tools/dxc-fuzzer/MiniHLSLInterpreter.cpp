@@ -3760,20 +3760,24 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
     } else if (e.type == ControlFlowException::Continue) {
       // Continue - go to next iteration
       std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " continuing while loop" << std::endl;
-      auto& ourEntry = lane.executionStack[ourStackIndex];
       lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingCondition;
       lane.executionStack[ourStackIndex].loopIteration++;
       lane.executionStack[ourStackIndex].statementIndex = 0;
+      
+      // Clean up - remove from all nested blocks this lane is abandoning
+      if (lane.executionStack[ourStackIndex].loopBodyBlockId != 0) {
+        tg.removeThreadFromAllSets(lane.executionStack[ourStackIndex].loopBodyBlockId, wave.waveId, lane.laneId);
+        tg.removeThreadFromNestedBlocks(lane.executionStack[ourStackIndex].loopBodyBlockId, wave.waveId, lane.laneId);
+      }
+      
+      // Move lane back to header block for proper context
+      tg.moveThreadFromUnknownToParticipating(headerBlockId, wave.waveId, lane.laneId);
+      lane.executionStack[ourStackIndex].loopBodyBlockId = 0; // Reset for next iteration
+      
+      // Set state to WaitingForResume to prevent currentStatement increment
+      lane.state = ThreadState::WaitingForResume;
+      return; // Exit to prevent currentStatement increment, will resume later
     }
-  }
-  
-  // If we reach here, continue the loop by recursively calling execute
-  // This handles the state machine transitions
-  try {
-    execute(lane, wave, tg);
-  } catch (const WaveOperationWaitException& e) {
-    // Propagate wave operation wait to parent
-    throw;
   }
 }
 
@@ -3987,18 +3991,22 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
     } else if (e.type == ControlFlowException::Continue) {
       // Continue - go to condition evaluation
       std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId << " continuing do-while loop" << std::endl;
-      auto& ourEntry = lane.executionStack[ourStackIndex];
       lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingCondition;
+      
+      // Clean up - remove from all nested blocks this lane is abandoning
+      if (lane.executionStack[ourStackIndex].loopBodyBlockId != 0) {
+        tg.removeThreadFromAllSets(lane.executionStack[ourStackIndex].loopBodyBlockId, wave.waveId, lane.laneId);
+        tg.removeThreadFromNestedBlocks(lane.executionStack[ourStackIndex].loopBodyBlockId, wave.waveId, lane.laneId);
+      }
+      
+      // Move lane back to header block for proper context
+      tg.moveThreadFromUnknownToParticipating(headerBlockId, wave.waveId, lane.laneId);
+      lane.executionStack[ourStackIndex].loopBodyBlockId = 0; // Reset for next iteration
+      
+      // Set state to WaitingForResume to prevent currentStatement increment
+      lane.state = ThreadState::WaitingForResume;
+      return; // Exit to prevent currentStatement increment, will resume later
     }
-  }
-  
-  // If we reach here, continue the loop by recursively calling execute
-  // This handles the state machine transitions
-  try {
-    execute(lane, wave, tg);
-  } catch (const WaveOperationWaitException& e) {
-    // Propagate wave operation wait to parent
-    throw;
   }
 }
 
