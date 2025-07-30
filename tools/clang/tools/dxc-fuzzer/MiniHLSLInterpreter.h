@@ -187,6 +187,9 @@ struct LaneContext {
         uint32_t loopMergeBlockId = 0;   // For loops: merge block ID
         uint32_t loopBodyBlockId = 0;    // For loops: current iteration body block ID
         
+        // Switch-specific block tracking
+        std::vector<uint32_t> switchCaseBlockIds;  // For switch statements: all case block IDs
+        
         BlockExecutionState(const void* stmt, ControlFlowPhase ph, size_t idx = 0, uint32_t blkId = 0)
             : statement(stmt), phase(ph), statementIndex(idx), blockId(blkId) {}
     };

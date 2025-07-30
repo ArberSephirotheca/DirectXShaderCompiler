@@ -5,21 +5,21 @@
 void main(uint3 id : SV_DispatchThreadID) {
     uint laneId = WaveGetLaneIndex();
     uint result = 0;
-    
+    int i = 0;
     // Deterministic branching - all lanes take predictable paths
-    for (int i = 0; i < 4; ++i) {
-        if (laneId == i || laneId == 1) {
-            continue;
-        }
+    switch (laneId) {
+        case 0:
+        result += WaveActiveSum(0);
+        case 1:
         result += WaveActiveSum(1);
+        case 2:
+        case 3:
+        result += WaveActiveSum(3);
+        default:
+        result += WaveActiveSum(10);
+
     }
     
-    // Expected per-lane results:
-    // Lane 0: skip at i=0, result=3
-    // Lane 1: skip all iterations, result=0
-    // Lane 2: skip at i=2, result=5
-    // Lane 3: skip at i=3, result=5
-    // WaveActiveSum: 3+0+5+5 = 13
-    
+    // Wave sum should be: (16 * 1) + (16 * 2) = 48
     uint totalSum = WaveActiveSum(result);
 }
