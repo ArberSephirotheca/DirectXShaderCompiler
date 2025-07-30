@@ -21,6 +21,6 @@ void main(uint3 id : SV_DispatchThreadID) {
         result = 2;  // Second half of wave
     }
     }
-    // 10 + 1 + 2 + 2 = 15
+    // 10 + 10 + 1 + 1 + 2 + 2 = 15
     uint totalSum = WaveActiveSum(result);
 }

@@ -1605,13 +1605,21 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
       tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId, lane.laneId);
       return;
     } else if (e.type == ControlFlowException::Continue) {
-      // Continue - go to increment phase and move back to header block
+      // Continue - go to increment phase and skip remaining statements
       std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " continuing loop" << std::endl;
-      lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingIncrement;
       
-      // Move lane back to header block for proper context
-      tg.assignLaneToBlock(wave.waveId, lane.laneId, headerBlockId);
-      // The while loop will continue and handle the next phase
+      // Clean up - remove from all nested blocks this lane is abandoning
+      if (lane.executionStack[ourStackIndex].loopBodyBlockId != 0) {
+        tg.removeThreadFromAllSets(lane.executionStack[ourStackIndex].loopBodyBlockId, wave.waveId, lane.laneId);
+        tg.removeThreadFromNestedBlocks(lane.executionStack[ourStackIndex].loopBodyBlockId, wave.waveId, lane.laneId);
+      }
+          tg.moveThreadFromUnknownToParticipating(headerBlockId, wave.waveId, lane.laneId);
+          lane.executionStack[ourStackIndex].loopBodyBlockId = 0; // Reset for next iteration
+          lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingIncrement;
+      
+      // Set state to WaitingForResume to prevent currentStatement increment
+      lane.state = ThreadState::WaitingForResume;
+      return; // Exit to prevent currentStatement increment, will resume later
     }
   }
 }
@@ -1988,6 +1996,9 @@ MiniHLSLInterpreter::executeWithOrdering(const Program &program,
       // Process completed wave operations and barriers
       processWaveOperations(tgContext);
       processBarriers(tgContext);
+      
+      // Process lanes waiting to resume control flow
+      processControlFlowResumption(tgContext);
 
       // Get threads ready for execution
       auto readyThreads = tgContext.getReadyThreads();
@@ -1998,7 +2009,8 @@ MiniHLSLInterpreter::executeWithOrdering(const Program &program,
         for (const auto &wave : tgContext.waves) {
           for (const auto &lane : wave->lanes) {
             if (lane->state == ThreadState::WaitingForWave ||
-                lane->state == ThreadState::WaitingAtBarrier) {
+                lane->state == ThreadState::WaitingAtBarrier ||
+                lane->state == ThreadState::WaitingForResume) {
               hasWaitingThreads = true;
             }
             if (lane->state != ThreadState::Completed &&
@@ -2187,6 +2199,24 @@ void MiniHLSLInterpreter::processWaveOperations(ThreadgroupContext &tgContext) {
         INTERPRETER_DEBUG_LOG("All results consumed, releasing sync point for wave " << waveId 
                              << " at instruction " << instructionKey.first << " block " << instructionKey.second << "\n");
         tgContext.releaseWaveSyncPoint(waveId, instructionKey);
+      }
+    }
+  }
+}
+
+void MiniHLSLInterpreter::processControlFlowResumption(ThreadgroupContext &tgContext) {
+  // Wake up lanes that are waiting to resume control flow statements
+  for (size_t waveId = 0; waveId < tgContext.waves.size(); ++waveId) {
+    auto& wave = *tgContext.waves[waveId];
+    
+    for (size_t laneId = 0; laneId < wave.lanes.size(); ++laneId) {
+      auto& lane = *wave.lanes[laneId];
+      
+      if (lane.state == ThreadState::WaitingForResume) {
+        // Make lane ready to resume control flow execution
+        INTERPRETER_DEBUG_LOG("  Waking up lane " << laneId 
+                             << " from WaitingForResume to Ready\n");
+        lane.state = ThreadState::Ready;
       }
     }
   }
@@ -5566,6 +5596,7 @@ void ThreadgroupContext::printFinalVariableValues() const {
         case ThreadState::Ready: stateStr = "Ready"; break;
         case ThreadState::WaitingAtBarrier: stateStr = "WaitingAtBarrier"; break;
         case ThreadState::WaitingForWave: stateStr = "WaitingForWave"; break;
+        case ThreadState::WaitingForResume: stateStr = "WaitingForResume"; break;
         case ThreadState::Completed: stateStr = "Completed"; break;
         case ThreadState::Error: stateStr = "Error"; break;
       }

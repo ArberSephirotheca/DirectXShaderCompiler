@@ -102,6 +102,7 @@ enum class ThreadState {
     Ready,           // Ready to execute
     WaitingAtBarrier, // Waiting for barrier synchronization  
     WaitingForWave,  // Waiting for wave operation to complete
+    WaitingForResume, // Waiting to resume control flow statement
     Completed,       // Thread has finished execution
     Error            // Thread encountered an error
 };
@@ -1125,6 +1126,7 @@ private:
     // Cooperative execution engine
     bool executeOneStep(ThreadId tid, const Program& program, ThreadgroupContext& tgContext);
     void processWaveOperations(ThreadgroupContext& tgContext);
+    void processControlFlowResumption(ThreadgroupContext& tgContext);
     void executeCollectiveWaveOperation(ThreadgroupContext& tgContext, WaveId waveId, 
                                        const std::pair<const void*, uint32_t>& instructionKey, WaveOperationSyncPoint& syncPoint);
     void executeCollectiveBarrier(ThreadgroupContext& tgContext, uint32_t barrierId, const ThreadgroupBarrierState& barrier);
