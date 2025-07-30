@@ -9,8 +9,9 @@ void main(uint3 id : SV_DispatchThreadID) {
     // Deterministic branching - all lanes take predictable paths
     switch (laneId) {
         case 0:
-        for (int i = 0; i < 2)
-            result += WaveActiveSum(0);
+          for (int i = 0; i < 3; i++) {
+              result += WaveActiveSum(i);
+          }
         case 1:
         result += WaveActiveSum(1);
         case 2:
