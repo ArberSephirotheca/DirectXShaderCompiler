@@ -1474,6 +1474,37 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
           std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " executing body for iteration " 
                     << ourEntry.loopIteration << " from statement " << ourEntry.statementIndex << std::endl;
           
+          // Create or get LOOP_BODY block for this iteration
+          uint32_t bodyBlockId = ourEntry.loopBodyBlockId;
+          if (bodyBlockId == 0) {
+            // Create LOOP_BODY block for this iteration
+            uint32_t parentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
+            std::vector<MergeStackEntry> currentMergeStack = tg.getCurrentMergeStack(wave.waveId, lane.laneId);
+            
+            // Create unique identity for this iteration's body block
+            const void* iterationPtr = reinterpret_cast<const void*>(
+                reinterpret_cast<uintptr_t>(this) + ourEntry.loopIteration + 1);
+            
+            BlockIdentity bodyIdentity = tg.createBlockIdentity(
+                iterationPtr, BlockType::LOOP_BODY, headerBlockId, currentMergeStack, true, lane.executionPath);
+                
+            std::map<WaveId, std::set<LaneId>> expectedLanes;
+            expectedLanes[wave.waveId].insert(lane.laneId);
+            
+            bodyBlockId = tg.findOrCreateBlockForPath(bodyIdentity, expectedLanes);
+            ourEntry.loopBodyBlockId = bodyBlockId;
+            
+            std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " created body block " 
+                      << bodyBlockId << " for iteration " << ourEntry.loopIteration << std::endl;
+          }
+          
+          // Move to body block if not already there
+          if (tg.getCurrentBlock(wave.waveId, lane.laneId) != bodyBlockId) {
+            tg.moveThreadFromUnknownToParticipating(bodyBlockId, wave.waveId, lane.laneId);
+            std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " moved to body block " 
+                      << bodyBlockId << " for iteration " << ourEntry.loopIteration << std::endl;
+          }
+          
           // Execute statements in body from saved position
           for (size_t i = ourEntry.statementIndex; i < body_.size(); i++) {
             lane.executionStack[ourStackIndex].statementIndex = i;
@@ -1489,7 +1520,9 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
             lane.executionStack[ourStackIndex].statementIndex = i + 1;
           }
           
-          // Body completed, move to increment phase
+          // Body completed, move back to header block and to increment phase
+          tg.moveThreadFromUnknownToParticipating(headerBlockId, wave.waveId, lane.laneId);
+          ourEntry.loopBodyBlockId = 0; // Reset for next iteration
           lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingIncrement;
           break;
         }
