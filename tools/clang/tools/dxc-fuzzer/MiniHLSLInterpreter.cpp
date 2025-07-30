@@ -1492,7 +1492,8 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
             
             if (bodyBlockId == 0) {
               // Create new block only if none exists
-              std::map<WaveId, std::set<LaneId>> expectedLanes; // Empty - let block grow dynamically
+              // Expected lanes are those currently in the header block that will execute the body
+              std::map<WaveId, std::set<LaneId>> expectedLanes = tg.getCurrentBlockParticipants(headerBlockId);
               bodyBlockId = tg.findOrCreateBlockForPath(bodyIdentity, expectedLanes);
               std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " created new body block " 
                         << bodyBlockId << " for iteration " << ourEntry.loopIteration << std::endl;
@@ -3596,7 +3597,11 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
         // Check loop condition
         bool shouldContinue = condition_->evaluate(lane, wave, tg).asBool();
         if (!shouldContinue) {
-          // Lane is exiting loop - move to reconverging phase
+          // Lane is exiting loop - comprehensive cleanup from header and all iteration blocks
+          tg.removeThreadFromAllSets(headerBlockId, wave.waveId, lane.laneId);      // Remove from header
+          tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId); // Remove from iteration blocks
+          
+          // Move to reconverging phase
           lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::Reconverging;
           break;
         }
@@ -3628,7 +3633,8 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
           
           if (bodyBlockId == 0) {
             // Create new block only if none exists
-            std::map<WaveId, std::set<LaneId>> expectedLanes; // Empty - let block grow dynamically
+            // Expected lanes are those currently in the header block that will execute the body
+            std::map<WaveId, std::set<LaneId>> expectedLanes = tg.getCurrentBlockParticipants(headerBlockId);
             bodyBlockId = tg.findOrCreateBlockForPath(bodyIdentity, expectedLanes);
             std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " created new body block " 
                       << bodyBlockId << " for iteration " << ourEntry.loopIteration << std::endl;
@@ -3825,7 +3831,16 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
           
           if (bodyBlockId == 0) {
             // Create new block only if none exists
-            std::map<WaveId, std::set<LaneId>> expectedLanes; // Empty - let block grow dynamically
+            // For DoWhile first iteration, use parent block participants; for later iterations use header block
+            std::map<WaveId, std::set<LaneId>> expectedLanes;
+            if (ourEntry.loopIteration == 0) {
+              // First iteration - get parent block from identity
+              uint32_t parentBlockId = bodyIdentity.parentBlockId;
+              expectedLanes = tg.getCurrentBlockParticipants(parentBlockId);
+            } else {
+              // Later iterations - use header block participants
+              expectedLanes = tg.getCurrentBlockParticipants(headerBlockId);
+            }
             bodyBlockId = tg.findOrCreateBlockForPath(bodyIdentity, expectedLanes);
             std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId << " created new body block " 
                       << bodyBlockId << " for iteration " << ourEntry.loopIteration << std::endl;
@@ -3873,7 +3888,11 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
         // Check loop condition
         bool shouldContinue = condition_->evaluate(lane, wave, tg).asBool();
         if (!shouldContinue) {
-          // Lane is exiting loop - move to reconverging phase
+          // Lane is exiting loop - comprehensive cleanup from header and all iteration blocks
+          tg.removeThreadFromAllSets(headerBlockId, wave.waveId, lane.laneId);      // Remove from header
+          tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId); // Remove from iteration blocks
+          
+          // Move to reconverging phase
           lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::Reconverging;
           break;
         }
