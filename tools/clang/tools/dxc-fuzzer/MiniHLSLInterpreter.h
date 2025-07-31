@@ -188,6 +188,11 @@ struct LaneContext {
         uint32_t loopMergeBlockId = 0;   // For loops: merge block ID
         uint32_t loopBodyBlockId = 0;    // For loops: current iteration body block ID
         
+        // If-specific block tracking
+        uint32_t ifThenBlockId = 0;      // For if statements: then block ID
+        uint32_t ifElseBlockId = 0;      // For if statements: else block ID
+        uint32_t ifMergeBlockId = 0;     // For if statements: merge block ID
+        
         // Switch-specific block tracking
         std::vector<uint32_t> switchCaseBlockIds;  // For switch statements: all case block IDs
         
@@ -952,10 +957,7 @@ class IfStmt : public Statement {
     std::vector<std::unique_ptr<Statement>> thenBlock_;
     std::vector<std::unique_ptr<Statement>> elseBlock_;
     
-    // Block IDs for control flow - preserved across wave operation resumptions
-    mutable uint32_t thenBlockId = 0;
-    mutable uint32_t elseBlockId = 0; 
-    mutable uint32_t mergeBlockId = 0;
+    // Block IDs are now stored per-lane in execution stack (ifThenBlockId, ifElseBlockId, ifMergeBlockId)
     
 public:
     IfStmt(std::unique_ptr<Expression> cond, 

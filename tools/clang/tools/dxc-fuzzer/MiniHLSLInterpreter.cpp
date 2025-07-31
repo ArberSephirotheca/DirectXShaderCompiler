@@ -1151,12 +1151,13 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
   // Don't hold reference to vector element - it can be invalidated during nested execution
   bool hasElse = !elseBlock_.empty();
   uint32_t parentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
-  bool setupComplete = (thenBlockId != 0 || elseBlockId != 0 || mergeBlockId != 0);
+  // Check if this lane has already set up blocks in its execution stack
+  auto& ourEntry = lane.executionStack[ourStackIndex];
+  bool setupComplete = (ourEntry.ifThenBlockId != 0 || ourEntry.ifElseBlockId != 0 || ourEntry.ifMergeBlockId != 0);
   
   try {
     // while (lane.isActive) {
-      // Use our entry, not back()
-      auto& ourEntry = lane.executionStack[ourStackIndex];
+      // Use our entry, not back() - already declared above
       std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " in phase " << LaneContext::getPhaseString(ourEntry.phase) 
                 << " (stack depth=" << lane.executionStack.size() << ", our index=" << ourStackIndex << ", this=" << this << ")" << std::endl;
       switch (ourEntry.phase) {
@@ -1184,39 +1185,39 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
           std::vector<MergeStackEntry> currentMergeStack = tg.getCurrentMergeStack(wave.waveId, lane.laneId);
           auto blockIds = tg.createIfBlocks(static_cast<const void *>(this), parentBlockId,
                                            currentMergeStack, hasElse, lane.executionPath);
-          thenBlockId = std::get<0>(blockIds);
-          elseBlockId = std::get<1>(blockIds);
-          mergeBlockId = std::get<2>(blockIds);
-          std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " setup complete: thenBlockId=" << thenBlockId 
-                    << ", elseBlockId=" << elseBlockId << ", mergeBlockId=" << mergeBlockId << std::endl;
+          ourEntry.ifThenBlockId = std::get<0>(blockIds);
+          ourEntry.ifElseBlockId = std::get<1>(blockIds);
+          ourEntry.ifMergeBlockId = std::get<2>(blockIds);
+          std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " setup complete: thenBlockId=" << ourEntry.ifThenBlockId 
+                    << ", elseBlockId=" << ourEntry.ifElseBlockId << ", mergeBlockId=" << ourEntry.ifMergeBlockId << std::endl;
           setupComplete = true;
 
           // Update blocks based on condition result
           if (ourEntry.conditionResult) {
-            tg.moveThreadFromUnknownToParticipating(thenBlockId, wave.waveId, lane.laneId);
+            tg.moveThreadFromUnknownToParticipating(ourEntry.ifThenBlockId, wave.waveId, lane.laneId);
             if (hasElse) {
-              tg.removeThreadFromUnknown(elseBlockId, wave.waveId, lane.laneId);
-              tg.removeThreadFromNestedBlocks(elseBlockId, wave.waveId, lane.laneId);
+              tg.removeThreadFromUnknown(ourEntry.ifElseBlockId, wave.waveId, lane.laneId);
+              tg.removeThreadFromNestedBlocks(ourEntry.ifElseBlockId, wave.waveId, lane.laneId);
             }
             // Don't remove from merge block yet - lane will reconverge there later
             
             ourEntry.phase = LaneContext::ControlFlowPhase::ExecutingThenBlock;
             ourEntry.inThenBranch = true;
-            ourEntry.blockId = thenBlockId;
+            ourEntry.blockId = ourEntry.ifThenBlockId;
           } else if (hasElse) {
-            tg.moveThreadFromUnknownToParticipating(elseBlockId, wave.waveId, lane.laneId);
-            tg.removeThreadFromUnknown(thenBlockId, wave.waveId, lane.laneId);
-            tg.removeThreadFromNestedBlocks(thenBlockId, wave.waveId, lane.laneId);
+            tg.moveThreadFromUnknownToParticipating(ourEntry.ifElseBlockId, wave.waveId, lane.laneId);
+            tg.removeThreadFromUnknown(ourEntry.ifThenBlockId, wave.waveId, lane.laneId);
+            tg.removeThreadFromNestedBlocks(ourEntry.ifThenBlockId, wave.waveId, lane.laneId);
             // Don't remove from merge block yet - lane will reconverge there later
             
             ourEntry.phase = LaneContext::ControlFlowPhase::ExecutingElseBlock;
             ourEntry.inThenBranch = false;
-            ourEntry.blockId = elseBlockId;
+            ourEntry.blockId = ourEntry.ifElseBlockId;
           } else {
             // No else block
-            tg.removeThreadFromUnknown(thenBlockId, wave.waveId, lane.laneId);
-            tg.removeThreadFromNestedBlocks(thenBlockId, wave.waveId, lane.laneId);
-            tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId, lane.laneId);
+            tg.removeThreadFromUnknown(ourEntry.ifThenBlockId, wave.waveId, lane.laneId);
+            tg.removeThreadFromNestedBlocks(ourEntry.ifThenBlockId, wave.waveId, lane.laneId);
+            tg.moveThreadFromUnknownToParticipating(ourEntry.ifMergeBlockId, wave.waveId, lane.laneId);
             
             ourEntry.phase = LaneContext::ControlFlowPhase::Reconverging;
 
@@ -1226,8 +1227,8 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
           std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " condition=" << ourEntry.conditionResult 
                     << ", moving to phase=" << LaneContext::getPhaseString(ourEntry.phase) << std::endl;
           // break;
-          std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " executing: thenBlockId=" << thenBlockId 
-                    << ", elseBlockId=" << elseBlockId << ", mergeBlockId=" << mergeBlockId << std::endl;  
+          std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " executing: thenBlockId=" << ourEntry.ifThenBlockId 
+                    << ", elseBlockId=" << ourEntry.ifElseBlockId << ", mergeBlockId=" << ourEntry.ifMergeBlockId << std::endl;  
           if (!isProtectedState(lane.state)) {
             lane.state = ThreadState::WaitingForResume;
           }
@@ -1303,7 +1304,8 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
 
         case LaneContext::ControlFlowPhase::Reconverging: {
           uint32_t currentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
-          std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " performing reconvergence from block " << currentBlockId << " to mergeBlockId=" << mergeBlockId << std::endl;
+          uint32_t laneSpecificMergeBlockId = ourEntry.ifMergeBlockId;
+          std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " performing reconvergence from block " << currentBlockId << " to laneSpecificMergeBlockId=" << laneSpecificMergeBlockId << std::endl;
           
           // Debug: Show current merge stack before popping
           std::vector<MergeStackEntry> currentMergeStack = tg.getCurrentMergeStack(wave.waveId, lane.laneId);
@@ -1321,22 +1323,22 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
           lane.executionStack.pop_back();
           
           // Reconverge at merge block
-          std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " popping merge point before assigning to block " << mergeBlockId << std::endl;
+          std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " popping merge point before assigning to block " << laneSpecificMergeBlockId << std::endl;
           tg.popMergePoint(wave.waveId, lane.laneId);
-          std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " assigning to merge block " << mergeBlockId << std::endl;
-          tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
+          std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " assigning to merge block " << laneSpecificMergeBlockId << std::endl;
+          tg.assignLaneToBlock(wave.waveId, lane.laneId, laneSpecificMergeBlockId);
           
           // Move lane to merge block as participating (reconvergence)
-          tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId, lane.laneId);
+          tg.moveThreadFromUnknownToParticipating(laneSpecificMergeBlockId, wave.waveId, lane.laneId);
           
           // Clean up then/else blocks - lane will never return to them
           if (setupComplete) {
-            tg.removeThreadFromAllSets(thenBlockId, wave.waveId, lane.laneId);
-            tg.removeThreadFromNestedBlocks(thenBlockId, wave.waveId, lane.laneId);
+            tg.removeThreadFromAllSets(ourEntry.ifThenBlockId, wave.waveId, lane.laneId);
+            tg.removeThreadFromNestedBlocks(ourEntry.ifThenBlockId, wave.waveId, lane.laneId);
             
-            if (hasElse && elseBlockId != 0) {
-              tg.removeThreadFromAllSets(elseBlockId, wave.waveId, lane.laneId);
-              tg.removeThreadFromNestedBlocks(elseBlockId, wave.waveId, lane.laneId);
+            if (hasElse && ourEntry.ifElseBlockId != 0) {
+              tg.removeThreadFromAllSets(ourEntry.ifElseBlockId, wave.waveId, lane.laneId);
+              tg.removeThreadFromNestedBlocks(ourEntry.ifElseBlockId, wave.waveId, lane.laneId);
             }
           }
 
@@ -1359,38 +1361,35 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
     // Propagate break/continue to enclosing loop - do NOT move to merge block
     std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " popping stack due to ControlFlowException (depth " 
               << lane.executionStack.size() << "->" << (lane.executionStack.size()-1) << ", this=" << this << ")" << std::endl;
+    
+    // Get block IDs before popping the stack
+    uint32_t ifThenBlockId = lane.executionStack[ourStackIndex].ifThenBlockId;
+    uint32_t ifElseBlockId = lane.executionStack[ourStackIndex].ifElseBlockId;
+    uint32_t ifMergeBlockId = lane.executionStack[ourStackIndex].ifMergeBlockId;
+    
     lane.executionStack.pop_back();
     tg.popMergePoint(wave.waveId, lane.laneId);
   
   // Clean up then/else blocks - lane will never return to them
-  tg.removeThreadFromAllSets(thenBlockId, wave.waveId, lane.laneId);
-  tg.removeThreadFromNestedBlocks(thenBlockId, wave.waveId, lane.laneId);
+  tg.removeThreadFromAllSets(ifThenBlockId, wave.waveId, lane.laneId);
+  tg.removeThreadFromNestedBlocks(ifThenBlockId, wave.waveId, lane.laneId);
   
-  if (hasElse && elseBlockId != 0) {
-    tg.removeThreadFromAllSets(elseBlockId, wave.waveId, lane.laneId);
-    tg.removeThreadFromNestedBlocks(elseBlockId, wave.waveId, lane.laneId);
+  if (hasElse && ifElseBlockId != 0) {
+    tg.removeThreadFromAllSets(ifElseBlockId, wave.waveId, lane.laneId);
+    tg.removeThreadFromNestedBlocks(ifElseBlockId, wave.waveId, lane.laneId);
   }
   
   // Also clean up merge block since we're not going there
-  tg.removeThreadFromAllSets(mergeBlockId, wave.waveId, lane.laneId);
-  tg.removeThreadFromNestedBlocks(mergeBlockId, wave.waveId, lane.laneId);
+  tg.removeThreadFromAllSets(ifMergeBlockId, wave.waveId, lane.laneId);
+  tg.removeThreadFromNestedBlocks(ifMergeBlockId, wave.waveId, lane.laneId);
 
   // Restore active state (reconvergence)
   lane.isActive = lane.isActive && !lane.hasReturned;
     throw;
   }
 
-  // Move lane to merge block as participating (reconvergence)
-  tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId, lane.laneId);
-  
-  // Clean up then/else blocks - lane will never return to them
-  tg.removeThreadFromAllSets(thenBlockId, wave.waveId, lane.laneId);
-  tg.removeThreadFromNestedBlocks(thenBlockId, wave.waveId, lane.laneId);
-  
-  if (hasElse && elseBlockId != 0) {
-    tg.removeThreadFromAllSets(elseBlockId, wave.waveId, lane.laneId);
-    tg.removeThreadFromNestedBlocks(elseBlockId, wave.waveId, lane.laneId);
-  }
+  // This appears to be unreachable code after the exception handling
+  // If it's needed, it should use execution stack values but this looks like dead code
 
   // Restore active state (reconvergence)
   lane.isActive = lane.isActive && !lane.hasReturned;
