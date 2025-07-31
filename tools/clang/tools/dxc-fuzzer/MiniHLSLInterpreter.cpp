@@ -1139,7 +1139,7 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
   bool setupComplete = (thenBlockId != 0 || elseBlockId != 0 || mergeBlockId != 0);
 
   try {
-    while (lane.isActive) {
+    // while (lane.isActive) {
       // Use our entry, not back()
       auto& ourEntry = lane.executionStack[ourStackIndex];
       std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " in phase " << LaneContext::getPhaseString(ourEntry.phase) 
@@ -1207,7 +1207,9 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
           lane.executionStack[ourStackIndex].statementIndex = 0;
           std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " condition=" << ourEntry.conditionResult 
                     << ", moving to phase=" << LaneContext::getPhaseString(ourEntry.phase) << std::endl;
-          break;
+          // break;
+                lane.state = ThreadState::WaitingForResume;
+      return; // Exit to prevent currentStatement increment, will resume later
         }
 
         case LaneContext::ControlFlowPhase::ExecutingThenBlock: {
@@ -1233,7 +1235,9 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
           // Completed then block
           lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::Reconverging;
           std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " completed then block, moving to reconvergence" << std::endl;
-          break;
+          // break;
+                lane.state = ThreadState::WaitingForResume;
+      return; // Exit to prevent currentStatement increment, will resume later
         }
 
         case LaneContext::ControlFlowPhase::ExecutingElseBlock: {
@@ -1259,7 +1263,9 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
           // Completed else block
           lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::Reconverging;
           std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " completed else block, moving to reconvergence" << std::endl;
-          break;
+          // break;
+                lane.state = ThreadState::WaitingForResume;
+      return; // Exit to prevent currentStatement increment, will resume later
         }
 
         case LaneContext::ControlFlowPhase::Reconverging: {
@@ -1298,7 +1304,7 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
           return;
         }
       }
-    }
+    // }
 
   } catch (const WaveOperationWaitException&) {
     // Wave operation is waiting - execution state is already saved
@@ -1443,7 +1449,7 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
 
   // Execute loop with state machine
   try {
-    while (lane.isActive) {
+    // while (lane.isActive) {
       auto& ourEntry = lane.executionStack[ourStackIndex];
       std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " in phase " << LaneContext::getPhaseString(ourEntry.phase) 
                 << " (stack depth=" << lane.executionStack.size() << ", our index=" << ourStackIndex << ", this=" << this << ")" << std::endl;
@@ -1462,7 +1468,8 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
           // Move to condition evaluation phase
           lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingCondition;
           lane.executionStack[ourStackIndex].loopIteration = 0;
-          break;
+        lane.state = ThreadState::WaitingForResume;
+        return; // Exit to prevent currentStatement increment, will resume later
         }
         
         case LaneContext::ControlFlowPhase::EvaluatingCondition: {
@@ -1478,13 +1485,15 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
             
             // Move to reconverging phase
             lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::Reconverging;
-            break;
+            lane.state = ThreadState::WaitingForResume;
+            return; // Exit to prevent currentStatement increment, will resume later
           }
           
           // Condition passed, move to body execution
           lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::ExecutingBody;
           lane.executionStack[ourStackIndex].statementIndex = 0;
-          break;
+      lane.state = ThreadState::WaitingForResume;
+      return; // Exit to prevent currentStatement increment, will resume later
         }
         
         case LaneContext::ControlFlowPhase::ExecutingBody: {
@@ -1538,8 +1547,12 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
               tg.popMergePoint(wave.waveId, lane.laneId);
               return;
             }
-            
+          if (lane.state != ThreadState::Ready) {
+          // Child statement needs to resume - don't continue
+          return;
+          }
             // Re-fetch reference in case vector reallocated during statement execution
+            // todo: why we do this?
             lane.executionStack[ourStackIndex].statementIndex = i + 1;
           }
           
@@ -1547,7 +1560,8 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
           tg.moveThreadFromUnknownToParticipating(headerBlockId, wave.waveId, lane.laneId);
           lane.executionStack[ourStackIndex].loopBodyBlockId = 0; // Reset for next iteration
           lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingIncrement;
-          break;
+      lane.state = ThreadState::WaitingForResume;
+      return; // Exit to prevent currentStatement increment, will resume later
         }
         
         case LaneContext::ControlFlowPhase::EvaluatingIncrement: {
@@ -1560,8 +1574,9 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
           // Move to next iteration
           lane.executionStack[ourStackIndex].loopIteration++;
           lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingCondition;
-          break;
-        }
+      lane.state = ThreadState::WaitingForResume;
+      return; // Exit to prevent currentStatement increment, will resume later
+      }
         
         case LaneContext::ControlFlowPhase::Reconverging: {
           std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " exiting loop after " 
@@ -1582,7 +1597,7 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
           std::cout << "ERROR: ForStmt - Unexpected phase " << static_cast<int>(ourEntry.phase) << std::endl;
           return;
       }
-    }
+    // }
   } catch (const WaveOperationWaitException&) {
     // Wave operation is waiting - execution state is already saved
     auto& ourEntry = lane.executionStack[ourStackIndex];
@@ -3628,7 +3643,7 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
   uint32_t mergeBlockId = lane.executionStack[ourStackIndex].loopMergeBlockId;
 
   try {
-    while (lane.isActive) {
+    // while (lane.isActive) {
     // State machine for while loop execution
     switch (lane.executionStack[ourStackIndex].phase) {
       case LaneContext::ControlFlowPhase::EvaluatingCondition: {
@@ -3644,13 +3659,16 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
           
           // Move to reconverging phase
           lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::Reconverging;
-          break;
+          lane.state = ThreadState::WaitingForResume;
+          return;
         }
         
         // Condition passed, move to body execution
         lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::ExecutingBody;
         lane.executionStack[ourStackIndex].statementIndex = 0;
-        break;
+        // break;
+      lane.state = ThreadState::WaitingForResume;
+      return; // Exit to prevent currentStatement increment, will resume later
       }
       
       case LaneContext::ControlFlowPhase::ExecutingBody: {
@@ -3698,12 +3716,15 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
         for (size_t i = lane.executionStack[ourStackIndex].statementIndex; i < body_.size(); i++) {
           lane.executionStack[ourStackIndex].statementIndex = i;
           body_[i]->execute(lane, wave, tg);
-          
           if (lane.hasReturned) {
             // Pop our entry and return from loop
             lane.executionStack.pop_back();
             tg.popMergePoint(wave.waveId, lane.laneId);
             return;
+          }
+          if (lane.state != ThreadState::Ready) {
+          // Child statement needs to resume - don't continue
+          return;
           }
         }
         
@@ -3715,7 +3736,9 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
         lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingCondition;
         lane.executionStack[ourStackIndex].loopIteration++;
         lane.executionStack[ourStackIndex].statementIndex = 0;
-        break;
+        // break;
+      lane.state = ThreadState::WaitingForResume;
+      return; // Exit to prevent currentStatement increment, will resume later
       }
       
       case LaneContext::ControlFlowPhase::Reconverging: {
@@ -3738,7 +3761,7 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
         std::cout << "ERROR: WhileStmt - Unexpected phase " << static_cast<int>(lane.executionStack[ourStackIndex].phase) << std::endl;
         return;
     }
-  }
+  // }
   } catch (const WaveOperationWaitException&) {
     // Wave operation is waiting - execution state is already saved
     std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " waiting for wave operation in phase " 
@@ -3854,7 +3877,7 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
   uint32_t mergeBlockId = ourEntry.loopMergeBlockId;
 
   try {
-    while(lane.isActive){
+    // while(lane.isActive){
     // State machine for do-while loop execution
     switch (ourEntry.phase) {
       case LaneContext::ControlFlowPhase::ExecutingBody: {
@@ -3910,11 +3933,14 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
         for (size_t i = ourEntry.statementIndex; i < body_.size(); i++) {
           lane.executionStack[ourStackIndex].statementIndex = i;
           body_[i]->execute(lane, wave, tg);
-          
           if (lane.hasReturned) {
             // Pop our entry and return from loop
             lane.executionStack.pop_back();
             tg.popMergePoint(wave.waveId, lane.laneId);
+            return;
+          }
+          if (lane.state != ThreadState::Ready) {
+          // Child statement needs to resume - don't continue
             return;
           }
         }
@@ -3925,7 +3951,9 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
         std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId << " completed body for iteration " 
                   << lane.executionStack[ourStackIndex].loopIteration << std::endl;
         lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingCondition;
-        break;
+        // break;
+      lane.state = ThreadState::WaitingForResume;
+      return; // Exit to prevent currentStatement increment, will resume later
       }
       
       case LaneContext::ControlFlowPhase::EvaluatingCondition: {
@@ -3941,14 +3969,17 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
           
           // Move to reconverging phase
           lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::Reconverging;
-          break;
+         lane.state = ThreadState::WaitingForResume;
+        return; // Exit to prevent currentStatement increment, will resume later
         }
         
         // Condition passed, move to next iteration body execution
         lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::ExecutingBody;
         lane.executionStack[ourStackIndex].loopIteration++;
         lane.executionStack[ourStackIndex].statementIndex = 0;
-        break;
+        // break;
+      lane.state = ThreadState::WaitingForResume;
+      return; // Exit to prevent currentStatement increment, will resume later
       }
       
       case LaneContext::ControlFlowPhase::Reconverging: {
@@ -3971,7 +4002,7 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
         std::cout << "ERROR: DoWhileStmt - Unexpected phase " << static_cast<int>(ourEntry.phase) << std::endl;
         return;
     }
-  }
+  // }
   } catch (const WaveOperationWaitException&) {
     // Wave operation is waiting - execution state is already saved
     std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId << " waiting for wave operation in phase " 

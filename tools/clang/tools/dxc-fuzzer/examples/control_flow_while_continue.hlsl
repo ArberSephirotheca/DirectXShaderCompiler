@@ -17,7 +17,7 @@ void main(uint3 id : SV_DispatchThreadID) {
     }
     
     // Expected per-lane results:
-    // Lane 0: breaks at i=0, result=0
+    // Lane 0: skip at i=0, result= 2 + 2
     // Lane 1: breaks at i=0, result=0  
     // Lane 2: breaks at i=2, result= 2 + 2 = 4
     // Lane 3: breaks at i=3, result= 2 + 2 + 1 = 5
