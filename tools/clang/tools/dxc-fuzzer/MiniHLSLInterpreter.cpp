@@ -39,6 +39,16 @@ static bool isProtectedState(ThreadState state) {
   return state == ThreadState::WaitingForWave || state == ThreadState::WaitingAtBarrier;
 }
 
+// Helper function to check if iteration marker exists anywhere in merge stack
+static bool hasIterationMarkerInStack(const std::vector<MergeStackEntry>& mergeStack, const void* iterationMarker) {
+  for (const auto& entry : mergeStack) {
+    if (entry.sourceStatement == iterationMarker) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // Value implementation
 Value Value::operator+(const Value &other) const {
   if (std::holds_alternative<int32_t>(data) &&
@@ -1177,6 +1187,8 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
           thenBlockId = std::get<0>(blockIds);
           elseBlockId = std::get<1>(blockIds);
           mergeBlockId = std::get<2>(blockIds);
+          std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " setup complete: thenBlockId=" << thenBlockId 
+                    << ", elseBlockId=" << elseBlockId << ", mergeBlockId=" << mergeBlockId << std::endl;
           setupComplete = true;
 
           // Update blocks based on condition result
@@ -1288,7 +1300,7 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
         }
 
         case LaneContext::ControlFlowPhase::Reconverging: {
-          std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " performing reconvergence" << std::endl;
+          std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " performing reconvergence to mergeBlockId=" << mergeBlockId << std::endl;
           
           // Use stored merge block ID - don't recreate blocks during reconvergence
           // mergeBlockId should already be set from initial setup
@@ -1599,10 +1611,9 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
                 std::cout << "  Stack[" << i << "]: sourceStatement=" << currentMergeStack[i].sourceStatement << std::endl;
               }
               std::cout << "  Looking for iterationMarker=" << iterationMarker << std::endl;
-              bool alreadyPushed = false;
-              if (!currentMergeStack.empty() && currentMergeStack.back().sourceStatement == iterationMarker) {
-                alreadyPushed = true;
-                std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " iteration merge point already found at top of merge stack" << std::endl;
+              bool alreadyPushed = hasIterationMarkerInStack(currentMergeStack, iterationMarker);
+              if (alreadyPushed) {
+                std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " iteration merge point already found in merge stack" << std::endl;
               }
               
               if (!alreadyPushed) {
@@ -1745,14 +1756,16 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
       // Clean up - remove from blocks this lane will never reach
       tg.removeThreadFromAllSets(headerBlockId, wave.waveId, lane.laneId);
       tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId);
-      
-      tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
-      tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId, lane.laneId);
+      lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingCondition;
+
+      // tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
+      // tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId, lane.laneId);
       return;
     } else if (e.type == ControlFlowException::Continue) {
       // Continue - go to increment phase and skip remaining statements
       std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " continuing loop" << std::endl;
-      
+      tg.popMergePoint(wave.waveId, lane.laneId);
+
       // Clean up - remove from all nested blocks this lane is abandoning
       if (lane.executionStack[ourStackIndex].loopBodyBlockId != 0) {
         tg.removeThreadFromAllSets(lane.executionStack[ourStackIndex].loopBodyBlockId, wave.waveId, lane.laneId);
@@ -3792,6 +3805,8 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
           
           // Move to reconverging phase
           ourEntry.phase = LaneContext::ControlFlowPhase::Reconverging;
+          // // TODO: investigate why it works
+          // tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId, lane.laneId);
           if (!isProtectedState(lane.state)) {
             lane.state = ThreadState::WaitingForResume;
           }
@@ -3876,10 +3891,9 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
               std::cout << "  Stack[" << i << "]: sourceStatement=" << currentMergeStack[i].sourceStatement << std::endl;
             }
             std::cout << "  Looking for iterationMarker=" << iterationMarker << std::endl;
-            bool alreadyPushed = false;
-            if (!currentMergeStack.empty() && currentMergeStack.back().sourceStatement == iterationMarker) {
-              alreadyPushed = true;
-              std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " iteration merge point already found at top of merge stack" << std::endl;
+            bool alreadyPushed = hasIterationMarkerInStack(currentMergeStack, iterationMarker);
+            if (alreadyPushed) {
+              std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " iteration merge point already found in merge stack" << std::endl;
             }
             
             if (!alreadyPushed) {
@@ -3998,8 +4012,12 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
       tg.removeThreadFromAllSets(headerBlockId, wave.waveId, lane.laneId);
       tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId);
       
-      tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
-      tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId, lane.laneId);
+      // tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
+      // tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId, lane.laneId);
+      ourEntry.phase = LaneContext::ControlFlowPhase::Reconverging;
+      if (!isProtectedState(lane.state)) {
+        lane.state = ThreadState::WaitingForResume;
+      }
       return;
     } else if (e.type == ControlFlowException::Continue) {
       // Continue - go to next iteration
@@ -4017,7 +4035,7 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
       // Move lane back to header block for proper context
       tg.moveThreadFromUnknownToParticipating(headerBlockId, wave.waveId, lane.laneId);
       lane.executionStack[ourStackIndex].loopBodyBlockId = 0; // Reset for next iteration
-      
+      tg.popMergePoint(wave.waveId, lane.laneId);
       // Set state to WaitingForResume to prevent currentStatement increment
       if (!isProtectedState(lane.state)) {
         lane.state = ThreadState::WaitingForResume;
@@ -4176,10 +4194,9 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
             
             // Push iteration-specific merge point if not already done
             std::vector<MergeStackEntry> currentMergeStack = tg.getCurrentMergeStack(wave.waveId, lane.laneId);
-            bool alreadyPushed = false;
-            if (!currentMergeStack.empty() && currentMergeStack.back().sourceStatement == iterationMarker) {
-              alreadyPushed = true;
-              std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId << " iteration merge point already found at top of merge stack" << std::endl;
+            bool alreadyPushed = hasIterationMarkerInStack(currentMergeStack, iterationMarker);
+            if (alreadyPushed) {
+              std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId << " iteration merge point already found in merge stack" << std::endl;
             }
             
             if (!alreadyPushed) {
@@ -5383,6 +5400,16 @@ std::tuple<uint32_t, uint32_t, uint32_t> ThreadgroupContext::createIfBlocks(
     const void *ifStmt, uint32_t parentBlockId,
     const std::vector<MergeStackEntry> &mergeStack, bool hasElse,
     const std::vector<const void*>& executionPath) {
+  std::cout << "DEBUG: createIfBlocks - ifStmt=" << ifStmt << ", parentBlockId=" << parentBlockId << ", hasElse=" << hasElse << std::endl;
+  std::cout << "DEBUG: createIfBlocks - mergeStack size=" << mergeStack.size() << std::endl;
+  for (size_t i = 0; i < mergeStack.size(); i++) {
+    std::cout << "  MergeStack[" << i << "]: sourceStatement=" << mergeStack[i].sourceStatement << std::endl;
+  }
+  std::cout << "DEBUG: createIfBlocks - executionPath size=" << executionPath.size() << std::endl;
+  for (size_t i = 0; i < executionPath.size(); i++) {
+    std::cout << "  ExecutionPath[" << i << "]=" << executionPath[i] << std::endl;
+  }
+
   // Get all lanes that could potentially take either path
   std::map<WaveId, std::set<LaneId>> allPotentialLanes =
       getCurrentBlockParticipants(parentBlockId);
@@ -5407,6 +5434,9 @@ std::tuple<uint32_t, uint32_t, uint32_t> ThreadgroupContext::createIfBlocks(
       createBlockIdentity(ifStmt, BlockType::MERGE, parentBlockId, mergeStack, true, executionPath);
   uint32_t mergeBlockId =
       findOrCreateBlockForPath(mergeIdentity, allPotentialLanes);
+
+  std::cout << "DEBUG: createIfBlocks - Created blocks: thenBlockId=" << thenBlockId 
+            << ", elseBlockId=" << elseBlockId << ", mergeBlockId=" << mergeBlockId << std::endl;
 
   return {thenBlockId, elseBlockId, mergeBlockId};
 }
