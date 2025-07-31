@@ -1379,6 +1379,7 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
                     << lane.executionStack.size() << "->"
                     << (lane.executionStack.size() - 1) << ", this=" << this
                     << ")" << std::endl;
+          // TODO: verify if need additional clenaup
           lane.executionStack.pop_back();
           tg.popMergePoint(wave.waveId, lane.laneId);
           return;
@@ -1416,6 +1417,7 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
                     << lane.executionStack.size() << "->"
                     << (lane.executionStack.size() - 1) << ", this=" << this
                     << ")" << std::endl;
+          // TODO: verify if need additional cleanup
           lane.executionStack.pop_back();
           tg.popMergePoint(wave.waveId, lane.laneId);
           return;
@@ -1895,7 +1897,7 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
                       << " popped iteration merge point on early return"
                       << std::endl;
           }
-
+          // TODO: check if need additional cleanup
           // Pop our entry and return from loop
           lane.executionStack.pop_back();
           tg.popMergePoint(wave.waveId, lane.laneId);
@@ -2018,15 +2020,17 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
       // Break - exit loop
       std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
                 << " breaking from loop" << std::endl;
-      lane.executionStack.pop_back();
+      // lane.executionStack.pop_back();
       tg.popMergePoint(wave.waveId, lane.laneId);
 
       // Clean up - remove from blocks this lane will never reach
       tg.removeThreadFromAllSets(headerBlockId, wave.waveId, lane.laneId);
       tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId);
       lane.executionStack[ourStackIndex].phase =
-          LaneContext::ControlFlowPhase::EvaluatingCondition;
-
+          LaneContext::ControlFlowPhase::Reconverging;
+      if (!isProtectedState(lane.state)) {
+        lane.state = ThreadState::WaitingForResume;
+      }
       // tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
       // tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId,
       // lane.laneId);
@@ -4332,6 +4336,7 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
                       << std::endl;
           }
 
+          // TODO: check if need additional cleanup
           // Pop our entry and return from loop
           lane.executionStack.pop_back();
           tg.popMergePoint(wave.waveId, lane.laneId);
@@ -4437,8 +4442,10 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
       // Break - exit loop
       std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
                 << " breaking from while loop" << std::endl;
-      lane.executionStack.pop_back();
+      // lane.executionStack.pop_back();
       tg.popMergePoint(wave.waveId, lane.laneId);
+      lane.executionStack[ourStackIndex].phase =
+          LaneContext::ControlFlowPhase::Reconverging;
 
       // Clean up - remove from blocks this lane will never reach
       tg.removeThreadFromAllSets(headerBlockId, wave.waveId, lane.laneId);
@@ -4447,7 +4454,7 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
       // tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
       // tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId,
       // lane.laneId);
-      ourEntry.phase = LaneContext::ControlFlowPhase::Reconverging;
+      // ourEntry.phase = LaneContext::ControlFlowPhase::Reconverging;
       if (!isProtectedState(lane.state)) {
         lane.state = ThreadState::WaitingForResume;
       }
@@ -4708,6 +4715,7 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
                       << std::endl;
           }
 
+          // TODO: check if need additioanl cleanup
           // Pop our entry and return from loop
           lane.executionStack.pop_back();
           tg.popMergePoint(wave.waveId, lane.laneId);
@@ -4828,16 +4836,21 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
       // Break - exit loop
       std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId
                 << " breaking from do-while loop" << std::endl;
-      lane.executionStack.pop_back();
+      // lane.executionStack.pop_back();
       tg.popMergePoint(wave.waveId, lane.laneId);
 
       // Clean up - remove from blocks this lane will never reach
       tg.removeThreadFromAllSets(headerBlockId, wave.waveId, lane.laneId);
       tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId);
 
-      tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
-      tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId,
-                                              lane.laneId);
+      // tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
+      // tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId,
+      //                                         lane.laneId);
+      lane.executionStack[ourStackIndex].phase =
+          LaneContext::ControlFlowPhase::Reconverging;
+      if (!isProtectedState(lane.state)) {
+        lane.state = ThreadState::WaitingForResume;
+      }
       return;
     } else if (e.type == ControlFlowException::Continue) {
       // Continue - go to condition evaluation
@@ -5015,6 +5028,7 @@ void SwitchStmt::execute(LaneContext &lane, WaveContext &wave,
           // No matching case - exit switch
           std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
                     << " no matching case found" << std::endl;
+          // TODO: verify if need additional step
           lane.executionStack.pop_back();
           return;
         }
@@ -5065,6 +5079,7 @@ void SwitchStmt::execute(LaneContext &lane, WaveContext &wave,
           // All cases completed
           std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
                     << " completed all cases" << std::endl;
+          // TODO: verify if need additional step
           lane.executionStack.pop_back();
           return;
         }
@@ -5116,6 +5131,7 @@ void SwitchStmt::execute(LaneContext &lane, WaveContext &wave,
         caseBlock.statements[stmtIdx]->execute(lane, wave, tg);
 
         if (!lane.isActive) {
+          // TODO: verify if need additional step
           lane.executionStack.pop_back();
           return;
         }
@@ -5128,6 +5144,7 @@ void SwitchStmt::execute(LaneContext &lane, WaveContext &wave,
       default:
         std::cout << "ERROR: SwitchStmt - Lane " << lane.laneId
                   << " unexpected phase" << std::endl;
+        // TODO: verify if need additional step
         lane.executionStack.pop_back();
         return;
       }
@@ -5163,7 +5180,7 @@ void SwitchStmt::execute(LaneContext &lane, WaveContext &wave,
         tg.removeThreadFromNestedBlocks(subsequentCaseBlockId, wave.waveId,
                                         lane.laneId);
       }
-
+      // TODO: verify if need additional step
       lane.executionStack.pop_back();
       return;
     }
