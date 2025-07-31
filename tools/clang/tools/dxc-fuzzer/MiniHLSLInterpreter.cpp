@@ -1220,7 +1220,10 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
           for (size_t i = ourEntry.statementIndex; i < thenBlock_.size(); i++) {
             lane.executionStack[ourStackIndex].statementIndex = i;
             thenBlock_[i]->execute(lane, wave, tg);
-            
+            if (lane.state != ThreadState::Ready) {
+            // Child statement needs to resume - don't continue
+              return;  // ← This is missing!
+            }
             if (lane.hasReturned) {
               std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " popping stack due to return (depth " 
                         << lane.executionStack.size() << "->" << (lane.executionStack.size()-1) << ", this=" << this << ")" << std::endl;
@@ -1248,7 +1251,10 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
           for (size_t i = ourEntry.statementIndex; i < elseBlock_.size(); i++) {
             lane.executionStack[ourStackIndex].statementIndex = i;
             elseBlock_[i]->execute(lane, wave, tg);
-            
+            if (lane.state != ThreadState::Ready) {
+            // Child statement needs to resume - don't continue
+              return;  // ← This is missing!
+            }
             if (lane.hasReturned) {
               std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " popping stack due to return (depth " 
                         << lane.executionStack.size() << "->" << (lane.executionStack.size()-1) << ", this=" << this << ")" << std::endl;
