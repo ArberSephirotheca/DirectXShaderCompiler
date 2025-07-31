@@ -7,13 +7,13 @@ void main(uint3 id : SV_DispatchThreadID) {
     uint result = 0;
     
     // Deterministic branching - all lanes take predictable paths
-    if (laneId < 2) {
-        for (int i = 0; i < 2; ++i) {
+    // (4 * 2 + 4 * 4)  * 4 = 96
+    for (int i = 0; i < 2; ++i) {
+        result += WaveActiveSum(1);
+        for (int j = 0; j < 2; ++j) {
             result += WaveActiveSum(1);
         }
-    } else {
-        result += WaveActiveSum(5);
     }
-    // 10 + 10 + 4 + 4 = 28
+    // 10 + 10 + 1 + 1 + 2 + 2 = 15
     uint totalSum = WaveActiveSum(result);
 }
