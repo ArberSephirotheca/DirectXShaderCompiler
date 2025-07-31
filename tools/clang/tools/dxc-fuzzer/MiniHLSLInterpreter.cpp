@@ -34,6 +34,11 @@ static constexpr bool ENABLE_BLOCK_DEBUG = true;       // Set to true to enable 
 namespace minihlsl {
 namespace interpreter {
 
+// Helper function to check if a thread state should be protected from overwriting
+static bool isProtectedState(ThreadState state) {
+  return state == ThreadState::WaitingForWave || state == ThreadState::WaitingAtBarrier;
+}
+
 // Value implementation
 Value Value::operator+(const Value &other) const {
   if (std::holds_alternative<int32_t>(data) &&
@@ -1208,8 +1213,10 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
           std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " condition=" << ourEntry.conditionResult 
                     << ", moving to phase=" << LaneContext::getPhaseString(ourEntry.phase) << std::endl;
           // break;
-                lane.state = ThreadState::WaitingForResume;
-      return; // Exit to prevent currentStatement increment, will resume later
+          if (!isProtectedState(lane.state)) {
+            lane.state = ThreadState::WaitingForResume;
+          }
+          return; // Exit to prevent currentStatement increment, will resume later
         }
 
         case LaneContext::ControlFlowPhase::ExecutingThenBlock: {
@@ -1239,8 +1246,10 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
           lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::Reconverging;
           std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " completed then block, moving to reconvergence" << std::endl;
           // break;
-                lane.state = ThreadState::WaitingForResume;
-      return; // Exit to prevent currentStatement increment, will resume later
+          if (!isProtectedState(lane.state)) {
+            lane.state = ThreadState::WaitingForResume;
+          }
+          return; // Exit to prevent currentStatement increment, will resume later
         }
 
         case LaneContext::ControlFlowPhase::ExecutingElseBlock: {
@@ -1272,8 +1281,10 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
           lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::Reconverging;
           std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " completed else block, moving to reconvergence" << std::endl;
           // break;
-                lane.state = ThreadState::WaitingForResume;
-      return; // Exit to prevent currentStatement increment, will resume later
+          if (!isProtectedState(lane.state)) {
+            lane.state = ThreadState::WaitingForResume;
+          }
+          return; // Exit to prevent currentStatement increment, will resume later
         }
 
         case LaneContext::ControlFlowPhase::Reconverging: {
@@ -1476,7 +1487,9 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
           // Move to condition evaluation phase
           lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingCondition;
           lane.executionStack[ourStackIndex].loopIteration = 0;
-        lane.state = ThreadState::WaitingForResume;
+        if (!isProtectedState(lane.state)) {
+          lane.state = ThreadState::WaitingForResume;
+        }
         return; // Exit to prevent currentStatement increment, will resume later
         }
         
@@ -1493,14 +1506,18 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
             
             // Move to reconverging phase
             lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::Reconverging;
-            lane.state = ThreadState::WaitingForResume;
+            if (!isProtectedState(lane.state)) {
+              lane.state = ThreadState::WaitingForResume;
+            }
             return; // Exit to prevent currentStatement increment, will resume later
           }
           
           // Condition passed, move to body execution
           lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::ExecutingBody;
           lane.executionStack[ourStackIndex].statementIndex = 0;
-      lane.state = ThreadState::WaitingForResume;
+      if (!isProtectedState(lane.state)) {
+        lane.state = ThreadState::WaitingForResume;
+      }
       return; // Exit to prevent currentStatement increment, will resume later
         }
         
@@ -1669,7 +1686,9 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
           tg.moveThreadFromUnknownToParticipating(headerBlockId, wave.waveId, lane.laneId);
           ourEntry.loopBodyBlockId = 0; // Reset for next iteration
           ourEntry.phase = LaneContext::ControlFlowPhase::EvaluatingIncrement;
-          lane.state = ThreadState::WaitingForResume;
+          if (!isProtectedState(lane.state)) {
+            lane.state = ThreadState::WaitingForResume;
+          }
           return; // Exit to prevent currentStatement increment, will resume later
         }
         
@@ -1683,7 +1702,9 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
           // Move to next iteration
           lane.executionStack[ourStackIndex].loopIteration++;
           lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingCondition;
-      lane.state = ThreadState::WaitingForResume;
+      if (!isProtectedState(lane.state)) {
+        lane.state = ThreadState::WaitingForResume;
+      }
       return; // Exit to prevent currentStatement increment, will resume later
       }
         
@@ -1742,7 +1763,9 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
           lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingIncrement;
       
       // Set state to WaitingForResume to prevent currentStatement increment
-      lane.state = ThreadState::WaitingForResume;
+      if (!isProtectedState(lane.state)) {
+        lane.state = ThreadState::WaitingForResume;
+      }
       return; // Exit to prevent currentStatement increment, will resume later
     }
   }
@@ -3769,7 +3792,9 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
           
           // Move to reconverging phase
           ourEntry.phase = LaneContext::ControlFlowPhase::Reconverging;
-          lane.state = ThreadState::WaitingForResume;
+          if (!isProtectedState(lane.state)) {
+            lane.state = ThreadState::WaitingForResume;
+          }
           return;
         }
         
@@ -3777,7 +3802,9 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
         ourEntry.phase = LaneContext::ControlFlowPhase::ExecutingBody;
         ourEntry.statementIndex = 0;
         // break;
-      lane.state = ThreadState::WaitingForResume;
+      if (!isProtectedState(lane.state)) {
+        lane.state = ThreadState::WaitingForResume;
+      }
       return; // Exit to prevent currentStatement increment, will resume later
       }
       
@@ -3927,7 +3954,9 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
         ourEntry.loopIteration++;
         ourEntry.statementIndex = 0;
         
-        lane.state = ThreadState::WaitingForResume;
+        if (!isProtectedState(lane.state)) {
+          lane.state = ThreadState::WaitingForResume;
+        }
         return; // Exit to prevent currentStatement increment, will resume later
       }
       
@@ -3990,7 +4019,9 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
       lane.executionStack[ourStackIndex].loopBodyBlockId = 0; // Reset for next iteration
       
       // Set state to WaitingForResume to prevent currentStatement increment
-      lane.state = ThreadState::WaitingForResume;
+      if (!isProtectedState(lane.state)) {
+        lane.state = ThreadState::WaitingForResume;
+      }
       return; // Exit to prevent currentStatement increment, will resume later
     }
   }
@@ -4208,7 +4239,9 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
                   << lane.executionStack[ourStackIndex].loopIteration << std::endl;
         lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingCondition;
         // break;
-      lane.state = ThreadState::WaitingForResume;
+      if (!isProtectedState(lane.state)) {
+        lane.state = ThreadState::WaitingForResume;
+      }
       return; // Exit to prevent currentStatement increment, will resume later
       }
       
@@ -4225,7 +4258,9 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
           
           // Move to reconverging phase
           lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::Reconverging;
-         lane.state = ThreadState::WaitingForResume;
+         if (!isProtectedState(lane.state)) {
+          lane.state = ThreadState::WaitingForResume;
+        }
         return; // Exit to prevent currentStatement increment, will resume later
         }
         
@@ -4234,7 +4269,9 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
         lane.executionStack[ourStackIndex].loopIteration++;
         lane.executionStack[ourStackIndex].statementIndex = 0;
         // break;
-      lane.state = ThreadState::WaitingForResume;
+      if (!isProtectedState(lane.state)) {
+        lane.state = ThreadState::WaitingForResume;
+      }
       return; // Exit to prevent currentStatement increment, will resume later
       }
       
@@ -4295,7 +4332,9 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
       lane.executionStack[ourStackIndex].loopBodyBlockId = 0; // Reset for next iteration
       
       // Set state to WaitingForResume to prevent currentStatement increment
-      lane.state = ThreadState::WaitingForResume;
+      if (!isProtectedState(lane.state)) {
+        lane.state = ThreadState::WaitingForResume;
+      }
       return; // Exit to prevent currentStatement increment, will resume later
     }
   }
