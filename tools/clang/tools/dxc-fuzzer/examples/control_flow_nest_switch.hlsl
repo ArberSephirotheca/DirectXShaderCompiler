@@ -20,6 +20,5 @@ void main(uint3 id : SV_DispatchThreadID) {
 
     }
     
-    // Wave sum should be: (16 * 1) + (16 * 2) = 48
     uint totalSum = WaveActiveSum(result);
 }

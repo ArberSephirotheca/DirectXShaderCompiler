@@ -12,6 +12,7 @@ void main(uint3 id : SV_DispatchThreadID) {
           for (int b = 0; b < 3; b++) {
               result += WaveActiveSum(b);
           }
+          result += WaveActiveSum(0);
         case 1:
         result += WaveActiveSum(1);
         case 2:
