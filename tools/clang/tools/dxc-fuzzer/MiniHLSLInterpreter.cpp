@@ -3636,10 +3636,32 @@ MiniHLSLInterpreter::convertSwitchStatement(const clang::SwitchStmt *switchStmt,
             std::cout << "DEBUG: Switch parsing - no LHS found" << std::endl;
           }
 
-          // Convert case body
-          if (auto substmt = caseStmt->getSubStmt()) {
-            if (auto converted = convertStatement(substmt, context)) {
-              currentCase.push_back(std::move(converted));
+          // Handle nested case statements (e.g., case 2: case 3: stmt)
+          auto substmt = caseStmt->getSubStmt();
+          while (substmt) {
+            if (auto nestedCase = clang::dyn_cast<clang::CaseStmt>(substmt)) {
+              // This is a nested case - save current case as empty
+              if (currentCaseValue.has_value()) {
+                std::cout << "DEBUG: Switch parsing - saving empty case "
+                          << currentCaseValue.value() << " (falls through to next)" << std::endl;
+                switchResult->addCase(currentCaseValue.value(), std::vector<std::unique_ptr<Statement>>());
+              }
+              // Process the nested case
+              if (auto lhs = nestedCase->getLHS()) {
+                auto unwrapped = lhs->IgnoreImpCasts();
+                if (auto intLit = clang::dyn_cast<clang::IntegerLiteral>(unwrapped)) {
+                  currentCaseValue = intLit->getValue().getSExtValue();
+                  std::cout << "DEBUG: Switch parsing - found nested case "
+                            << currentCaseValue.value() << std::endl;
+                }
+              }
+              substmt = nestedCase->getSubStmt();
+            } else {
+              // This is the actual statement for the case
+              if (auto converted = convertStatement(substmt, context)) {
+                currentCase.push_back(std::move(converted));
+              }
+              break;
             }
           }
         } else if (auto defaultStmt =
