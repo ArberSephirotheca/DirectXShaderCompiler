@@ -242,6 +242,7 @@ struct WaveOperationSyncPoint {
   bool allParticipantsArrived =
       false;               // All expected participants arrived at instruction
   bool isComplete = false; // Ready to execute
+  bool hasExecuted = false; // Whether wave operation has been executed
 
   // Instruction identification
   std::string instructionType; // "WaveActiveSum", "WaveActiveAllTrue", etc.
