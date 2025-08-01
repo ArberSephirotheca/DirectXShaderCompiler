@@ -518,6 +518,13 @@ std::vector<ThreadId> ThreadgroupContext::getReadyThreads() const {
   return ready;
 }
 
+// WaveOperationSyncPoint method implementation
+bool WaveOperationSyncPoint::isAllParticipantsKnown(const ThreadgroupContext& tg, uint32_t waveId) const {
+  auto blockIt = tg.executionBlocks.find(blockId);
+  return blockIt != tg.executionBlocks.end() && 
+         blockIt->second.isWaveAllUnknownResolved(waveId);
+}
+
 std::vector<ThreadId> ThreadgroupContext::getWaitingThreads() const {
   std::vector<ThreadId> waiting;
   for (ThreadId tid = 0; tid < threadgroupSize; ++tid) {
@@ -984,25 +991,12 @@ Value WaveActiveOp::evaluate(LaneContext &lane, WaveContext &wave,
                 << " started waiting, wave operation can now execute!"
                 << std::endl;
 
-      // Update the sync point to mark it as ready for execution
-      syncPoint.allParticipantsArrived =
-          (syncPoint.arrivedParticipants == syncPoint.expectedParticipants);
-
-      // Re-check if all participants are known by checking block state
-      auto blockIt = tg.executionBlocks.find(currentBlockId);
-      if (blockIt != tg.executionBlocks.end()) {
-        syncPoint.allParticipantsKnown =
-            blockIt->second.isWaveAllUnknownResolved(wave.waveId);
-      }
-
-      // Mark as complete if both conditions are met
-      syncPoint.isComplete =
-          syncPoint.allParticipantsKnown && syncPoint.allParticipantsArrived;
+      // No need to update flags - they are computed on-demand now
 
       std::cout << "DEBUG: WAVE_OP: Updated sync point - allParticipantsKnown="
-                << syncPoint.allParticipantsKnown << ", allParticipantsArrived="
-                << syncPoint.allParticipantsArrived
-                << ", isComplete=" << syncPoint.isComplete << std::endl;
+                << syncPoint.isAllParticipantsKnown(tg, wave.waveId) << ", allParticipantsArrived="
+                << syncPoint.isAllParticipantsArrived()
+                << ", readyToExecute=" << syncPoint.isReadyToExecute(tg, wave.waveId) << std::endl;
     }
 
     // Throw a special exception to indicate we need to wait
@@ -2190,7 +2184,7 @@ void ReturnStmt::updateWaveOperationStates(ThreadgroupContext &tg,
     std::cout << "DEBUG: updateWaveOperationStates - Sync point " << instructionKey.first 
               << " in block " << instructionKey.second 
               << ": wasExpected=" << wasExpected 
-              << ", allParticipantsKnown=" << syncPoint.allParticipantsKnown << std::endl;
+              << ", allParticipantsKnown=" << syncPoint.isAllParticipantsKnown(tg, wave.waveId) << std::endl;
 
     syncPoint.expectedParticipants.erase(returningLaneId);
     syncPoint.arrivedParticipants.erase(returningLaneId);
@@ -2204,33 +2198,17 @@ void ReturnStmt::updateWaveOperationStates(ThreadgroupContext &tg,
       continue; // Skip further processing for this sync point
     }
 
-    // Update sync point completion status
-    bool wasComplete = syncPoint.isComplete;
-    syncPoint.allParticipantsArrived =
-        (syncPoint.arrivedParticipants == syncPoint.expectedParticipants);
+    // Check if sync point is now ready for cleanup (has pending results)
+    bool wasReadyForCleanup = false; // We don't track previous state
+    bool isNowReadyForCleanup = syncPoint.isReadyForCleanup();
+    
+    std::cout << "DEBUG: updateWaveOperationStates - Lane " << returningLaneId 
+              << " returning: Block " << syncPoint.blockId 
+              << " isAllParticipantsKnown=" << syncPoint.isAllParticipantsKnown(tg, wave.waveId)
+              << " for instruction " << instructionKey.first << std::endl;
 
-    // Early return helps resolve "all participants known" - one less unknown
-    // participant
-    if (wasExpected && !syncPoint.allParticipantsKnown) {
-      // Check if all expected participants are now known by examining block
-      // states
-      uint32_t blockId = syncPoint.blockId;
-      auto blockIt = tg.executionBlocks.find(blockId);
-      if (blockIt != tg.executionBlocks.end()) {
-        bool blockResolved = blockIt->second.isWaveAllUnknownResolved(wave.waveId);
-        std::cout << "DEBUG: updateWaveOperationStates - Lane " << returningLaneId 
-                  << " returning: Block " << blockId 
-                  << " isWaveAllUnknownResolved=" << blockResolved 
-                  << " for instruction " << instructionKey.first << std::endl;
-        syncPoint.allParticipantsKnown = blockResolved;
-      }
-    }
-
-    syncPoint.isComplete =
-        syncPoint.allParticipantsKnown && syncPoint.allParticipantsArrived;
-
-    // If sync point just became complete, mark it for processing
-    if (!wasComplete && syncPoint.isComplete) {
+    // If sync point is ready for cleanup, mark it for processing
+    if (isNowReadyForCleanup) {
       std::cout << "DEBUG: updateWaveOperationStates - Sync point for instruction " 
                 << instructionKey.first << " in block " << syncPoint.blockId 
                 << " became complete due to lane " << returningLaneId << " returning" << std::endl;
@@ -2632,7 +2610,7 @@ void MiniHLSLInterpreter::processWaveOperations(ThreadgroupContext &tgContext) {
     for (auto &[instructionKey, syncPoint] : wave.activeSyncPoints) {
       // Before checking if complete, update participants to include all current
       // lanes in the block
-      if (syncPoint.isComplete && syncPoint.pendingResults.empty() && !syncPoint.hasExecuted) {
+      if (syncPoint.isReadyToExecute(tgContext, waveId)) {
         // Update arrivedParticipants to include all lanes currently in this
         // block
         uint32_t blockId = instructionKey.second;
@@ -2662,12 +2640,9 @@ void MiniHLSLInterpreter::processWaveOperations(ThreadgroupContext &tgContext) {
         // Execute the wave operation collectively
         executeCollectiveWaveOperation(tgContext, waveId, instructionKey,
                                        syncPoint);
-        
-        // Mark as executed to prevent re-execution
-        syncPoint.hasExecuted = true;
 
         // Don't release yet - let lanes retrieve results first
-      } else if (syncPoint.isComplete && !syncPoint.pendingResults.empty()) {
+      } else if (syncPoint.isReadyForCleanup()) {
         // Results are available, wake up lanes so they can retrieve them
         INTERPRETER_DEBUG_LOG(
             "Waking up lanes to retrieve wave operation results for wave "
@@ -2688,11 +2663,11 @@ void MiniHLSLInterpreter::processWaveOperations(ThreadgroupContext &tgContext) {
 
         // Mark for release after lanes retrieve results
         completedSyncPoints.push_back(instructionKey);
-      } else if (syncPoint.hasExecuted && syncPoint.pendingResults.empty()) {
-        // Already executed and all results consumed - cleanup immediately
+      } else if (syncPoint.expectedParticipants.empty()) {
+        // No participants left - cleanup immediately  
         std::cout << "DEBUG: processWaveOperations - Sync point " << instructionKey.first 
                   << " in block " << instructionKey.second 
-                  << " already executed and results consumed, cleaning up" << std::endl;
+                  << " has no participants, cleaning up" << std::endl;
         completedSyncPoints.push_back(instructionKey);
       }
     }
@@ -2767,6 +2742,9 @@ void MiniHLSLInterpreter::executeCollectiveWaveOperation(
 
   INTERPRETER_DEBUG_LOG(
       "Collective wave operation result: " << result.toString() << "\n");
+  
+  // Transition sync point state to Executed
+  syncPoint.state = SyncPointState::Executed;
 }
 
 void MiniHLSLInterpreter::executeCollectiveBarrier(
@@ -5873,11 +5851,7 @@ void ThreadgroupContext::markLaneArrivedAtWaveInstruction(
   waves[waveId]->laneWaitingAtInstruction[laneId] = instructionKey;
   waves[waveId]->lanes[laneId]->state = ThreadState::WaitingForWave;
 
-  // Update completion status
-  syncPoint.allParticipantsArrived =
-      (syncPoint.arrivedParticipants == syncPoint.expectedParticipants);
-  syncPoint.isComplete =
-      syncPoint.allParticipantsKnown && syncPoint.allParticipantsArrived;
+  // Completion status is now computed on-demand via methods
 }
 
 bool ThreadgroupContext::areAllParticipantsKnownForWaveInstruction(
@@ -5897,33 +5871,11 @@ bool ThreadgroupContext::areAllParticipantsKnownForWaveInstruction(
     return false;
   }
 
-  // If sync point exists, check both the sync point flag AND the block state
-  bool syncPointKnown = it->second.allParticipantsKnown;
+  // Check if all participants are known by querying the sync point method
+  bool syncPointKnown = it->second.isAllParticipantsKnown(*this, waveId);
   
-  // Even if sync point says participants unknown, check if block is resolved
-  if (!syncPointKnown) {
-    uint32_t blockId = instructionKey.second;
-    auto blockIt = executionBlocks.find(blockId);
-    if (blockIt != executionBlocks.end()) {
-      // If block has no unknown lanes, all participants are known
-      bool blockResolved = blockIt->second.isWaveAllUnknownResolved(waveId);
-      if (blockResolved) {
-        std::cout << "DEBUG: areAllParticipantsKnownForWaveInstruction - Block " << blockId 
-                  << " has no unknown lanes, updating sync point allParticipantsKnown=true" << std::endl;
-        
-        // CRITICAL: Also update the actual sync point state, not just our return value
-        // Need to cast away const to update the sync point
-        auto &mutableSyncPoint = const_cast<WaveOperationSyncPoint&>(it->second);
-        mutableSyncPoint.allParticipantsKnown = true;
-        mutableSyncPoint.isComplete = mutableSyncPoint.allParticipantsKnown && mutableSyncPoint.allParticipantsArrived;
-        
-        if (mutableSyncPoint.isComplete) {
-          std::cout << "DEBUG: areAllParticipantsKnownForWaveInstruction - Sync point is now complete!" << std::endl;
-        }
-        
-        syncPointKnown = true;
-      }
-    }
+  if (syncPointKnown) {
+    std::cout << "DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point" << std::endl;
   }
   
   return syncPointKnown;
@@ -5937,7 +5889,7 @@ bool ThreadgroupContext::haveAllParticipantsArrivedAtWaveInstruction(
     return false; // No sync point created yet
   }
 
-  return it->second.allParticipantsArrived;
+  return it->second.isAllParticipantsArrived();
 }
 
 // getWaveInstructionParticipants removed - functionality replaced by compound
@@ -5967,24 +5919,14 @@ void ThreadgroupContext::createOrUpdateWaveSyncPoint(
       syncPoint.expectedParticipants.insert(participantId);
     }
 
-    // Check if all participants are known (no unknown lanes for this wave in
-    // block)
-    auto blockIt = executionBlocks.find(blockId);
-    syncPoint.allParticipantsKnown =
-        blockIt != executionBlocks.end() &&
-        blockIt->second.areAllUnknownLanesResolvedForWave(waveId);
+    // Participants knowledge will be computed on-demand via isAllParticipantsKnown()
 
     waves[waveId]->activeSyncPoints[instructionKey] = syncPoint;
   } else {
     // Update existing sync point
     auto &syncPoint = it->second;
 
-    // Update participants knowledge if block resolved more lanes for this wave
-    uint32_t blockId = getCurrentBlock(waveId, laneId);
-    auto blockIt = executionBlocks.find(blockId);
-    syncPoint.allParticipantsKnown =
-        blockIt != executionBlocks.end() &&
-        blockIt->second.areAllUnknownLanesResolvedForWave(waveId);
+    // Participants knowledge will be computed on-demand via isAllParticipantsKnown()
 
     // Update expected participants if needed
     auto blockParticipants = getWaveOperationParticipants(waveId, laneId);
@@ -6340,13 +6282,9 @@ void ThreadgroupContext::removeThreadFromUnknown(uint32_t blockId,
 
           // Re-evaluate the sync point for this instruction
           auto &syncPoint = waves[waveId]->activeSyncPoints[instructionKey];
-          syncPoint.allParticipantsKnown =
-              true; // All unknowns are now resolved
-          syncPoint.allParticipantsArrived =
-              (syncPoint.arrivedParticipants == syncPoint.expectedParticipants);
-
-          if (syncPoint.allParticipantsArrived) {
-            syncPoint.isComplete = true;
+          // Sync point state is now computed on-demand
+          
+          if (syncPoint.isAllParticipantsArrived() && syncPoint.isAllParticipantsKnown(*this, waveId)) {
             std::cout << "DEBUG: Wave operation in block " << blockId
                       << " is now ready to execute - all participants known "
                          "and arrived!"
@@ -6422,11 +6360,10 @@ void ThreadgroupContext::removeThreadFromAllSets(uint32_t blockId,
             // known
             auto syncIt = waves[waveId]->activeSyncPoints.find(instructionKey);
             if (syncIt != waves[waveId]->activeSyncPoints.end()) {
-              syncIt->second.allParticipantsKnown = true;
-              std::cout << "DEBUG: removeThreadFromAllSets - Updated sync "
-                           "point allParticipantsKnown=true for instruction "
+              // Sync point participants knowledge is now computed on-demand
+              std::cout << "DEBUG: removeThreadFromAllSets - Sync point for instruction "
                         << instructionKey.first << " in block " << blockId
-                        << std::endl;
+                        << " will compute participants knowledge on-demand" << std::endl;
             }
 
             // Check if the wave operation can now proceed
@@ -6833,8 +6770,8 @@ void ThreadgroupContext::printWaveState(WaveId waveId, bool verbose) const {
         INTERPRETER_DEBUG_LOG("      Arrived: "
                               << syncPoint.arrivedParticipants.size()
                               << " lanes\n");
-        INTERPRETER_DEBUG_LOG("      Complete: "
-                              << (syncPoint.isComplete ? "Yes" : "No") << "\n");
+        INTERPRETER_DEBUG_LOG("      Ready to execute: "
+                              << (syncPoint.isReadyToExecute(*this, waveId) ? "Yes" : "No") << "\n");
       }
     }
   }

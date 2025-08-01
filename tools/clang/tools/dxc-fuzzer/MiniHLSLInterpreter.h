@@ -228,6 +228,13 @@ struct LaneContext {
   uint32_t waitingBarrierId = 0; // Which barrier this thread is waiting for
 };
 
+enum class SyncPointState {
+  WaitingForParticipants,  // Initial state, collecting lanes
+  ReadyToExecute,          // All participants known and arrived
+  Executed,                // Wave operation completed, results available
+  Consumed                 // All results retrieved, ready for cleanup
+};
+
 // Wave operation synchronization point for instruction-level coordination
 struct WaveOperationSyncPoint {
   const void *instruction; // Specific wave operation instruction pointer
@@ -237,12 +244,24 @@ struct WaveOperationSyncPoint {
   std::set<LaneId>
       arrivedParticipants; // Lanes that have arrived at THIS instruction
   std::map<LaneId, Value> pendingResults; // Results from arrived lanes
-  bool allParticipantsKnown =
-      false; // All unknown lanes resolved for this block
-  bool allParticipantsArrived =
-      false;               // All expected participants arrived at instruction
-  bool isComplete = false; // Ready to execute
-  bool hasExecuted = false; // Whether wave operation has been executed
+  SyncPointState state = SyncPointState::WaitingForParticipants; // Execution state
+
+  // Computed methods instead of stored boolean flags
+  bool isAllParticipantsArrived() const {
+    return arrivedParticipants == expectedParticipants;
+  }
+  
+  bool isAllParticipantsKnown(const struct ThreadgroupContext& tg, uint32_t waveId) const;
+  
+  bool isReadyToExecute(const struct ThreadgroupContext& tg, uint32_t waveId) const {
+    return state == SyncPointState::WaitingForParticipants &&
+           isAllParticipantsKnown(tg, waveId) && 
+           isAllParticipantsArrived();
+  }
+  
+  bool isReadyForCleanup() const {
+    return !pendingResults.empty();  // Has executed, check if results consumed
+  }
 
   // Instruction identification
   std::string instructionType; // "WaveActiveSum", "WaveActiveAllTrue", etc.
