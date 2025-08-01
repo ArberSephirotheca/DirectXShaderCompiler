@@ -1,6 +1,6 @@
 // Control flow with wave operations
 // Tests deterministic branching
-
+// totalSum = 32
 [numthreads(4, 1, 1)]
 void main(uint3 id : SV_DispatchThreadID) {
     uint laneId = WaveGetLaneIndex();
@@ -15,6 +15,6 @@ void main(uint3 id : SV_DispatchThreadID) {
     } else {
         result += WaveActiveSum(5);
     }
-    // 10 + 10 + 4 + 4 = 28
+    // 10 + 10 + 6 + 6 = 32
     uint totalSum = WaveActiveSum(result);
 }

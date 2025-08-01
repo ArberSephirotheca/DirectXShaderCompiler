@@ -1,6 +1,6 @@
 // Control flow with wave operations
 // Tests deterministic branching
-
+// totalSum = 96
 [numthreads(4, 1, 1)]
 void main(uint3 id : SV_DispatchThreadID) {
     uint laneId = WaveGetLaneIndex();
