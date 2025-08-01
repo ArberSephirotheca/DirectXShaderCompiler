@@ -80,6 +80,7 @@ DEBUG: Removed lane 0 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 0 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 2
+WARNING: Lane 0 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 0 to block 2
@@ -102,6 +103,7 @@ DEBUG: Removed lane 1 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 1 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 2
+WARNING: Lane 1 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 4) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 1 to block 2
@@ -119,6 +121,7 @@ DEBUG: Removed lane 2 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 2 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 2 participating lanes
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 2
+WARNING: Lane 2 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 2
@@ -136,6 +139,7 @@ DEBUG: Removed lane 3 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 3 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 3 participating lanes
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 2
+WARNING: Lane 3 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 3 to block 2
@@ -143,11 +147,13 @@ DEBUG: assignLaneToBlock - block 2 now has 3 participating lanes
 DEBUG: WhileStmt - Lane 3 evaluating condition for iteration 0
 DEBUG: WhileStmt - Lane 0 resuming while loop
 DEBUG: WhileStmt - Lane 0 reconverging from while loop
+WARNING: Lane 0 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 0 to block 3
 DEBUG: assignLaneToBlock - block 3 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 3
+WARNING: Lane 0 block mismatch - laneToCurrentBlock says 3 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 3 (type 6) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 0 to block 3
@@ -162,6 +168,7 @@ DEBUG: addUnknownLane - adding lane 2 to new block 4
 DEBUG: addUnknownLane - adding lane 3 to new block 4
 DEBUG: WhileStmt - Lane 1 created iteration starting block 4 for iteration 0
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 4
+WARNING: Lane 1 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 1 to block 4
@@ -172,7 +179,8 @@ DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 4, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 1 cannot execute, starting to wait in block 4
 DEBUG: WAVE_OP: Refreshed block 4 resolution status
 DEBUG: Block 4 wave 0 unknown lanes: {2 3 }
-DEBUG: canExecuteWaveInstruction for lane 1 in block 4: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0
+WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 4
+DEBUG: canExecuteWaveInstruction for lane 1 in block 4: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: AssignStmt - Lane 1 caught WaveOperationWaitException, re-throwing
 DEBUG: WhileStmt - Lane 1 waiting for wave operation in phase 5 at statement 0, iteration 0
 DEBUG: WAVE_WAIT: Lane 1 caught WaveOperationWaitException, state=2
@@ -180,6 +188,7 @@ DEBUG: WhileStmt - Lane 2 resuming while loop
 DEBUG: WhileStmt - Lane 2 executing body for iteration 0 from statement 0
 DEBUG: WhileStmt - Lane 2 needs iteration block (first statement is not control flow)
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 4
+WARNING: Lane 2 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 4
@@ -190,7 +199,8 @@ DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 4, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 4
 DEBUG: WAVE_OP: Refreshed block 4 resolution status
 DEBUG: Block 4 wave 0 unknown lanes: {3 }
-DEBUG: canExecuteWaveInstruction for lane 2 in block 4: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0
+WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 4
+DEBUG: canExecuteWaveInstruction for lane 2 in block 4: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: AssignStmt - Lane 2 caught WaveOperationWaitException, re-throwing
 DEBUG: WhileStmt - Lane 2 waiting for wave operation in phase 5 at statement 0, iteration 0
 DEBUG: WAVE_WAIT: Lane 2 caught WaveOperationWaitException, state=2
@@ -198,6 +208,7 @@ DEBUG: WhileStmt - Lane 3 resuming while loop
 DEBUG: WhileStmt - Lane 3 executing body for iteration 0 from statement 0
 DEBUG: WhileStmt - Lane 3 needs iteration block (first statement is not control flow)
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 4
+WARNING: Lane 3 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 3 to block 4
@@ -209,19 +220,20 @@ DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 4
 DEBUG: WAVE_OP: Refreshed block 4 resolution status
 DEBUG: Block 4 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
-DEBUG: canExecuteWaveInstruction for lane 3 in block 4: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1
+DEBUG: canExecuteWaveInstruction for lane 3 in block 4: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_1
 DEBUG: WAVE_OP: After lane 3 started waiting, wave operation can now execute!
-DEBUG: WAVE_OP: Updated sync point - allParticipantsKnown=1, allParticipantsArrived=1, readyToExecute=1
+DEBUG: WAVE_OP: Updated sync point - allParticipantsKnown=1, allParticipantsArrived=1, readyToExecute=0
 DEBUG: AssignStmt - Lane 3 caught WaveOperationWaitException, re-throwing
 DEBUG: WhileStmt - Lane 3 waiting for wave operation in phase 5 at statement 0, iteration 0
 DEBUG: WAVE_WAIT: Lane 3 caught WaveOperationWaitException, state=2
 DEBUG: WAVE_OP: Updated participants before execution to include all current block lanes: 1 2 3 
-DEBUG: WAVE_OP: Storing collective result for lanes: 1 2 3 
+DEBUG: WAVE_OP: Storing collective result for lanes: 1 2 3  (phase: 2)
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 3, instruction key=(0x503000001960,3)
 DEBUG: WAVE_OP: Lane 0 cannot execute, starting to wait in block 3
 DEBUG: WAVE_OP: Refreshed block 3 resolution status
 DEBUG: Block 3 wave 0 unknown lanes: {1 2 3 }
-DEBUG: canExecuteWaveInstruction for lane 0 in block 3: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0
+WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 3
+DEBUG: canExecuteWaveInstruction for lane 0 in block 3: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: VarDeclStmt - Lane 0 caught WaveOperationWaitException, re-throwing
 DEBUG: WAVE_WAIT: Lane 0 caught WaveOperationWaitException, state=2
 DEBUG: WhileStmt - Lane 1 resuming while loop
@@ -230,10 +242,11 @@ DEBUG: WhileStmt - Lane 1 needs iteration block (first statement is not control 
 DEBUG: WhileStmt - Lane 1 executing statement 0 in block 4
 DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 4, instruction key=(0x5030000018d0,4)
 DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored result
-DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 3
+DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 3 (phase: 2)
 DEBUG: WhileStmt - Lane 1 executing statement 1 in block 4
 DEBUG: WhileStmt - Lane 1 body completed in block 4, moving to header block 2 for next iteration
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 2
+WARNING: Lane 1 block mismatch - laneToCurrentBlock says 4 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 4 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 1 to block 2
@@ -244,10 +257,11 @@ DEBUG: WhileStmt - Lane 2 needs iteration block (first statement is not control 
 DEBUG: WhileStmt - Lane 2 executing statement 0 in block 4
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 4, instruction key=(0x5030000018d0,4)
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
-DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 3
+DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 3 (phase: 2)
 DEBUG: WhileStmt - Lane 2 executing statement 1 in block 4
 DEBUG: WhileStmt - Lane 2 body completed in block 4, moving to header block 2 for next iteration
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 2
+WARNING: Lane 2 block mismatch - laneToCurrentBlock says 4 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 4 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 2 to block 2
@@ -258,10 +272,11 @@ DEBUG: WhileStmt - Lane 3 needs iteration block (first statement is not control 
 DEBUG: WhileStmt - Lane 3 executing statement 0 in block 4
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 4, instruction key=(0x5030000018d0,4)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
-DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 3
+DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 3 (phase: 3)
 DEBUG: WhileStmt - Lane 3 executing statement 1 in block 4
 DEBUG: WhileStmt - Lane 3 body completed in block 4, moving to header block 2 for next iteration
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 2
+WARNING: Lane 3 block mismatch - laneToCurrentBlock says 4 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 4 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 3 to block 2
@@ -286,11 +301,13 @@ DEBUG: WhileStmt - Lane 3 resuming while loop
 DEBUG: WhileStmt - Lane 3 evaluating condition for iteration 1
 DEBUG: WhileStmt - Lane 1 resuming while loop
 DEBUG: WhileStmt - Lane 1 reconverging from while loop
+WARNING: Lane 1 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 4) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 1 to block 3
 DEBUG: assignLaneToBlock - block 3 now has 2 participating lanes
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 3
+WARNING: Lane 1 block mismatch - laneToCurrentBlock says 3 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 3 (type 6) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 1 to block 3
@@ -304,6 +321,7 @@ DEBUG: addUnknownLane - adding lane 2 to new block 5
 DEBUG: addUnknownLane - adding lane 3 to new block 5
 DEBUG: WhileStmt - Lane 2 created iteration starting block 5 for iteration 1
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 5
+WARNING: Lane 2 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 5 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 5
@@ -314,7 +332,8 @@ DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 5, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 5
 DEBUG: WAVE_OP: Refreshed block 5 resolution status
 DEBUG: Block 5 wave 0 unknown lanes: {3 }
-DEBUG: canExecuteWaveInstruction for lane 2 in block 5: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0
+WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 5
+DEBUG: canExecuteWaveInstruction for lane 2 in block 5: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: AssignStmt - Lane 2 caught WaveOperationWaitException, re-throwing
 DEBUG: WhileStmt - Lane 2 waiting for wave operation in phase 5 at statement 0, iteration 1
 DEBUG: WAVE_WAIT: Lane 2 caught WaveOperationWaitException, state=2
@@ -322,6 +341,7 @@ DEBUG: WhileStmt - Lane 3 resuming while loop
 DEBUG: WhileStmt - Lane 3 executing body for iteration 1 from statement 0
 DEBUG: WhileStmt - Lane 3 needs iteration block (first statement is not control flow)
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 5
+WARNING: Lane 3 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 5 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 3 to block 5
@@ -333,19 +353,20 @@ DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 5
 DEBUG: WAVE_OP: Refreshed block 5 resolution status
 DEBUG: Block 5 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
-DEBUG: canExecuteWaveInstruction for lane 3 in block 5: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1
+DEBUG: canExecuteWaveInstruction for lane 3 in block 5: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_1
 DEBUG: WAVE_OP: After lane 3 started waiting, wave operation can now execute!
-DEBUG: WAVE_OP: Updated sync point - allParticipantsKnown=1, allParticipantsArrived=1, readyToExecute=1
+DEBUG: WAVE_OP: Updated sync point - allParticipantsKnown=1, allParticipantsArrived=1, readyToExecute=0
 DEBUG: AssignStmt - Lane 3 caught WaveOperationWaitException, re-throwing
 DEBUG: WhileStmt - Lane 3 waiting for wave operation in phase 5 at statement 0, iteration 1
 DEBUG: WAVE_WAIT: Lane 3 caught WaveOperationWaitException, state=2
 DEBUG: WAVE_OP: Updated participants before execution to include all current block lanes: 2 3 
-DEBUG: WAVE_OP: Storing collective result for lanes: 2 3 
+DEBUG: WAVE_OP: Storing collective result for lanes: 2 3  (phase: 2)
 DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 3, instruction key=(0x503000001960,3)
 DEBUG: WAVE_OP: Lane 1 cannot execute, starting to wait in block 3
 DEBUG: WAVE_OP: Refreshed block 3 resolution status
 DEBUG: Block 3 wave 0 unknown lanes: {2 3 }
-DEBUG: canExecuteWaveInstruction for lane 1 in block 3: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0
+WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 3
+DEBUG: canExecuteWaveInstruction for lane 1 in block 3: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: VarDeclStmt - Lane 1 caught WaveOperationWaitException, re-throwing
 DEBUG: WAVE_WAIT: Lane 1 caught WaveOperationWaitException, state=2
 DEBUG: WhileStmt - Lane 2 resuming while loop
@@ -354,10 +375,11 @@ DEBUG: WhileStmt - Lane 2 needs iteration block (first statement is not control 
 DEBUG: WhileStmt - Lane 2 executing statement 0 in block 5
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 5, instruction key=(0x5030000018d0,5)
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
-DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 2
+DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 2 (phase: 2)
 DEBUG: WhileStmt - Lane 2 executing statement 1 in block 5
 DEBUG: WhileStmt - Lane 2 body completed in block 5, moving to header block 2 for next iteration
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 2
+WARNING: Lane 2 block mismatch - laneToCurrentBlock says 5 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 5 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 2 to block 2
@@ -368,10 +390,11 @@ DEBUG: WhileStmt - Lane 3 needs iteration block (first statement is not control 
 DEBUG: WhileStmt - Lane 3 executing statement 0 in block 5
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 5, instruction key=(0x5030000018d0,5)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
-DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 2
+DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 2 (phase: 3)
 DEBUG: WhileStmt - Lane 3 executing statement 1 in block 5
 DEBUG: WhileStmt - Lane 3 body completed in block 5, moving to header block 2 for next iteration
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 2
+WARNING: Lane 3 block mismatch - laneToCurrentBlock says 5 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 5 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 3 to block 2
@@ -400,11 +423,13 @@ DEBUG: WhileStmt - Lane 3 resuming while loop
 DEBUG: WhileStmt - Lane 3 evaluating condition for iteration 2
 DEBUG: WhileStmt - Lane 2 resuming while loop
 DEBUG: WhileStmt - Lane 2 reconverging from while loop
+WARNING: Lane 2 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 3
 DEBUG: assignLaneToBlock - block 3 now has 3 participating lanes
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 3
+WARNING: Lane 2 block mismatch - laneToCurrentBlock says 3 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 3 (type 6) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 2 to block 3
@@ -417,6 +442,7 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: addUnknownLane - adding lane 3 to new block 6
 DEBUG: WhileStmt - Lane 3 created iteration starting block 6 for iteration 2
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 6
+WARNING: Lane 3 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 6 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 3 to block 6
@@ -428,19 +454,20 @@ DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 6
 DEBUG: WAVE_OP: Refreshed block 6 resolution status
 DEBUG: Block 6 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
-DEBUG: canExecuteWaveInstruction for lane 3 in block 6: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1
+DEBUG: canExecuteWaveInstruction for lane 3 in block 6: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_1
 DEBUG: WAVE_OP: After lane 3 started waiting, wave operation can now execute!
-DEBUG: WAVE_OP: Updated sync point - allParticipantsKnown=1, allParticipantsArrived=1, readyToExecute=1
+DEBUG: WAVE_OP: Updated sync point - allParticipantsKnown=1, allParticipantsArrived=1, readyToExecute=0
 DEBUG: AssignStmt - Lane 3 caught WaveOperationWaitException, re-throwing
 DEBUG: WhileStmt - Lane 3 waiting for wave operation in phase 5 at statement 0, iteration 2
 DEBUG: WAVE_WAIT: Lane 3 caught WaveOperationWaitException, state=2
 DEBUG: WAVE_OP: Updated participants before execution to include all current block lanes: 3 
-DEBUG: WAVE_OP: Storing collective result for lanes: 3 
+DEBUG: WAVE_OP: Storing collective result for lanes: 3  (phase: 2)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 3, instruction key=(0x503000001960,3)
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 3
 DEBUG: WAVE_OP: Refreshed block 3 resolution status
 DEBUG: Block 3 wave 0 unknown lanes: {3 }
-DEBUG: canExecuteWaveInstruction for lane 2 in block 3: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0
+WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 3
+DEBUG: canExecuteWaveInstruction for lane 2 in block 3: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: VarDeclStmt - Lane 2 caught WaveOperationWaitException, re-throwing
 DEBUG: WAVE_WAIT: Lane 2 caught WaveOperationWaitException, state=2
 DEBUG: WhileStmt - Lane 3 resuming while loop
@@ -449,10 +476,11 @@ DEBUG: WhileStmt - Lane 3 needs iteration block (first statement is not control 
 DEBUG: WhileStmt - Lane 3 executing statement 0 in block 6
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 6, instruction key=(0x5030000018d0,6)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
-DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 1
+DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 1 (phase: 3)
 DEBUG: WhileStmt - Lane 3 executing statement 1 in block 6
 DEBUG: WhileStmt - Lane 3 body completed in block 6, moving to header block 2 for next iteration
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 2
+WARNING: Lane 3 block mismatch - laneToCurrentBlock says 6 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 6 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 3 to block 2
@@ -485,27 +513,29 @@ DEBUG: removeThreadFromAllSets - Block 6 now has all unknowns resolved for wave 
 DEBUG: removeThreadFromAllSets - block 6 has 0 participating lanes after removal
 DEBUG: WhileStmt - Lane 3 resuming while loop
 DEBUG: WhileStmt - Lane 3 reconverging from while loop
+WARNING: Lane 3 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 3 to block 3
 DEBUG: assignLaneToBlock - block 3 now has 4 participating lanes
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 3
+WARNING: Lane 3 block mismatch - laneToCurrentBlock says 3 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 3 (type 6) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 3 to block 3
 DEBUG: assignLaneToBlock - block 3 now has 4 participating lanes
 DEBUG: WAVE_OP: Updated participants before execution to include all current block lanes: 0 1 2 3 
-DEBUG: WAVE_OP: Storing collective result for lanes: 0 1 2 3 
+DEBUG: WAVE_OP: Storing collective result for lanes: 0 1 2 3  (phase: 2)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 3, instruction key=(0x503000001960,3)
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 3, instruction key=(0x503000001960,3)
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
-DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 14
+DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 14 (phase: 2)
 DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 3, instruction key=(0x503000001960,3)
 DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored result
-DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 14
+DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 14 (phase: 2)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 3, instruction key=(0x503000001960,3)
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
-DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 14
+DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 14 (phase: 3)
 lane 3 have completed execution
 lane 0 have completed execution
 lane 1 have completed execution
@@ -541,6 +571,7 @@ DEBUG: Removed lane 0 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 0 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 2
+WARNING: Lane 0 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 0 to block 2
@@ -563,6 +594,7 @@ DEBUG: Removed lane 1 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 1 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 2
+WARNING: Lane 1 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 4) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 1 to block 2
@@ -580,6 +612,7 @@ DEBUG: Removed lane 2 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 2 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 2 participating lanes
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 2
+WARNING: Lane 2 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 2
@@ -597,6 +630,7 @@ DEBUG: Removed lane 3 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 3 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 3 participating lanes
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 2
+WARNING: Lane 3 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 3 to block 2
@@ -604,11 +638,13 @@ DEBUG: assignLaneToBlock - block 2 now has 3 participating lanes
 DEBUG: WhileStmt - Lane 3 evaluating condition for iteration 0
 DEBUG: WhileStmt - Lane 0 resuming while loop
 DEBUG: WhileStmt - Lane 0 reconverging from while loop
+WARNING: Lane 0 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 0 to block 3
 DEBUG: assignLaneToBlock - block 3 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 3
+WARNING: Lane 0 block mismatch - laneToCurrentBlock says 3 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 3 (type 6) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 0 to block 3
@@ -623,6 +659,7 @@ DEBUG: addUnknownLane - adding lane 2 to new block 4
 DEBUG: addUnknownLane - adding lane 3 to new block 4
 DEBUG: WhileStmt - Lane 1 created iteration starting block 4 for iteration 0
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 4
+WARNING: Lane 1 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 1 to block 4
@@ -633,7 +670,8 @@ DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 4, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 1 cannot execute, starting to wait in block 4
 DEBUG: WAVE_OP: Refreshed block 4 resolution status
 DEBUG: Block 4 wave 0 unknown lanes: {2 3 }
-DEBUG: canExecuteWaveInstruction for lane 1 in block 4: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0
+WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 4
+DEBUG: canExecuteWaveInstruction for lane 1 in block 4: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: AssignStmt - Lane 1 caught WaveOperationWaitException, re-throwing
 DEBUG: WhileStmt - Lane 1 waiting for wave operation in phase 5 at statement 0, iteration 0
 DEBUG: WAVE_WAIT: Lane 1 caught WaveOperationWaitException, state=2
@@ -641,6 +679,7 @@ DEBUG: WhileStmt - Lane 2 resuming while loop
 DEBUG: WhileStmt - Lane 2 executing body for iteration 0 from statement 0
 DEBUG: WhileStmt - Lane 2 needs iteration block (first statement is not control flow)
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 4
+WARNING: Lane 2 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 4
@@ -651,7 +690,8 @@ DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 4, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 4
 DEBUG: WAVE_OP: Refreshed block 4 resolution status
 DEBUG: Block 4 wave 0 unknown lanes: {3 }
-DEBUG: canExecuteWaveInstruction for lane 2 in block 4: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0
+WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 4
+DEBUG: canExecuteWaveInstruction for lane 2 in block 4: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: AssignStmt - Lane 2 caught WaveOperationWaitException, re-throwing
 DEBUG: WhileStmt - Lane 2 waiting for wave operation in phase 5 at statement 0, iteration 0
 DEBUG: WAVE_WAIT: Lane 2 caught WaveOperationWaitException, state=2
@@ -659,6 +699,7 @@ DEBUG: WhileStmt - Lane 3 resuming while loop
 DEBUG: WhileStmt - Lane 3 executing body for iteration 0 from statement 0
 DEBUG: WhileStmt - Lane 3 needs iteration block (first statement is not control flow)
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 4
+WARNING: Lane 3 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 3 to block 4
@@ -670,19 +711,20 @@ DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 4
 DEBUG: WAVE_OP: Refreshed block 4 resolution status
 DEBUG: Block 4 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
-DEBUG: canExecuteWaveInstruction for lane 3 in block 4: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1
+DEBUG: canExecuteWaveInstruction for lane 3 in block 4: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_1
 DEBUG: WAVE_OP: After lane 3 started waiting, wave operation can now execute!
-DEBUG: WAVE_OP: Updated sync point - allParticipantsKnown=1, allParticipantsArrived=1, readyToExecute=1
+DEBUG: WAVE_OP: Updated sync point - allParticipantsKnown=1, allParticipantsArrived=1, readyToExecute=0
 DEBUG: AssignStmt - Lane 3 caught WaveOperationWaitException, re-throwing
 DEBUG: WhileStmt - Lane 3 waiting for wave operation in phase 5 at statement 0, iteration 0
 DEBUG: WAVE_WAIT: Lane 3 caught WaveOperationWaitException, state=2
 DEBUG: WAVE_OP: Updated participants before execution to include all current block lanes: 1 2 3 
-DEBUG: WAVE_OP: Storing collective result for lanes: 1 2 3 
+DEBUG: WAVE_OP: Storing collective result for lanes: 1 2 3  (phase: 2)
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 3, instruction key=(0x503000001960,3)
 DEBUG: WAVE_OP: Lane 0 cannot execute, starting to wait in block 3
 DEBUG: WAVE_OP: Refreshed block 3 resolution status
 DEBUG: Block 3 wave 0 unknown lanes: {1 2 3 }
-DEBUG: canExecuteWaveInstruction for lane 0 in block 3: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0
+WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 3
+DEBUG: canExecuteWaveInstruction for lane 0 in block 3: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: VarDeclStmt - Lane 0 caught WaveOperationWaitException, re-throwing
 DEBUG: WAVE_WAIT: Lane 0 caught WaveOperationWaitException, state=2
 DEBUG: WhileStmt - Lane 1 resuming while loop
@@ -691,10 +733,11 @@ DEBUG: WhileStmt - Lane 1 needs iteration block (first statement is not control 
 DEBUG: WhileStmt - Lane 1 executing statement 0 in block 4
 DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 4, instruction key=(0x5030000018d0,4)
 DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored result
-DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 3
+DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 3 (phase: 2)
 DEBUG: WhileStmt - Lane 1 executing statement 1 in block 4
 DEBUG: WhileStmt - Lane 1 body completed in block 4, moving to header block 2 for next iteration
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 2
+WARNING: Lane 1 block mismatch - laneToCurrentBlock says 4 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 4 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 1 to block 2
@@ -705,10 +748,11 @@ DEBUG: WhileStmt - Lane 2 needs iteration block (first statement is not control 
 DEBUG: WhileStmt - Lane 2 executing statement 0 in block 4
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 4, instruction key=(0x5030000018d0,4)
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
-DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 3
+DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 3 (phase: 2)
 DEBUG: WhileStmt - Lane 2 executing statement 1 in block 4
 DEBUG: WhileStmt - Lane 2 body completed in block 4, moving to header block 2 for next iteration
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 2
+WARNING: Lane 2 block mismatch - laneToCurrentBlock says 4 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 4 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 2 to block 2
@@ -719,10 +763,11 @@ DEBUG: WhileStmt - Lane 3 needs iteration block (first statement is not control 
 DEBUG: WhileStmt - Lane 3 executing statement 0 in block 4
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 4, instruction key=(0x5030000018d0,4)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
-DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 3
+DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 3 (phase: 3)
 DEBUG: WhileStmt - Lane 3 executing statement 1 in block 4
 DEBUG: WhileStmt - Lane 3 body completed in block 4, moving to header block 2 for next iteration
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 2
+WARNING: Lane 3 block mismatch - laneToCurrentBlock says 4 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 4 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 3 to block 2
@@ -747,11 +792,13 @@ DEBUG: WhileStmt - Lane 3 resuming while loop
 DEBUG: WhileStmt - Lane 3 evaluating condition for iteration 1
 DEBUG: WhileStmt - Lane 1 resuming while loop
 DEBUG: WhileStmt - Lane 1 reconverging from while loop
+WARNING: Lane 1 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 4) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 1 to block 3
 DEBUG: assignLaneToBlock - block 3 now has 2 participating lanes
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 3
+WARNING: Lane 1 block mismatch - laneToCurrentBlock says 3 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 3 (type 6) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 1 to block 3
@@ -765,6 +812,7 @@ DEBUG: addUnknownLane - adding lane 2 to new block 5
 DEBUG: addUnknownLane - adding lane 3 to new block 5
 DEBUG: WhileStmt - Lane 2 created iteration starting block 5 for iteration 1
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 5
+WARNING: Lane 2 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 5 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 5
@@ -775,7 +823,8 @@ DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 5, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 5
 DEBUG: WAVE_OP: Refreshed block 5 resolution status
 DEBUG: Block 5 wave 0 unknown lanes: {3 }
-DEBUG: canExecuteWaveInstruction for lane 2 in block 5: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0
+WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 5
+DEBUG: canExecuteWaveInstruction for lane 2 in block 5: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: AssignStmt - Lane 2 caught WaveOperationWaitException, re-throwing
 DEBUG: WhileStmt - Lane 2 waiting for wave operation in phase 5 at statement 0, iteration 1
 DEBUG: WAVE_WAIT: Lane 2 caught WaveOperationWaitException, state=2
@@ -783,6 +832,7 @@ DEBUG: WhileStmt - Lane 3 resuming while loop
 DEBUG: WhileStmt - Lane 3 executing body for iteration 1 from statement 0
 DEBUG: WhileStmt - Lane 3 needs iteration block (first statement is not control flow)
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 5
+WARNING: Lane 3 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 5 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 3 to block 5
@@ -794,19 +844,20 @@ DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 5
 DEBUG: WAVE_OP: Refreshed block 5 resolution status
 DEBUG: Block 5 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
-DEBUG: canExecuteWaveInstruction for lane 3 in block 5: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1
+DEBUG: canExecuteWaveInstruction for lane 3 in block 5: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_1
 DEBUG: WAVE_OP: After lane 3 started waiting, wave operation can now execute!
-DEBUG: WAVE_OP: Updated sync point - allParticipantsKnown=1, allParticipantsArrived=1, readyToExecute=1
+DEBUG: WAVE_OP: Updated sync point - allParticipantsKnown=1, allParticipantsArrived=1, readyToExecute=0
 DEBUG: AssignStmt - Lane 3 caught WaveOperationWaitException, re-throwing
 DEBUG: WhileStmt - Lane 3 waiting for wave operation in phase 5 at statement 0, iteration 1
 DEBUG: WAVE_WAIT: Lane 3 caught WaveOperationWaitException, state=2
 DEBUG: WAVE_OP: Updated participants before execution to include all current block lanes: 2 3 
-DEBUG: WAVE_OP: Storing collective result for lanes: 2 3 
+DEBUG: WAVE_OP: Storing collective result for lanes: 2 3  (phase: 2)
 DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 3, instruction key=(0x503000001960,3)
 DEBUG: WAVE_OP: Lane 1 cannot execute, starting to wait in block 3
 DEBUG: WAVE_OP: Refreshed block 3 resolution status
 DEBUG: Block 3 wave 0 unknown lanes: {2 3 }
-DEBUG: canExecuteWaveInstruction for lane 1 in block 3: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0
+WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 3
+DEBUG: canExecuteWaveInstruction for lane 1 in block 3: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: VarDeclStmt - Lane 1 caught WaveOperationWaitException, re-throwing
 DEBUG: WAVE_WAIT: Lane 1 caught WaveOperationWaitException, state=2
 DEBUG: WhileStmt - Lane 2 resuming while loop
@@ -815,10 +866,11 @@ DEBUG: WhileStmt - Lane 2 needs iteration block (first statement is not control 
 DEBUG: WhileStmt - Lane 2 executing statement 0 in block 5
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 5, instruction key=(0x5030000018d0,5)
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
-DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 2
+DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 2 (phase: 2)
 DEBUG: WhileStmt - Lane 2 executing statement 1 in block 5
 DEBUG: WhileStmt - Lane 2 body completed in block 5, moving to header block 2 for next iteration
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 2
+WARNING: Lane 2 block mismatch - laneToCurrentBlock says 5 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 5 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 2 to block 2
@@ -829,10 +881,11 @@ DEBUG: WhileStmt - Lane 3 needs iteration block (first statement is not control 
 DEBUG: WhileStmt - Lane 3 executing statement 0 in block 5
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 5, instruction key=(0x5030000018d0,5)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
-DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 2
+DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 2 (phase: 3)
 DEBUG: WhileStmt - Lane 3 executing statement 1 in block 5
 DEBUG: WhileStmt - Lane 3 body completed in block 5, moving to header block 2 for next iteration
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 2
+WARNING: Lane 3 block mismatch - laneToCurrentBlock says 5 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 5 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 3 to block 2
@@ -861,11 +914,13 @@ DEBUG: WhileStmt - Lane 3 resuming while loop
 DEBUG: WhileStmt - Lane 3 evaluating condition for iteration 2
 DEBUG: WhileStmt - Lane 2 resuming while loop
 DEBUG: WhileStmt - Lane 2 reconverging from while loop
+WARNING: Lane 2 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 3
 DEBUG: assignLaneToBlock - block 3 now has 3 participating lanes
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 3
+WARNING: Lane 2 block mismatch - laneToCurrentBlock says 3 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 3 (type 6) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 2 to block 3
@@ -878,6 +933,7 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: addUnknownLane - adding lane 3 to new block 6
 DEBUG: WhileStmt - Lane 3 created iteration starting block 6 for iteration 2
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 6
+WARNING: Lane 3 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 6 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 3 to block 6
@@ -889,19 +945,20 @@ DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 6
 DEBUG: WAVE_OP: Refreshed block 6 resolution status
 DEBUG: Block 6 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
-DEBUG: canExecuteWaveInstruction for lane 3 in block 6: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1
+DEBUG: canExecuteWaveInstruction for lane 3 in block 6: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_1
 DEBUG: WAVE_OP: After lane 3 started waiting, wave operation can now execute!
-DEBUG: WAVE_OP: Updated sync point - allParticipantsKnown=1, allParticipantsArrived=1, readyToExecute=1
+DEBUG: WAVE_OP: Updated sync point - allParticipantsKnown=1, allParticipantsArrived=1, readyToExecute=0
 DEBUG: AssignStmt - Lane 3 caught WaveOperationWaitException, re-throwing
 DEBUG: WhileStmt - Lane 3 waiting for wave operation in phase 5 at statement 0, iteration 2
 DEBUG: WAVE_WAIT: Lane 3 caught WaveOperationWaitException, state=2
 DEBUG: WAVE_OP: Updated participants before execution to include all current block lanes: 3 
-DEBUG: WAVE_OP: Storing collective result for lanes: 3 
+DEBUG: WAVE_OP: Storing collective result for lanes: 3  (phase: 2)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 3, instruction key=(0x503000001960,3)
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 3
 DEBUG: WAVE_OP: Refreshed block 3 resolution status
 DEBUG: Block 3 wave 0 unknown lanes: {3 }
-DEBUG: canExecuteWaveInstruction for lane 2 in block 3: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0
+WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 3
+DEBUG: canExecuteWaveInstruction for lane 2 in block 3: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: VarDeclStmt - Lane 2 caught WaveOperationWaitException, re-throwing
 DEBUG: WAVE_WAIT: Lane 2 caught WaveOperationWaitException, state=2
 DEBUG: WhileStmt - Lane 3 resuming while loop
@@ -910,10 +967,11 @@ DEBUG: WhileStmt - Lane 3 needs iteration block (first statement is not control 
 DEBUG: WhileStmt - Lane 3 executing statement 0 in block 6
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 6, instruction key=(0x5030000018d0,6)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
-DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 1
+DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 1 (phase: 3)
 DEBUG: WhileStmt - Lane 3 executing statement 1 in block 6
 DEBUG: WhileStmt - Lane 3 body completed in block 6, moving to header block 2 for next iteration
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 2
+WARNING: Lane 3 block mismatch - laneToCurrentBlock says 6 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 6 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 3 to block 2
@@ -946,27 +1004,29 @@ DEBUG: removeThreadFromAllSets - Block 6 now has all unknowns resolved for wave 
 DEBUG: removeThreadFromAllSets - block 6 has 0 participating lanes after removal
 DEBUG: WhileStmt - Lane 3 resuming while loop
 DEBUG: WhileStmt - Lane 3 reconverging from while loop
+WARNING: Lane 3 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 3 to block 3
 DEBUG: assignLaneToBlock - block 3 now has 4 participating lanes
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 3
+WARNING: Lane 3 block mismatch - laneToCurrentBlock says 3 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 3 (type 6) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 3 to block 3
 DEBUG: assignLaneToBlock - block 3 now has 4 participating lanes
 DEBUG: WAVE_OP: Updated participants before execution to include all current block lanes: 0 1 2 3 
-DEBUG: WAVE_OP: Storing collective result for lanes: 0 1 2 3 
+DEBUG: WAVE_OP: Storing collective result for lanes: 0 1 2 3  (phase: 2)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 3, instruction key=(0x503000001960,3)
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 3, instruction key=(0x503000001960,3)
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
-DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 14
+DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 14 (phase: 2)
 DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 3, instruction key=(0x503000001960,3)
 DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored result
-DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 14
+DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 14 (phase: 2)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 3, instruction key=(0x503000001960,3)
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
-DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 14
+DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 14 (phase: 3)
 lane 3 have completed execution
 lane 0 have completed execution
 lane 1 have completed execution
@@ -1244,7 +1304,7 @@ Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 3 from WaitingForResume to Ready
 Executing collective wave operation for wave 0 at instruction 0x503000001960 block 3
 Collective wave operation result: 14
-Lane 3 retrieving stored wave result: 14
+Lane 3 retrieving stored wave result: 14 (phase: 2)
 Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 0 from WaitingForWave to Ready
   Waking up lane 1 from WaitingForWave to Ready
@@ -1445,7 +1505,7 @@ Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 3 from WaitingForResume to Ready
 Executing collective wave operation for wave 0 at instruction 0x503000001960 block 3
 Collective wave operation result: 14
-Lane 3 retrieving stored wave result: 14
+Lane 3 retrieving stored wave result: 14 (phase: 2)
 Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 0 from WaitingForWave to Ready
   Waking up lane 1 from WaitingForWave to Ready
