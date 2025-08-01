@@ -206,8 +206,10 @@ struct LaneContext {
     uint32_t ifMergeBlockId = 0; // For if statements: merge block ID
 
     // Switch-specific block tracking
+    uint32_t switchHeaderBlockId = 0; // For switch statements: header block ID
     std::vector<uint32_t>
         switchCaseBlockIds; // For switch statements: all case block IDs
+    uint32_t switchMergeBlockId = 0; // For switch statements: merge block ID
 
     BlockExecutionState(const void *stmt, ControlFlowPhase ph, size_t idx = 0,
                         uint32_t blkId = 0)
@@ -317,8 +319,10 @@ enum class BlockType {
   LOOP_HEADER,   // Loop header/condition check
   LOOP_BODY,     // Loop body iteration
   LOOP_EXIT,     // Loop exit/merge point
+  SWITCH_HEADER, // Switch header/condition evaluation
   SWITCH_CASE,   // Switch case block
-  SWITCH_DEFAULT // Switch default block
+  SWITCH_DEFAULT, // Switch default block
+  SWITCH_MERGE   // Switch merge/reconvergence point
 };
 
 // Block identity for deduplication based on execution path using merge stack
