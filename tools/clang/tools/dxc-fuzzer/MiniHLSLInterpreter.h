@@ -235,6 +235,38 @@ enum class SyncPointState {
   Consumed                 // All results retrieved, ready for cleanup
 };
 
+enum class LaneBlockStatus {
+  Unknown,        // Lane might join this block (switch fallthrough)
+  Participating,  // Lane is actively in this block
+  WaitingForWave, // Lane is waiting for wave operation in this block
+  Left            // Lane has left this block (returned/moved)
+};
+
+// Unified lane-block membership tracking to replace dual bookkeeping
+class BlockMembershipRegistry {
+private:
+  // Single source of truth: (waveId, laneId, blockId) -> status
+  std::map<std::tuple<uint32_t, LaneId, uint32_t>, LaneBlockStatus> membership_;
+  
+public:
+  void setLaneStatus(uint32_t waveId, LaneId laneId, uint32_t blockId, LaneBlockStatus status);
+  LaneBlockStatus getLaneStatus(uint32_t waveId, LaneId laneId, uint32_t blockId) const;
+  uint32_t getCurrentBlock(uint32_t waveId, LaneId laneId) const;
+  
+  // Derived queries (computed on-demand)
+  std::set<LaneId> getParticipatingLanes(uint32_t waveId, uint32_t blockId) const;
+  std::set<LaneId> getUnknownLanes(uint32_t waveId, uint32_t blockId) const;
+  std::set<LaneId> getWaitingLanes(uint32_t waveId, uint32_t blockId) const;
+  bool isWaveAllUnknownResolved(uint32_t waveId, uint32_t blockId) const;
+  
+  // Lane lifecycle management
+  void onLaneJoinBlock(uint32_t waveId, LaneId laneId, uint32_t blockId);
+  void onLaneLeaveBlock(uint32_t waveId, LaneId laneId, uint32_t blockId);
+  void onLaneReturn(uint32_t waveId, LaneId laneId);
+  void onLaneStartWaveOp(uint32_t waveId, LaneId laneId, uint32_t blockId);
+  void onLaneFinishWaveOp(uint32_t waveId, LaneId laneId, uint32_t blockId);
+};
+
 // Wave operation synchronization point for instruction-level coordination
 struct WaveOperationSyncPoint {
   const void *instruction; // Specific wave operation instruction pointer
@@ -768,6 +800,9 @@ struct ThreadgroupContext {
 
   // Global dynamic execution block management
   std::map<uint32_t, DynamicExecutionBlock> executionBlocks;
+  
+  // PHASE 2: Unified lane-block membership tracking
+  BlockMembershipRegistry membershipRegistry;
   std::map<BlockIdentity, uint32_t> identityToBlockId; // Deduplication map
   uint32_t nextBlockId = 1;
 
@@ -841,6 +876,14 @@ struct ThreadgroupContext {
   std::map<WaveId, std::set<LaneId>>
   getCurrentBlockParticipants(uint32_t blockId) const;
   uint32_t getCurrentBlock(WaveId waveId, LaneId laneId) const;
+  
+  // PHASE 2: Unified membership tracking methods
+  void addLaneToBlock_v2(WaveId waveId, LaneId laneId, uint32_t blockId);
+  void removeLaneFromBlock_v2(WaveId waveId, LaneId laneId, uint32_t blockId);
+  void moveLaneToBlock_v2(WaveId waveId, LaneId laneId, uint32_t fromBlockId, uint32_t toBlockId);
+  void onLaneReturn_v2(WaveId waveId, LaneId laneId);
+  void onLaneStartWaveOp_v2(WaveId waveId, LaneId laneId, uint32_t blockId);
+  void onLaneFinishWaveOp_v2(WaveId waveId, LaneId laneId, uint32_t blockId);
 
   // Instruction-level synchronization methods for wave operation
   bool canExecuteWaveInstruction(WaveId waveId, LaneId laneId,

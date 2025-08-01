@@ -407,10 +407,10 @@ DEBUG: Removed lane 2 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 2 to block 4
 DEBUG: assignLaneToBlock - block 4 now has 1 participating lanes
 DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 2
-DEBUG: removeThreadFromAllSets - block 2 had 1 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 2 had 2 participating lanes before removal
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 2
 DEBUG: removeThreadFromAllSets - Block 2 now has all unknowns resolved for wave 0 - checking for ready wave operations
-DEBUG: removeThreadFromAllSets - block 2 has 1 participating lanes after removal
+DEBUG: removeThreadFromAllSets - block 2 has 2 participating lanes after removal
 DEBUG: removeThreadFromNestedBlocks - removing lane 2 from block 5 (child of 2)
 DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 5
 DEBUG: removeThreadFromAllSets - block 5 had 0 participating lanes before removal
@@ -458,10 +458,10 @@ DEBUG: Removed lane 3 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 3 to block 4
 DEBUG: assignLaneToBlock - block 4 now has 2 participating lanes
 DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 2
-DEBUG: removeThreadFromAllSets - block 2 had 1 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 2 had 2 participating lanes before removal
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 2
 DEBUG: removeThreadFromAllSets - Block 2 now has all unknowns resolved for wave 0 - checking for ready wave operations
-DEBUG: removeThreadFromAllSets - block 2 has 1 participating lanes after removal
+DEBUG: removeThreadFromAllSets - block 2 has 2 participating lanes after removal
 DEBUG: removeThreadFromNestedBlocks - removing lane 3 from block 5 (child of 2)
 DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 5
 DEBUG: removeThreadFromAllSets - block 5 had 0 participating lanes before removal
@@ -572,10 +572,10 @@ DEBUG: Removed lane 1 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 1 to block 4
 DEBUG: assignLaneToBlock - block 4 now has 3 participating lanes
 DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 2
-DEBUG: removeThreadFromAllSets - block 2 had 1 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 2 had 2 participating lanes before removal
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 2
 DEBUG: removeThreadFromAllSets - Block 2 now has all unknowns resolved for wave 0 - checking for ready wave operations
-DEBUG: removeThreadFromAllSets - block 2 has 0 participating lanes after removal
+DEBUG: removeThreadFromAllSets - block 2 has 1 participating lanes after removal
 DEBUG: removeThreadFromNestedBlocks - removing lane 1 from block 5 (child of 2)
 DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 5
 DEBUG: removeThreadFromAllSets - block 5 had 0 participating lanes before removal
@@ -949,10 +949,10 @@ DEBUG: Removed lane 2 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 2 to block 4
 DEBUG: assignLaneToBlock - block 4 now has 1 participating lanes
 DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 2
-DEBUG: removeThreadFromAllSets - block 2 had 1 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 2 had 2 participating lanes before removal
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 2
 DEBUG: removeThreadFromAllSets - Block 2 now has all unknowns resolved for wave 0 - checking for ready wave operations
-DEBUG: removeThreadFromAllSets - block 2 has 1 participating lanes after removal
+DEBUG: removeThreadFromAllSets - block 2 has 2 participating lanes after removal
 DEBUG: removeThreadFromNestedBlocks - removing lane 2 from block 5 (child of 2)
 DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 5
 DEBUG: removeThreadFromAllSets - block 5 had 0 participating lanes before removal
@@ -1000,10 +1000,10 @@ DEBUG: Removed lane 3 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 3 to block 4
 DEBUG: assignLaneToBlock - block 4 now has 2 participating lanes
 DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 2
-DEBUG: removeThreadFromAllSets - block 2 had 1 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 2 had 2 participating lanes before removal
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 2
 DEBUG: removeThreadFromAllSets - Block 2 now has all unknowns resolved for wave 0 - checking for ready wave operations
-DEBUG: removeThreadFromAllSets - block 2 has 1 participating lanes after removal
+DEBUG: removeThreadFromAllSets - block 2 has 2 participating lanes after removal
 DEBUG: removeThreadFromNestedBlocks - removing lane 3 from block 5 (child of 2)
 DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 5
 DEBUG: removeThreadFromAllSets - block 5 had 0 participating lanes before removal
@@ -1114,10 +1114,10 @@ DEBUG: Removed lane 1 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 1 to block 4
 DEBUG: assignLaneToBlock - block 4 now has 3 participating lanes
 DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 2
-DEBUG: removeThreadFromAllSets - block 2 had 1 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 2 had 2 participating lanes before removal
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 2
 DEBUG: removeThreadFromAllSets - Block 2 now has all unknowns resolved for wave 0 - checking for ready wave operations
-DEBUG: removeThreadFromAllSets - block 2 has 0 participating lanes after removal
+DEBUG: removeThreadFromAllSets - block 2 has 1 participating lanes after removal
 DEBUG: removeThreadFromNestedBlocks - removing lane 1 from block 5 (child of 2)
 DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 5
 DEBUG: removeThreadFromAllSets - block 5 had 0 participating lanes before removal
@@ -1617,7 +1617,8 @@ Dynamic Block 2:
   Nesting Level: 0
   Source Statement: 0x506000001700
   Participating Lanes by Wave:
-  Total Participating Lanes: 0
+    Wave 0: {0} (1 lanes)
+  Total Participating Lanes: 1
   Unknown Resolution Status by Wave:
     Wave 0: Resolved
 
@@ -1666,6 +1667,8 @@ Dynamic Block 5:
   Source Statement: 0x5060000016a0
   Participating Lanes by Wave:
   Total Participating Lanes: 0
+  Arrived Lanes by Wave:
+    Wave 0: {0} (1 lanes)
   Unknown Resolution Status by Wave:
     Wave 0: Resolved
 
@@ -1815,7 +1818,8 @@ Dynamic Block 2:
   Nesting Level: 0
   Source Statement: 0x506000001700
   Participating Lanes by Wave:
-  Total Participating Lanes: 0
+    Wave 0: {0} (1 lanes)
+  Total Participating Lanes: 1
   Unknown Resolution Status by Wave:
     Wave 0: Resolved
 
@@ -1864,6 +1868,8 @@ Dynamic Block 5:
   Source Statement: 0x5060000016a0
   Participating Lanes by Wave:
   Total Participating Lanes: 0
+  Arrived Lanes by Wave:
+    Wave 0: {0} (1 lanes)
   Unknown Resolution Status by Wave:
     Wave 0: Resolved
 

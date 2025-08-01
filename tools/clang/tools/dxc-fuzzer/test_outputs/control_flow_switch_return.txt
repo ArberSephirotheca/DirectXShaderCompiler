@@ -507,12 +507,12 @@ DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 2
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 3
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 4
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 5
-DEBUG: Block 5 wave 0 unknown lanes: {}
-DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
-DEBUG: canExecuteWaveInstruction for lane 2 in block 5: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 6
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 7
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 8
+DEBUG: Block 5 wave 0 unknown lanes: {}
+DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
+DEBUG: canExecuteWaveInstruction for lane 2 in block 5: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1
 DEBUG: updateWaveOperationStates - Lane 0 returning, checking 4 active sync points
 DEBUG: updateWaveOperationStates - Sync point 0x503000001ab0 in block 3: wasExpected=1, allParticipantsKnown=1
 DEBUG: updateWaveOperationStates - Sync point 0x503000001ab0 in block 3 has no participants left, marking for removal
@@ -1122,12 +1122,12 @@ DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 2
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 3
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 4
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 5
-DEBUG: Block 5 wave 0 unknown lanes: {}
-DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
-DEBUG: canExecuteWaveInstruction for lane 2 in block 5: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 6
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 7
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 8
+DEBUG: Block 5 wave 0 unknown lanes: {}
+DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
+DEBUG: canExecuteWaveInstruction for lane 2 in block 5: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1
 DEBUG: updateWaveOperationStates - Lane 0 returning, checking 4 active sync points
 DEBUG: updateWaveOperationStates - Sync point 0x503000001ab0 in block 3: wasExpected=1, allParticipantsKnown=1
 DEBUG: updateWaveOperationStates - Sync point 0x503000001ab0 in block 3 has no participants left, marking for removal
@@ -1888,6 +1888,10 @@ Dynamic Block 4:
   Source Statement: 0x5040000043d2
   Participating Lanes by Wave:
   Total Participating Lanes: 0
+  Arrived Lanes by Wave:
+    Wave 0: {0, 1} (2 lanes)
+  Waiting Lanes by Wave:
+    Wave 0: {0, 1} (2 lanes)
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001b40)
   Unknown Resolution Status by Wave:
@@ -2120,6 +2124,10 @@ Dynamic Block 4:
   Source Statement: 0x5040000043d2
   Participating Lanes by Wave:
   Total Participating Lanes: 0
+  Arrived Lanes by Wave:
+    Wave 0: {0, 1} (2 lanes)
+  Waiting Lanes by Wave:
+    Wave 0: {0, 1} (2 lanes)
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001b40)
   Unknown Resolution Status by Wave:
