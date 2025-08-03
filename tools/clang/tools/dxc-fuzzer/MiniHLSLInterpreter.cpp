@@ -5751,9 +5751,9 @@ void ThreadgroupContext::mergeExecutionPaths(
   } else {
     // Update existing target block
     auto &targetBlock = executionBlocks[targetBlockId];
-    // Clear existing lanes and add merged ones
-    for (const auto &[waveId, _] : targetBlock.getParticipatingLanes()) {
-      auto lanes = targetBlock.getParticipatingLanesForWave(waveId);
+    // Clear existing lanes and add merged ones (using registry)
+    for (WaveId waveId = 0; waveId < waves.size(); ++waveId) {
+      auto lanes = membershipRegistry.getParticipatingLanes(waveId, targetBlockId);
       for (LaneId laneId : lanes) {
         targetBlock.removeParticipatingLane(waveId, laneId);
       }
@@ -5909,7 +5909,14 @@ bool ThreadgroupContext::areAllUnknownLanesResolved(uint32_t blockId) const {
     return true; // Block not found, consider resolved
   }
 
-  return it->second.areAllUnknownLanesResolved();
+  // Check if all waves in this block have no unknown lanes (using registry)
+  for (uint32_t waveId = 0; waveId < waveCount; ++waveId) {
+    auto unknownLanes = membershipRegistry.getUnknownLanes(waveId, blockId);
+    if (!unknownLanes.empty()) {
+      return false; // Found unknown lanes in this wave
+    }
+  }
+  return true; // All waves have no unknown lanes
   //   return it->second.allUnknownResolved;
 }
 
@@ -6378,9 +6385,12 @@ bool ThreadgroupContext::canExecuteBarrierInstructionInBlock(
 
   const DynamicExecutionBlock &block = blockIt->second;
 
-  // For barriers, check if all unknown lanes across all waves are resolved
-  if (!block.areAllUnknownLanesResolved()) {
-    return false; // Still have unknown lanes
+  // For barriers, check if all unknown lanes across all waves are resolved (using registry)
+  for (uint32_t waveId = 0; waveId < waveCount; ++waveId) {
+    auto unknownLanes = membershipRegistry.getUnknownLanes(waveId, blockId);
+    if (!unknownLanes.empty()) {
+      return false; // Still have unknown lanes in this wave
+    }
   }
 
   // Get expected participants (all active lanes in the block) - reconstruct from registry
