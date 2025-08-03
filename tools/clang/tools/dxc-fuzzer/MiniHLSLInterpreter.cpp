@@ -2324,10 +2324,10 @@ void ReturnStmt::updateBlockResolutionStates(ThreadgroupContext &tg,
     if (registryResolved != oldResolved) {
       std::cout << "INFO: Block " << blockId << " wave " << waveId 
                 << " resolution difference - registry: " << registryResolved 
-                << ", old: " << oldResolved << " (using old)" << std::endl;
+                << ", old: " << oldResolved << " (tracked by registry)" << std::endl;
     }
     
-    block.setWaveAllUnknownResolved(waveId, oldResolved);
+    // Resolution status tracked by registry - old system metadata not needed
 
     // If block just became resolved, wake up any lanes waiting for resolution
     if (!wasResolved && oldResolved) {
@@ -5812,10 +5812,10 @@ void ThreadgroupContext::markLaneArrived(WaveId waveId, LaneId laneId,
     if (registryResolved != oldResolved) {
       std::cout << "INFO: markLaneArrived - Block " << blockId << " wave " << waveId 
                 << " resolution difference - registry: " << registryResolved 
-                << ", old: " << oldResolved << " (using old)" << std::endl;
+                << ", old: " << oldResolved << " (tracked by registry)" << std::endl;
     }
     
-    it->second.setWaveAllUnknownResolved(waveId, oldResolved);
+    // Resolution status tracked by registry - no need for old system metadata
   }
 }
 
@@ -5965,11 +5965,7 @@ uint32_t ThreadgroupContext::findOrCreateBlockForPath(
     }
   }
 
-  // Update resolution status for all waves
-  for (const auto &[waveId, _] : unknownLanes) {
-    auto unknownLanesForWave = membershipRegistry.getUnknownLanes(waveId, newBlockId);
-    newBlock.setWaveAllUnknownResolved(waveId, unknownLanesForWave.empty());
-  }
+  // Resolution status for all waves is tracked by registry - no metadata needed
 
   newBlock.setIsConverged(false); // Will be updated as lanes arrive
 
@@ -6622,10 +6618,9 @@ void ThreadgroupContext::removeThreadFromAllSets(uint32_t blockId,
     blockIt->second.removeWaitingLane(waveId, laneId);
     blockIt->second.removeUnknownLane(waveId, laneId);
 
-    // Update unknown resolution status after removing unknown lane
+    // Check resolution status from registry (no need to update old system metadata)
     auto unknownLanes = membershipRegistry.getUnknownLanes(waveId, blockId);
     bool allResolved = unknownLanes.empty();
-    blockIt->second.setWaveAllUnknownResolved(waveId, allResolved);
 
     // CRITICAL: Add the same wakeup logic as removeThreadFromUnknown
     // Check if removing this unknown lane allows any waiting wave operations to

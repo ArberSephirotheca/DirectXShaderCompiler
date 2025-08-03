@@ -342,17 +342,13 @@ DEBUG: IfStmt - Lane 0 executing then block from statement 0
 DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 0 in phase ExecutingThenBlock (stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0
-DEBUG: Block 3 wave 0 unknown lanes: {}
-DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
-DEBUG: canExecuteWaveInstruction for lane 2 in block 3: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_2
-DEBUG: Block 3 wave 0 unknown lanes: {}
-DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
-DEBUG: canExecuteWaveInstruction for lane 3 in block 3: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_2
 DEBUG: updateWaveOperationStates - Lane 0 returning, checking 1 active sync points
 DEBUG: updateWaveOperationStates - Sync point 0x503000001b40 in block 3: wasExpected=0, allParticipantsKnown=1
 DEBUG: updateWaveOperationStates - Lane 0 returning: Block 3 isAllParticipantsKnown=1 for instruction 0x503000001b40
 DEBUG: updateWaveOperationStates - Sync point for instruction 0x503000001b40 in block 3 became complete due to lane 0 returning
 DEBUG: updateWaveOperationStates - Waking up lanes waiting at instruction 0x503000001b40 in block 3
+DEBUG: updateWaveOperationStates - Waking up lane 2 from WaitingForWave to Ready
+DEBUG: updateWaveOperationStates - Waking up lane 3 from WaitingForWave to Ready
 DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=2, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 in phase ExecutingThenBlock (stack depth=2, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 executing then block from statement 0
@@ -886,17 +882,13 @@ DEBUG: IfStmt - Lane 0 executing then block from statement 0
 DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 0 in phase ExecutingThenBlock (stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0
-DEBUG: Block 3 wave 0 unknown lanes: {}
-DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
-DEBUG: canExecuteWaveInstruction for lane 2 in block 3: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_2
-DEBUG: Block 3 wave 0 unknown lanes: {}
-DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
-DEBUG: canExecuteWaveInstruction for lane 3 in block 3: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_2
 DEBUG: updateWaveOperationStates - Lane 0 returning, checking 1 active sync points
 DEBUG: updateWaveOperationStates - Sync point 0x503000001b40 in block 3: wasExpected=0, allParticipantsKnown=1
 DEBUG: updateWaveOperationStates - Lane 0 returning: Block 3 isAllParticipantsKnown=1 for instruction 0x503000001b40
 DEBUG: updateWaveOperationStates - Sync point for instruction 0x503000001b40 in block 3 became complete due to lane 0 returning
 DEBUG: updateWaveOperationStates - Waking up lanes waiting at instruction 0x503000001b40 in block 3
+DEBUG: updateWaveOperationStates - Waking up lane 2 from WaitingForWave to Ready
+DEBUG: updateWaveOperationStates - Waking up lane 3 from WaitingForWave to Ready
 DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=2, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 in phase ExecutingThenBlock (stack depth=2, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 executing then block from statement 0
@@ -1610,8 +1602,6 @@ Dynamic Block 1:
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
-  Unknown Resolution Status by Wave:
-    Wave 0: Resolved
 
 Dynamic Block 2:
   Block ID: 2
@@ -1624,8 +1614,6 @@ Dynamic Block 2:
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
-  Unknown Resolution Status by Wave:
-    Wave 0: Resolved
 
 Dynamic Block 3:
   Block ID: 3
@@ -1640,8 +1628,6 @@ Dynamic Block 3:
   Total Participating Lanes: 0
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001b40)
-  Unknown Resolution Status by Wave:
-    Wave 0: Resolved
 
 Dynamic Block 4:
   Block ID: 4
@@ -1660,8 +1646,6 @@ Dynamic Block 4:
     Wave 0: {2, 3} (2 lanes)
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001bd0)
-  Unknown Resolution Status by Wave:
-    Wave 0: Unresolved
 
 Dynamic Block 5:
   Block ID: 5
@@ -1674,8 +1658,6 @@ Dynamic Block 5:
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
-  Unknown Resolution Status by Wave:
-    Wave 0: Resolved
 
 Dynamic Block 6:
   Block ID: 6
@@ -1690,8 +1672,6 @@ Dynamic Block 6:
   Total Participating Lanes: 0
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001a80)
-  Unknown Resolution Status by Wave:
-    Wave 0: Resolved
 
 Dynamic Block 7:
   Block ID: 7
@@ -1706,8 +1686,6 @@ Dynamic Block 7:
   Total Participating Lanes: 0
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001ae0)
-  Unknown Resolution Status by Wave:
-    Wave 0: Resolved
 
 === Wave States ===
 Wave 0:
@@ -1814,8 +1792,6 @@ Dynamic Block 1:
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
-  Unknown Resolution Status by Wave:
-    Wave 0: Resolved
 
 Dynamic Block 2:
   Block ID: 2
@@ -1828,8 +1804,6 @@ Dynamic Block 2:
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
-  Unknown Resolution Status by Wave:
-    Wave 0: Resolved
 
 Dynamic Block 3:
   Block ID: 3
@@ -1844,8 +1818,6 @@ Dynamic Block 3:
   Total Participating Lanes: 0
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001b40)
-  Unknown Resolution Status by Wave:
-    Wave 0: Resolved
 
 Dynamic Block 4:
   Block ID: 4
@@ -1864,8 +1836,6 @@ Dynamic Block 4:
     Wave 0: {2, 3} (2 lanes)
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001bd0)
-  Unknown Resolution Status by Wave:
-    Wave 0: Unresolved
 
 Dynamic Block 5:
   Block ID: 5
@@ -1878,8 +1848,6 @@ Dynamic Block 5:
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
-  Unknown Resolution Status by Wave:
-    Wave 0: Resolved
 
 Dynamic Block 6:
   Block ID: 6
@@ -1894,8 +1862,6 @@ Dynamic Block 6:
   Total Participating Lanes: 0
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001a80)
-  Unknown Resolution Status by Wave:
-    Wave 0: Resolved
 
 Dynamic Block 7:
   Block ID: 7
@@ -1910,8 +1876,6 @@ Dynamic Block 7:
   Total Participating Lanes: 0
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001ae0)
-  Unknown Resolution Status by Wave:
-    Wave 0: Resolved
 
 === Wave States ===
 Wave 0:

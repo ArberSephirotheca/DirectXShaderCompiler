@@ -511,9 +511,6 @@ DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 4, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 2 (phase: 3)
 DEBUG: SwitchStmt - Lane 0 executing statement 1 in case 1
-DEBUG: Block 5 wave 0 unknown lanes: {}
-DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
-DEBUG: canExecuteWaveInstruction for lane 2 in block 5: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_1
 DEBUG: updateWaveOperationStates - Lane 0 returning, checking 4 active sync points
 DEBUG: updateWaveOperationStates - Sync point 0x503000001ab0 in block 3: wasExpected=1, allParticipantsKnown=1
 DEBUG: updateWaveOperationStates - Sync point 0x503000001ab0 in block 3 has no participants left, marking for removal
@@ -1118,9 +1115,6 @@ DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 4, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 2 (phase: 3)
 DEBUG: SwitchStmt - Lane 0 executing statement 1 in case 1
-DEBUG: Block 5 wave 0 unknown lanes: {}
-DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
-DEBUG: canExecuteWaveInstruction for lane 2 in block 5: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_1
 DEBUG: updateWaveOperationStates - Lane 0 returning, checking 4 active sync points
 DEBUG: updateWaveOperationStates - Sync point 0x503000001ab0 in block 3: wasExpected=1, allParticipantsKnown=1
 DEBUG: updateWaveOperationStates - Sync point 0x503000001ab0 in block 3 has no participants left, marking for removal
@@ -1795,6 +1789,8 @@ Releasing sync point: 0 participants (phase: 3)
 All results consumed, releasing sync point for wave 0 at instruction 0x503000001b40 block 4
 Releasing sync point: 0 participants (phase: 3)
   Sync point removed from active list
+Waking up lanes to retrieve wave operation results for wave 0
+  Waking up lane 2 from WaitingForWave to Ready
 Executing collective wave operation for wave 0 at instruction 0x503000001c00 block 6
 Collective wave operation result: 6
 Waking up lanes to retrieve wave operation results for wave 0
@@ -1832,8 +1828,6 @@ Dynamic Block 1:
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
-  Unknown Resolution Status by Wave:
-    Wave 0: Resolved
 
 Dynamic Block 2:
   Block ID: 2
@@ -1846,8 +1840,6 @@ Dynamic Block 2:
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
-  Unknown Resolution Status by Wave:
-    Wave 0: Resolved
 
 Dynamic Block 3:
   Block ID: 3
@@ -1862,8 +1854,6 @@ Dynamic Block 3:
   Total Participating Lanes: 0
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001ab0)
-  Unknown Resolution Status by Wave:
-    Wave 0: Resolved
 
 Dynamic Block 4:
   Block ID: 4
@@ -1878,8 +1868,6 @@ Dynamic Block 4:
   Total Participating Lanes: 0
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001b40)
-  Unknown Resolution Status by Wave:
-    Wave 0: Resolved
 
 Dynamic Block 5:
   Block ID: 5
@@ -1894,8 +1882,6 @@ Dynamic Block 5:
   Total Participating Lanes: 0
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001ba0)
-  Unknown Resolution Status by Wave:
-    Wave 0: Resolved
 
 Dynamic Block 6:
   Block ID: 6
@@ -1910,8 +1896,6 @@ Dynamic Block 6:
   Total Participating Lanes: 0
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001c00)
-  Unknown Resolution Status by Wave:
-    Wave 0: Resolved
 
 Dynamic Block 7:
   Block ID: 7
@@ -1926,8 +1910,6 @@ Dynamic Block 7:
   Total Participating Lanes: 0
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001c60)
-  Unknown Resolution Status by Wave:
-    Wave 0: Unresolved
 
 Dynamic Block 8:
   Block ID: 8
@@ -1944,8 +1926,6 @@ Dynamic Block 8:
     Wave 0: {2, 3} (2 lanes)
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001cc0)
-  Unknown Resolution Status by Wave:
-    Wave 0: Unresolved
 
 === Wave States ===
 Wave 0:
@@ -2029,6 +2009,8 @@ Releasing sync point: 0 participants (phase: 3)
 All results consumed, releasing sync point for wave 0 at instruction 0x503000001b40 block 4
 Releasing sync point: 0 participants (phase: 3)
   Sync point removed from active list
+Waking up lanes to retrieve wave operation results for wave 0
+  Waking up lane 2 from WaitingForWave to Ready
 Executing collective wave operation for wave 0 at instruction 0x503000001c00 block 6
 Collective wave operation result: 6
 Waking up lanes to retrieve wave operation results for wave 0
@@ -2066,8 +2048,6 @@ Dynamic Block 1:
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
-  Unknown Resolution Status by Wave:
-    Wave 0: Resolved
 
 Dynamic Block 2:
   Block ID: 2
@@ -2080,8 +2060,6 @@ Dynamic Block 2:
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
-  Unknown Resolution Status by Wave:
-    Wave 0: Resolved
 
 Dynamic Block 3:
   Block ID: 3
@@ -2096,8 +2074,6 @@ Dynamic Block 3:
   Total Participating Lanes: 0
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001ab0)
-  Unknown Resolution Status by Wave:
-    Wave 0: Resolved
 
 Dynamic Block 4:
   Block ID: 4
@@ -2112,8 +2088,6 @@ Dynamic Block 4:
   Total Participating Lanes: 0
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001b40)
-  Unknown Resolution Status by Wave:
-    Wave 0: Resolved
 
 Dynamic Block 5:
   Block ID: 5
@@ -2128,8 +2102,6 @@ Dynamic Block 5:
   Total Participating Lanes: 0
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001ba0)
-  Unknown Resolution Status by Wave:
-    Wave 0: Resolved
 
 Dynamic Block 6:
   Block ID: 6
@@ -2144,8 +2116,6 @@ Dynamic Block 6:
   Total Participating Lanes: 0
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001c00)
-  Unknown Resolution Status by Wave:
-    Wave 0: Resolved
 
 Dynamic Block 7:
   Block ID: 7
@@ -2160,8 +2130,6 @@ Dynamic Block 7:
   Total Participating Lanes: 0
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001c60)
-  Unknown Resolution Status by Wave:
-    Wave 0: Unresolved
 
 Dynamic Block 8:
   Block ID: 8
@@ -2178,8 +2146,6 @@ Dynamic Block 8:
     Wave 0: {2, 3} (2 lanes)
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001cc0)
-  Unknown Resolution Status by Wave:
-    Wave 0: Unresolved
 
 === Wave States ===
 Wave 0:
