@@ -2814,11 +2814,11 @@ void MiniHLSLInterpreter::processWaveOperations(ThreadgroupContext &tgContext) {
         uint32_t blockId = instructionKey.second;
         auto blockIt = tgContext.executionBlocks.find(blockId);
         if (blockIt != tgContext.executionBlocks.end()) {
-          const auto &blockLanes = blockIt->second.getParticipatingLanes();
-          auto waveIt = blockLanes.find(waveId);
-          if (waveIt != blockLanes.end()) {
+          // Get participating lanes from registry (single source of truth)
+          auto participatingLanes = tgContext.membershipRegistry.getParticipatingLanes(waveId, blockId);
+          if (!participatingLanes.empty()) {
             // Update participants to include all current lanes in block
-            for (LaneId laneId : waveIt->second) {
+            for (LaneId laneId : participatingLanes) {
               syncPoint.arrivedParticipants.insert(laneId);
               syncPoint.expectedParticipants.insert(laneId);
             }
@@ -5558,8 +5558,7 @@ uint32_t ThreadgroupContext::createExecutionBlock(
   block.setBlockId(blockId);
   for (const auto &[waveId, laneSet] : lanes) {
     for (LaneId laneId : laneSet) {
-      // Update both old system and registry for consistency
-      block.addParticipatingLane(waveId, laneId);
+      // Registry is the single source of truth
       membershipRegistry.setLaneStatus(waveId, laneId, blockId, LaneBlockStatus::Participating);
     }
   }
@@ -5651,18 +5650,17 @@ void ThreadgroupContext::assignLaneToBlock(WaveId waveId, LaneId laneId,
   if (it != executionBlocks.end()) {
     std::cout << "DEBUG: assignLaneToBlock - adding lane " << laneId
               << " to block " << blockId << std::endl;
-    it->second.addParticipatingLane(waveId, laneId);
-    // Also add to arrived lanes when assigned
-    it->second.addArrivedLane(waveId, laneId);
+    // Registry already updated above as single source of truth
     auto partLanes = membershipRegistry.getParticipatingLanes(waveId, blockId);
     size_t laneCount = partLanes.size();
     std::cout << "DEBUG: assignLaneToBlock - block " << blockId << " now has "
               << laneCount << " participating lanes" << std::endl;
 
-    // Check if converged - all lanes from all waves are in this block
+    // Check if converged - all lanes from all waves are in this block (using registry)
     size_t totalLanesInBlock = 0;
-    for (const auto &[wid, lanes] : it->second.getParticipatingLanes()) {
-      totalLanesInBlock += lanes.size();
+    for (WaveId wid = 0; wid < waves.size(); ++wid) {
+      auto participatingLanes = membershipRegistry.getParticipatingLanes(wid, blockId);
+      totalLanesInBlock += participatingLanes.size();
     }
     // todo: now convergence is at threadgroup level
     it->second.setIsConverged(totalLanesInBlock == threadgroupSize);
@@ -5797,16 +5795,11 @@ void ThreadgroupContext::markLaneArrived(WaveId waveId, LaneId laneId,
     // Update BlockMembershipRegistry: lane has arrived
     membershipRegistry.setLaneStatus(waveId, laneId, blockId, LaneBlockStatus::Participating);
     
-    // Cross-validate: check consistency between old and new systems
-    bool oldHasLane = it->second.getParticipatingLanesForWave(waveId).count(laneId) > 0;
-    LaneBlockStatus newStatus = membershipRegistry.getLaneStatus(waveId, laneId, blockId);
-    bool newHasLane = (newStatus == LaneBlockStatus::Participating);
+    // Validate registry state (single source of truth)
+    LaneBlockStatus registryStatus = membershipRegistry.getLaneStatus(waveId, laneId, blockId);
+    bool registryHasLane = (registryStatus == LaneBlockStatus::Participating);
     
-    if (oldHasLane != newHasLane) {
-      std::cout << "WARNING: Lane " << laneId << " block " << blockId 
-                << " mismatch - old system: " << oldHasLane 
-                << ", new system: " << newHasLane << std::endl;
-    }
+    // Legacy cross-validation disabled since registry is now single source of truth
 
     // // If this wave's unknown set is now empty, remove it
     // if (it->second.getUnknownLanesForWave(waveId).empty()) {
@@ -7141,6 +7134,7 @@ void ThreadgroupContext::printFinalVariableValues() const {
 
   INTERPRETER_DEBUG_LOG("=== End Variable Values ===\n\n");
 }
+
 
 } // namespace interpreter
 } // namespace minihlsl
