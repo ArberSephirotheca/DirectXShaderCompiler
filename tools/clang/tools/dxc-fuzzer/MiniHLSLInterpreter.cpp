@@ -1154,9 +1154,8 @@ Value WaveActiveOp::evaluate(LaneContext &lane, WaveContext &wave,
     // participants are now resolved
     auto blockIt = tg.executionBlocks.find(currentBlockId);
     if (blockIt != tg.executionBlocks.end()) {
-      blockIt->second.setWaveAllUnknownResolved(
-          wave.waveId,
-          blockIt->second.areAllUnknownLanesResolvedForWave(wave.waveId));
+      auto unknownLanes = tg.membershipRegistry.getUnknownLanes(wave.waveId, currentBlockId);
+      blockIt->second.setWaveAllUnknownResolved(wave.waveId, unknownLanes.empty());
       std::cout << "DEBUG: WAVE_OP: Refreshed block " << currentBlockId
                 << " resolution status" << std::endl;
     }
@@ -5684,8 +5683,7 @@ ThreadgroupContext::getWaveActiveLanesInSameBlock(WaveId waveId,
 
   // Return only currently active lanes from the same wave in the same block
   std::vector<LaneId> result;
-  auto participatingLanes =
-      blockIt->second.getParticipatingLanesForWave(waveId);
+  auto participatingLanes = membershipRegistry.getParticipatingLanes(waveId, blockId);
   for (LaneId otherLaneId : participatingLanes) {
     if (otherLaneId < waves[waveId]->lanes.size() &&
         waves[waveId]->lanes[otherLaneId]->isActive &&
@@ -5856,7 +5854,8 @@ bool ThreadgroupContext::canExecuteWaveOperation(WaveId waveId,
 
   // Can execute if all unknown lanes are resolved (we know the complete
   // participant set)
-  return block.areAllUnknownLanesResolvedForWave(waveId);
+  auto unknownLanes = membershipRegistry.getUnknownLanes(waveId, blockId);
+  return unknownLanes.empty();
 }
 
 std::vector<LaneId>
@@ -5965,8 +5964,8 @@ uint32_t ThreadgroupContext::findOrCreateBlockForPath(
 
   // Update resolution status for all waves
   for (const auto &[waveId, _] : unknownLanes) {
-    newBlock.setWaveAllUnknownResolved(
-        waveId, newBlock.areAllUnknownLanesResolvedForWave(waveId));
+    auto unknownLanesForWave = membershipRegistry.getUnknownLanes(waveId, newBlockId);
+    newBlock.setWaveAllUnknownResolved(waveId, unknownLanesForWave.empty());
   }
 
   newBlock.setIsConverged(false); // Will be updated as lanes arrive
@@ -6361,7 +6360,8 @@ bool ThreadgroupContext::canExecuteWaveInstructionInBlock(
 
   // For wave operations, only check if unknown lanes for this specific wave are
   // resolved
-  if (!block.areAllUnknownLanesResolvedForWave(waveId)) {
+  auto unknownLanes = membershipRegistry.getUnknownLanes(waveId, blockId);
+  if (!unknownLanes.empty()) {
     return false; // Still have unknown lanes for this wave
   }
 
@@ -6383,9 +6383,14 @@ bool ThreadgroupContext::canExecuteBarrierInstructionInBlock(
     return false; // Still have unknown lanes
   }
 
-  // Get expected participants (all active lanes in the block)
-  std::map<WaveId, std::set<LaneId>> expectedParticipants =
-      block.getParticipatingLanes();
+  // Get expected participants (all active lanes in the block) - reconstruct from registry
+  std::map<WaveId, std::set<LaneId>> expectedParticipants;
+  for (uint32_t waveId = 0; waveId < waveCount; ++waveId) {
+    auto participatingLanes = membershipRegistry.getParticipatingLanes(waveId, blockId);
+    if (!participatingLanes.empty()) {
+      expectedParticipants[waveId] = participatingLanes;
+    }
+  }
 
   // Get actual participants who have arrived at this instruction
   auto arrivedParticipants =
@@ -6407,8 +6412,15 @@ ThreadgroupContext::getExpectedParticipantsInBlock(
   auto blockIt = executionBlocks.find(blockId);
   if (blockIt != executionBlocks.end()) {
     // For wave operations, all participating lanes in the block should
-    // participate
-    return blockIt->second.getParticipatingLanes();
+    // participate - reconstruct from registry
+    std::map<WaveId, std::set<LaneId>> result;
+    for (uint32_t waveId = 0; waveId < waveCount; ++waveId) {
+      auto participatingLanes = membershipRegistry.getParticipatingLanes(waveId, blockId);
+      if (!participatingLanes.empty()) {
+        result[waveId] = participatingLanes;
+      }
+    }
+    return result;
   }
   return {};
 }
@@ -6484,8 +6496,8 @@ void ThreadgroupContext::moveThreadFromUnknownToParticipating(uint32_t blockId,
   block.addArrivedLane(waveId, laneId);
 
   // Update resolution status
-  block.setWaveAllUnknownResolved(
-      waveId, block.areAllUnknownLanesResolvedForWave(waveId));
+  auto unknownLanes = membershipRegistry.getUnknownLanes(waveId, blockId);
+  block.setWaveAllUnknownResolved(waveId, unknownLanes.empty());
 
   // Update lane assignment
   assignLaneToBlock(waveId, laneId, blockId);
@@ -6528,7 +6540,8 @@ void ThreadgroupContext::removeThreadFromUnknown(uint32_t blockId,
   std::cout << "}" << std::endl;
 
   // Update resolution status
-  bool allResolved = block.areAllUnknownLanesResolvedForWave(waveId);
+  auto unknownLanes = membershipRegistry.getUnknownLanes(waveId, blockId);
+  bool allResolved = unknownLanes.empty();
   std::cout << "DEBUG: Block " << blockId
             << " areAllUnknownLanesResolvedForWave(" << waveId
             << ") = " << allResolved << std::endl;
@@ -6538,7 +6551,7 @@ void ThreadgroupContext::removeThreadFromUnknown(uint32_t blockId,
   // operations to proceed This handles the case where lanes 0,1 are waiting in
   // block 2 for a wave op, and lanes 2,3 choosing the else branch resolves all
   // unknowns
-  if (block.areAllUnknownLanesResolvedForWave(waveId)) {
+  if (unknownLanes.empty()) {
     std::cout << "DEBUG: Block " << blockId
               << " now has all unknowns resolved for wave " << waveId
               << " - checking for ready wave operations" << std::endl;
@@ -6609,8 +6622,8 @@ void ThreadgroupContext::removeThreadFromAllSets(uint32_t blockId,
     blockIt->second.removeUnknownLane(waveId, laneId);
 
     // Update unknown resolution status after removing unknown lane
-    bool allResolved =
-        blockIt->second.areAllUnknownLanesResolvedForWave(waveId);
+    auto unknownLanes = membershipRegistry.getUnknownLanes(waveId, blockId);
+    bool allResolved = unknownLanes.empty();
     blockIt->second.setWaveAllUnknownResolved(waveId, allResolved);
 
     // CRITICAL: Add the same wakeup logic as removeThreadFromUnknown

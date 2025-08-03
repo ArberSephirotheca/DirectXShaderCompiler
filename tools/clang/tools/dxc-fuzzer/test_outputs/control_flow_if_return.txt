@@ -1634,9 +1634,8 @@ Dynamic Block 1:
   Is Converged: No
   Nesting Level: 0
   Participating Lanes by Wave:
+    Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
-  Arrived Lanes by Wave:
-    Wave 0: {1, 2, 3} (3 lanes)
   Unknown Resolution Status by Wave:
     Wave 0: Resolved
 
@@ -1649,6 +1648,7 @@ Dynamic Block 2:
   Nesting Level: 0
   Source Statement: 0x506000001700
   Participating Lanes by Wave:
+    Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
   Unknown Resolution Status by Wave:
     Wave 0: Resolved
@@ -1662,6 +1662,7 @@ Dynamic Block 3:
   Nesting Level: 0
   Source Statement: 0x506000001700
   Participating Lanes by Wave:
+    Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001b40)
@@ -1677,10 +1678,10 @@ Dynamic Block 4:
   Nesting Level: 0
   Source Statement: 0x506000001700
   Participating Lanes by Wave:
-    Wave 0: {1, 2, 3} (3 lanes)
-  Total Participating Lanes: 3
+    Wave 0: {1} (1 lanes)
+  Total Participating Lanes: 1
   Arrived Lanes by Wave:
-    Wave 0: {1, 2, 3} (3 lanes)
+    Wave 0: {1} (1 lanes)
   Waiting Lanes by Wave:
     Wave 0: {2, 3} (2 lanes)
   Instructions (1):
@@ -1697,6 +1698,7 @@ Dynamic Block 5:
   Nesting Level: 0
   Source Statement: 0x5060000016a0
   Participating Lanes by Wave:
+    Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
   Unknown Resolution Status by Wave:
     Wave 0: Resolved
@@ -1710,6 +1712,7 @@ Dynamic Block 6:
   Nesting Level: 0
   Source Statement: 0x5060000016a0
   Participating Lanes by Wave:
+    Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001a80)
@@ -1725,6 +1728,7 @@ Dynamic Block 7:
   Nesting Level: 0
   Source Statement: 0x5060000016a0
   Participating Lanes by Wave:
+    Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001ae0)
@@ -1834,9 +1838,8 @@ Dynamic Block 1:
   Is Converged: No
   Nesting Level: 0
   Participating Lanes by Wave:
+    Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
-  Arrived Lanes by Wave:
-    Wave 0: {1, 2, 3} (3 lanes)
   Unknown Resolution Status by Wave:
     Wave 0: Resolved
 
@@ -1849,6 +1852,7 @@ Dynamic Block 2:
   Nesting Level: 0
   Source Statement: 0x506000001700
   Participating Lanes by Wave:
+    Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
   Unknown Resolution Status by Wave:
     Wave 0: Resolved
@@ -1862,6 +1866,7 @@ Dynamic Block 3:
   Nesting Level: 0
   Source Statement: 0x506000001700
   Participating Lanes by Wave:
+    Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001b40)
@@ -1877,10 +1882,10 @@ Dynamic Block 4:
   Nesting Level: 0
   Source Statement: 0x506000001700
   Participating Lanes by Wave:
-    Wave 0: {1, 2, 3} (3 lanes)
-  Total Participating Lanes: 3
+    Wave 0: {1} (1 lanes)
+  Total Participating Lanes: 1
   Arrived Lanes by Wave:
-    Wave 0: {1, 2, 3} (3 lanes)
+    Wave 0: {1} (1 lanes)
   Waiting Lanes by Wave:
     Wave 0: {2, 3} (2 lanes)
   Instructions (1):
@@ -1897,6 +1902,7 @@ Dynamic Block 5:
   Nesting Level: 0
   Source Statement: 0x5060000016a0
   Participating Lanes by Wave:
+    Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
   Unknown Resolution Status by Wave:
     Wave 0: Resolved
@@ -1910,6 +1916,7 @@ Dynamic Block 6:
   Nesting Level: 0
   Source Statement: 0x5060000016a0
   Participating Lanes by Wave:
+    Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001a80)
@@ -1925,6 +1932,7 @@ Dynamic Block 7:
   Nesting Level: 0
   Source Statement: 0x5060000016a0
   Participating Lanes by Wave:
+    Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001ae0)
