@@ -80,9 +80,13 @@ Thread configuration: [4, 1, 1]
 
 DEBUG: findOrCreateBlockForPath called with 0 waves of unknown lanes
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 1
+WARNING: Lane 0 block 1 mismatch - old system: 0, new system: 1
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 1
+WARNING: Lane 1 block 1 mismatch - old system: 0, new system: 1
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 1
+WARNING: Lane 2 block 1 mismatch - old system: 0, new system: 1
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 1
+WARNING: Lane 3 block 1 mismatch - old system: 0, new system: 1
 DEBUG: IfStmt - Lane 0 starting fresh execution (pushed to stack depth=1, this=0x506000001700)
 DEBUG: IfStmt - Lane 0 in phase EvaluatingCondition (stack depth=1, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 0 evaluating condition
@@ -95,21 +99,33 @@ DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 2
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 2
 DEBUG: addUnknownLane - adding lane 1 to new block 2
+DEBUG: addUnknownLane - added lane 1 to unknown lanes of block 2
 DEBUG: addUnknownLane - adding lane 2 to new block 2
+DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 2
 DEBUG: addUnknownLane - adding lane 3 to new block 2
+DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 2
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 3
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 3
 DEBUG: addUnknownLane - adding lane 1 to new block 3
+DEBUG: addUnknownLane - added lane 1 to unknown lanes of block 3
 DEBUG: addUnknownLane - adding lane 2 to new block 3
+DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 3
 DEBUG: addUnknownLane - adding lane 3 to new block 3
+DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 3
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 4
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 4
 DEBUG: addUnknownLane - adding lane 1 to new block 4
+DEBUG: addUnknownLane - added lane 1 to unknown lanes of block 4
 DEBUG: addUnknownLane - adding lane 2 to new block 4
+DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 4
 DEBUG: addUnknownLane - adding lane 3 to new block 4
+DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 4
 DEBUG: createIfBlocks - Created blocks: thenBlockId=2, elseBlockId=3, mergeBlockId=4
 DEBUG: IfStmt - Lane 0 setup complete: thenBlockId=2, elseBlockId=3, mergeBlockId=4
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 2
@@ -134,13 +150,13 @@ DEBUG: createIfBlocks - mergeStack size=1
   MergeStack[0]: sourceStatement=0x506000001700
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {1 2 3 } (3 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 2 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {1 2 3 } (3 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 3 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {1 2 3 } (3 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 4 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=2, elseBlockId=3, mergeBlockId=4
 DEBUG: IfStmt - Lane 1 setup complete: thenBlockId=2, elseBlockId=3, mergeBlockId=4
@@ -166,13 +182,13 @@ DEBUG: createIfBlocks - mergeStack size=1
   MergeStack[0]: sourceStatement=0x506000001700
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {2 3 } (2 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 2 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {2 3 } (2 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 3 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {2 3 } (2 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 4 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=2, elseBlockId=3, mergeBlockId=4
 DEBUG: IfStmt - Lane 2 setup complete: thenBlockId=2, elseBlockId=3, mergeBlockId=4
@@ -198,13 +214,13 @@ DEBUG: createIfBlocks - mergeStack size=1
   MergeStack[0]: sourceStatement=0x506000001700
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 2 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 3 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 4 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=2, elseBlockId=3, mergeBlockId=4
 DEBUG: IfStmt - Lane 3 setup complete: thenBlockId=2, elseBlockId=3, mergeBlockId=4
@@ -237,19 +253,24 @@ DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 } (2 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 5
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 5
 DEBUG: addUnknownLane - adding lane 1 to new block 5
+DEBUG: addUnknownLane - added lane 1 to unknown lanes of block 5
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 } (2 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 6
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 6
 DEBUG: addUnknownLane - adding lane 1 to new block 6
+DEBUG: addUnknownLane - added lane 1 to unknown lanes of block 6
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 } (2 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 7
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 7
 DEBUG: addUnknownLane - adding lane 1 to new block 7
+DEBUG: addUnknownLane - added lane 1 to unknown lanes of block 7
 DEBUG: createIfBlocks - Created blocks: thenBlockId=5, elseBlockId=6, mergeBlockId=7
 DEBUG: IfStmt - Lane 0 setup complete: thenBlockId=5, elseBlockId=6, mergeBlockId=7
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 5
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 1) to block 5 (type 1), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 0 to block 5
@@ -286,7 +307,6 @@ DEBUG: Found existing block 7 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=5, elseBlockId=6, mergeBlockId=7
 DEBUG: IfStmt - Lane 1 setup complete: thenBlockId=5, elseBlockId=6, mergeBlockId=7
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 6
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 1) to block 6 (type 2), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 1 to block 6
@@ -399,13 +419,11 @@ DEBUG: IfStmt - Lane 2 merge stack before reconvergence (size=1):
 DEBUG: IfStmt - Lane 2 popping stack at reconvergence (depth 1->0, this=0x506000001700)
 DEBUG: IfStmt - Lane 2 popping merge point before assigning to block 4
 DEBUG: IfStmt - Lane 2 assigning to merge block 4
-WARNING: Lane 2 block mismatch - laneToCurrentBlock says 3 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 3 (type 2) to block 4 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 2 to block 4
 DEBUG: assignLaneToBlock - block 4 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 4
-WARNING: Lane 2 block mismatch - laneToCurrentBlock says 4 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 4 (type 3) to block 4 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 2 to block 4
@@ -452,13 +470,11 @@ DEBUG: IfStmt - Lane 3 merge stack before reconvergence (size=1):
 DEBUG: IfStmt - Lane 3 popping stack at reconvergence (depth 1->0, this=0x506000001700)
 DEBUG: IfStmt - Lane 3 popping merge point before assigning to block 4
 DEBUG: IfStmt - Lane 3 assigning to merge block 4
-WARNING: Lane 3 block mismatch - laneToCurrentBlock says 3 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 3 (type 2) to block 4 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 3 to block 4
 DEBUG: assignLaneToBlock - block 4 now has 2 participating lanes
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 4
-WARNING: Lane 3 block mismatch - laneToCurrentBlock says 4 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 4 (type 3) to block 4 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 3 to block 4
@@ -503,13 +519,11 @@ DEBUG: IfStmt - Lane 1 merge stack before reconvergence (size=2):
 DEBUG: IfStmt - Lane 1 popping stack at reconvergence (depth 2->1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 1 popping merge point before assigning to block 7
 DEBUG: IfStmt - Lane 1 assigning to merge block 7
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 6 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 6 (type 2) to block 7 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 1 to block 7
 DEBUG: assignLaneToBlock - block 7 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 7
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 7 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 7 (type 3) to block 7 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 1 to block 7
@@ -542,7 +556,6 @@ DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 4, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 4
 DEBUG: WAVE_OP: Refreshed block 4 resolution status
 DEBUG: Block 4 wave 0 unknown lanes: {1 }
-WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 4
 DEBUG: canExecuteWaveInstruction for lane 2 in block 4: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=0, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: VarDeclStmt - Lane 2 caught WaveOperationWaitException, re-throwing
 DEBUG: WAVE_WAIT: Lane 2 caught WaveOperationWaitException, state=2
@@ -553,7 +566,6 @@ DEBUG: WAVE_OP: Available results for lanes:
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 4
 DEBUG: WAVE_OP: Refreshed block 4 resolution status
 DEBUG: Block 4 wave 0 unknown lanes: {1 }
-WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 4
 DEBUG: canExecuteWaveInstruction for lane 3 in block 4: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: VarDeclStmt - Lane 3 caught WaveOperationWaitException, re-throwing
 DEBUG: WAVE_WAIT: Lane 3 caught WaveOperationWaitException, state=2
@@ -572,17 +584,15 @@ DEBUG: IfStmt - Lane 1 merge stack before reconvergence (size=1):
 DEBUG: IfStmt - Lane 1 popping stack at reconvergence (depth 1->0, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 popping merge point before assigning to block 4
 DEBUG: IfStmt - Lane 1 assigning to merge block 4
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 7 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 7 (type 3) to block 4 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 1 to block 4
-DEBUG: assignLaneToBlock - block 4 now has 3 participating lanes
+DEBUG: assignLaneToBlock - block 4 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 4
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 4 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 4 (type 3) to block 4 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 1 to block 4
-DEBUG: assignLaneToBlock - block 4 now has 3 participating lanes
+DEBUG: assignLaneToBlock - block 4 now has 1 participating lanes
 DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 2
 DEBUG: removeThreadFromAllSets - block 2 had 1 participating lanes before removal
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 2
@@ -634,9 +644,13 @@ Thread Return Values:
 
 DEBUG: findOrCreateBlockForPath called with 0 waves of unknown lanes
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 1
+WARNING: Lane 0 block 1 mismatch - old system: 0, new system: 1
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 1
+WARNING: Lane 1 block 1 mismatch - old system: 0, new system: 1
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 1
+WARNING: Lane 2 block 1 mismatch - old system: 0, new system: 1
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 1
+WARNING: Lane 3 block 1 mismatch - old system: 0, new system: 1
 DEBUG: IfStmt - Lane 0 starting fresh execution (pushed to stack depth=1, this=0x506000001700)
 DEBUG: IfStmt - Lane 0 in phase EvaluatingCondition (stack depth=1, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 0 evaluating condition
@@ -649,21 +663,33 @@ DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 2
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 2
 DEBUG: addUnknownLane - adding lane 1 to new block 2
+DEBUG: addUnknownLane - added lane 1 to unknown lanes of block 2
 DEBUG: addUnknownLane - adding lane 2 to new block 2
+DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 2
 DEBUG: addUnknownLane - adding lane 3 to new block 2
+DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 2
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 3
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 3
 DEBUG: addUnknownLane - adding lane 1 to new block 3
+DEBUG: addUnknownLane - added lane 1 to unknown lanes of block 3
 DEBUG: addUnknownLane - adding lane 2 to new block 3
+DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 3
 DEBUG: addUnknownLane - adding lane 3 to new block 3
+DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 3
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 4
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 4
 DEBUG: addUnknownLane - adding lane 1 to new block 4
+DEBUG: addUnknownLane - added lane 1 to unknown lanes of block 4
 DEBUG: addUnknownLane - adding lane 2 to new block 4
+DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 4
 DEBUG: addUnknownLane - adding lane 3 to new block 4
+DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 4
 DEBUG: createIfBlocks - Created blocks: thenBlockId=2, elseBlockId=3, mergeBlockId=4
 DEBUG: IfStmt - Lane 0 setup complete: thenBlockId=2, elseBlockId=3, mergeBlockId=4
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 2
@@ -688,13 +714,13 @@ DEBUG: createIfBlocks - mergeStack size=1
   MergeStack[0]: sourceStatement=0x506000001700
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {1 2 3 } (3 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 2 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {1 2 3 } (3 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 3 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {1 2 3 } (3 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 4 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=2, elseBlockId=3, mergeBlockId=4
 DEBUG: IfStmt - Lane 1 setup complete: thenBlockId=2, elseBlockId=3, mergeBlockId=4
@@ -720,13 +746,13 @@ DEBUG: createIfBlocks - mergeStack size=1
   MergeStack[0]: sourceStatement=0x506000001700
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {2 3 } (2 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 2 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {2 3 } (2 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 3 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {2 3 } (2 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 4 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=2, elseBlockId=3, mergeBlockId=4
 DEBUG: IfStmt - Lane 2 setup complete: thenBlockId=2, elseBlockId=3, mergeBlockId=4
@@ -752,13 +778,13 @@ DEBUG: createIfBlocks - mergeStack size=1
   MergeStack[0]: sourceStatement=0x506000001700
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 2 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 3 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 4 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=2, elseBlockId=3, mergeBlockId=4
 DEBUG: IfStmt - Lane 3 setup complete: thenBlockId=2, elseBlockId=3, mergeBlockId=4
@@ -791,19 +817,24 @@ DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 } (2 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 5
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 5
 DEBUG: addUnknownLane - adding lane 1 to new block 5
+DEBUG: addUnknownLane - added lane 1 to unknown lanes of block 5
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 } (2 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 6
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 6
 DEBUG: addUnknownLane - adding lane 1 to new block 6
+DEBUG: addUnknownLane - added lane 1 to unknown lanes of block 6
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 } (2 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 7
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 7
 DEBUG: addUnknownLane - adding lane 1 to new block 7
+DEBUG: addUnknownLane - added lane 1 to unknown lanes of block 7
 DEBUG: createIfBlocks - Created blocks: thenBlockId=5, elseBlockId=6, mergeBlockId=7
 DEBUG: IfStmt - Lane 0 setup complete: thenBlockId=5, elseBlockId=6, mergeBlockId=7
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 5
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 1) to block 5 (type 1), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 0 to block 5
@@ -840,7 +871,6 @@ DEBUG: Found existing block 7 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=5, elseBlockId=6, mergeBlockId=7
 DEBUG: IfStmt - Lane 1 setup complete: thenBlockId=5, elseBlockId=6, mergeBlockId=7
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 6
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 1) to block 6 (type 2), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 1 to block 6
@@ -953,13 +983,11 @@ DEBUG: IfStmt - Lane 2 merge stack before reconvergence (size=1):
 DEBUG: IfStmt - Lane 2 popping stack at reconvergence (depth 1->0, this=0x506000001700)
 DEBUG: IfStmt - Lane 2 popping merge point before assigning to block 4
 DEBUG: IfStmt - Lane 2 assigning to merge block 4
-WARNING: Lane 2 block mismatch - laneToCurrentBlock says 3 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 3 (type 2) to block 4 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 2 to block 4
 DEBUG: assignLaneToBlock - block 4 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 4
-WARNING: Lane 2 block mismatch - laneToCurrentBlock says 4 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 4 (type 3) to block 4 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 2 to block 4
@@ -1006,13 +1034,11 @@ DEBUG: IfStmt - Lane 3 merge stack before reconvergence (size=1):
 DEBUG: IfStmt - Lane 3 popping stack at reconvergence (depth 1->0, this=0x506000001700)
 DEBUG: IfStmt - Lane 3 popping merge point before assigning to block 4
 DEBUG: IfStmt - Lane 3 assigning to merge block 4
-WARNING: Lane 3 block mismatch - laneToCurrentBlock says 3 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 3 (type 2) to block 4 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 3 to block 4
 DEBUG: assignLaneToBlock - block 4 now has 2 participating lanes
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 4
-WARNING: Lane 3 block mismatch - laneToCurrentBlock says 4 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 4 (type 3) to block 4 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 3 to block 4
@@ -1057,13 +1083,11 @@ DEBUG: IfStmt - Lane 1 merge stack before reconvergence (size=2):
 DEBUG: IfStmt - Lane 1 popping stack at reconvergence (depth 2->1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 1 popping merge point before assigning to block 7
 DEBUG: IfStmt - Lane 1 assigning to merge block 7
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 6 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 6 (type 2) to block 7 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 1 to block 7
 DEBUG: assignLaneToBlock - block 7 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 7
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 7 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 7 (type 3) to block 7 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 1 to block 7
@@ -1096,7 +1120,6 @@ DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 4, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 4
 DEBUG: WAVE_OP: Refreshed block 4 resolution status
 DEBUG: Block 4 wave 0 unknown lanes: {1 }
-WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 4
 DEBUG: canExecuteWaveInstruction for lane 2 in block 4: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=0, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: VarDeclStmt - Lane 2 caught WaveOperationWaitException, re-throwing
 DEBUG: WAVE_WAIT: Lane 2 caught WaveOperationWaitException, state=2
@@ -1107,7 +1130,6 @@ DEBUG: WAVE_OP: Available results for lanes:
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 4
 DEBUG: WAVE_OP: Refreshed block 4 resolution status
 DEBUG: Block 4 wave 0 unknown lanes: {1 }
-WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 4
 DEBUG: canExecuteWaveInstruction for lane 3 in block 4: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: VarDeclStmt - Lane 3 caught WaveOperationWaitException, re-throwing
 DEBUG: WAVE_WAIT: Lane 3 caught WaveOperationWaitException, state=2
@@ -1126,17 +1148,15 @@ DEBUG: IfStmt - Lane 1 merge stack before reconvergence (size=1):
 DEBUG: IfStmt - Lane 1 popping stack at reconvergence (depth 1->0, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 popping merge point before assigning to block 4
 DEBUG: IfStmt - Lane 1 assigning to merge block 4
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 7 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 7 (type 3) to block 4 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 1 to block 4
-DEBUG: assignLaneToBlock - block 4 now has 3 participating lanes
+DEBUG: assignLaneToBlock - block 4 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 4
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 4 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 4 (type 3) to block 4 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 1 to block 4
-DEBUG: assignLaneToBlock - block 4 now has 3 participating lanes
+DEBUG: assignLaneToBlock - block 4 now has 1 participating lanes
 DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 2
 DEBUG: removeThreadFromAllSets - block 2 had 1 participating lanes before removal
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 2
@@ -1629,6 +1649,8 @@ Dynamic Block 1:
   Nesting Level: 0
   Participating Lanes by Wave:
   Total Participating Lanes: 0
+  Arrived Lanes by Wave:
+    Wave 0: {1, 2, 3} (3 lanes)
   Unknown Resolution Status by Wave:
     Wave 0: Resolved
 
@@ -1827,6 +1849,8 @@ Dynamic Block 1:
   Nesting Level: 0
   Participating Lanes by Wave:
   Total Participating Lanes: 0
+  Arrived Lanes by Wave:
+    Wave 0: {1, 2, 3} (3 lanes)
   Unknown Resolution Status by Wave:
     Wave 0: Resolved
 

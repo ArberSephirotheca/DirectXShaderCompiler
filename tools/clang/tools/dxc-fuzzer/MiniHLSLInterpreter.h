@@ -533,20 +533,10 @@ public:
     return (it != participatingLanes_.end()) ? it->second : std::set<LaneId>{};
   }
 
-  std::set<LaneId> getUnknownLanesForWave(WaveId waveId) const {
-    auto it = unknownLanes_.find(waveId);
-    return (it != unknownLanes_.end()) ? it->second : std::set<LaneId>{};
-  }
-
-  std::set<LaneId> getArrivedLanesForWave(WaveId waveId) const {
-    auto it = arrivedLanes_.find(waveId);
-    return (it != arrivedLanes_.end()) ? it->second : std::set<LaneId>{};
-  }
-
-  std::set<LaneId> getWaitingLanesForWave(WaveId waveId) const {
-    auto it = waitingLanes_.find(waveId);
-    return (it != waitingLanes_.end()) ? it->second : std::set<LaneId>{};
-  }
+  // These methods now delegate to BlockMembershipRegistry when available
+  std::set<LaneId> getUnknownLanesForWave(WaveId waveId) const;
+  std::set<LaneId> getArrivedLanesForWave(WaveId waveId) const;
+  std::set<LaneId> getWaitingLanesForWave(WaveId waveId) const;
 
   bool isWaveAllUnknownResolved(WaveId waveId) const {
     auto it = allUnknownResolved_.find(waveId);
@@ -585,44 +575,14 @@ public:
     }
   }
 
-  void addUnknownLane(WaveId waveId, LaneId laneId) {
-    unknownLanes_[waveId].insert(laneId);
-  }
-
-  void removeUnknownLane(WaveId waveId, LaneId laneId) {
-    std::cout << "DEBUG: removeUnknownLane - removing lane " << laneId
-              << " from unknown lanes of block " << blockId_ << std::endl;
-    unknownLanes_[waveId].erase(laneId);
-    if (unknownLanes_[waveId].empty()) {
-      unknownLanes_.erase(waveId);
-    }
-  }
-
-  void addArrivedLane(WaveId waveId, LaneId laneId) {
-    arrivedLanes_[waveId].insert(laneId);
-  }
-
-  void removeArrivedLane(WaveId waveId, LaneId laneId) {
-    arrivedLanes_[waveId].erase(laneId);
-    if (arrivedLanes_[waveId].empty()) {
-      arrivedLanes_.erase(waveId);
-    }
-  }
-
-  void addWaitingLane(WaveId waveId, LaneId laneId) {
-    waitingLanes_[waveId].insert(laneId);
-  }
-
-  void removeWaitingLane(WaveId waveId, LaneId laneId) {
-    waitingLanes_[waveId].erase(laneId);
-    if (waitingLanes_[waveId].empty()) {
-      waitingLanes_.erase(waveId);
-    }
-  }
-
-  void setWaveAllUnknownResolved(WaveId waveId, bool resolved) {
-    allUnknownResolved_[waveId] = resolved;
-  }
+  // Lane tracking methods - maintain both old and new state tracking
+  void addUnknownLane(WaveId waveId, LaneId laneId);
+  void removeUnknownLane(WaveId waveId, LaneId laneId);
+  void addArrivedLane(WaveId waveId, LaneId laneId);
+  void removeArrivedLane(WaveId waveId, LaneId laneId);
+  void addWaitingLane(WaveId waveId, LaneId laneId);
+  void removeWaitingLane(WaveId waveId, LaneId laneId);
+  void setWaveAllUnknownResolved(WaveId waveId, bool resolved);
 
   // Instruction management methods
   void addInstruction(const InstructionIdentity &instruction) {
@@ -822,6 +782,7 @@ public:
   
   // Query methods (computed on-demand)
   std::set<LaneId> getParticipatingLanes(uint32_t waveId, uint32_t blockId) const;
+  std::set<LaneId> getArrivedLanes(uint32_t waveId, uint32_t blockId) const;
   std::set<LaneId> getUnknownLanes(uint32_t waveId, uint32_t blockId) const;
   std::set<LaneId> getWaitingLanes(uint32_t waveId, uint32_t blockId) const;
   bool isWaveAllUnknownResolved(uint32_t waveId, uint32_t blockId) const;

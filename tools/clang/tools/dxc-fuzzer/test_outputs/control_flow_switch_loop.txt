@@ -119,60 +119,91 @@ Thread configuration: [4, 1, 1]
 
 DEBUG: findOrCreateBlockForPath called with 0 waves of unknown lanes
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 1
+WARNING: Lane 0 block 1 mismatch - old system: 0, new system: 1
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 1
+WARNING: Lane 1 block 1 mismatch - old system: 0, new system: 1
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 1
+WARNING: Lane 2 block 1 mismatch - old system: 0, new system: 1
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 1
+WARNING: Lane 3 block 1 mismatch - old system: 0, new system: 1
 DEBUG: SwitchStmt - Lane 0 starting switch statement
 DEBUG: SwitchStmt - Lane 0 starting fresh execution (pushed to stack depth=1, this=0x504000004910)
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 2
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 2
 DEBUG: addUnknownLane - adding lane 1 to new block 2
+DEBUG: addUnknownLane - added lane 1 to unknown lanes of block 2
 DEBUG: addUnknownLane - adding lane 2 to new block 2
+DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 2
 DEBUG: addUnknownLane - adding lane 3 to new block 2
+DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 2
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 3
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 3
 DEBUG: addUnknownLane - adding lane 1 to new block 3
+DEBUG: addUnknownLane - added lane 1 to unknown lanes of block 3
 DEBUG: addUnknownLane - adding lane 2 to new block 3
+DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 3
 DEBUG: addUnknownLane - adding lane 3 to new block 3
+DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 3
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 4
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 4
 DEBUG: addUnknownLane - adding lane 1 to new block 4
+DEBUG: addUnknownLane - added lane 1 to unknown lanes of block 4
 DEBUG: addUnknownLane - adding lane 2 to new block 4
+DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 4
 DEBUG: addUnknownLane - adding lane 3 to new block 4
+DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 4
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 5
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 5
 DEBUG: addUnknownLane - adding lane 1 to new block 5
+DEBUG: addUnknownLane - added lane 1 to unknown lanes of block 5
 DEBUG: addUnknownLane - adding lane 2 to new block 5
+DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 5
 DEBUG: addUnknownLane - adding lane 3 to new block 5
+DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 5
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 6
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 6
 DEBUG: addUnknownLane - adding lane 1 to new block 6
+DEBUG: addUnknownLane - added lane 1 to unknown lanes of block 6
 DEBUG: addUnknownLane - adding lane 2 to new block 6
+DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 6
 DEBUG: addUnknownLane - adding lane 3 to new block 6
+DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 6
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 7
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 7
 DEBUG: addUnknownLane - adding lane 1 to new block 7
+DEBUG: addUnknownLane - added lane 1 to unknown lanes of block 7
 DEBUG: addUnknownLane - adding lane 2 to new block 7
+DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 7
 DEBUG: addUnknownLane - adding lane 3 to new block 7
+DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 7
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 8
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 8
 DEBUG: addUnknownLane - adding lane 1 to new block 8
+DEBUG: addUnknownLane - added lane 1 to unknown lanes of block 8
 DEBUG: addUnknownLane - adding lane 2 to new block 8
+DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 8
 DEBUG: addUnknownLane - adding lane 3 to new block 8
+DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 8
 DEBUG: SwitchStmt - Created header block 2, 5 case blocks, and merge block 8
 DEBUG: assignLaneToBlock - moving lane 0 from block 1 (type 0) to block 2 (type 7), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 0 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 2
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 7) to block 2 (type 7), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 0 to block 2
@@ -184,13 +215,11 @@ DEBUG: SwitchStmt - Lane 0 switch condition evaluated to: 0
 DEBUG: SwitchStmt - Lane 0 matched case 0 at index 0
 DEBUG: SwitchStmt - Lane 0 moving to case block 3 for case 0
 DEBUG: SwitchStmt - Lane 0 moving from header to first case block 3 (case 0)
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 7) to block 3 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 0 to block 3
 DEBUG: assignLaneToBlock - block 3 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 3
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 3 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 3 (type 8) to block 3 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 0 to block 3
@@ -202,25 +231,25 @@ DEBUG: removeThreadFromAllSets - block 2 has 0 participating lanes after removal
 DEBUG: SwitchStmt - Lane 1 starting switch statement
 DEBUG: SwitchStmt - Lane 1 starting fresh execution (pushed to stack depth=1, this=0x504000004910)
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {1 2 3 } (3 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 2 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {1 2 3 } (3 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 3 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {1 2 3 } (3 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 4 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {1 2 3 } (3 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 5 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {1 2 3 } (3 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 6 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {1 2 3 } (3 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 7 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {1 2 3 } (3 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 8 - not modifying unknown lanes
 DEBUG: SwitchStmt - Created header block 2, 5 case blocks, and merge block 8
 DEBUG: assignLaneToBlock - moving lane 1 from block 1 (type 0) to block 2 (type 7), isHeaderToLoopBody=0
@@ -228,7 +257,6 @@ DEBUG: Removed lane 1 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 1 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 2
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 7) to block 2 (type 7), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 1 to block 2
@@ -240,13 +268,11 @@ DEBUG: SwitchStmt - Lane 1 switch condition evaluated to: 1
 DEBUG: SwitchStmt - Lane 1 matched case 1 at index 1
 DEBUG: SwitchStmt - Lane 1 moving to case block 4 for case 1
 DEBUG: SwitchStmt - Lane 1 moving from header to first case block 4 (case 1)
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 7) to block 4 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 1 to block 4
 DEBUG: assignLaneToBlock - block 4 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 4
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 4 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 4 (type 8) to block 4 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 1 to block 4
@@ -264,25 +290,25 @@ DEBUG: removeThreadFromAllSets - block 2 has 0 participating lanes after removal
 DEBUG: SwitchStmt - Lane 2 starting switch statement
 DEBUG: SwitchStmt - Lane 2 starting fresh execution (pushed to stack depth=1, this=0x504000004910)
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {2 3 } (2 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 2 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {2 3 } (2 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 3 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {2 3 } (2 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 4 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {2 3 } (2 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 5 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {2 3 } (2 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 6 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {2 3 } (2 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 7 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {2 3 } (2 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 8 - not modifying unknown lanes
 DEBUG: SwitchStmt - Created header block 2, 5 case blocks, and merge block 8
 DEBUG: assignLaneToBlock - moving lane 2 from block 1 (type 0) to block 2 (type 7), isHeaderToLoopBody=0
@@ -290,7 +316,6 @@ DEBUG: Removed lane 2 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 2 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 2
-WARNING: Lane 2 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 7) to block 2 (type 7), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 2
@@ -302,13 +327,11 @@ DEBUG: SwitchStmt - Lane 2 switch condition evaluated to: 2
 DEBUG: SwitchStmt - Lane 2 matched case 2 at index 2
 DEBUG: SwitchStmt - Lane 2 moving to case block 5 for case 2
 DEBUG: SwitchStmt - Lane 2 moving from header to first case block 5 (case 2)
-WARNING: Lane 2 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 7) to block 5 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 5
 DEBUG: assignLaneToBlock - block 5 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 5
-WARNING: Lane 2 block mismatch - laneToCurrentBlock says 5 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 5 (type 8) to block 5 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 2 to block 5
@@ -332,25 +355,25 @@ DEBUG: removeThreadFromAllSets - block 2 has 0 participating lanes after removal
 DEBUG: SwitchStmt - Lane 3 starting switch statement
 DEBUG: SwitchStmt - Lane 3 starting fresh execution (pushed to stack depth=1, this=0x504000004910)
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 2 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 3 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 4 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 5 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 6 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 7 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 8 - not modifying unknown lanes
 DEBUG: SwitchStmt - Created header block 2, 5 case blocks, and merge block 8
 DEBUG: assignLaneToBlock - moving lane 3 from block 1 (type 0) to block 2 (type 7), isHeaderToLoopBody=0
@@ -358,7 +381,6 @@ DEBUG: Removed lane 3 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 3 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 2
-WARNING: Lane 3 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 7) to block 2 (type 7), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 3 to block 2
@@ -370,13 +392,11 @@ DEBUG: SwitchStmt - Lane 3 switch condition evaluated to: 3
 DEBUG: SwitchStmt - Lane 3 matched case 3 at index 3
 DEBUG: SwitchStmt - Lane 3 moving to case block 6 for case 3
 DEBUG: SwitchStmt - Lane 3 moving from header to first case block 6 (case 3)
-WARNING: Lane 3 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 7) to block 6 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 3 to block 6
 DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 6
-WARNING: Lane 3 block mismatch - laneToCurrentBlock says 6 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 6 (type 8) to block 6 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 3 to block 6
@@ -413,18 +433,18 @@ DEBUG: ForStmt - Lane 0 starting fresh execution (pushed to stack depth=2, this=
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 } (1 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 9
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 9
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 } (1 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 10
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 10
 DEBUG: ForStmt - Lane 0 in phase EvaluatingInit (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 evaluating init
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 3 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 3 (type 8) to block 9 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 0 to block 9
 DEBUG: assignLaneToBlock - block 9 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 9
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 9 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 4) to block 9 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 0 to block 9
@@ -437,7 +457,6 @@ DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 4, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 1 cannot execute, starting to wait in block 4
 DEBUG: WAVE_OP: Refreshed block 4 resolution status
 DEBUG: Block 4 wave 0 unknown lanes: {0 }
-WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 4
 DEBUG: canExecuteWaveInstruction for lane 1 in block 4: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: AssignStmt - Lane 1 caught WaveOperationWaitException, re-throwing
 DEBUG: SwitchStmt - Lane 1 waiting for wave operation in case 1 at statement 0
@@ -450,7 +469,6 @@ DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 5, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 5
 DEBUG: WAVE_OP: Refreshed block 5 resolution status
 DEBUG: Block 5 wave 0 unknown lanes: {0 1 }
-WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 5
 DEBUG: canExecuteWaveInstruction for lane 2 in block 5: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: AssignStmt - Lane 2 caught WaveOperationWaitException, re-throwing
 DEBUG: SwitchStmt - Lane 2 waiting for wave operation in case 2 at statement 0
@@ -463,7 +481,6 @@ DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 6, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 6
 DEBUG: WAVE_OP: Refreshed block 6 resolution status
 DEBUG: Block 6 wave 0 unknown lanes: {0 1 2 }
-WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 6
 DEBUG: canExecuteWaveInstruction for lane 3 in block 6: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: AssignStmt - Lane 3 caught WaveOperationWaitException, re-throwing
 DEBUG: SwitchStmt - Lane 3 waiting for wave operation in case 3 at statement 0
@@ -486,9 +503,9 @@ DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control fl
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 } (1 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 11
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 11
 DEBUG: ForStmt - Lane 0 created iteration starting block 11 for iteration 0
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 11
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 9 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 4) to block 11 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 0 to block 11
@@ -523,7 +540,6 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: 3)
 DEBUG: ForStmt - Lane 0 body completed in block 11, moving to header block 9 for increment
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 9
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 11 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 11 (type 0) to block 9 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 11
 DEBUG: assignLaneToBlock - adding lane 0 to block 9
@@ -553,9 +569,9 @@ DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control fl
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 } (1 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 12
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 12
 DEBUG: ForStmt - Lane 0 created iteration starting block 12 for iteration 1
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 12
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 9 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 4) to block 12 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 0 to block 12
@@ -590,7 +606,6 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 1 (phase: 3)
 DEBUG: ForStmt - Lane 0 body completed in block 12, moving to header block 9 for increment
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 9
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 12 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 12 (type 0) to block 9 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 0 to block 9
@@ -620,9 +635,9 @@ DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control fl
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 } (1 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 13
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 13
 DEBUG: ForStmt - Lane 0 created iteration starting block 13 for iteration 2
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 13
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 9 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 4) to block 13 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 0 to block 13
@@ -657,7 +672,6 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 2 (phase: 3)
 DEBUG: ForStmt - Lane 0 body completed in block 13, moving to header block 9 for increment
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 9
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 13 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 13 (type 0) to block 9 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 13
 DEBUG: assignLaneToBlock - adding lane 0 to block 9
@@ -707,13 +721,11 @@ DEBUG: SwitchStmt - Lane 0 executing statement 0 in case 0
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 in phase Reconverging (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 exiting loop after 3 iterations
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 9 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 4) to block 10 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 0 to block 10
 DEBUG: assignLaneToBlock - block 10 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 10
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 10 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 10 (type 6) to block 10 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 0 to block 10
@@ -741,17 +753,15 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: 3)
 DEBUG: SwitchStmt - Lane 0 completed case 0, falling through to next
 DEBUG: SwitchStmt - Lane 0 moving from case block 3 to case block 4 (fallthrough)
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 10 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 10 (type 6) to block 4 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 0 to block 4
-DEBUG: assignLaneToBlock - block 4 now has 2 participating lanes
+DEBUG: assignLaneToBlock - block 4 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 4
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 4 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 8) to block 4 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 0 to block 4
-DEBUG: assignLaneToBlock - block 4 now has 2 participating lanes
+DEBUG: assignLaneToBlock - block 4 now has 1 participating lanes
 DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 3
 DEBUG: removeThreadFromAllSets - block 3 had 1 participating lanes before removal
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 3
@@ -780,17 +790,15 @@ DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 2 (phase: 2)
 DEBUG: SwitchStmt - Lane 1 completed case 1, falling through to next
 DEBUG: SwitchStmt - Lane 1 moving from case block 4 to case block 5 (fallthrough)
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 4 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 4 (type 8) to block 5 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 1 to block 5
-DEBUG: assignLaneToBlock - block 5 now has 2 participating lanes
+DEBUG: assignLaneToBlock - block 5 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 5
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 5 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 5 (type 8) to block 5 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 1 to block 5
-DEBUG: assignLaneToBlock - block 5 now has 2 participating lanes
+DEBUG: assignLaneToBlock - block 5 now has 1 participating lanes
 DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 4
 DEBUG: removeThreadFromAllSets - block 4 had 2 participating lanes before removal
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 4
@@ -801,7 +809,6 @@ DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 5, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 1 cannot execute, starting to wait in block 5
 DEBUG: WAVE_OP: Refreshed block 5 resolution status
 DEBUG: Block 5 wave 0 unknown lanes: {0 }
-WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 5
 DEBUG: canExecuteWaveInstruction for lane 1 in block 5: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: AssignStmt - Lane 1 caught WaveOperationWaitException, re-throwing
 DEBUG: SwitchStmt - Lane 1 waiting for wave operation in case 2 at statement 0
@@ -815,17 +822,15 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 2 (phase: 3)
 DEBUG: SwitchStmt - Lane 0 completed case 1, falling through to next
 DEBUG: SwitchStmt - Lane 0 moving from case block 4 to case block 5 (fallthrough)
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 4 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 8) to block 5 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 0 to block 5
-DEBUG: assignLaneToBlock - block 5 now has 3 participating lanes
+DEBUG: assignLaneToBlock - block 5 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 5
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 5 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 5 (type 8) to block 5 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 0 to block 5
-DEBUG: assignLaneToBlock - block 5 now has 3 participating lanes
+DEBUG: assignLaneToBlock - block 5 now has 1 participating lanes
 DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 4
 DEBUG: removeThreadFromAllSets - block 4 had 1 participating lanes before removal
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 4
@@ -854,17 +859,15 @@ DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 6 (phase: 2)
 DEBUG: SwitchStmt - Lane 1 completed case 2, falling through to next
 DEBUG: SwitchStmt - Lane 1 moving from case block 5 to case block 6 (fallthrough)
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 5 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 5 (type 8) to block 6 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 1 to block 6
-DEBUG: assignLaneToBlock - block 6 now has 2 participating lanes
+DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 6
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 6 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 6 (type 8) to block 6 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 1 to block 6
-DEBUG: assignLaneToBlock - block 6 now has 2 participating lanes
+DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
 DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 5
 DEBUG: removeThreadFromAllSets - block 5 had 3 participating lanes before removal
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 5
@@ -887,7 +890,6 @@ DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 6, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 1 cannot execute, starting to wait in block 6
 DEBUG: WAVE_OP: Refreshed block 6 resolution status
 DEBUG: Block 6 wave 0 unknown lanes: {0 2 }
-WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 6
 DEBUG: canExecuteWaveInstruction for lane 1 in block 6: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: AssignStmt - Lane 1 caught WaveOperationWaitException, re-throwing
 DEBUG: SwitchStmt - Lane 1 waiting for wave operation in case 3 at statement 0
@@ -901,17 +903,15 @@ DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 6 (phase: 2)
 DEBUG: SwitchStmt - Lane 2 completed case 2, falling through to next
 DEBUG: SwitchStmt - Lane 2 moving from case block 5 to case block 6 (fallthrough)
-WARNING: Lane 2 block mismatch - laneToCurrentBlock says 5 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 5 (type 8) to block 6 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 2 to block 6
-DEBUG: assignLaneToBlock - block 6 now has 3 participating lanes
+DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 6
-WARNING: Lane 2 block mismatch - laneToCurrentBlock says 6 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 6 (type 8) to block 6 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 2 to block 6
-DEBUG: assignLaneToBlock - block 6 now has 3 participating lanes
+DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
 DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 5
 DEBUG: removeThreadFromAllSets - block 5 had 2 participating lanes before removal
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 5
@@ -928,7 +928,6 @@ DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 6, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 6
 DEBUG: WAVE_OP: Refreshed block 6 resolution status
 DEBUG: Block 6 wave 0 unknown lanes: {0 }
-WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 6
 DEBUG: canExecuteWaveInstruction for lane 2 in block 6: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: AssignStmt - Lane 2 caught WaveOperationWaitException, re-throwing
 DEBUG: SwitchStmt - Lane 2 waiting for wave operation in case 3 at statement 0
@@ -942,17 +941,15 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 6 (phase: 3)
 DEBUG: SwitchStmt - Lane 0 completed case 2, falling through to next
 DEBUG: SwitchStmt - Lane 0 moving from case block 5 to case block 6 (fallthrough)
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 5 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 5 (type 8) to block 6 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 0 to block 6
-DEBUG: assignLaneToBlock - block 6 now has 4 participating lanes
+DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 6
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 6 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 6 (type 8) to block 6 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 0 to block 6
-DEBUG: assignLaneToBlock - block 6 now has 4 participating lanes
+DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
 DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 5
 DEBUG: removeThreadFromAllSets - block 5 had 1 participating lanes before removal
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 5
@@ -981,13 +978,11 @@ DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 12 (phase: 2)
 DEBUG: SwitchStmt - Lane 1 completed case 3, falling through to next
 DEBUG: SwitchStmt - Lane 1 moving from case block 6 to case block 7 (fallthrough)
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 6 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 6 (type 8) to block 7 (type 9), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 1 to block 7
 DEBUG: assignLaneToBlock - block 7 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 7
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 7 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 7 (type 9) to block 7 (type 9), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 1 to block 7
@@ -1014,7 +1009,6 @@ DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 7, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 1 cannot execute, starting to wait in block 7
 DEBUG: WAVE_OP: Refreshed block 7 resolution status
 DEBUG: Block 7 wave 0 unknown lanes: {0 2 3 }
-WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 7
 DEBUG: canExecuteWaveInstruction for lane 1 in block 7: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: AssignStmt - Lane 1 caught WaveOperationWaitException, re-throwing
 DEBUG: SwitchStmt - Lane 1 waiting for wave operation in case 4 at statement 0
@@ -1028,17 +1022,15 @@ DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 12 (phase: 2)
 DEBUG: SwitchStmt - Lane 2 completed case 3, falling through to next
 DEBUG: SwitchStmt - Lane 2 moving from case block 6 to case block 7 (fallthrough)
-WARNING: Lane 2 block mismatch - laneToCurrentBlock says 6 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 6 (type 8) to block 7 (type 9), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 2 to block 7
-DEBUG: assignLaneToBlock - block 7 now has 2 participating lanes
+DEBUG: assignLaneToBlock - block 7 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 7
-WARNING: Lane 2 block mismatch - laneToCurrentBlock says 7 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 7 (type 9) to block 7 (type 9), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 2 to block 7
-DEBUG: assignLaneToBlock - block 7 now has 2 participating lanes
+DEBUG: assignLaneToBlock - block 7 now has 1 participating lanes
 DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 6
 DEBUG: removeThreadFromAllSets - block 6 had 3 participating lanes before removal
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 6
@@ -1061,7 +1053,6 @@ DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 7, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 7
 DEBUG: WAVE_OP: Refreshed block 7 resolution status
 DEBUG: Block 7 wave 0 unknown lanes: {0 3 }
-WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 7
 DEBUG: canExecuteWaveInstruction for lane 2 in block 7: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: AssignStmt - Lane 2 caught WaveOperationWaitException, re-throwing
 DEBUG: SwitchStmt - Lane 2 waiting for wave operation in case 4 at statement 0
@@ -1075,17 +1066,15 @@ DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 12 (phase: 2)
 DEBUG: SwitchStmt - Lane 3 completed case 3, falling through to next
 DEBUG: SwitchStmt - Lane 3 moving from case block 6 to case block 7 (fallthrough)
-WARNING: Lane 3 block mismatch - laneToCurrentBlock says 6 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 6 (type 8) to block 7 (type 9), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 3 to block 7
-DEBUG: assignLaneToBlock - block 7 now has 3 participating lanes
+DEBUG: assignLaneToBlock - block 7 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 7
-WARNING: Lane 3 block mismatch - laneToCurrentBlock says 7 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 7 (type 9) to block 7 (type 9), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 3 to block 7
-DEBUG: assignLaneToBlock - block 7 now has 3 participating lanes
+DEBUG: assignLaneToBlock - block 7 now has 1 participating lanes
 DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 6
 DEBUG: removeThreadFromAllSets - block 6 had 2 participating lanes before removal
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 6
@@ -1102,7 +1091,6 @@ DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 7, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 7
 DEBUG: WAVE_OP: Refreshed block 7 resolution status
 DEBUG: Block 7 wave 0 unknown lanes: {0 }
-WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 7
 DEBUG: canExecuteWaveInstruction for lane 3 in block 7: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: AssignStmt - Lane 3 caught WaveOperationWaitException, re-throwing
 DEBUG: SwitchStmt - Lane 3 waiting for wave operation in case 4 at statement 0
@@ -1116,17 +1104,15 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 12 (phase: 3)
 DEBUG: SwitchStmt - Lane 0 completed case 3, falling through to next
 DEBUG: SwitchStmt - Lane 0 moving from case block 6 to case block 7 (fallthrough)
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 6 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 6 (type 8) to block 7 (type 9), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 0 to block 7
-DEBUG: assignLaneToBlock - block 7 now has 4 participating lanes
+DEBUG: assignLaneToBlock - block 7 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 7
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 7 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 7 (type 9) to block 7 (type 9), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 0 to block 7
-DEBUG: assignLaneToBlock - block 7 now has 4 participating lanes
+DEBUG: assignLaneToBlock - block 7 now has 1 participating lanes
 DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 6
 DEBUG: removeThreadFromAllSets - block 6 had 1 participating lanes before removal
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 6
@@ -1186,13 +1172,11 @@ DEBUG: SwitchStmt - Lane 1 resuming switch statement
 DEBUG: SwitchStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004910)
 DEBUG: SwitchStmt - Lane 1 in phase Reconverging (stack depth=1, our index=0, this=0x504000004910)
 DEBUG: SwitchStmt - Lane 1 reconverging from switch
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 7 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 7 (type 9) to block 8 (type 10), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 1 to block 8
 DEBUG: assignLaneToBlock - block 8 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 8
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 8 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 8 (type 10) to block 8 (type 10), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 8
 DEBUG: assignLaneToBlock - adding lane 1 to block 8
@@ -1201,13 +1185,11 @@ DEBUG: SwitchStmt - Lane 2 resuming switch statement
 DEBUG: SwitchStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004910)
 DEBUG: SwitchStmt - Lane 2 in phase Reconverging (stack depth=1, our index=0, this=0x504000004910)
 DEBUG: SwitchStmt - Lane 2 reconverging from switch
-WARNING: Lane 2 block mismatch - laneToCurrentBlock says 7 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 7 (type 9) to block 8 (type 10), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 2 to block 8
 DEBUG: assignLaneToBlock - block 8 now has 2 participating lanes
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 8
-WARNING: Lane 2 block mismatch - laneToCurrentBlock says 8 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 8 (type 10) to block 8 (type 10), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 8
 DEBUG: assignLaneToBlock - adding lane 2 to block 8
@@ -1216,13 +1198,11 @@ DEBUG: SwitchStmt - Lane 3 resuming switch statement
 DEBUG: SwitchStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004910)
 DEBUG: SwitchStmt - Lane 3 in phase Reconverging (stack depth=1, our index=0, this=0x504000004910)
 DEBUG: SwitchStmt - Lane 3 reconverging from switch
-WARNING: Lane 3 block mismatch - laneToCurrentBlock says 7 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 7 (type 9) to block 8 (type 10), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 3 to block 8
 DEBUG: assignLaneToBlock - block 8 now has 3 participating lanes
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 8
-WARNING: Lane 3 block mismatch - laneToCurrentBlock says 8 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 8 (type 10) to block 8 (type 10), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 8
 DEBUG: assignLaneToBlock - adding lane 3 to block 8
@@ -1231,13 +1211,11 @@ DEBUG: SwitchStmt - Lane 0 resuming switch statement
 DEBUG: SwitchStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004910)
 DEBUG: SwitchStmt - Lane 0 in phase Reconverging (stack depth=1, our index=0, this=0x504000004910)
 DEBUG: SwitchStmt - Lane 0 reconverging from switch
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 7 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 7 (type 9) to block 8 (type 10), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 0 to block 8
 DEBUG: assignLaneToBlock - block 8 now has 4 participating lanes
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 8
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 8 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 8 (type 10) to block 8 (type 10), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 8
 DEBUG: assignLaneToBlock - adding lane 0 to block 8
@@ -1304,60 +1282,91 @@ Thread Return Values:
 
 DEBUG: findOrCreateBlockForPath called with 0 waves of unknown lanes
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 1
+WARNING: Lane 0 block 1 mismatch - old system: 0, new system: 1
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 1
+WARNING: Lane 1 block 1 mismatch - old system: 0, new system: 1
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 1
+WARNING: Lane 2 block 1 mismatch - old system: 0, new system: 1
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 1
+WARNING: Lane 3 block 1 mismatch - old system: 0, new system: 1
 DEBUG: SwitchStmt - Lane 0 starting switch statement
 DEBUG: SwitchStmt - Lane 0 starting fresh execution (pushed to stack depth=1, this=0x504000004910)
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 2
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 2
 DEBUG: addUnknownLane - adding lane 1 to new block 2
+DEBUG: addUnknownLane - added lane 1 to unknown lanes of block 2
 DEBUG: addUnknownLane - adding lane 2 to new block 2
+DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 2
 DEBUG: addUnknownLane - adding lane 3 to new block 2
+DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 2
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 3
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 3
 DEBUG: addUnknownLane - adding lane 1 to new block 3
+DEBUG: addUnknownLane - added lane 1 to unknown lanes of block 3
 DEBUG: addUnknownLane - adding lane 2 to new block 3
+DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 3
 DEBUG: addUnknownLane - adding lane 3 to new block 3
+DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 3
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 4
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 4
 DEBUG: addUnknownLane - adding lane 1 to new block 4
+DEBUG: addUnknownLane - added lane 1 to unknown lanes of block 4
 DEBUG: addUnknownLane - adding lane 2 to new block 4
+DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 4
 DEBUG: addUnknownLane - adding lane 3 to new block 4
+DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 4
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 5
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 5
 DEBUG: addUnknownLane - adding lane 1 to new block 5
+DEBUG: addUnknownLane - added lane 1 to unknown lanes of block 5
 DEBUG: addUnknownLane - adding lane 2 to new block 5
+DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 5
 DEBUG: addUnknownLane - adding lane 3 to new block 5
+DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 5
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 6
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 6
 DEBUG: addUnknownLane - adding lane 1 to new block 6
+DEBUG: addUnknownLane - added lane 1 to unknown lanes of block 6
 DEBUG: addUnknownLane - adding lane 2 to new block 6
+DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 6
 DEBUG: addUnknownLane - adding lane 3 to new block 6
+DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 6
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 7
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 7
 DEBUG: addUnknownLane - adding lane 1 to new block 7
+DEBUG: addUnknownLane - added lane 1 to unknown lanes of block 7
 DEBUG: addUnknownLane - adding lane 2 to new block 7
+DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 7
 DEBUG: addUnknownLane - adding lane 3 to new block 7
+DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 7
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 8
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 8
 DEBUG: addUnknownLane - adding lane 1 to new block 8
+DEBUG: addUnknownLane - added lane 1 to unknown lanes of block 8
 DEBUG: addUnknownLane - adding lane 2 to new block 8
+DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 8
 DEBUG: addUnknownLane - adding lane 3 to new block 8
+DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 8
 DEBUG: SwitchStmt - Created header block 2, 5 case blocks, and merge block 8
 DEBUG: assignLaneToBlock - moving lane 0 from block 1 (type 0) to block 2 (type 7), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 0 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 2
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 7) to block 2 (type 7), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 0 to block 2
@@ -1369,13 +1378,11 @@ DEBUG: SwitchStmt - Lane 0 switch condition evaluated to: 0
 DEBUG: SwitchStmt - Lane 0 matched case 0 at index 0
 DEBUG: SwitchStmt - Lane 0 moving to case block 3 for case 0
 DEBUG: SwitchStmt - Lane 0 moving from header to first case block 3 (case 0)
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 7) to block 3 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 0 to block 3
 DEBUG: assignLaneToBlock - block 3 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 3
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 3 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 3 (type 8) to block 3 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 0 to block 3
@@ -1387,25 +1394,25 @@ DEBUG: removeThreadFromAllSets - block 2 has 0 participating lanes after removal
 DEBUG: SwitchStmt - Lane 1 starting switch statement
 DEBUG: SwitchStmt - Lane 1 starting fresh execution (pushed to stack depth=1, this=0x504000004910)
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {1 2 3 } (3 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 2 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {1 2 3 } (3 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 3 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {1 2 3 } (3 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 4 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {1 2 3 } (3 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 5 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {1 2 3 } (3 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 6 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {1 2 3 } (3 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 7 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {1 2 3 } (3 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 8 - not modifying unknown lanes
 DEBUG: SwitchStmt - Created header block 2, 5 case blocks, and merge block 8
 DEBUG: assignLaneToBlock - moving lane 1 from block 1 (type 0) to block 2 (type 7), isHeaderToLoopBody=0
@@ -1413,7 +1420,6 @@ DEBUG: Removed lane 1 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 1 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 2
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 7) to block 2 (type 7), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 1 to block 2
@@ -1425,13 +1431,11 @@ DEBUG: SwitchStmt - Lane 1 switch condition evaluated to: 1
 DEBUG: SwitchStmt - Lane 1 matched case 1 at index 1
 DEBUG: SwitchStmt - Lane 1 moving to case block 4 for case 1
 DEBUG: SwitchStmt - Lane 1 moving from header to first case block 4 (case 1)
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 7) to block 4 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 1 to block 4
 DEBUG: assignLaneToBlock - block 4 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 4
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 4 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 4 (type 8) to block 4 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 1 to block 4
@@ -1449,25 +1453,25 @@ DEBUG: removeThreadFromAllSets - block 2 has 0 participating lanes after removal
 DEBUG: SwitchStmt - Lane 2 starting switch statement
 DEBUG: SwitchStmt - Lane 2 starting fresh execution (pushed to stack depth=1, this=0x504000004910)
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {2 3 } (2 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 2 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {2 3 } (2 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 3 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {2 3 } (2 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 4 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {2 3 } (2 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 5 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {2 3 } (2 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 6 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {2 3 } (2 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 7 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {2 3 } (2 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 8 - not modifying unknown lanes
 DEBUG: SwitchStmt - Created header block 2, 5 case blocks, and merge block 8
 DEBUG: assignLaneToBlock - moving lane 2 from block 1 (type 0) to block 2 (type 7), isHeaderToLoopBody=0
@@ -1475,7 +1479,6 @@ DEBUG: Removed lane 2 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 2 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 2
-WARNING: Lane 2 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 7) to block 2 (type 7), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 2
@@ -1487,13 +1490,11 @@ DEBUG: SwitchStmt - Lane 2 switch condition evaluated to: 2
 DEBUG: SwitchStmt - Lane 2 matched case 2 at index 2
 DEBUG: SwitchStmt - Lane 2 moving to case block 5 for case 2
 DEBUG: SwitchStmt - Lane 2 moving from header to first case block 5 (case 2)
-WARNING: Lane 2 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 7) to block 5 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 5
 DEBUG: assignLaneToBlock - block 5 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 5
-WARNING: Lane 2 block mismatch - laneToCurrentBlock says 5 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 5 (type 8) to block 5 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 2 to block 5
@@ -1517,25 +1518,25 @@ DEBUG: removeThreadFromAllSets - block 2 has 0 participating lanes after removal
 DEBUG: SwitchStmt - Lane 3 starting switch statement
 DEBUG: SwitchStmt - Lane 3 starting fresh execution (pushed to stack depth=1, this=0x504000004910)
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 2 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 3 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 4 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 5 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 6 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 7 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 8 - not modifying unknown lanes
 DEBUG: SwitchStmt - Created header block 2, 5 case blocks, and merge block 8
 DEBUG: assignLaneToBlock - moving lane 3 from block 1 (type 0) to block 2 (type 7), isHeaderToLoopBody=0
@@ -1543,7 +1544,6 @@ DEBUG: Removed lane 3 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 3 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 2
-WARNING: Lane 3 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 7) to block 2 (type 7), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 3 to block 2
@@ -1555,13 +1555,11 @@ DEBUG: SwitchStmt - Lane 3 switch condition evaluated to: 3
 DEBUG: SwitchStmt - Lane 3 matched case 3 at index 3
 DEBUG: SwitchStmt - Lane 3 moving to case block 6 for case 3
 DEBUG: SwitchStmt - Lane 3 moving from header to first case block 6 (case 3)
-WARNING: Lane 3 block mismatch - laneToCurrentBlock says 2 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 7) to block 6 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 3 to block 6
 DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 6
-WARNING: Lane 3 block mismatch - laneToCurrentBlock says 6 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 6 (type 8) to block 6 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 3 to block 6
@@ -1598,18 +1596,18 @@ DEBUG: ForStmt - Lane 0 starting fresh execution (pushed to stack depth=2, this=
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 } (1 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 9
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 9
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 } (1 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 10
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 10
 DEBUG: ForStmt - Lane 0 in phase EvaluatingInit (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 evaluating init
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 3 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 3 (type 8) to block 9 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 0 to block 9
 DEBUG: assignLaneToBlock - block 9 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 9
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 9 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 4) to block 9 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 0 to block 9
@@ -1622,7 +1620,6 @@ DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 4, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 1 cannot execute, starting to wait in block 4
 DEBUG: WAVE_OP: Refreshed block 4 resolution status
 DEBUG: Block 4 wave 0 unknown lanes: {0 }
-WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 4
 DEBUG: canExecuteWaveInstruction for lane 1 in block 4: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: AssignStmt - Lane 1 caught WaveOperationWaitException, re-throwing
 DEBUG: SwitchStmt - Lane 1 waiting for wave operation in case 1 at statement 0
@@ -1635,7 +1632,6 @@ DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 5, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 5
 DEBUG: WAVE_OP: Refreshed block 5 resolution status
 DEBUG: Block 5 wave 0 unknown lanes: {0 1 }
-WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 5
 DEBUG: canExecuteWaveInstruction for lane 2 in block 5: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: AssignStmt - Lane 2 caught WaveOperationWaitException, re-throwing
 DEBUG: SwitchStmt - Lane 2 waiting for wave operation in case 2 at statement 0
@@ -1648,7 +1644,6 @@ DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 6, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 6
 DEBUG: WAVE_OP: Refreshed block 6 resolution status
 DEBUG: Block 6 wave 0 unknown lanes: {0 1 2 }
-WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 6
 DEBUG: canExecuteWaveInstruction for lane 3 in block 6: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: AssignStmt - Lane 3 caught WaveOperationWaitException, re-throwing
 DEBUG: SwitchStmt - Lane 3 waiting for wave operation in case 3 at statement 0
@@ -1671,9 +1666,9 @@ DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control fl
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 } (1 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 11
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 11
 DEBUG: ForStmt - Lane 0 created iteration starting block 11 for iteration 0
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 11
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 9 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 4) to block 11 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 0 to block 11
@@ -1708,7 +1703,6 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: 3)
 DEBUG: ForStmt - Lane 0 body completed in block 11, moving to header block 9 for increment
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 9
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 11 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 11 (type 0) to block 9 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 11
 DEBUG: assignLaneToBlock - adding lane 0 to block 9
@@ -1738,9 +1732,9 @@ DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control fl
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 } (1 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 12
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 12
 DEBUG: ForStmt - Lane 0 created iteration starting block 12 for iteration 1
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 12
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 9 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 4) to block 12 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 0 to block 12
@@ -1775,7 +1769,6 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 1 (phase: 3)
 DEBUG: ForStmt - Lane 0 body completed in block 12, moving to header block 9 for increment
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 9
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 12 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 12 (type 0) to block 9 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 0 to block 9
@@ -1805,9 +1798,9 @@ DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control fl
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 } (1 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 13
+DEBUG: addUnknownLane - added lane 0 to unknown lanes of block 13
 DEBUG: ForStmt - Lane 0 created iteration starting block 13 for iteration 2
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 13
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 9 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 4) to block 13 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 0 to block 13
@@ -1842,7 +1835,6 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 2 (phase: 3)
 DEBUG: ForStmt - Lane 0 body completed in block 13, moving to header block 9 for increment
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 9
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 13 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 13 (type 0) to block 9 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 13
 DEBUG: assignLaneToBlock - adding lane 0 to block 9
@@ -1892,13 +1884,11 @@ DEBUG: SwitchStmt - Lane 0 executing statement 0 in case 0
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 in phase Reconverging (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 exiting loop after 3 iterations
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 9 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 4) to block 10 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 0 to block 10
 DEBUG: assignLaneToBlock - block 10 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 10
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 10 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 10 (type 6) to block 10 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 0 to block 10
@@ -1926,17 +1916,15 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: 3)
 DEBUG: SwitchStmt - Lane 0 completed case 0, falling through to next
 DEBUG: SwitchStmt - Lane 0 moving from case block 3 to case block 4 (fallthrough)
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 10 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 10 (type 6) to block 4 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 0 to block 4
-DEBUG: assignLaneToBlock - block 4 now has 2 participating lanes
+DEBUG: assignLaneToBlock - block 4 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 4
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 4 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 8) to block 4 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 0 to block 4
-DEBUG: assignLaneToBlock - block 4 now has 2 participating lanes
+DEBUG: assignLaneToBlock - block 4 now has 1 participating lanes
 DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 3
 DEBUG: removeThreadFromAllSets - block 3 had 1 participating lanes before removal
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 3
@@ -1965,17 +1953,15 @@ DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 2 (phase: 2)
 DEBUG: SwitchStmt - Lane 1 completed case 1, falling through to next
 DEBUG: SwitchStmt - Lane 1 moving from case block 4 to case block 5 (fallthrough)
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 4 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 4 (type 8) to block 5 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 1 to block 5
-DEBUG: assignLaneToBlock - block 5 now has 2 participating lanes
+DEBUG: assignLaneToBlock - block 5 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 5
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 5 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 5 (type 8) to block 5 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 1 to block 5
-DEBUG: assignLaneToBlock - block 5 now has 2 participating lanes
+DEBUG: assignLaneToBlock - block 5 now has 1 participating lanes
 DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 4
 DEBUG: removeThreadFromAllSets - block 4 had 2 participating lanes before removal
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 4
@@ -1986,7 +1972,6 @@ DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 5, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 1 cannot execute, starting to wait in block 5
 DEBUG: WAVE_OP: Refreshed block 5 resolution status
 DEBUG: Block 5 wave 0 unknown lanes: {0 }
-WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 5
 DEBUG: canExecuteWaveInstruction for lane 1 in block 5: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: AssignStmt - Lane 1 caught WaveOperationWaitException, re-throwing
 DEBUG: SwitchStmt - Lane 1 waiting for wave operation in case 2 at statement 0
@@ -2000,17 +1985,15 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 2 (phase: 3)
 DEBUG: SwitchStmt - Lane 0 completed case 1, falling through to next
 DEBUG: SwitchStmt - Lane 0 moving from case block 4 to case block 5 (fallthrough)
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 4 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 8) to block 5 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 0 to block 5
-DEBUG: assignLaneToBlock - block 5 now has 3 participating lanes
+DEBUG: assignLaneToBlock - block 5 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 5
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 5 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 5 (type 8) to block 5 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 0 to block 5
-DEBUG: assignLaneToBlock - block 5 now has 3 participating lanes
+DEBUG: assignLaneToBlock - block 5 now has 1 participating lanes
 DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 4
 DEBUG: removeThreadFromAllSets - block 4 had 1 participating lanes before removal
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 4
@@ -2039,17 +2022,15 @@ DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 6 (phase: 2)
 DEBUG: SwitchStmt - Lane 1 completed case 2, falling through to next
 DEBUG: SwitchStmt - Lane 1 moving from case block 5 to case block 6 (fallthrough)
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 5 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 5 (type 8) to block 6 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 1 to block 6
-DEBUG: assignLaneToBlock - block 6 now has 2 participating lanes
+DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 6
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 6 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 6 (type 8) to block 6 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 1 to block 6
-DEBUG: assignLaneToBlock - block 6 now has 2 participating lanes
+DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
 DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 5
 DEBUG: removeThreadFromAllSets - block 5 had 3 participating lanes before removal
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 5
@@ -2072,7 +2053,6 @@ DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 6, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 1 cannot execute, starting to wait in block 6
 DEBUG: WAVE_OP: Refreshed block 6 resolution status
 DEBUG: Block 6 wave 0 unknown lanes: {0 2 }
-WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 6
 DEBUG: canExecuteWaveInstruction for lane 1 in block 6: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: AssignStmt - Lane 1 caught WaveOperationWaitException, re-throwing
 DEBUG: SwitchStmt - Lane 1 waiting for wave operation in case 3 at statement 0
@@ -2086,17 +2066,15 @@ DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 6 (phase: 2)
 DEBUG: SwitchStmt - Lane 2 completed case 2, falling through to next
 DEBUG: SwitchStmt - Lane 2 moving from case block 5 to case block 6 (fallthrough)
-WARNING: Lane 2 block mismatch - laneToCurrentBlock says 5 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 5 (type 8) to block 6 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 2 to block 6
-DEBUG: assignLaneToBlock - block 6 now has 3 participating lanes
+DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 6
-WARNING: Lane 2 block mismatch - laneToCurrentBlock says 6 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 6 (type 8) to block 6 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 2 to block 6
-DEBUG: assignLaneToBlock - block 6 now has 3 participating lanes
+DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
 DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 5
 DEBUG: removeThreadFromAllSets - block 5 had 2 participating lanes before removal
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 5
@@ -2113,7 +2091,6 @@ DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 6, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 6
 DEBUG: WAVE_OP: Refreshed block 6 resolution status
 DEBUG: Block 6 wave 0 unknown lanes: {0 }
-WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 6
 DEBUG: canExecuteWaveInstruction for lane 2 in block 6: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: AssignStmt - Lane 2 caught WaveOperationWaitException, re-throwing
 DEBUG: SwitchStmt - Lane 2 waiting for wave operation in case 3 at statement 0
@@ -2127,17 +2104,15 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 6 (phase: 3)
 DEBUG: SwitchStmt - Lane 0 completed case 2, falling through to next
 DEBUG: SwitchStmt - Lane 0 moving from case block 5 to case block 6 (fallthrough)
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 5 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 5 (type 8) to block 6 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 0 to block 6
-DEBUG: assignLaneToBlock - block 6 now has 4 participating lanes
+DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 6
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 6 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 6 (type 8) to block 6 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 0 to block 6
-DEBUG: assignLaneToBlock - block 6 now has 4 participating lanes
+DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
 DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 5
 DEBUG: removeThreadFromAllSets - block 5 had 1 participating lanes before removal
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 5
@@ -2166,13 +2141,11 @@ DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 12 (phase: 2)
 DEBUG: SwitchStmt - Lane 1 completed case 3, falling through to next
 DEBUG: SwitchStmt - Lane 1 moving from case block 6 to case block 7 (fallthrough)
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 6 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 6 (type 8) to block 7 (type 9), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 1 to block 7
 DEBUG: assignLaneToBlock - block 7 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 7
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 7 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 7 (type 9) to block 7 (type 9), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 1 to block 7
@@ -2199,7 +2172,6 @@ DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 7, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 1 cannot execute, starting to wait in block 7
 DEBUG: WAVE_OP: Refreshed block 7 resolution status
 DEBUG: Block 7 wave 0 unknown lanes: {0 2 3 }
-WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 7
 DEBUG: canExecuteWaveInstruction for lane 1 in block 7: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: AssignStmt - Lane 1 caught WaveOperationWaitException, re-throwing
 DEBUG: SwitchStmt - Lane 1 waiting for wave operation in case 4 at statement 0
@@ -2213,17 +2185,15 @@ DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 12 (phase: 2)
 DEBUG: SwitchStmt - Lane 2 completed case 3, falling through to next
 DEBUG: SwitchStmt - Lane 2 moving from case block 6 to case block 7 (fallthrough)
-WARNING: Lane 2 block mismatch - laneToCurrentBlock says 6 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 6 (type 8) to block 7 (type 9), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 2 to block 7
-DEBUG: assignLaneToBlock - block 7 now has 2 participating lanes
+DEBUG: assignLaneToBlock - block 7 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 7
-WARNING: Lane 2 block mismatch - laneToCurrentBlock says 7 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 7 (type 9) to block 7 (type 9), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 2 to block 7
-DEBUG: assignLaneToBlock - block 7 now has 2 participating lanes
+DEBUG: assignLaneToBlock - block 7 now has 1 participating lanes
 DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 6
 DEBUG: removeThreadFromAllSets - block 6 had 3 participating lanes before removal
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 6
@@ -2246,7 +2216,6 @@ DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 7, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 7
 DEBUG: WAVE_OP: Refreshed block 7 resolution status
 DEBUG: Block 7 wave 0 unknown lanes: {0 3 }
-WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 7
 DEBUG: canExecuteWaveInstruction for lane 2 in block 7: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: AssignStmt - Lane 2 caught WaveOperationWaitException, re-throwing
 DEBUG: SwitchStmt - Lane 2 waiting for wave operation in case 4 at statement 0
@@ -2260,17 +2229,15 @@ DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 12 (phase: 2)
 DEBUG: SwitchStmt - Lane 3 completed case 3, falling through to next
 DEBUG: SwitchStmt - Lane 3 moving from case block 6 to case block 7 (fallthrough)
-WARNING: Lane 3 block mismatch - laneToCurrentBlock says 6 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 6 (type 8) to block 7 (type 9), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 3 to block 7
-DEBUG: assignLaneToBlock - block 7 now has 3 participating lanes
+DEBUG: assignLaneToBlock - block 7 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 7
-WARNING: Lane 3 block mismatch - laneToCurrentBlock says 7 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 7 (type 9) to block 7 (type 9), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 3 to block 7
-DEBUG: assignLaneToBlock - block 7 now has 3 participating lanes
+DEBUG: assignLaneToBlock - block 7 now has 1 participating lanes
 DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 6
 DEBUG: removeThreadFromAllSets - block 6 had 2 participating lanes before removal
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 6
@@ -2287,7 +2254,6 @@ DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 7, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 7
 DEBUG: WAVE_OP: Refreshed block 7 resolution status
 DEBUG: Block 7 wave 0 unknown lanes: {0 }
-WARNING: Consistency mismatch - syncPoint says 0 but registry says 1 for wave 0 block 7
 DEBUG: canExecuteWaveInstruction for lane 3 in block 7: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: AssignStmt - Lane 3 caught WaveOperationWaitException, re-throwing
 DEBUG: SwitchStmt - Lane 3 waiting for wave operation in case 4 at statement 0
@@ -2301,17 +2267,15 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 12 (phase: 3)
 DEBUG: SwitchStmt - Lane 0 completed case 3, falling through to next
 DEBUG: SwitchStmt - Lane 0 moving from case block 6 to case block 7 (fallthrough)
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 6 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 6 (type 8) to block 7 (type 9), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 0 to block 7
-DEBUG: assignLaneToBlock - block 7 now has 4 participating lanes
+DEBUG: assignLaneToBlock - block 7 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 7
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 7 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 7 (type 9) to block 7 (type 9), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 0 to block 7
-DEBUG: assignLaneToBlock - block 7 now has 4 participating lanes
+DEBUG: assignLaneToBlock - block 7 now has 1 participating lanes
 DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 6
 DEBUG: removeThreadFromAllSets - block 6 had 1 participating lanes before removal
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 6
@@ -2371,13 +2335,11 @@ DEBUG: SwitchStmt - Lane 1 resuming switch statement
 DEBUG: SwitchStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004910)
 DEBUG: SwitchStmt - Lane 1 in phase Reconverging (stack depth=1, our index=0, this=0x504000004910)
 DEBUG: SwitchStmt - Lane 1 reconverging from switch
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 7 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 7 (type 9) to block 8 (type 10), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 1 to block 8
 DEBUG: assignLaneToBlock - block 8 now has 1 participating lanes
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 8
-WARNING: Lane 1 block mismatch - laneToCurrentBlock says 8 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 1 from block 8 (type 10) to block 8 (type 10), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 8
 DEBUG: assignLaneToBlock - adding lane 1 to block 8
@@ -2386,13 +2348,11 @@ DEBUG: SwitchStmt - Lane 2 resuming switch statement
 DEBUG: SwitchStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004910)
 DEBUG: SwitchStmt - Lane 2 in phase Reconverging (stack depth=1, our index=0, this=0x504000004910)
 DEBUG: SwitchStmt - Lane 2 reconverging from switch
-WARNING: Lane 2 block mismatch - laneToCurrentBlock says 7 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 7 (type 9) to block 8 (type 10), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 2 to block 8
 DEBUG: assignLaneToBlock - block 8 now has 2 participating lanes
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 8
-WARNING: Lane 2 block mismatch - laneToCurrentBlock says 8 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 2 from block 8 (type 10) to block 8 (type 10), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 8
 DEBUG: assignLaneToBlock - adding lane 2 to block 8
@@ -2401,13 +2361,11 @@ DEBUG: SwitchStmt - Lane 3 resuming switch statement
 DEBUG: SwitchStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004910)
 DEBUG: SwitchStmt - Lane 3 in phase Reconverging (stack depth=1, our index=0, this=0x504000004910)
 DEBUG: SwitchStmt - Lane 3 reconverging from switch
-WARNING: Lane 3 block mismatch - laneToCurrentBlock says 7 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 7 (type 9) to block 8 (type 10), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 3 to block 8
 DEBUG: assignLaneToBlock - block 8 now has 3 participating lanes
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 8
-WARNING: Lane 3 block mismatch - laneToCurrentBlock says 8 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 3 from block 8 (type 10) to block 8 (type 10), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 8
 DEBUG: assignLaneToBlock - adding lane 3 to block 8
@@ -2416,13 +2374,11 @@ DEBUG: SwitchStmt - Lane 0 resuming switch statement
 DEBUG: SwitchStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004910)
 DEBUG: SwitchStmt - Lane 0 in phase Reconverging (stack depth=1, our index=0, this=0x504000004910)
 DEBUG: SwitchStmt - Lane 0 reconverging from switch
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 7 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 7 (type 9) to block 8 (type 10), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 0 to block 8
 DEBUG: assignLaneToBlock - block 8 now has 4 participating lanes
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 8
-WARNING: Lane 0 block mismatch - laneToCurrentBlock says 8 but registry says 1
 DEBUG: assignLaneToBlock - moving lane 0 from block 8 (type 10) to block 8 (type 10), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 8
 DEBUG: assignLaneToBlock - adding lane 0 to block 8
@@ -3115,6 +3071,8 @@ Dynamic Block 1:
   Nesting Level: 0
   Participating Lanes by Wave:
   Total Participating Lanes: 0
+  Arrived Lanes by Wave:
+    Wave 0: {0, 1, 2, 3} (4 lanes)
   Unknown Resolution Status by Wave:
     Wave 0: Resolved
 
@@ -3200,6 +3158,8 @@ Dynamic Block 7:
   Participating Lanes by Wave:
     Wave 0: {0, 1, 2, 3} (4 lanes)
   Total Participating Lanes: 4
+  Arrived Lanes by Wave:
+    Wave 0: {0, 1, 2, 3} (4 lanes)
   Waiting Lanes by Wave:
     Wave 0: {0, 1, 2, 3} (4 lanes)
   Instructions (1):
@@ -3251,6 +3211,8 @@ Dynamic Block 10:
   Participating Lanes by Wave:
     Wave 0: {0} (1 lanes)
   Total Participating Lanes: 1
+  Arrived Lanes by Wave:
+    Wave 0: {0} (1 lanes)
   Waiting Lanes by Wave:
     Wave 0: {0} (1 lanes)
   Instructions (1):
@@ -3473,6 +3435,8 @@ Dynamic Block 1:
   Nesting Level: 0
   Participating Lanes by Wave:
   Total Participating Lanes: 0
+  Arrived Lanes by Wave:
+    Wave 0: {0, 1, 2, 3} (4 lanes)
   Unknown Resolution Status by Wave:
     Wave 0: Resolved
 
@@ -3558,6 +3522,8 @@ Dynamic Block 7:
   Participating Lanes by Wave:
     Wave 0: {0, 1, 2, 3} (4 lanes)
   Total Participating Lanes: 4
+  Arrived Lanes by Wave:
+    Wave 0: {0, 1, 2, 3} (4 lanes)
   Waiting Lanes by Wave:
     Wave 0: {0, 1, 2, 3} (4 lanes)
   Instructions (1):
@@ -3609,6 +3575,8 @@ Dynamic Block 10:
   Participating Lanes by Wave:
     Wave 0: {0} (1 lanes)
   Total Participating Lanes: 1
+  Arrived Lanes by Wave:
+    Wave 0: {0} (1 lanes)
   Waiting Lanes by Wave:
     Wave 0: {0} (1 lanes)
   Instructions (1):
