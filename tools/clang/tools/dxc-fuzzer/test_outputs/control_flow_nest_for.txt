@@ -102,7 +102,6 @@ DEBUG: assignLaneToBlock - moving lane 0 from block 1 (type 0) to block 2 (type 
 DEBUG: Removed lane 0 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 0 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 0 to block 2
@@ -120,7 +119,6 @@ DEBUG: assignLaneToBlock - moving lane 1 from block 1 (type 0) to block 2 (type 
 DEBUG: Removed lane 1 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 1 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 2 participating lanes
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 4) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 1 to block 2
@@ -138,7 +136,6 @@ DEBUG: assignLaneToBlock - moving lane 2 from block 1 (type 0) to block 2 (type 
 DEBUG: Removed lane 2 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 2 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 3 participating lanes
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 2
@@ -156,7 +153,6 @@ DEBUG: assignLaneToBlock - moving lane 3 from block 1 (type 0) to block 2 (type 
 DEBUG: Removed lane 3 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 3 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 4 participating lanes
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 3 to block 2
@@ -188,7 +184,6 @@ DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 4
 DEBUG: addUnknownLane - adding lane 3 to new block 4
 DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 4
 DEBUG: ForStmt - Lane 0 created iteration starting block 4 for iteration 0
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 0 to block 4
@@ -208,7 +203,6 @@ DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=1, our index=0, this
 DEBUG: ForStmt - Lane 1 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 1 found existing iteration starting block 4 for iteration 0
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 1 to block 4
@@ -228,7 +222,6 @@ DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=1, our index=0, this
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 2 found existing iteration starting block 4 for iteration 0
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 4
@@ -248,7 +241,6 @@ DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=1, our index=0, this
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 3 found existing iteration starting block 4 for iteration 0
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 3 to block 4
@@ -303,7 +295,6 @@ DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 0) to block 5 (type 
 DEBUG: Removed lane 0 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 0 to block 5
 DEBUG: assignLaneToBlock - block 5 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 5
 DEBUG: assignLaneToBlock - moving lane 0 from block 5 (type 4) to block 5 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 0 to block 5
@@ -332,7 +323,6 @@ DEBUG: assignLaneToBlock - moving lane 1 from block 4 (type 0) to block 5 (type 
 DEBUG: Removed lane 1 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 1 to block 5
 DEBUG: assignLaneToBlock - block 5 now has 2 participating lanes
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 5
 DEBUG: assignLaneToBlock - moving lane 1 from block 5 (type 4) to block 5 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 1 to block 5
@@ -361,7 +351,6 @@ DEBUG: assignLaneToBlock - moving lane 2 from block 4 (type 0) to block 5 (type 
 DEBUG: Removed lane 2 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 2 to block 5
 DEBUG: assignLaneToBlock - block 5 now has 3 participating lanes
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 5
 DEBUG: assignLaneToBlock - moving lane 2 from block 5 (type 4) to block 5 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 2 to block 5
@@ -390,7 +379,6 @@ DEBUG: assignLaneToBlock - moving lane 3 from block 4 (type 0) to block 5 (type 
 DEBUG: Removed lane 3 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 3 to block 5
 DEBUG: assignLaneToBlock - block 5 now has 4 participating lanes
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 5
 DEBUG: assignLaneToBlock - moving lane 3 from block 5 (type 4) to block 5 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 3 to block 5
@@ -401,7 +389,6 @@ DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 0 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 0 to block 4
@@ -417,7 +404,6 @@ DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 1 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 1 to block 4
@@ -433,7 +419,6 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 2 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 2 to block 4
@@ -449,7 +434,6 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 3 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 3 to block 4
@@ -481,7 +465,6 @@ DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 7
 DEBUG: addUnknownLane - adding lane 3 to new block 7
 DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 7
 DEBUG: ForStmt - Lane 0 created iteration starting block 7 for iteration 0
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 7
 DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 0 to block 7
@@ -507,7 +490,6 @@ DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=1, this
 DEBUG: ForStmt - Lane 1 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 1 found existing iteration starting block 7 for iteration 0
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 7
 DEBUG: assignLaneToBlock - moving lane 1 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 1 to block 7
@@ -533,7 +515,6 @@ DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=1, this
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 2 found existing iteration starting block 7 for iteration 0
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 7
 DEBUG: assignLaneToBlock - moving lane 2 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 2 to block 7
@@ -559,7 +540,6 @@ DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=1, this
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 3 found existing iteration starting block 7 for iteration 0
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 7
 DEBUG: assignLaneToBlock - moving lane 3 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 3 to block 7
@@ -583,7 +563,6 @@ DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 0 from block 7 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 0 to block 4
@@ -594,7 +573,6 @@ DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 7
 DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 0 to block 7
@@ -605,7 +583,6 @@ DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 7, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 4 (phase: 2)
 DEBUG: ForStmt - Lane 0 body completed in block 7, moving to header block 5 for increment
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 5
 DEBUG: assignLaneToBlock - moving lane 0 from block 7 (type 0) to block 5 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 0 to block 5
@@ -616,7 +593,6 @@ DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 1 from block 7 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 1 to block 4
@@ -627,7 +603,6 @@ DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 1 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 7
 DEBUG: assignLaneToBlock - moving lane 1 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 1 to block 7
@@ -638,7 +613,6 @@ DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 7, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 4 (phase: 2)
 DEBUG: ForStmt - Lane 1 body completed in block 7, moving to header block 5 for increment
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 5
 DEBUG: assignLaneToBlock - moving lane 1 from block 7 (type 0) to block 5 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 1 to block 5
@@ -649,7 +623,6 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 2 from block 7 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 2 to block 4
@@ -660,7 +633,6 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 7
 DEBUG: assignLaneToBlock - moving lane 2 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 2 to block 7
@@ -671,7 +643,6 @@ DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 7, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 4 (phase: 2)
 DEBUG: ForStmt - Lane 2 body completed in block 7, moving to header block 5 for increment
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 5
 DEBUG: assignLaneToBlock - moving lane 2 from block 7 (type 0) to block 5 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 2 to block 5
@@ -682,7 +653,6 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 3 from block 7 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 3 to block 4
@@ -693,7 +663,6 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 7
 DEBUG: assignLaneToBlock - moving lane 3 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 3 to block 7
@@ -704,7 +673,6 @@ DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 7, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 4 (phase: 3)
 DEBUG: ForStmt - Lane 3 body completed in block 7, moving to header block 5 for increment
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 5
 DEBUG: assignLaneToBlock - moving lane 3 from block 7 (type 0) to block 5 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 3 to block 5
@@ -715,7 +683,6 @@ DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 0 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 0 to block 4
@@ -731,7 +698,6 @@ DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 1 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 1 to block 4
@@ -747,7 +713,6 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 2 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 2 to block 4
@@ -763,7 +728,6 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 3 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 3 to block 4
@@ -835,7 +799,6 @@ DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 8
 DEBUG: addUnknownLane - adding lane 3 to new block 8
 DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 8
 DEBUG: ForStmt - Lane 0 created iteration starting block 8 for iteration 1
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 8
 DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 0) to block 8 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 0 to block 8
@@ -861,7 +824,6 @@ DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=1, this
 DEBUG: ForStmt - Lane 1 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 1 found existing iteration starting block 8 for iteration 1
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 8
 DEBUG: assignLaneToBlock - moving lane 1 from block 4 (type 0) to block 8 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 1 to block 8
@@ -887,7 +849,6 @@ DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=1, this
 DEBUG: ForStmt - Lane 2 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 2 found existing iteration starting block 8 for iteration 1
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 8
 DEBUG: assignLaneToBlock - moving lane 2 from block 4 (type 0) to block 8 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 2 to block 8
@@ -913,7 +874,6 @@ DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=1, this
 DEBUG: ForStmt - Lane 3 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 3 found existing iteration starting block 8 for iteration 1
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 8
 DEBUG: assignLaneToBlock - moving lane 3 from block 4 (type 0) to block 8 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 3 to block 8
@@ -937,7 +897,6 @@ DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 0 from block 8 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 8
 DEBUG: assignLaneToBlock - adding lane 0 to block 4
@@ -948,7 +907,6 @@ DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 8
 DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 0) to block 8 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 0 to block 8
@@ -959,7 +917,6 @@ DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 8, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 4 (phase: 2)
 DEBUG: ForStmt - Lane 0 body completed in block 8, moving to header block 5 for increment
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 5
 DEBUG: assignLaneToBlock - moving lane 0 from block 8 (type 0) to block 5 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 8
 DEBUG: assignLaneToBlock - adding lane 0 to block 5
@@ -970,7 +927,6 @@ DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 1 from block 8 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 8
 DEBUG: assignLaneToBlock - adding lane 1 to block 4
@@ -981,7 +937,6 @@ DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 1 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 8
 DEBUG: assignLaneToBlock - moving lane 1 from block 4 (type 0) to block 8 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 1 to block 8
@@ -992,7 +947,6 @@ DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 8, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 4 (phase: 2)
 DEBUG: ForStmt - Lane 1 body completed in block 8, moving to header block 5 for increment
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 5
 DEBUG: assignLaneToBlock - moving lane 1 from block 8 (type 0) to block 5 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 8
 DEBUG: assignLaneToBlock - adding lane 1 to block 5
@@ -1003,7 +957,6 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 2 from block 8 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 8
 DEBUG: assignLaneToBlock - adding lane 2 to block 4
@@ -1014,7 +967,6 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 2 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 8
 DEBUG: assignLaneToBlock - moving lane 2 from block 4 (type 0) to block 8 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 2 to block 8
@@ -1025,7 +977,6 @@ DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 8, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 4 (phase: 2)
 DEBUG: ForStmt - Lane 2 body completed in block 8, moving to header block 5 for increment
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 5
 DEBUG: assignLaneToBlock - moving lane 2 from block 8 (type 0) to block 5 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 8
 DEBUG: assignLaneToBlock - adding lane 2 to block 5
@@ -1036,7 +987,6 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 3 from block 8 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 8
 DEBUG: assignLaneToBlock - adding lane 3 to block 4
@@ -1047,7 +997,6 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 8
 DEBUG: assignLaneToBlock - moving lane 3 from block 4 (type 0) to block 8 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 3 to block 8
@@ -1058,7 +1007,6 @@ DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 8, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 4 (phase: 3)
 DEBUG: ForStmt - Lane 3 body completed in block 8, moving to header block 5 for increment
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 5
 DEBUG: assignLaneToBlock - moving lane 3 from block 8 (type 0) to block 5 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 8
 DEBUG: assignLaneToBlock - adding lane 3 to block 5
@@ -1069,7 +1017,6 @@ DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 0 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 0 to block 4
@@ -1085,7 +1032,6 @@ DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 1 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 1 to block 4
@@ -1101,7 +1047,6 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 2 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 2 to block 4
@@ -1117,7 +1062,6 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 3 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 3 to block 4
@@ -1253,14 +1197,12 @@ DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 0) to block 6 (type 
 DEBUG: Removed lane 0 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 0 to block 6
 DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 6
 DEBUG: assignLaneToBlock - moving lane 0 from block 6 (type 6) to block 6 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 0 to block 6
 DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
 DEBUG: ForStmt - Lane 0 natural flow from block 4 to block 6 during statement 1 (likely merge block)
 DEBUG: ForStmt - Lane 0 body completed in block 6, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 0 from block 6 (type 6) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 0 to block 2
@@ -1277,14 +1219,12 @@ DEBUG: assignLaneToBlock - moving lane 1 from block 4 (type 0) to block 6 (type 
 DEBUG: Removed lane 1 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 1 to block 6
 DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 6
 DEBUG: assignLaneToBlock - moving lane 1 from block 6 (type 6) to block 6 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 1 to block 6
 DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
 DEBUG: ForStmt - Lane 1 natural flow from block 4 to block 6 during statement 1 (likely merge block)
 DEBUG: ForStmt - Lane 1 body completed in block 6, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 1 from block 6 (type 6) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 1 to block 2
@@ -1301,14 +1241,12 @@ DEBUG: assignLaneToBlock - moving lane 2 from block 4 (type 0) to block 6 (type 
 DEBUG: Removed lane 2 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 2 to block 6
 DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 6
 DEBUG: assignLaneToBlock - moving lane 2 from block 6 (type 6) to block 6 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 2 to block 6
 DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
 DEBUG: ForStmt - Lane 2 natural flow from block 4 to block 6 during statement 1 (likely merge block)
 DEBUG: ForStmt - Lane 2 body completed in block 6, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 2 from block 6 (type 6) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 2 to block 2
@@ -1325,14 +1263,12 @@ DEBUG: assignLaneToBlock - moving lane 3 from block 4 (type 0) to block 6 (type 
 DEBUG: Removed lane 3 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 3 to block 6
 DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 6
 DEBUG: assignLaneToBlock - moving lane 3 from block 6 (type 6) to block 6 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 3 to block 6
 DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
 DEBUG: ForStmt - Lane 3 natural flow from block 4 to block 6 during statement 1 (likely merge block)
 DEBUG: ForStmt - Lane 3 body completed in block 6, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 3 from block 6 (type 6) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 3 to block 2
@@ -1376,7 +1312,6 @@ DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 9
 DEBUG: addUnknownLane - adding lane 3 to new block 9
 DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 9
 DEBUG: ForStmt - Lane 0 created iteration starting block 9 for iteration 1
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 0 to block 9
@@ -1396,7 +1331,6 @@ DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=1, our index=0, this
 DEBUG: ForStmt - Lane 1 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 1 found existing iteration starting block 9 for iteration 1
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 1 to block 9
@@ -1416,7 +1350,6 @@ DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=1, our index=0, this
 DEBUG: ForStmt - Lane 2 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 2 found existing iteration starting block 9 for iteration 1
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 9
@@ -1436,7 +1369,6 @@ DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=1, our index=0, this
 DEBUG: ForStmt - Lane 3 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 3 found existing iteration starting block 9 for iteration 1
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 3 to block 9
@@ -1491,7 +1423,6 @@ DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 0) to block 10 (type
 DEBUG: Removed lane 0 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 0 to block 10
 DEBUG: assignLaneToBlock - block 10 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 10
 DEBUG: assignLaneToBlock - moving lane 0 from block 10 (type 4) to block 10 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 0 to block 10
@@ -1520,7 +1451,6 @@ DEBUG: assignLaneToBlock - moving lane 1 from block 9 (type 0) to block 10 (type
 DEBUG: Removed lane 1 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 1 to block 10
 DEBUG: assignLaneToBlock - block 10 now has 2 participating lanes
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 10
 DEBUG: assignLaneToBlock - moving lane 1 from block 10 (type 4) to block 10 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 1 to block 10
@@ -1549,7 +1479,6 @@ DEBUG: assignLaneToBlock - moving lane 2 from block 9 (type 0) to block 10 (type
 DEBUG: Removed lane 2 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 2 to block 10
 DEBUG: assignLaneToBlock - block 10 now has 3 participating lanes
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 10
 DEBUG: assignLaneToBlock - moving lane 2 from block 10 (type 4) to block 10 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 2 to block 10
@@ -1578,7 +1507,6 @@ DEBUG: assignLaneToBlock - moving lane 3 from block 9 (type 0) to block 10 (type
 DEBUG: Removed lane 3 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 3 to block 10
 DEBUG: assignLaneToBlock - block 10 now has 4 participating lanes
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 10
 DEBUG: assignLaneToBlock - moving lane 3 from block 10 (type 4) to block 10 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 3 to block 10
@@ -1589,7 +1517,6 @@ DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 0 from block 10 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 0 to block 9
@@ -1605,7 +1532,6 @@ DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 1 from block 10 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 1 to block 9
@@ -1621,7 +1547,6 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 2 from block 10 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 2 to block 9
@@ -1637,7 +1562,6 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 3 from block 10 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 3 to block 9
@@ -1669,7 +1593,6 @@ DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 12
 DEBUG: addUnknownLane - adding lane 3 to new block 12
 DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 12
 DEBUG: ForStmt - Lane 0 created iteration starting block 12 for iteration 0
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 12
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 0) to block 12 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 0 to block 12
@@ -1695,7 +1618,6 @@ DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=1, this
 DEBUG: ForStmt - Lane 1 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 1 found existing iteration starting block 12 for iteration 0
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 12
 DEBUG: assignLaneToBlock - moving lane 1 from block 9 (type 0) to block 12 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 1 to block 12
@@ -1721,7 +1643,6 @@ DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=1, this
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 2 found existing iteration starting block 12 for iteration 0
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 12
 DEBUG: assignLaneToBlock - moving lane 2 from block 9 (type 0) to block 12 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 2 to block 12
@@ -1747,7 +1668,6 @@ DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=1, this
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 3 found existing iteration starting block 12 for iteration 0
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 12
 DEBUG: assignLaneToBlock - moving lane 3 from block 9 (type 0) to block 12 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 3 to block 12
@@ -1771,7 +1691,6 @@ DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 0 from block 12 (type 0) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 0 to block 9
@@ -1782,7 +1701,6 @@ DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 12
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 0) to block 12 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 0 to block 12
@@ -1793,7 +1711,6 @@ DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 12, instruction key=(0x5
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 4 (phase: 2)
 DEBUG: ForStmt - Lane 0 body completed in block 12, moving to header block 10 for increment
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 10
 DEBUG: assignLaneToBlock - moving lane 0 from block 12 (type 0) to block 10 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 0 to block 10
@@ -1804,7 +1721,6 @@ DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 1 from block 12 (type 0) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 1 to block 9
@@ -1815,7 +1731,6 @@ DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 1 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 12
 DEBUG: assignLaneToBlock - moving lane 1 from block 9 (type 0) to block 12 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 1 to block 12
@@ -1826,7 +1741,6 @@ DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 12, instruction key=(0x5
 DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 4 (phase: 2)
 DEBUG: ForStmt - Lane 1 body completed in block 12, moving to header block 10 for increment
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 10
 DEBUG: assignLaneToBlock - moving lane 1 from block 12 (type 0) to block 10 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 1 to block 10
@@ -1837,7 +1751,6 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 2 from block 12 (type 0) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 2 to block 9
@@ -1848,7 +1761,6 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 12
 DEBUG: assignLaneToBlock - moving lane 2 from block 9 (type 0) to block 12 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 2 to block 12
@@ -1859,7 +1771,6 @@ DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 12, instruction key=(0x5
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 4 (phase: 2)
 DEBUG: ForStmt - Lane 2 body completed in block 12, moving to header block 10 for increment
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 10
 DEBUG: assignLaneToBlock - moving lane 2 from block 12 (type 0) to block 10 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 2 to block 10
@@ -1870,7 +1781,6 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 3 from block 12 (type 0) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 3 to block 9
@@ -1881,7 +1791,6 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 12
 DEBUG: assignLaneToBlock - moving lane 3 from block 9 (type 0) to block 12 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 3 to block 12
@@ -1892,7 +1801,6 @@ DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 12, instruction key=(0x5
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 4 (phase: 3)
 DEBUG: ForStmt - Lane 3 body completed in block 12, moving to header block 10 for increment
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 10
 DEBUG: assignLaneToBlock - moving lane 3 from block 12 (type 0) to block 10 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 3 to block 10
@@ -1903,7 +1811,6 @@ DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 0 from block 10 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 0 to block 9
@@ -1919,7 +1826,6 @@ DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 1 from block 10 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 1 to block 9
@@ -1935,7 +1841,6 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 2 from block 10 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 2 to block 9
@@ -1951,7 +1856,6 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 3 from block 10 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 3 to block 9
@@ -2023,7 +1927,6 @@ DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 13
 DEBUG: addUnknownLane - adding lane 3 to new block 13
 DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 13
 DEBUG: ForStmt - Lane 0 created iteration starting block 13 for iteration 1
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 13
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 0) to block 13 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 0 to block 13
@@ -2049,7 +1952,6 @@ DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=1, this
 DEBUG: ForStmt - Lane 1 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 1 found existing iteration starting block 13 for iteration 1
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 13
 DEBUG: assignLaneToBlock - moving lane 1 from block 9 (type 0) to block 13 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 1 to block 13
@@ -2075,7 +1977,6 @@ DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=1, this
 DEBUG: ForStmt - Lane 2 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 2 found existing iteration starting block 13 for iteration 1
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 13
 DEBUG: assignLaneToBlock - moving lane 2 from block 9 (type 0) to block 13 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 2 to block 13
@@ -2101,7 +2002,6 @@ DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=1, this
 DEBUG: ForStmt - Lane 3 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 3 found existing iteration starting block 13 for iteration 1
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 13
 DEBUG: assignLaneToBlock - moving lane 3 from block 9 (type 0) to block 13 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 3 to block 13
@@ -2125,7 +2025,6 @@ DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 0 from block 13 (type 0) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 13
 DEBUG: assignLaneToBlock - adding lane 0 to block 9
@@ -2136,7 +2035,6 @@ DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 13
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 0) to block 13 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 0 to block 13
@@ -2147,7 +2045,6 @@ DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 13, instruction key=(0x5
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 4 (phase: 2)
 DEBUG: ForStmt - Lane 0 body completed in block 13, moving to header block 10 for increment
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 10
 DEBUG: assignLaneToBlock - moving lane 0 from block 13 (type 0) to block 10 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 13
 DEBUG: assignLaneToBlock - adding lane 0 to block 10
@@ -2158,7 +2055,6 @@ DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 1 from block 13 (type 0) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 13
 DEBUG: assignLaneToBlock - adding lane 1 to block 9
@@ -2169,7 +2065,6 @@ DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 1 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 13
 DEBUG: assignLaneToBlock - moving lane 1 from block 9 (type 0) to block 13 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 1 to block 13
@@ -2180,7 +2075,6 @@ DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 13, instruction key=(0x5
 DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 4 (phase: 2)
 DEBUG: ForStmt - Lane 1 body completed in block 13, moving to header block 10 for increment
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 10
 DEBUG: assignLaneToBlock - moving lane 1 from block 13 (type 0) to block 10 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 13
 DEBUG: assignLaneToBlock - adding lane 1 to block 10
@@ -2191,7 +2085,6 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 2 from block 13 (type 0) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 13
 DEBUG: assignLaneToBlock - adding lane 2 to block 9
@@ -2202,7 +2095,6 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 2 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 13
 DEBUG: assignLaneToBlock - moving lane 2 from block 9 (type 0) to block 13 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 2 to block 13
@@ -2213,7 +2105,6 @@ DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 13, instruction key=(0x5
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 4 (phase: 2)
 DEBUG: ForStmt - Lane 2 body completed in block 13, moving to header block 10 for increment
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 10
 DEBUG: assignLaneToBlock - moving lane 2 from block 13 (type 0) to block 10 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 13
 DEBUG: assignLaneToBlock - adding lane 2 to block 10
@@ -2224,7 +2115,6 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 3 from block 13 (type 0) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 13
 DEBUG: assignLaneToBlock - adding lane 3 to block 9
@@ -2235,7 +2125,6 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 13
 DEBUG: assignLaneToBlock - moving lane 3 from block 9 (type 0) to block 13 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 3 to block 13
@@ -2246,7 +2135,6 @@ DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 13, instruction key=(0x5
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 4 (phase: 3)
 DEBUG: ForStmt - Lane 3 body completed in block 13, moving to header block 10 for increment
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 10
 DEBUG: assignLaneToBlock - moving lane 3 from block 13 (type 0) to block 10 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 13
 DEBUG: assignLaneToBlock - adding lane 3 to block 10
@@ -2257,7 +2145,6 @@ DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 0 from block 10 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 0 to block 9
@@ -2273,7 +2160,6 @@ DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 1 from block 10 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 1 to block 9
@@ -2289,7 +2175,6 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 2 from block 10 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 2 to block 9
@@ -2305,7 +2190,6 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 3 from block 10 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 3 to block 9
@@ -2441,14 +2325,12 @@ DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 0) to block 11 (type
 DEBUG: Removed lane 0 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 0 to block 11
 DEBUG: assignLaneToBlock - block 11 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 11
 DEBUG: assignLaneToBlock - moving lane 0 from block 11 (type 6) to block 11 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 11
 DEBUG: assignLaneToBlock - adding lane 0 to block 11
 DEBUG: assignLaneToBlock - block 11 now has 1 participating lanes
 DEBUG: ForStmt - Lane 0 natural flow from block 9 to block 11 during statement 1 (likely merge block)
 DEBUG: ForStmt - Lane 0 body completed in block 11, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 0 from block 11 (type 6) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 11
 DEBUG: assignLaneToBlock - adding lane 0 to block 2
@@ -2465,14 +2347,12 @@ DEBUG: assignLaneToBlock - moving lane 1 from block 9 (type 0) to block 11 (type
 DEBUG: Removed lane 1 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 1 to block 11
 DEBUG: assignLaneToBlock - block 11 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 11
 DEBUG: assignLaneToBlock - moving lane 1 from block 11 (type 6) to block 11 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 11
 DEBUG: assignLaneToBlock - adding lane 1 to block 11
 DEBUG: assignLaneToBlock - block 11 now has 1 participating lanes
 DEBUG: ForStmt - Lane 1 natural flow from block 9 to block 11 during statement 1 (likely merge block)
 DEBUG: ForStmt - Lane 1 body completed in block 11, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 1 from block 11 (type 6) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 11
 DEBUG: assignLaneToBlock - adding lane 1 to block 2
@@ -2489,14 +2369,12 @@ DEBUG: assignLaneToBlock - moving lane 2 from block 9 (type 0) to block 11 (type
 DEBUG: Removed lane 2 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 2 to block 11
 DEBUG: assignLaneToBlock - block 11 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 11
 DEBUG: assignLaneToBlock - moving lane 2 from block 11 (type 6) to block 11 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 11
 DEBUG: assignLaneToBlock - adding lane 2 to block 11
 DEBUG: assignLaneToBlock - block 11 now has 1 participating lanes
 DEBUG: ForStmt - Lane 2 natural flow from block 9 to block 11 during statement 1 (likely merge block)
 DEBUG: ForStmt - Lane 2 body completed in block 11, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 2 from block 11 (type 6) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 11
 DEBUG: assignLaneToBlock - adding lane 2 to block 2
@@ -2513,14 +2391,12 @@ DEBUG: assignLaneToBlock - moving lane 3 from block 9 (type 0) to block 11 (type
 DEBUG: Removed lane 3 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 3 to block 11
 DEBUG: assignLaneToBlock - block 11 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 11
 DEBUG: assignLaneToBlock - moving lane 3 from block 11 (type 6) to block 11 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 11
 DEBUG: assignLaneToBlock - adding lane 3 to block 11
 DEBUG: assignLaneToBlock - block 11 now has 1 participating lanes
 DEBUG: ForStmt - Lane 3 natural flow from block 9 to block 11 during statement 1 (likely merge block)
 DEBUG: ForStmt - Lane 3 body completed in block 11, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 3 from block 11 (type 6) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 11
 DEBUG: assignLaneToBlock - adding lane 3 to block 2
@@ -2780,7 +2656,6 @@ DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 3 (type 
 DEBUG: Removed lane 0 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 0 to block 3
 DEBUG: assignLaneToBlock - block 3 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 3
 DEBUG: assignLaneToBlock - moving lane 0 from block 3 (type 6) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 0 to block 3
@@ -2792,7 +2667,6 @@ DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 4) to block 3 (type 
 DEBUG: Removed lane 1 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 1 to block 3
 DEBUG: assignLaneToBlock - block 3 now has 2 participating lanes
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 3
 DEBUG: assignLaneToBlock - moving lane 1 from block 3 (type 6) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 1 to block 3
@@ -2804,7 +2678,6 @@ DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 3 (type 
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 3
 DEBUG: assignLaneToBlock - block 3 now has 3 participating lanes
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 3
 DEBUG: assignLaneToBlock - moving lane 2 from block 3 (type 6) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 2 to block 3
@@ -2816,7 +2689,6 @@ DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 3 (type 
 DEBUG: Removed lane 3 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 3 to block 3
 DEBUG: assignLaneToBlock - block 3 now has 4 participating lanes
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 3
 DEBUG: assignLaneToBlock - moving lane 3 from block 3 (type 6) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 3 to block 3
@@ -2912,7 +2784,6 @@ DEBUG: assignLaneToBlock - moving lane 0 from block 1 (type 0) to block 2 (type 
 DEBUG: Removed lane 0 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 0 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 0 to block 2
@@ -2930,7 +2801,6 @@ DEBUG: assignLaneToBlock - moving lane 1 from block 1 (type 0) to block 2 (type 
 DEBUG: Removed lane 1 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 1 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 2 participating lanes
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 4) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 1 to block 2
@@ -2948,7 +2818,6 @@ DEBUG: assignLaneToBlock - moving lane 2 from block 1 (type 0) to block 2 (type 
 DEBUG: Removed lane 2 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 2 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 3 participating lanes
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 2
@@ -2966,7 +2835,6 @@ DEBUG: assignLaneToBlock - moving lane 3 from block 1 (type 0) to block 2 (type 
 DEBUG: Removed lane 3 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 3 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 4 participating lanes
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 3 to block 2
@@ -2998,7 +2866,6 @@ DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 4
 DEBUG: addUnknownLane - adding lane 3 to new block 4
 DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 4
 DEBUG: ForStmt - Lane 0 created iteration starting block 4 for iteration 0
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 0 to block 4
@@ -3018,7 +2885,6 @@ DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=1, our index=0, this
 DEBUG: ForStmt - Lane 1 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 1 found existing iteration starting block 4 for iteration 0
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 1 to block 4
@@ -3038,7 +2904,6 @@ DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=1, our index=0, this
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 2 found existing iteration starting block 4 for iteration 0
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 4
@@ -3058,7 +2923,6 @@ DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=1, our index=0, this
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 3 found existing iteration starting block 4 for iteration 0
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 3 to block 4
@@ -3113,7 +2977,6 @@ DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 0) to block 5 (type 
 DEBUG: Removed lane 0 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 0 to block 5
 DEBUG: assignLaneToBlock - block 5 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 5
 DEBUG: assignLaneToBlock - moving lane 0 from block 5 (type 4) to block 5 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 0 to block 5
@@ -3142,7 +3005,6 @@ DEBUG: assignLaneToBlock - moving lane 1 from block 4 (type 0) to block 5 (type 
 DEBUG: Removed lane 1 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 1 to block 5
 DEBUG: assignLaneToBlock - block 5 now has 2 participating lanes
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 5
 DEBUG: assignLaneToBlock - moving lane 1 from block 5 (type 4) to block 5 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 1 to block 5
@@ -3171,7 +3033,6 @@ DEBUG: assignLaneToBlock - moving lane 2 from block 4 (type 0) to block 5 (type 
 DEBUG: Removed lane 2 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 2 to block 5
 DEBUG: assignLaneToBlock - block 5 now has 3 participating lanes
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 5
 DEBUG: assignLaneToBlock - moving lane 2 from block 5 (type 4) to block 5 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 2 to block 5
@@ -3200,7 +3061,6 @@ DEBUG: assignLaneToBlock - moving lane 3 from block 4 (type 0) to block 5 (type 
 DEBUG: Removed lane 3 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 3 to block 5
 DEBUG: assignLaneToBlock - block 5 now has 4 participating lanes
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 5
 DEBUG: assignLaneToBlock - moving lane 3 from block 5 (type 4) to block 5 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 3 to block 5
@@ -3211,7 +3071,6 @@ DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 0 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 0 to block 4
@@ -3227,7 +3086,6 @@ DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 1 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 1 to block 4
@@ -3243,7 +3101,6 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 2 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 2 to block 4
@@ -3259,7 +3116,6 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 3 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 3 to block 4
@@ -3291,7 +3147,6 @@ DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 7
 DEBUG: addUnknownLane - adding lane 3 to new block 7
 DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 7
 DEBUG: ForStmt - Lane 0 created iteration starting block 7 for iteration 0
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 7
 DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 0 to block 7
@@ -3317,7 +3172,6 @@ DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=1, this
 DEBUG: ForStmt - Lane 1 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 1 found existing iteration starting block 7 for iteration 0
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 7
 DEBUG: assignLaneToBlock - moving lane 1 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 1 to block 7
@@ -3343,7 +3197,6 @@ DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=1, this
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 2 found existing iteration starting block 7 for iteration 0
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 7
 DEBUG: assignLaneToBlock - moving lane 2 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 2 to block 7
@@ -3369,7 +3222,6 @@ DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=1, this
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 3 found existing iteration starting block 7 for iteration 0
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 7
 DEBUG: assignLaneToBlock - moving lane 3 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 3 to block 7
@@ -3393,7 +3245,6 @@ DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 0 from block 7 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 0 to block 4
@@ -3404,7 +3255,6 @@ DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 7
 DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 0 to block 7
@@ -3415,7 +3265,6 @@ DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 7, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 4 (phase: 2)
 DEBUG: ForStmt - Lane 0 body completed in block 7, moving to header block 5 for increment
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 5
 DEBUG: assignLaneToBlock - moving lane 0 from block 7 (type 0) to block 5 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 0 to block 5
@@ -3426,7 +3275,6 @@ DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 1 from block 7 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 1 to block 4
@@ -3437,7 +3285,6 @@ DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 1 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 7
 DEBUG: assignLaneToBlock - moving lane 1 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 1 to block 7
@@ -3448,7 +3295,6 @@ DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 7, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 4 (phase: 2)
 DEBUG: ForStmt - Lane 1 body completed in block 7, moving to header block 5 for increment
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 5
 DEBUG: assignLaneToBlock - moving lane 1 from block 7 (type 0) to block 5 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 1 to block 5
@@ -3459,7 +3305,6 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 2 from block 7 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 2 to block 4
@@ -3470,7 +3315,6 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 7
 DEBUG: assignLaneToBlock - moving lane 2 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 2 to block 7
@@ -3481,7 +3325,6 @@ DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 7, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 4 (phase: 2)
 DEBUG: ForStmt - Lane 2 body completed in block 7, moving to header block 5 for increment
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 5
 DEBUG: assignLaneToBlock - moving lane 2 from block 7 (type 0) to block 5 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 2 to block 5
@@ -3492,7 +3335,6 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 3 from block 7 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 3 to block 4
@@ -3503,7 +3345,6 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 7
 DEBUG: assignLaneToBlock - moving lane 3 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 3 to block 7
@@ -3514,7 +3355,6 @@ DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 7, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 4 (phase: 3)
 DEBUG: ForStmt - Lane 3 body completed in block 7, moving to header block 5 for increment
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 5
 DEBUG: assignLaneToBlock - moving lane 3 from block 7 (type 0) to block 5 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 3 to block 5
@@ -3525,7 +3365,6 @@ DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 0 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 0 to block 4
@@ -3541,7 +3380,6 @@ DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 1 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 1 to block 4
@@ -3557,7 +3395,6 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 2 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 2 to block 4
@@ -3573,7 +3410,6 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 3 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 3 to block 4
@@ -3645,7 +3481,6 @@ DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 8
 DEBUG: addUnknownLane - adding lane 3 to new block 8
 DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 8
 DEBUG: ForStmt - Lane 0 created iteration starting block 8 for iteration 1
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 8
 DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 0) to block 8 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 0 to block 8
@@ -3671,7 +3506,6 @@ DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=1, this
 DEBUG: ForStmt - Lane 1 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 1 found existing iteration starting block 8 for iteration 1
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 8
 DEBUG: assignLaneToBlock - moving lane 1 from block 4 (type 0) to block 8 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 1 to block 8
@@ -3697,7 +3531,6 @@ DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=1, this
 DEBUG: ForStmt - Lane 2 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 2 found existing iteration starting block 8 for iteration 1
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 8
 DEBUG: assignLaneToBlock - moving lane 2 from block 4 (type 0) to block 8 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 2 to block 8
@@ -3723,7 +3556,6 @@ DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=1, this
 DEBUG: ForStmt - Lane 3 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 3 found existing iteration starting block 8 for iteration 1
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 8
 DEBUG: assignLaneToBlock - moving lane 3 from block 4 (type 0) to block 8 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 3 to block 8
@@ -3747,7 +3579,6 @@ DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 0 from block 8 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 8
 DEBUG: assignLaneToBlock - adding lane 0 to block 4
@@ -3758,7 +3589,6 @@ DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 8
 DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 0) to block 8 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 0 to block 8
@@ -3769,7 +3599,6 @@ DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 8, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 4 (phase: 2)
 DEBUG: ForStmt - Lane 0 body completed in block 8, moving to header block 5 for increment
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 5
 DEBUG: assignLaneToBlock - moving lane 0 from block 8 (type 0) to block 5 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 8
 DEBUG: assignLaneToBlock - adding lane 0 to block 5
@@ -3780,7 +3609,6 @@ DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 1 from block 8 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 8
 DEBUG: assignLaneToBlock - adding lane 1 to block 4
@@ -3791,7 +3619,6 @@ DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 1 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 8
 DEBUG: assignLaneToBlock - moving lane 1 from block 4 (type 0) to block 8 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 1 to block 8
@@ -3802,7 +3629,6 @@ DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 8, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 4 (phase: 2)
 DEBUG: ForStmt - Lane 1 body completed in block 8, moving to header block 5 for increment
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 5
 DEBUG: assignLaneToBlock - moving lane 1 from block 8 (type 0) to block 5 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 8
 DEBUG: assignLaneToBlock - adding lane 1 to block 5
@@ -3813,7 +3639,6 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 2 from block 8 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 8
 DEBUG: assignLaneToBlock - adding lane 2 to block 4
@@ -3824,7 +3649,6 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 2 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 8
 DEBUG: assignLaneToBlock - moving lane 2 from block 4 (type 0) to block 8 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 2 to block 8
@@ -3835,7 +3659,6 @@ DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 8, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 4 (phase: 2)
 DEBUG: ForStmt - Lane 2 body completed in block 8, moving to header block 5 for increment
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 5
 DEBUG: assignLaneToBlock - moving lane 2 from block 8 (type 0) to block 5 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 8
 DEBUG: assignLaneToBlock - adding lane 2 to block 5
@@ -3846,7 +3669,6 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 3 from block 8 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 8
 DEBUG: assignLaneToBlock - adding lane 3 to block 4
@@ -3857,7 +3679,6 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 8
 DEBUG: assignLaneToBlock - moving lane 3 from block 4 (type 0) to block 8 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 3 to block 8
@@ -3868,7 +3689,6 @@ DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 8, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 4 (phase: 3)
 DEBUG: ForStmt - Lane 3 body completed in block 8, moving to header block 5 for increment
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 5
 DEBUG: assignLaneToBlock - moving lane 3 from block 8 (type 0) to block 5 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 8
 DEBUG: assignLaneToBlock - adding lane 3 to block 5
@@ -3879,7 +3699,6 @@ DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 0 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 0 to block 4
@@ -3895,7 +3714,6 @@ DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 1 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 1 to block 4
@@ -3911,7 +3729,6 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 2 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 2 to block 4
@@ -3927,7 +3744,6 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 3 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 3 to block 4
@@ -4063,14 +3879,12 @@ DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 0) to block 6 (type 
 DEBUG: Removed lane 0 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 0 to block 6
 DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 6
 DEBUG: assignLaneToBlock - moving lane 0 from block 6 (type 6) to block 6 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 0 to block 6
 DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
 DEBUG: ForStmt - Lane 0 natural flow from block 4 to block 6 during statement 1 (likely merge block)
 DEBUG: ForStmt - Lane 0 body completed in block 6, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 0 from block 6 (type 6) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 0 to block 2
@@ -4087,14 +3901,12 @@ DEBUG: assignLaneToBlock - moving lane 1 from block 4 (type 0) to block 6 (type 
 DEBUG: Removed lane 1 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 1 to block 6
 DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 6
 DEBUG: assignLaneToBlock - moving lane 1 from block 6 (type 6) to block 6 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 1 to block 6
 DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
 DEBUG: ForStmt - Lane 1 natural flow from block 4 to block 6 during statement 1 (likely merge block)
 DEBUG: ForStmt - Lane 1 body completed in block 6, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 1 from block 6 (type 6) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 1 to block 2
@@ -4111,14 +3923,12 @@ DEBUG: assignLaneToBlock - moving lane 2 from block 4 (type 0) to block 6 (type 
 DEBUG: Removed lane 2 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 2 to block 6
 DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 6
 DEBUG: assignLaneToBlock - moving lane 2 from block 6 (type 6) to block 6 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 2 to block 6
 DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
 DEBUG: ForStmt - Lane 2 natural flow from block 4 to block 6 during statement 1 (likely merge block)
 DEBUG: ForStmt - Lane 2 body completed in block 6, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 2 from block 6 (type 6) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 2 to block 2
@@ -4135,14 +3945,12 @@ DEBUG: assignLaneToBlock - moving lane 3 from block 4 (type 0) to block 6 (type 
 DEBUG: Removed lane 3 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 3 to block 6
 DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 6
 DEBUG: assignLaneToBlock - moving lane 3 from block 6 (type 6) to block 6 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 3 to block 6
 DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
 DEBUG: ForStmt - Lane 3 natural flow from block 4 to block 6 during statement 1 (likely merge block)
 DEBUG: ForStmt - Lane 3 body completed in block 6, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 3 from block 6 (type 6) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 3 to block 2
@@ -4186,7 +3994,6 @@ DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 9
 DEBUG: addUnknownLane - adding lane 3 to new block 9
 DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 9
 DEBUG: ForStmt - Lane 0 created iteration starting block 9 for iteration 1
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 0 to block 9
@@ -4206,7 +4013,6 @@ DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=1, our index=0, this
 DEBUG: ForStmt - Lane 1 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 1 found existing iteration starting block 9 for iteration 1
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 1 to block 9
@@ -4226,7 +4032,6 @@ DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=1, our index=0, this
 DEBUG: ForStmt - Lane 2 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 2 found existing iteration starting block 9 for iteration 1
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 9
@@ -4246,7 +4051,6 @@ DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=1, our index=0, this
 DEBUG: ForStmt - Lane 3 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 3 found existing iteration starting block 9 for iteration 1
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 3 to block 9
@@ -4301,7 +4105,6 @@ DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 0) to block 10 (type
 DEBUG: Removed lane 0 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 0 to block 10
 DEBUG: assignLaneToBlock - block 10 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 10
 DEBUG: assignLaneToBlock - moving lane 0 from block 10 (type 4) to block 10 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 0 to block 10
@@ -4330,7 +4133,6 @@ DEBUG: assignLaneToBlock - moving lane 1 from block 9 (type 0) to block 10 (type
 DEBUG: Removed lane 1 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 1 to block 10
 DEBUG: assignLaneToBlock - block 10 now has 2 participating lanes
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 10
 DEBUG: assignLaneToBlock - moving lane 1 from block 10 (type 4) to block 10 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 1 to block 10
@@ -4359,7 +4161,6 @@ DEBUG: assignLaneToBlock - moving lane 2 from block 9 (type 0) to block 10 (type
 DEBUG: Removed lane 2 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 2 to block 10
 DEBUG: assignLaneToBlock - block 10 now has 3 participating lanes
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 10
 DEBUG: assignLaneToBlock - moving lane 2 from block 10 (type 4) to block 10 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 2 to block 10
@@ -4388,7 +4189,6 @@ DEBUG: assignLaneToBlock - moving lane 3 from block 9 (type 0) to block 10 (type
 DEBUG: Removed lane 3 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 3 to block 10
 DEBUG: assignLaneToBlock - block 10 now has 4 participating lanes
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 10
 DEBUG: assignLaneToBlock - moving lane 3 from block 10 (type 4) to block 10 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 3 to block 10
@@ -4399,7 +4199,6 @@ DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 0 from block 10 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 0 to block 9
@@ -4415,7 +4214,6 @@ DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 1 from block 10 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 1 to block 9
@@ -4431,7 +4229,6 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 2 from block 10 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 2 to block 9
@@ -4447,7 +4244,6 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 3 from block 10 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 3 to block 9
@@ -4479,7 +4275,6 @@ DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 12
 DEBUG: addUnknownLane - adding lane 3 to new block 12
 DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 12
 DEBUG: ForStmt - Lane 0 created iteration starting block 12 for iteration 0
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 12
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 0) to block 12 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 0 to block 12
@@ -4505,7 +4300,6 @@ DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=1, this
 DEBUG: ForStmt - Lane 1 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 1 found existing iteration starting block 12 for iteration 0
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 12
 DEBUG: assignLaneToBlock - moving lane 1 from block 9 (type 0) to block 12 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 1 to block 12
@@ -4531,7 +4325,6 @@ DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=1, this
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 2 found existing iteration starting block 12 for iteration 0
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 12
 DEBUG: assignLaneToBlock - moving lane 2 from block 9 (type 0) to block 12 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 2 to block 12
@@ -4557,7 +4350,6 @@ DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=1, this
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 3 found existing iteration starting block 12 for iteration 0
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 12
 DEBUG: assignLaneToBlock - moving lane 3 from block 9 (type 0) to block 12 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 3 to block 12
@@ -4581,7 +4373,6 @@ DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 0 from block 12 (type 0) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 0 to block 9
@@ -4592,7 +4383,6 @@ DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 12
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 0) to block 12 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 0 to block 12
@@ -4603,7 +4393,6 @@ DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 12, instruction key=(0x5
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 4 (phase: 2)
 DEBUG: ForStmt - Lane 0 body completed in block 12, moving to header block 10 for increment
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 10
 DEBUG: assignLaneToBlock - moving lane 0 from block 12 (type 0) to block 10 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 0 to block 10
@@ -4614,7 +4403,6 @@ DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 1 from block 12 (type 0) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 1 to block 9
@@ -4625,7 +4413,6 @@ DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 1 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 12
 DEBUG: assignLaneToBlock - moving lane 1 from block 9 (type 0) to block 12 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 1 to block 12
@@ -4636,7 +4423,6 @@ DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 12, instruction key=(0x5
 DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 4 (phase: 2)
 DEBUG: ForStmt - Lane 1 body completed in block 12, moving to header block 10 for increment
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 10
 DEBUG: assignLaneToBlock - moving lane 1 from block 12 (type 0) to block 10 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 1 to block 10
@@ -4647,7 +4433,6 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 2 from block 12 (type 0) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 2 to block 9
@@ -4658,7 +4443,6 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 12
 DEBUG: assignLaneToBlock - moving lane 2 from block 9 (type 0) to block 12 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 2 to block 12
@@ -4669,7 +4453,6 @@ DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 12, instruction key=(0x5
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 4 (phase: 2)
 DEBUG: ForStmt - Lane 2 body completed in block 12, moving to header block 10 for increment
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 10
 DEBUG: assignLaneToBlock - moving lane 2 from block 12 (type 0) to block 10 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 2 to block 10
@@ -4680,7 +4463,6 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 3 from block 12 (type 0) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 3 to block 9
@@ -4691,7 +4473,6 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 12
 DEBUG: assignLaneToBlock - moving lane 3 from block 9 (type 0) to block 12 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 3 to block 12
@@ -4702,7 +4483,6 @@ DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 12, instruction key=(0x5
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 4 (phase: 3)
 DEBUG: ForStmt - Lane 3 body completed in block 12, moving to header block 10 for increment
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 10
 DEBUG: assignLaneToBlock - moving lane 3 from block 12 (type 0) to block 10 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 3 to block 10
@@ -4713,7 +4493,6 @@ DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 0 from block 10 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 0 to block 9
@@ -4729,7 +4508,6 @@ DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 1 from block 10 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 1 to block 9
@@ -4745,7 +4523,6 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 2 from block 10 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 2 to block 9
@@ -4761,7 +4538,6 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 3 from block 10 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 3 to block 9
@@ -4833,7 +4609,6 @@ DEBUG: addUnknownLane - added lane 2 to unknown lanes of block 13
 DEBUG: addUnknownLane - adding lane 3 to new block 13
 DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 13
 DEBUG: ForStmt - Lane 0 created iteration starting block 13 for iteration 1
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 13
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 0) to block 13 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 0 to block 13
@@ -4859,7 +4634,6 @@ DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=1, this
 DEBUG: ForStmt - Lane 1 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 1 found existing iteration starting block 13 for iteration 1
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 13
 DEBUG: assignLaneToBlock - moving lane 1 from block 9 (type 0) to block 13 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 1 to block 13
@@ -4885,7 +4659,6 @@ DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=1, this
 DEBUG: ForStmt - Lane 2 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 2 found existing iteration starting block 13 for iteration 1
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 13
 DEBUG: assignLaneToBlock - moving lane 2 from block 9 (type 0) to block 13 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 2 to block 13
@@ -4911,7 +4684,6 @@ DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=1, this
 DEBUG: ForStmt - Lane 3 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 3 found existing iteration starting block 13 for iteration 1
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 13
 DEBUG: assignLaneToBlock - moving lane 3 from block 9 (type 0) to block 13 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 3 to block 13
@@ -4935,7 +4707,6 @@ DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 0 from block 13 (type 0) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 13
 DEBUG: assignLaneToBlock - adding lane 0 to block 9
@@ -4946,7 +4717,6 @@ DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 13
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 0) to block 13 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 0 to block 13
@@ -4957,7 +4727,6 @@ DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 13, instruction key=(0x5
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 4 (phase: 2)
 DEBUG: ForStmt - Lane 0 body completed in block 13, moving to header block 10 for increment
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 10
 DEBUG: assignLaneToBlock - moving lane 0 from block 13 (type 0) to block 10 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 13
 DEBUG: assignLaneToBlock - adding lane 0 to block 10
@@ -4968,7 +4737,6 @@ DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 1 from block 13 (type 0) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 13
 DEBUG: assignLaneToBlock - adding lane 1 to block 9
@@ -4979,7 +4747,6 @@ DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 1 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 13
 DEBUG: assignLaneToBlock - moving lane 1 from block 9 (type 0) to block 13 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 1 to block 13
@@ -4990,7 +4757,6 @@ DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 13, instruction key=(0x5
 DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 4 (phase: 2)
 DEBUG: ForStmt - Lane 1 body completed in block 13, moving to header block 10 for increment
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 10
 DEBUG: assignLaneToBlock - moving lane 1 from block 13 (type 0) to block 10 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 13
 DEBUG: assignLaneToBlock - adding lane 1 to block 10
@@ -5001,7 +4767,6 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 2 from block 13 (type 0) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 13
 DEBUG: assignLaneToBlock - adding lane 2 to block 9
@@ -5012,7 +4777,6 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 2 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 13
 DEBUG: assignLaneToBlock - moving lane 2 from block 9 (type 0) to block 13 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 2 to block 13
@@ -5023,7 +4787,6 @@ DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 13, instruction key=(0x5
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 4 (phase: 2)
 DEBUG: ForStmt - Lane 2 body completed in block 13, moving to header block 10 for increment
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 10
 DEBUG: assignLaneToBlock - moving lane 2 from block 13 (type 0) to block 10 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 13
 DEBUG: assignLaneToBlock - adding lane 2 to block 10
@@ -5034,7 +4797,6 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 3 from block 13 (type 0) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 13
 DEBUG: assignLaneToBlock - adding lane 3 to block 9
@@ -5045,7 +4807,6 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=1, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 13
 DEBUG: assignLaneToBlock - moving lane 3 from block 9 (type 0) to block 13 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 3 to block 13
@@ -5056,7 +4817,6 @@ DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 13, instruction key=(0x5
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 4 (phase: 3)
 DEBUG: ForStmt - Lane 3 body completed in block 13, moving to header block 10 for increment
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 10
 DEBUG: assignLaneToBlock - moving lane 3 from block 13 (type 0) to block 10 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 13
 DEBUG: assignLaneToBlock - adding lane 3 to block 10
@@ -5067,7 +4827,6 @@ DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 0 from block 10 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 0 to block 9
@@ -5083,7 +4842,6 @@ DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 1 from block 10 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 1 to block 9
@@ -5099,7 +4857,6 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 2 from block 10 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 2 to block 9
@@ -5115,7 +4872,6 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 3 from block 10 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 3 to block 9
@@ -5251,14 +5007,12 @@ DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 0) to block 11 (type
 DEBUG: Removed lane 0 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 0 to block 11
 DEBUG: assignLaneToBlock - block 11 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 11
 DEBUG: assignLaneToBlock - moving lane 0 from block 11 (type 6) to block 11 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 11
 DEBUG: assignLaneToBlock - adding lane 0 to block 11
 DEBUG: assignLaneToBlock - block 11 now has 1 participating lanes
 DEBUG: ForStmt - Lane 0 natural flow from block 9 to block 11 during statement 1 (likely merge block)
 DEBUG: ForStmt - Lane 0 body completed in block 11, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 0 from block 11 (type 6) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 11
 DEBUG: assignLaneToBlock - adding lane 0 to block 2
@@ -5275,14 +5029,12 @@ DEBUG: assignLaneToBlock - moving lane 1 from block 9 (type 0) to block 11 (type
 DEBUG: Removed lane 1 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 1 to block 11
 DEBUG: assignLaneToBlock - block 11 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 11
 DEBUG: assignLaneToBlock - moving lane 1 from block 11 (type 6) to block 11 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 11
 DEBUG: assignLaneToBlock - adding lane 1 to block 11
 DEBUG: assignLaneToBlock - block 11 now has 1 participating lanes
 DEBUG: ForStmt - Lane 1 natural flow from block 9 to block 11 during statement 1 (likely merge block)
 DEBUG: ForStmt - Lane 1 body completed in block 11, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 1 from block 11 (type 6) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 11
 DEBUG: assignLaneToBlock - adding lane 1 to block 2
@@ -5299,14 +5051,12 @@ DEBUG: assignLaneToBlock - moving lane 2 from block 9 (type 0) to block 11 (type
 DEBUG: Removed lane 2 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 2 to block 11
 DEBUG: assignLaneToBlock - block 11 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 11
 DEBUG: assignLaneToBlock - moving lane 2 from block 11 (type 6) to block 11 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 11
 DEBUG: assignLaneToBlock - adding lane 2 to block 11
 DEBUG: assignLaneToBlock - block 11 now has 1 participating lanes
 DEBUG: ForStmt - Lane 2 natural flow from block 9 to block 11 during statement 1 (likely merge block)
 DEBUG: ForStmt - Lane 2 body completed in block 11, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 2 from block 11 (type 6) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 11
 DEBUG: assignLaneToBlock - adding lane 2 to block 2
@@ -5323,14 +5073,12 @@ DEBUG: assignLaneToBlock - moving lane 3 from block 9 (type 0) to block 11 (type
 DEBUG: Removed lane 3 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 3 to block 11
 DEBUG: assignLaneToBlock - block 11 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 11
 DEBUG: assignLaneToBlock - moving lane 3 from block 11 (type 6) to block 11 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 11
 DEBUG: assignLaneToBlock - adding lane 3 to block 11
 DEBUG: assignLaneToBlock - block 11 now has 1 participating lanes
 DEBUG: ForStmt - Lane 3 natural flow from block 9 to block 11 during statement 1 (likely merge block)
 DEBUG: ForStmt - Lane 3 body completed in block 11, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 3 from block 11 (type 6) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 11
 DEBUG: assignLaneToBlock - adding lane 3 to block 2
@@ -5590,7 +5338,6 @@ DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 3 (type 
 DEBUG: Removed lane 0 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 0 to block 3
 DEBUG: assignLaneToBlock - block 3 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 3
 DEBUG: assignLaneToBlock - moving lane 0 from block 3 (type 6) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 0 to block 3
@@ -5602,7 +5349,6 @@ DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 4) to block 3 (type 
 DEBUG: Removed lane 1 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 1 to block 3
 DEBUG: assignLaneToBlock - block 3 now has 2 participating lanes
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 3
 DEBUG: assignLaneToBlock - moving lane 1 from block 3 (type 6) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 1 to block 3
@@ -5614,7 +5360,6 @@ DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 3 (type 
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 3
 DEBUG: assignLaneToBlock - block 3 now has 3 participating lanes
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 3
 DEBUG: assignLaneToBlock - moving lane 2 from block 3 (type 6) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 2 to block 3
@@ -5626,7 +5371,6 @@ DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 3 (type 
 DEBUG: Removed lane 3 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 3 to block 3
 DEBUG: assignLaneToBlock - block 3 now has 4 participating lanes
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 3
 DEBUG: assignLaneToBlock - moving lane 3 from block 3 (type 6) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 3 to block 3

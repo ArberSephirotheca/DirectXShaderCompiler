@@ -107,7 +107,6 @@ DEBUG: assignLaneToBlock - moving lane 0 from block 1 (type 0) to block 2 (type 
 DEBUG: Removed lane 0 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 0 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 0 to block 2
@@ -125,7 +124,6 @@ DEBUG: assignLaneToBlock - moving lane 1 from block 1 (type 0) to block 2 (type 
 DEBUG: Removed lane 1 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 1 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 2 participating lanes
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 4) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 1 to block 2
@@ -143,7 +141,6 @@ DEBUG: assignLaneToBlock - moving lane 2 from block 1 (type 0) to block 2 (type 
 DEBUG: Removed lane 2 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 2 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 3 participating lanes
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 2
@@ -161,7 +158,6 @@ DEBUG: assignLaneToBlock - moving lane 3 from block 1 (type 0) to block 2 (type 
 DEBUG: Removed lane 3 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 3 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 4 participating lanes
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 3 to block 2
@@ -231,7 +227,6 @@ DEBUG: addUnknownLane - adding lane 3 to new block 6
 DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 6
 DEBUG: createIfBlocks - Created blocks: thenBlockId=4, elseBlockId=5, mergeBlockId=6
 DEBUG: IfStmt - Lane 0 setup complete: thenBlockId=4, elseBlockId=5, mergeBlockId=6
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 4 (type 1), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 0 to block 4
@@ -277,7 +272,6 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: Found existing block 6 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=4, elseBlockId=5, mergeBlockId=6
 DEBUG: IfStmt - Lane 1 setup complete: thenBlockId=4, elseBlockId=5, mergeBlockId=6
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 4) to block 4 (type 1), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 1 to block 4
@@ -323,7 +317,6 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: Found existing block 6 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=4, elseBlockId=5, mergeBlockId=6
 DEBUG: IfStmt - Lane 2 setup complete: thenBlockId=4, elseBlockId=5, mergeBlockId=6
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 5
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 5 (type 2), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 5
@@ -369,7 +362,6 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: Found existing block 6 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=4, elseBlockId=5, mergeBlockId=6
 DEBUG: IfStmt - Lane 3 setup complete: thenBlockId=4, elseBlockId=5, mergeBlockId=6
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 5
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 5 (type 2), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 3 to block 5
@@ -431,7 +423,6 @@ DEBUG: addUnknownLane - adding lane 1 to new block 9
 DEBUG: addUnknownLane - added lane 1 to unknown lanes of block 9
 DEBUG: createIfBlocks - Created blocks: thenBlockId=7, elseBlockId=8, mergeBlockId=9
 DEBUG: IfStmt - Lane 0 setup complete: thenBlockId=7, elseBlockId=8, mergeBlockId=9
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 7
 DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 1) to block 7 (type 1), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 0 to block 7
@@ -483,7 +474,6 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: Found existing block 9 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=7, elseBlockId=8, mergeBlockId=9
 DEBUG: IfStmt - Lane 1 setup complete: thenBlockId=7, elseBlockId=8, mergeBlockId=9
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 8
 DEBUG: assignLaneToBlock - moving lane 1 from block 4 (type 1) to block 8 (type 2), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 1 to block 8
@@ -615,7 +605,6 @@ DEBUG: assignLaneToBlock - moving lane 2 from block 5 (type 2) to block 6 (type 
 DEBUG: Removed lane 2 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 2 to block 6
 DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 6
 DEBUG: assignLaneToBlock - moving lane 2 from block 6 (type 3) to block 6 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 2 to block 6
@@ -651,7 +640,6 @@ DEBUG: IfStmt - Lane 2 reconvergence complete
 DEBUG: ForStmt - Lane 2 natural flow from block 5 to block 6 during statement 0 (likely merge block)
 DEBUG: ForStmt - Lane 2 popped iteration merge point 0x508000007820 after iteration 0
 DEBUG: ForStmt - Lane 2 body completed in block 6, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 2 from block 6 (type 3) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 2 to block 2
@@ -682,7 +670,6 @@ DEBUG: assignLaneToBlock - moving lane 3 from block 5 (type 2) to block 6 (type 
 DEBUG: Removed lane 3 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 3 to block 6
 DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 6
 DEBUG: assignLaneToBlock - moving lane 3 from block 6 (type 3) to block 6 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 3 to block 6
@@ -718,7 +705,6 @@ DEBUG: IfStmt - Lane 3 reconvergence complete
 DEBUG: ForStmt - Lane 3 natural flow from block 5 to block 6 during statement 0 (likely merge block)
 DEBUG: ForStmt - Lane 3 popped iteration merge point 0x508000007820 after iteration 0
 DEBUG: ForStmt - Lane 3 body completed in block 6, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 3 from block 6 (type 3) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 3 to block 2
@@ -779,7 +765,6 @@ DEBUG: assignLaneToBlock - moving lane 1 from block 8 (type 2) to block 9 (type 
 DEBUG: Removed lane 1 from arrivedLanes of block 8
 DEBUG: assignLaneToBlock - adding lane 1 to block 9
 DEBUG: assignLaneToBlock - block 9 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 1 from block 9 (type 3) to block 9 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 1 to block 9
@@ -835,7 +820,6 @@ DEBUG: assignLaneToBlock - moving lane 0 from block 7 (type 1) to block 9 (type 
 DEBUG: Removed lane 0 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 0 to block 9
 DEBUG: assignLaneToBlock - block 9 now has 2 participating lanes
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 3) to block 9 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 0 to block 9
@@ -880,7 +864,6 @@ DEBUG: assignLaneToBlock - moving lane 1 from block 9 (type 3) to block 6 (type 
 DEBUG: Removed lane 1 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 1 to block 6
 DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 6
 DEBUG: assignLaneToBlock - moving lane 1 from block 6 (type 3) to block 6 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 1 to block 6
@@ -917,7 +900,6 @@ DEBUG: IfStmt - Lane 1 reconvergence complete
 DEBUG: ForStmt - Lane 1 natural flow from block 9 to block 6 during statement 0 (likely merge block)
 DEBUG: ForStmt - Lane 1 popped iteration merge point 0x508000007820 after iteration 0
 DEBUG: ForStmt - Lane 1 body completed in block 6, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 1 from block 6 (type 3) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 1 to block 2
@@ -954,7 +936,6 @@ DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 3) to block 6 (type 
 DEBUG: Removed lane 0 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 0 to block 6
 DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 6
 DEBUG: assignLaneToBlock - moving lane 0 from block 6 (type 3) to block 6 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 0 to block 6
@@ -991,7 +972,6 @@ DEBUG: IfStmt - Lane 0 reconvergence complete
 DEBUG: ForStmt - Lane 0 natural flow from block 9 to block 6 during statement 0 (likely merge block)
 DEBUG: ForStmt - Lane 0 popped iteration merge point 0x508000007820 after iteration 0
 DEBUG: ForStmt - Lane 0 body completed in block 6, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 0 from block 6 (type 3) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 0 to block 2
@@ -1052,7 +1032,6 @@ DEBUG: addUnknownLane - adding lane 3 to new block 12
 DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 12
 DEBUG: createIfBlocks - Created blocks: thenBlockId=10, elseBlockId=11, mergeBlockId=12
 DEBUG: IfStmt - Lane 2 setup complete: thenBlockId=10, elseBlockId=11, mergeBlockId=12
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 11
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 11 (type 2), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 11
@@ -1098,7 +1077,6 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: Found existing block 12 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=10, elseBlockId=11, mergeBlockId=12
 DEBUG: IfStmt - Lane 3 setup complete: thenBlockId=10, elseBlockId=11, mergeBlockId=12
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 11
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 11 (type 2), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 3 to block 11
@@ -1189,7 +1167,6 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: Found existing block 12 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=10, elseBlockId=11, mergeBlockId=12
 DEBUG: IfStmt - Lane 1 setup complete: thenBlockId=10, elseBlockId=11, mergeBlockId=12
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 10
 DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 4) to block 10 (type 1), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 1 to block 10
@@ -1229,7 +1206,6 @@ DEBUG: assignLaneToBlock - moving lane 2 from block 11 (type 2) to block 12 (typ
 DEBUG: Removed lane 2 from arrivedLanes of block 11
 DEBUG: assignLaneToBlock - adding lane 2 to block 12
 DEBUG: assignLaneToBlock - block 12 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 12
 DEBUG: assignLaneToBlock - moving lane 2 from block 12 (type 3) to block 12 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 2 to block 12
@@ -1246,7 +1222,6 @@ DEBUG: IfStmt - Lane 2 reconvergence complete
 DEBUG: ForStmt - Lane 2 natural flow from block 11 to block 12 during statement 0 (likely merge block)
 DEBUG: ForStmt - Lane 2 popped iteration merge point 0x508000017820 after iteration 1
 DEBUG: ForStmt - Lane 2 body completed in block 12, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 2 from block 12 (type 3) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 2 to block 2
@@ -1277,7 +1252,6 @@ DEBUG: assignLaneToBlock - moving lane 3 from block 11 (type 2) to block 12 (typ
 DEBUG: Removed lane 3 from arrivedLanes of block 11
 DEBUG: assignLaneToBlock - adding lane 3 to block 12
 DEBUG: assignLaneToBlock - block 12 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 12
 DEBUG: assignLaneToBlock - moving lane 3 from block 12 (type 3) to block 12 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 3 to block 12
@@ -1294,7 +1268,6 @@ DEBUG: IfStmt - Lane 3 reconvergence complete
 DEBUG: ForStmt - Lane 3 natural flow from block 11 to block 12 during statement 0 (likely merge block)
 DEBUG: ForStmt - Lane 3 popped iteration merge point 0x508000017820 after iteration 1
 DEBUG: ForStmt - Lane 3 body completed in block 12, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 3 from block 12 (type 3) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 3 to block 2
@@ -1331,7 +1304,6 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: Found existing block 12 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=10, elseBlockId=11, mergeBlockId=12
 DEBUG: IfStmt - Lane 0 setup complete: thenBlockId=10, elseBlockId=11, mergeBlockId=12
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 10
 DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 10 (type 1), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 0 to block 10
@@ -1393,7 +1365,6 @@ DEBUG: addUnknownLane - adding lane 1 to new block 15
 DEBUG: addUnknownLane - added lane 1 to unknown lanes of block 15
 DEBUG: createIfBlocks - Created blocks: thenBlockId=13, elseBlockId=14, mergeBlockId=15
 DEBUG: IfStmt - Lane 1 setup complete: thenBlockId=13, elseBlockId=14, mergeBlockId=15
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 14
 DEBUG: assignLaneToBlock - moving lane 1 from block 10 (type 1) to block 14 (type 2), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 1 to block 14
@@ -1451,7 +1422,6 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: Found existing block 15 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=13, elseBlockId=14, mergeBlockId=15
 DEBUG: IfStmt - Lane 0 setup complete: thenBlockId=13, elseBlockId=14, mergeBlockId=15
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 13
 DEBUG: assignLaneToBlock - moving lane 0 from block 10 (type 1) to block 13 (type 1), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 0 to block 13
@@ -1710,7 +1680,6 @@ DEBUG: assignLaneToBlock - moving lane 1 from block 14 (type 2) to block 15 (typ
 DEBUG: Removed lane 1 from arrivedLanes of block 14
 DEBUG: assignLaneToBlock - adding lane 1 to block 15
 DEBUG: assignLaneToBlock - block 15 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 15
 DEBUG: assignLaneToBlock - moving lane 1 from block 15 (type 3) to block 15 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 15
 DEBUG: assignLaneToBlock - adding lane 1 to block 15
@@ -1742,7 +1711,6 @@ DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 3 (type 
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 3
 DEBUG: assignLaneToBlock - block 3 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 3
 DEBUG: assignLaneToBlock - moving lane 2 from block 3 (type 6) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 2 to block 3
@@ -1754,7 +1722,6 @@ DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 3 (type 
 DEBUG: Removed lane 3 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 3 to block 3
 DEBUG: assignLaneToBlock - block 3 now has 2 participating lanes
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 3
 DEBUG: assignLaneToBlock - moving lane 3 from block 3 (type 6) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 3 to block 3
@@ -1810,7 +1777,6 @@ DEBUG: assignLaneToBlock - moving lane 1 from block 15 (type 3) to block 12 (typ
 DEBUG: Removed lane 1 from arrivedLanes of block 15
 DEBUG: assignLaneToBlock - adding lane 1 to block 12
 DEBUG: assignLaneToBlock - block 12 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 12
 DEBUG: assignLaneToBlock - moving lane 1 from block 12 (type 3) to block 12 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 1 to block 12
@@ -1852,7 +1818,6 @@ DEBUG: IfStmt - Lane 1 reconvergence complete
 DEBUG: ForStmt - Lane 1 natural flow from block 15 to block 12 during statement 0 (likely merge block)
 DEBUG: ForStmt - Lane 1 popped iteration merge point 0x508000017820 after iteration 1
 DEBUG: ForStmt - Lane 1 body completed in block 12, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 1 from block 12 (type 3) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 1 to block 2
@@ -1902,7 +1867,6 @@ DEBUG: assignLaneToBlock - moving lane 0 from block 13 (type 1) to block 15 (typ
 DEBUG: Removed lane 0 from arrivedLanes of block 13
 DEBUG: assignLaneToBlock - adding lane 0 to block 15
 DEBUG: assignLaneToBlock - block 15 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 15
 DEBUG: assignLaneToBlock - moving lane 0 from block 15 (type 3) to block 15 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 15
 DEBUG: assignLaneToBlock - adding lane 0 to block 15
@@ -1950,7 +1914,6 @@ DEBUG: assignLaneToBlock - moving lane 0 from block 15 (type 3) to block 12 (typ
 DEBUG: Removed lane 0 from arrivedLanes of block 15
 DEBUG: assignLaneToBlock - adding lane 0 to block 12
 DEBUG: assignLaneToBlock - block 12 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 12
 DEBUG: assignLaneToBlock - moving lane 0 from block 12 (type 3) to block 12 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 0 to block 12
@@ -1987,7 +1950,6 @@ DEBUG: IfStmt - Lane 0 reconvergence complete
 DEBUG: ForStmt - Lane 0 natural flow from block 15 to block 12 during statement 0 (likely merge block)
 DEBUG: ForStmt - Lane 0 popped iteration merge point 0x508000017820 after iteration 1
 DEBUG: ForStmt - Lane 0 body completed in block 12, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 0 from block 12 (type 3) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 0 to block 2
@@ -2083,7 +2045,6 @@ DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 4) to block 3 (type 
 DEBUG: Removed lane 1 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 1 to block 3
 DEBUG: assignLaneToBlock - block 3 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 3
 DEBUG: assignLaneToBlock - moving lane 1 from block 3 (type 6) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 1 to block 3
@@ -2183,7 +2144,6 @@ DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 3 (type 
 DEBUG: Removed lane 0 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 0 to block 3
 DEBUG: assignLaneToBlock - block 3 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 3
 DEBUG: assignLaneToBlock - moving lane 0 from block 3 (type 6) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 0 to block 3
@@ -2246,7 +2206,6 @@ DEBUG: assignLaneToBlock - moving lane 0 from block 1 (type 0) to block 2 (type 
 DEBUG: Removed lane 0 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 0 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 0 to block 2
@@ -2264,7 +2223,6 @@ DEBUG: assignLaneToBlock - moving lane 1 from block 1 (type 0) to block 2 (type 
 DEBUG: Removed lane 1 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 1 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 2 participating lanes
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 4) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 1 to block 2
@@ -2282,7 +2240,6 @@ DEBUG: assignLaneToBlock - moving lane 2 from block 1 (type 0) to block 2 (type 
 DEBUG: Removed lane 2 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 2 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 3 participating lanes
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 2
@@ -2300,7 +2257,6 @@ DEBUG: assignLaneToBlock - moving lane 3 from block 1 (type 0) to block 2 (type 
 DEBUG: Removed lane 3 from arrivedLanes of block 1
 DEBUG: assignLaneToBlock - adding lane 3 to block 2
 DEBUG: assignLaneToBlock - block 2 now has 4 participating lanes
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 3 to block 2
@@ -2370,7 +2326,6 @@ DEBUG: addUnknownLane - adding lane 3 to new block 6
 DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 6
 DEBUG: createIfBlocks - Created blocks: thenBlockId=4, elseBlockId=5, mergeBlockId=6
 DEBUG: IfStmt - Lane 0 setup complete: thenBlockId=4, elseBlockId=5, mergeBlockId=6
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 4 (type 1), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 0 to block 4
@@ -2416,7 +2371,6 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: Found existing block 6 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=4, elseBlockId=5, mergeBlockId=6
 DEBUG: IfStmt - Lane 1 setup complete: thenBlockId=4, elseBlockId=5, mergeBlockId=6
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 4
 DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 4) to block 4 (type 1), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 1 to block 4
@@ -2462,7 +2416,6 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: Found existing block 6 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=4, elseBlockId=5, mergeBlockId=6
 DEBUG: IfStmt - Lane 2 setup complete: thenBlockId=4, elseBlockId=5, mergeBlockId=6
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 5
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 5 (type 2), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 5
@@ -2508,7 +2461,6 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: Found existing block 6 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=4, elseBlockId=5, mergeBlockId=6
 DEBUG: IfStmt - Lane 3 setup complete: thenBlockId=4, elseBlockId=5, mergeBlockId=6
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 5
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 5 (type 2), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 3 to block 5
@@ -2570,7 +2522,6 @@ DEBUG: addUnknownLane - adding lane 1 to new block 9
 DEBUG: addUnknownLane - added lane 1 to unknown lanes of block 9
 DEBUG: createIfBlocks - Created blocks: thenBlockId=7, elseBlockId=8, mergeBlockId=9
 DEBUG: IfStmt - Lane 0 setup complete: thenBlockId=7, elseBlockId=8, mergeBlockId=9
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 7
 DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 1) to block 7 (type 1), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 0 to block 7
@@ -2622,7 +2573,6 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: Found existing block 9 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=7, elseBlockId=8, mergeBlockId=9
 DEBUG: IfStmt - Lane 1 setup complete: thenBlockId=7, elseBlockId=8, mergeBlockId=9
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 8
 DEBUG: assignLaneToBlock - moving lane 1 from block 4 (type 1) to block 8 (type 2), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 4
 DEBUG: assignLaneToBlock - adding lane 1 to block 8
@@ -2754,7 +2704,6 @@ DEBUG: assignLaneToBlock - moving lane 2 from block 5 (type 2) to block 6 (type 
 DEBUG: Removed lane 2 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 2 to block 6
 DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 6
 DEBUG: assignLaneToBlock - moving lane 2 from block 6 (type 3) to block 6 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 2 to block 6
@@ -2790,7 +2739,6 @@ DEBUG: IfStmt - Lane 2 reconvergence complete
 DEBUG: ForStmt - Lane 2 natural flow from block 5 to block 6 during statement 0 (likely merge block)
 DEBUG: ForStmt - Lane 2 popped iteration merge point 0x508000007820 after iteration 0
 DEBUG: ForStmt - Lane 2 body completed in block 6, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 2 from block 6 (type 3) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 2 to block 2
@@ -2821,7 +2769,6 @@ DEBUG: assignLaneToBlock - moving lane 3 from block 5 (type 2) to block 6 (type 
 DEBUG: Removed lane 3 from arrivedLanes of block 5
 DEBUG: assignLaneToBlock - adding lane 3 to block 6
 DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 6
 DEBUG: assignLaneToBlock - moving lane 3 from block 6 (type 3) to block 6 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 3 to block 6
@@ -2857,7 +2804,6 @@ DEBUG: IfStmt - Lane 3 reconvergence complete
 DEBUG: ForStmt - Lane 3 natural flow from block 5 to block 6 during statement 0 (likely merge block)
 DEBUG: ForStmt - Lane 3 popped iteration merge point 0x508000007820 after iteration 0
 DEBUG: ForStmt - Lane 3 body completed in block 6, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 3 from block 6 (type 3) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 3 to block 2
@@ -2918,7 +2864,6 @@ DEBUG: assignLaneToBlock - moving lane 1 from block 8 (type 2) to block 9 (type 
 DEBUG: Removed lane 1 from arrivedLanes of block 8
 DEBUG: assignLaneToBlock - adding lane 1 to block 9
 DEBUG: assignLaneToBlock - block 9 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 1 from block 9 (type 3) to block 9 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 1 to block 9
@@ -2974,7 +2919,6 @@ DEBUG: assignLaneToBlock - moving lane 0 from block 7 (type 1) to block 9 (type 
 DEBUG: Removed lane 0 from arrivedLanes of block 7
 DEBUG: assignLaneToBlock - adding lane 0 to block 9
 DEBUG: assignLaneToBlock - block 9 now has 2 participating lanes
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 9
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 3) to block 9 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 0 to block 9
@@ -3019,7 +2963,6 @@ DEBUG: assignLaneToBlock - moving lane 1 from block 9 (type 3) to block 6 (type 
 DEBUG: Removed lane 1 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 1 to block 6
 DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 6
 DEBUG: assignLaneToBlock - moving lane 1 from block 6 (type 3) to block 6 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 1 to block 6
@@ -3056,7 +2999,6 @@ DEBUG: IfStmt - Lane 1 reconvergence complete
 DEBUG: ForStmt - Lane 1 natural flow from block 9 to block 6 during statement 0 (likely merge block)
 DEBUG: ForStmt - Lane 1 popped iteration merge point 0x508000007820 after iteration 0
 DEBUG: ForStmt - Lane 1 body completed in block 6, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 1 from block 6 (type 3) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 1 to block 2
@@ -3093,7 +3035,6 @@ DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 3) to block 6 (type 
 DEBUG: Removed lane 0 from arrivedLanes of block 9
 DEBUG: assignLaneToBlock - adding lane 0 to block 6
 DEBUG: assignLaneToBlock - block 6 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 6
 DEBUG: assignLaneToBlock - moving lane 0 from block 6 (type 3) to block 6 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 0 to block 6
@@ -3130,7 +3071,6 @@ DEBUG: IfStmt - Lane 0 reconvergence complete
 DEBUG: ForStmt - Lane 0 natural flow from block 9 to block 6 during statement 0 (likely merge block)
 DEBUG: ForStmt - Lane 0 popped iteration merge point 0x508000007820 after iteration 0
 DEBUG: ForStmt - Lane 0 body completed in block 6, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 0 from block 6 (type 3) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 6
 DEBUG: assignLaneToBlock - adding lane 0 to block 2
@@ -3191,7 +3131,6 @@ DEBUG: addUnknownLane - adding lane 3 to new block 12
 DEBUG: addUnknownLane - added lane 3 to unknown lanes of block 12
 DEBUG: createIfBlocks - Created blocks: thenBlockId=10, elseBlockId=11, mergeBlockId=12
 DEBUG: IfStmt - Lane 2 setup complete: thenBlockId=10, elseBlockId=11, mergeBlockId=12
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 11
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 11 (type 2), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 11
@@ -3237,7 +3176,6 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: Found existing block 12 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=10, elseBlockId=11, mergeBlockId=12
 DEBUG: IfStmt - Lane 3 setup complete: thenBlockId=10, elseBlockId=11, mergeBlockId=12
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 11
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 11 (type 2), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 3 to block 11
@@ -3328,7 +3266,6 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: Found existing block 12 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=10, elseBlockId=11, mergeBlockId=12
 DEBUG: IfStmt - Lane 1 setup complete: thenBlockId=10, elseBlockId=11, mergeBlockId=12
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 10
 DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 4) to block 10 (type 1), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 1 to block 10
@@ -3368,7 +3305,6 @@ DEBUG: assignLaneToBlock - moving lane 2 from block 11 (type 2) to block 12 (typ
 DEBUG: Removed lane 2 from arrivedLanes of block 11
 DEBUG: assignLaneToBlock - adding lane 2 to block 12
 DEBUG: assignLaneToBlock - block 12 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 12
 DEBUG: assignLaneToBlock - moving lane 2 from block 12 (type 3) to block 12 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 2 to block 12
@@ -3385,7 +3321,6 @@ DEBUG: IfStmt - Lane 2 reconvergence complete
 DEBUG: ForStmt - Lane 2 natural flow from block 11 to block 12 during statement 0 (likely merge block)
 DEBUG: ForStmt - Lane 2 popped iteration merge point 0x508000017820 after iteration 1
 DEBUG: ForStmt - Lane 2 body completed in block 12, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 2 from block 12 (type 3) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 2 to block 2
@@ -3416,7 +3351,6 @@ DEBUG: assignLaneToBlock - moving lane 3 from block 11 (type 2) to block 12 (typ
 DEBUG: Removed lane 3 from arrivedLanes of block 11
 DEBUG: assignLaneToBlock - adding lane 3 to block 12
 DEBUG: assignLaneToBlock - block 12 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 12
 DEBUG: assignLaneToBlock - moving lane 3 from block 12 (type 3) to block 12 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 3 to block 12
@@ -3433,7 +3367,6 @@ DEBUG: IfStmt - Lane 3 reconvergence complete
 DEBUG: ForStmt - Lane 3 natural flow from block 11 to block 12 during statement 0 (likely merge block)
 DEBUG: ForStmt - Lane 3 popped iteration merge point 0x508000017820 after iteration 1
 DEBUG: ForStmt - Lane 3 body completed in block 12, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 3 from block 12 (type 3) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 3 to block 2
@@ -3470,7 +3403,6 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: Found existing block 12 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=10, elseBlockId=11, mergeBlockId=12
 DEBUG: IfStmt - Lane 0 setup complete: thenBlockId=10, elseBlockId=11, mergeBlockId=12
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 10
 DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 10 (type 1), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 0 to block 10
@@ -3532,7 +3464,6 @@ DEBUG: addUnknownLane - adding lane 1 to new block 15
 DEBUG: addUnknownLane - added lane 1 to unknown lanes of block 15
 DEBUG: createIfBlocks - Created blocks: thenBlockId=13, elseBlockId=14, mergeBlockId=15
 DEBUG: IfStmt - Lane 1 setup complete: thenBlockId=13, elseBlockId=14, mergeBlockId=15
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 14
 DEBUG: assignLaneToBlock - moving lane 1 from block 10 (type 1) to block 14 (type 2), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 1 to block 14
@@ -3590,7 +3521,6 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: Found existing block 15 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=13, elseBlockId=14, mergeBlockId=15
 DEBUG: IfStmt - Lane 0 setup complete: thenBlockId=13, elseBlockId=14, mergeBlockId=15
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 13
 DEBUG: assignLaneToBlock - moving lane 0 from block 10 (type 1) to block 13 (type 1), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 10
 DEBUG: assignLaneToBlock - adding lane 0 to block 13
@@ -3849,7 +3779,6 @@ DEBUG: assignLaneToBlock - moving lane 1 from block 14 (type 2) to block 15 (typ
 DEBUG: Removed lane 1 from arrivedLanes of block 14
 DEBUG: assignLaneToBlock - adding lane 1 to block 15
 DEBUG: assignLaneToBlock - block 15 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 15
 DEBUG: assignLaneToBlock - moving lane 1 from block 15 (type 3) to block 15 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 15
 DEBUG: assignLaneToBlock - adding lane 1 to block 15
@@ -3881,7 +3810,6 @@ DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 3 (type 
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 3
 DEBUG: assignLaneToBlock - block 3 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 3
 DEBUG: assignLaneToBlock - moving lane 2 from block 3 (type 6) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 2 to block 3
@@ -3893,7 +3821,6 @@ DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 3 (type 
 DEBUG: Removed lane 3 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 3 to block 3
 DEBUG: assignLaneToBlock - block 3 now has 2 participating lanes
-DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 3
 DEBUG: assignLaneToBlock - moving lane 3 from block 3 (type 6) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 3 to block 3
@@ -3949,7 +3876,6 @@ DEBUG: assignLaneToBlock - moving lane 1 from block 15 (type 3) to block 12 (typ
 DEBUG: Removed lane 1 from arrivedLanes of block 15
 DEBUG: assignLaneToBlock - adding lane 1 to block 12
 DEBUG: assignLaneToBlock - block 12 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 12
 DEBUG: assignLaneToBlock - moving lane 1 from block 12 (type 3) to block 12 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 1 to block 12
@@ -3991,7 +3917,6 @@ DEBUG: IfStmt - Lane 1 reconvergence complete
 DEBUG: ForStmt - Lane 1 natural flow from block 15 to block 12 during statement 0 (likely merge block)
 DEBUG: ForStmt - Lane 1 popped iteration merge point 0x508000017820 after iteration 1
 DEBUG: ForStmt - Lane 1 body completed in block 12, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 1 from block 12 (type 3) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 1 to block 2
@@ -4041,7 +3966,6 @@ DEBUG: assignLaneToBlock - moving lane 0 from block 13 (type 1) to block 15 (typ
 DEBUG: Removed lane 0 from arrivedLanes of block 13
 DEBUG: assignLaneToBlock - adding lane 0 to block 15
 DEBUG: assignLaneToBlock - block 15 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 15
 DEBUG: assignLaneToBlock - moving lane 0 from block 15 (type 3) to block 15 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 15
 DEBUG: assignLaneToBlock - adding lane 0 to block 15
@@ -4089,7 +4013,6 @@ DEBUG: assignLaneToBlock - moving lane 0 from block 15 (type 3) to block 12 (typ
 DEBUG: Removed lane 0 from arrivedLanes of block 15
 DEBUG: assignLaneToBlock - adding lane 0 to block 12
 DEBUG: assignLaneToBlock - block 12 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 12
 DEBUG: assignLaneToBlock - moving lane 0 from block 12 (type 3) to block 12 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 0 to block 12
@@ -4126,7 +4049,6 @@ DEBUG: IfStmt - Lane 0 reconvergence complete
 DEBUG: ForStmt - Lane 0 natural flow from block 15 to block 12 during statement 0 (likely merge block)
 DEBUG: ForStmt - Lane 0 popped iteration merge point 0x508000017820 after iteration 1
 DEBUG: ForStmt - Lane 0 body completed in block 12, moving to header block 2 for increment
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 2
 DEBUG: assignLaneToBlock - moving lane 0 from block 12 (type 3) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 12
 DEBUG: assignLaneToBlock - adding lane 0 to block 2
@@ -4222,7 +4144,6 @@ DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 4) to block 3 (type 
 DEBUG: Removed lane 1 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 1 to block 3
 DEBUG: assignLaneToBlock - block 3 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 3
 DEBUG: assignLaneToBlock - moving lane 1 from block 3 (type 6) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 1 to block 3
@@ -4322,7 +4243,6 @@ DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 3 (type 
 DEBUG: Removed lane 0 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 0 to block 3
 DEBUG: assignLaneToBlock - block 3 now has 1 participating lanes
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 3
 DEBUG: assignLaneToBlock - moving lane 0 from block 3 (type 6) to block 3 (type 6), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from arrivedLanes of block 3
 DEBUG: assignLaneToBlock - adding lane 0 to block 3

@@ -6490,10 +6490,7 @@ void ThreadgroupContext::moveThreadFromUnknownToParticipating(uint32_t blockId,
 
   DynamicExecutionBlock &block = blockIt->second;
 
-  // Move lane from unknown to participating and arrived
-  block.removeUnknownLane(waveId, laneId);
-  block.addParticipatingLane(waveId, laneId);
-  block.addArrivedLane(waveId, laneId);
+  // Move lane from unknown to participating and arrived - registry is updated by assignLaneToBlock
 
   // Update resolution status
   auto unknownLanes = membershipRegistry.getUnknownLanes(waveId, blockId);
