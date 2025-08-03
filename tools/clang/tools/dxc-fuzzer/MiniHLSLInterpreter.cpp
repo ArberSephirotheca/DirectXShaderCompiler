@@ -1048,7 +1048,7 @@ Value WaveActiveOp::evaluate(LaneContext &lane, WaveContext &wave,
   }
 
   // Create block-scoped instruction identity using compound key
-  uint32_t currentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
+  uint32_t currentBlockId = tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
   std::pair<const void *, uint32_t> instructionKey = {
       static_cast<const void *>(this), currentBlockId};
 
@@ -1422,7 +1422,7 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
   // Don't hold reference to vector element - it can be invalidated during
   // nested execution
   bool hasElse = !elseBlock_.empty();
-  uint32_t parentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
+  uint32_t parentBlockId = tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
   // Check if this lane has already set up blocks in its execution stack
   auto &ourEntry = lane.executionStack[ourStackIndex];
   bool setupComplete =
@@ -1620,7 +1620,7 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
     }
 
     case LaneContext::ControlFlowPhase::Reconverging: {
-      uint32_t currentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
+      uint32_t currentBlockId = tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
       uint32_t laneSpecificMergeBlockId = ourEntry.ifMergeBlockId;
       std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
                 << " performing reconvergence from block " << currentBlockId
@@ -1807,7 +1807,7 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
               << std::endl;
 
     // Get current block before entering loop
-    parentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
+    parentBlockId = tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
 
     // Get current merge stack for block creation
     std::vector<MergeStackEntry> currentMergeStack =
@@ -1985,7 +1985,7 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
         }
 
         // Move to iteration-specific block
-        if (tg.getCurrentBlock(wave.waveId, lane.laneId) !=
+        if (tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId) !=
             iterationStartBlockId) {
           tg.moveThreadFromUnknownToParticipating(iterationStartBlockId,
                                                   wave.waveId, lane.laneId);
@@ -2028,7 +2028,7 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
             std::set<uint32_t>
                 emptyDivergentBlocks; // No actual divergence, just context
             tg.pushMergePoint(wave.waveId, lane.laneId, iterationMarker,
-                              tg.getCurrentBlock(wave.waveId, lane.laneId),
+                              tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId),
                               emptyDivergentBlocks);
             std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
                       << " pushed iteration merge point " << iterationMarker
@@ -2038,7 +2038,7 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
 
           std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
                     << " executing directly in current block "
-                    << tg.getCurrentBlock(wave.waveId, lane.laneId)
+                    << tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId)
                     << " (no iteration block needed, but merge stack modified)"
                     << std::endl;
         }
@@ -2050,7 +2050,7 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
         lane.executionStack[ourStackIndex].statementIndex = i;
 
         uint32_t blockBeforeStatement =
-            tg.getCurrentBlock(wave.waveId, lane.laneId);
+            tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
         std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
                   << " executing statement " << i << " in block "
                   << blockBeforeStatement << std::endl;
@@ -2082,7 +2082,7 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
         if (lane.state != ThreadState::Ready) {
           // Child statement needs to resume - preserve current block context
           uint32_t blockAfterStatement =
-              tg.getCurrentBlock(wave.waveId, lane.laneId);
+              tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
           std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
                     << " child statement needs resume" << std::endl;
           std::cout << "  Block before: " << blockBeforeStatement
@@ -2092,7 +2092,7 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
 
         // Log block transitions (shows natural flow to merge blocks)
         uint32_t blockAfterStatement =
-            tg.getCurrentBlock(wave.waveId, lane.laneId);
+            tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
         if (blockBeforeStatement != blockAfterStatement) {
           std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
                     << " natural flow from block " << blockBeforeStatement
@@ -2126,7 +2126,7 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
       }
 
       // Move back to header block for increment phase
-      uint32_t finalBlock = tg.getCurrentBlock(wave.waveId, lane.laneId);
+      uint32_t finalBlock = tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
       std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
                 << " body completed in block " << finalBlock
                 << ", moving to header block " << headerBlockId
@@ -4336,7 +4336,7 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
     // First time execution - setup blocks and push onto execution stack
 
     // Get current block before entering loop
-    uint32_t parentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
+    uint32_t parentBlockId = tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
 
     // Get current merge stack for block creation
     std::vector<MergeStackEntry> currentMergeStack =
@@ -4482,7 +4482,7 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
               iterationStartBlockId;
         }
 
-        if (tg.getCurrentBlock(wave.waveId, lane.laneId) !=
+        if (tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId) !=
             iterationStartBlockId) {
           tg.moveThreadFromUnknownToParticipating(iterationStartBlockId,
                                                   wave.waveId, lane.laneId);
@@ -4525,7 +4525,7 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
             std::set<uint32_t>
                 emptyDivergentBlocks; // No actual divergence, just context
             tg.pushMergePoint(wave.waveId, lane.laneId, iterationMarker,
-                              tg.getCurrentBlock(wave.waveId, lane.laneId),
+                              tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId),
                               emptyDivergentBlocks);
             std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
                       << " pushed iteration merge point " << iterationMarker
@@ -4535,7 +4535,7 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
 
           std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
                     << " executing directly in current block "
-                    << tg.getCurrentBlock(wave.waveId, lane.laneId)
+                    << tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId)
                     << " (no iteration block needed, but merge stack modified)"
                     << std::endl;
         }
@@ -4546,7 +4546,7 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
         lane.executionStack[ourStackIndex].statementIndex = i;
 
         uint32_t blockBeforeStatement =
-            tg.getCurrentBlock(wave.waveId, lane.laneId);
+            tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
         std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
                   << " executing statement " << i << " in block "
                   << blockBeforeStatement << std::endl;
@@ -4578,7 +4578,7 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
 
         if (lane.state != ThreadState::Ready) {
           uint32_t blockAfterStatement =
-              tg.getCurrentBlock(wave.waveId, lane.laneId);
+              tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
           std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
                     << " child statement needs resume" << std::endl;
           std::cout << "  Block before: " << blockBeforeStatement
@@ -4588,7 +4588,7 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
 
         // Log block transitions (shows natural flow to merge blocks)
         uint32_t blockAfterStatement =
-            tg.getCurrentBlock(wave.waveId, lane.laneId);
+            tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
         if (blockBeforeStatement != blockAfterStatement) {
           std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
                     << " natural flow from block " << blockBeforeStatement
@@ -4617,7 +4617,7 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
       }
 
       // Move back to header block for next iteration
-      uint32_t finalBlock = tg.getCurrentBlock(wave.waveId, lane.laneId);
+      uint32_t finalBlock = tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
       std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
                 << " body completed in block " << finalBlock
                 << ", moving to header block " << headerBlockId
@@ -4763,7 +4763,7 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
     // First time execution - setup blocks and push onto execution stack
 
     // Get current block before entering loop
-    uint32_t parentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
+    uint32_t parentBlockId = tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
 
     // Get current merge stack for block creation
     std::vector<MergeStackEntry> currentMergeStack =
@@ -4877,7 +4877,7 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
         }
 
         // Move to iteration starting block if not already there
-        if (tg.getCurrentBlock(wave.waveId, lane.laneId) !=
+        if (tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId) !=
             iterationStartBlockId) {
           tg.moveThreadFromUnknownToParticipating(iterationStartBlockId,
                                                   wave.waveId, lane.laneId);
@@ -4912,7 +4912,7 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
             std::set<uint32_t>
                 emptyDivergentBlocks; // No actual divergence, just context
             tg.pushMergePoint(wave.waveId, lane.laneId, iterationMarker,
-                              tg.getCurrentBlock(wave.waveId, lane.laneId),
+                              tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId),
                               emptyDivergentBlocks);
             std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId
                       << " pushed iteration merge point " << iterationMarker
@@ -4922,7 +4922,7 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
 
           std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId
                     << " executing directly in current block "
-                    << tg.getCurrentBlock(wave.waveId, lane.laneId)
+                    << tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId)
                     << " (no iteration block needed, but merge stack modified)"
                     << std::endl;
         }
@@ -5174,7 +5174,7 @@ void SwitchStmt::execute(LaneContext &lane, WaveContext &wave,
               << std::endl;
 
     // Create blocks for all cases
-    uint32_t parentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
+    uint32_t parentBlockId = tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
     std::vector<MergeStackEntry> currentMergeStack =
         tg.getCurrentMergeStack(wave.waveId, lane.laneId);
 
