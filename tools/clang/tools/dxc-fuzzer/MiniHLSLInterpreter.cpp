@@ -5725,8 +5725,9 @@ void ThreadgroupContext::mergeExecutionPaths(
     auto it = executionBlocks.find(blockId);
     if (it != executionBlocks.end()) {
       // Merge lanes from this block, organized by wave
-      for (const auto &[waveId, laneSet] : it->second.getParticipatingLanes()) {
-        mergedLanes[waveId].insert(laneSet.begin(), laneSet.end());
+      for (WaveId waveId = 0; waveId < waves.size(); ++waveId) {
+        auto participatingLanes = membershipRegistry.getParticipatingLanes(waveId, blockId);
+        mergedLanes[waveId].insert(participatingLanes.begin(), participatingLanes.end());
       }
     }
   }
@@ -6903,10 +6904,10 @@ void ThreadgroupContext::printBlockDetails(uint32_t blockId,
   }
 
   // Participating lanes by wave
-  const auto &participatingLanes = block.getParticipatingLanes();
   size_t totalLanes = 0;
   INTERPRETER_DEBUG_LOG("  Participating Lanes by Wave:\n");
-  for (const auto &[waveId, laneSet] : participatingLanes) {
+  for (WaveId waveId = 0; waveId < waves.size(); ++waveId) {
+    auto laneSet = membershipRegistry.getParticipatingLanes(waveId, blockId);
     INTERPRETER_DEBUG_LOG("    Wave " << waveId << ": {");
     bool first = true;
     for (LaneId laneId : laneSet) {
@@ -6922,10 +6923,15 @@ void ThreadgroupContext::printBlockDetails(uint32_t blockId,
 
   if (verbose) {
     // Unknown lanes
-    const auto &unknownLanes = block.getUnknownLanes();
-    if (!unknownLanes.empty()) {
-      INTERPRETER_DEBUG_LOG("  Unknown Lanes by Wave:\n");
-      for (const auto &[waveId, laneSet] : unknownLanes) {
+    bool hasUnknownLanes = false;
+    for (WaveId waveId = 0; waveId < waves.size(); ++waveId) {
+      auto unknownLanes = membershipRegistry.getUnknownLanes(waveId, blockId);
+      if (!unknownLanes.empty()) {
+        if (!hasUnknownLanes) {
+          INTERPRETER_DEBUG_LOG("  Unknown Lanes by Wave:\n");
+          hasUnknownLanes = true;
+        }
+        auto laneSet = unknownLanes;
         INTERPRETER_DEBUG_LOG("    Wave " << waveId << ": {");
         bool first = true;
         for (LaneId laneId : laneSet) {
@@ -6939,10 +6945,15 @@ void ThreadgroupContext::printBlockDetails(uint32_t blockId,
     }
 
     // Arrived lanes
-    const auto &arrivedLanes = block.getArrivedLanes();
-    if (!arrivedLanes.empty()) {
-      INTERPRETER_DEBUG_LOG("  Arrived Lanes by Wave:\n");
-      for (const auto &[waveId, laneSet] : arrivedLanes) {
+    bool hasArrivedLanes = false;
+    for (WaveId waveId = 0; waveId < waves.size(); ++waveId) {
+      auto arrivedLanes = membershipRegistry.getArrivedLanes(waveId, blockId);
+      if (!arrivedLanes.empty()) {
+        if (!hasArrivedLanes) {
+          INTERPRETER_DEBUG_LOG("  Arrived Lanes by Wave:\n");
+          hasArrivedLanes = true;
+        }
+        auto laneSet = arrivedLanes;
         INTERPRETER_DEBUG_LOG("    Wave " << waveId << ": {");
         bool first = true;
         for (LaneId laneId : laneSet) {
@@ -6955,11 +6966,16 @@ void ThreadgroupContext::printBlockDetails(uint32_t blockId,
       }
     }
 
-    // Waiting lanes
-    const auto &waitingLanes = block.getWaitingLanes();
-    if (!waitingLanes.empty()) {
-      INTERPRETER_DEBUG_LOG("  Waiting Lanes by Wave:\n");
-      for (const auto &[waveId, laneSet] : waitingLanes) {
+    // Waiting lanes  
+    bool hasWaitingLanes = false;
+    for (WaveId waveId = 0; waveId < waves.size(); ++waveId) {
+      auto waitingLanes = membershipRegistry.getWaitingLanes(waveId, blockId);
+      if (!waitingLanes.empty()) {
+        if (!hasWaitingLanes) {
+          INTERPRETER_DEBUG_LOG("  Waiting Lanes by Wave:\n");
+          hasWaitingLanes = true;
+        }
+        auto laneSet = waitingLanes;
         INTERPRETER_DEBUG_LOG("    Wave " << waveId << ": {");
         bool first = true;
         for (LaneId laneId : laneSet) {
@@ -7063,8 +7079,9 @@ std::string ThreadgroupContext::getBlockSummary(uint32_t blockId) const {
 
   const auto &block = it->second;
   size_t totalLanes = 0;
-  for (const auto &[waveId, laneSet] : block.getParticipatingLanes()) {
-    totalLanes += laneSet.size();
+  for (WaveId waveId = 0; waveId < waves.size(); ++waveId) {
+    auto participatingLanes = membershipRegistry.getParticipatingLanes(waveId, blockId);
+    totalLanes += participatingLanes.size();
   }
 
   std::stringstream ss;
