@@ -273,7 +273,7 @@ DEBUG: removeThreadFromUnknown - removing lane 2 from block 4
 DEBUG: Block 4 unknown lanes before removal: {2 3}
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 4
 DEBUG: Block 4 unknown lanes after removal: {3}
-DEBUG: Block 4 areAllUnknownLanesResolvedForWave(0) = 0
+DEBUG: Block 4 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 5 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 5
@@ -314,7 +314,7 @@ DEBUG: removeThreadFromUnknown - removing lane 3 from block 4
 DEBUG: Block 4 unknown lanes before removal: {3}
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 4
 DEBUG: Block 4 unknown lanes after removal: {}
-DEBUG: Block 4 areAllUnknownLanesResolvedForWave(0) = 1
+DEBUG: Block 4 areAllUnknownLanesResolvedForWave(0) = 1 (tracked by registry)
 DEBUG: Block 4 now has all unknowns resolved for wave 0 - checking for ready wave operations
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 5 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
@@ -607,7 +607,7 @@ DEBUG: removeThreadFromUnknown - removing lane 2 from block 6
 DEBUG: Block 6 unknown lanes before removal: {2 3}
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 6
 DEBUG: Block 6 unknown lanes after removal: {3}
-DEBUG: Block 6 areAllUnknownLanesResolvedForWave(0) = 0
+DEBUG: Block 6 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 7 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 7
@@ -648,7 +648,7 @@ DEBUG: removeThreadFromUnknown - removing lane 3 from block 6
 DEBUG: Block 6 unknown lanes before removal: {3}
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 6
 DEBUG: Block 6 unknown lanes after removal: {}
-DEBUG: Block 6 areAllUnknownLanesResolvedForWave(0) = 1
+DEBUG: Block 6 areAllUnknownLanesResolvedForWave(0) = 1 (tracked by registry)
 DEBUG: Block 6 now has all unknowns resolved for wave 0 - checking for ready wave operations
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 7 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
@@ -857,7 +857,7 @@ DEBUG: removeThreadFromUnknown - removing lane 3 from block 8
 DEBUG: Block 8 unknown lanes before removal: {3}
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 8
 DEBUG: Block 8 unknown lanes after removal: {}
-DEBUG: Block 8 areAllUnknownLanesResolvedForWave(0) = 1
+DEBUG: Block 8 areAllUnknownLanesResolvedForWave(0) = 1 (tracked by registry)
 DEBUG: Block 8 now has all unknowns resolved for wave 0 - checking for ready wave operations
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 9 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
@@ -1369,7 +1369,7 @@ DEBUG: removeThreadFromUnknown - removing lane 2 from block 4
 DEBUG: Block 4 unknown lanes before removal: {2 3}
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 4
 DEBUG: Block 4 unknown lanes after removal: {3}
-DEBUG: Block 4 areAllUnknownLanesResolvedForWave(0) = 0
+DEBUG: Block 4 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 5 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 5
@@ -1410,7 +1410,7 @@ DEBUG: removeThreadFromUnknown - removing lane 3 from block 4
 DEBUG: Block 4 unknown lanes before removal: {3}
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 4
 DEBUG: Block 4 unknown lanes after removal: {}
-DEBUG: Block 4 areAllUnknownLanesResolvedForWave(0) = 1
+DEBUG: Block 4 areAllUnknownLanesResolvedForWave(0) = 1 (tracked by registry)
 DEBUG: Block 4 now has all unknowns resolved for wave 0 - checking for ready wave operations
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 5 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
@@ -1703,7 +1703,7 @@ DEBUG: removeThreadFromUnknown - removing lane 2 from block 6
 DEBUG: Block 6 unknown lanes before removal: {2 3}
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 6
 DEBUG: Block 6 unknown lanes after removal: {3}
-DEBUG: Block 6 areAllUnknownLanesResolvedForWave(0) = 0
+DEBUG: Block 6 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 7 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - adding lane 2 to block 7
@@ -1744,7 +1744,7 @@ DEBUG: removeThreadFromUnknown - removing lane 3 from block 6
 DEBUG: Block 6 unknown lanes before removal: {3}
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 6
 DEBUG: Block 6 unknown lanes after removal: {}
-DEBUG: Block 6 areAllUnknownLanesResolvedForWave(0) = 1
+DEBUG: Block 6 areAllUnknownLanesResolvedForWave(0) = 1 (tracked by registry)
 DEBUG: Block 6 now has all unknowns resolved for wave 0 - checking for ready wave operations
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 7 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
@@ -1953,7 +1953,7 @@ DEBUG: removeThreadFromUnknown - removing lane 3 from block 8
 DEBUG: Block 8 unknown lanes before removal: {3}
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 8
 DEBUG: Block 8 unknown lanes after removal: {}
-DEBUG: Block 8 areAllUnknownLanesResolvedForWave(0) = 1
+DEBUG: Block 8 areAllUnknownLanesResolvedForWave(0) = 1 (tracked by registry)
 DEBUG: Block 8 now has all unknowns resolved for wave 0 - checking for ready wave operations
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 9 (type 3), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from arrivedLanes of block 2
@@ -2634,7 +2634,7 @@ Dynamic Block 3:
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001a80)
   Unknown Resolution Status by Wave:
-    Wave 0: Resolved
+    Wave 0: Unresolved
 
 Dynamic Block 4:
   Block ID: 4
@@ -2920,7 +2920,7 @@ Dynamic Block 3:
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001a80)
   Unknown Resolution Status by Wave:
-    Wave 0: Resolved
+    Wave 0: Unresolved
 
 Dynamic Block 4:
   Block ID: 4

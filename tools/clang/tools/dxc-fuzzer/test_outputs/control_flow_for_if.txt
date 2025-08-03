@@ -235,7 +235,7 @@ DEBUG: removeThreadFromUnknown - removing lane 0 from block 5
 DEBUG: Block 5 unknown lanes before removal: {0 1 2 3}
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 5
 DEBUG: Block 5 unknown lanes after removal: {1 2 3}
-DEBUG: Block 5 areAllUnknownLanesResolvedForWave(0) = 0
+DEBUG: Block 5 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: IfStmt - Lane 0 condition=1, moving to phase=ExecutingThenBlock
 DEBUG: IfStmt - Lane 0 executing: thenBlockId=4, elseBlockId=5, mergeBlockId=6
 DEBUG: ForStmt - Lane 0 child statement needs resume
@@ -280,7 +280,7 @@ DEBUG: removeThreadFromUnknown - removing lane 1 from block 5
 DEBUG: Block 5 unknown lanes before removal: {1 2 3}
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 5
 DEBUG: Block 5 unknown lanes after removal: {2 3}
-DEBUG: Block 5 areAllUnknownLanesResolvedForWave(0) = 0
+DEBUG: Block 5 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: IfStmt - Lane 1 condition=1, moving to phase=ExecutingThenBlock
 DEBUG: IfStmt - Lane 1 executing: thenBlockId=4, elseBlockId=5, mergeBlockId=6
 DEBUG: ForStmt - Lane 1 child statement needs resume
@@ -325,7 +325,7 @@ DEBUG: removeThreadFromUnknown - removing lane 2 from block 4
 DEBUG: Block 4 unknown lanes before removal: {2 3}
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 4
 DEBUG: Block 4 unknown lanes after removal: {3}
-DEBUG: Block 4 areAllUnknownLanesResolvedForWave(0) = 0
+DEBUG: Block 4 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: IfStmt - Lane 2 condition=0, moving to phase=ExecutingElseBlock
 DEBUG: IfStmt - Lane 2 executing: thenBlockId=4, elseBlockId=5, mergeBlockId=6
 DEBUG: ForStmt - Lane 2 child statement needs resume
@@ -370,7 +370,7 @@ DEBUG: removeThreadFromUnknown - removing lane 3 from block 4
 DEBUG: Block 4 unknown lanes before removal: {3}
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 4
 DEBUG: Block 4 unknown lanes after removal: {}
-DEBUG: Block 4 areAllUnknownLanesResolvedForWave(0) = 1
+DEBUG: Block 4 areAllUnknownLanesResolvedForWave(0) = 1 (tracked by registry)
 DEBUG: Block 4 now has all unknowns resolved for wave 0 - checking for ready wave operations
 DEBUG: IfStmt - Lane 3 condition=0, moving to phase=ExecutingElseBlock
 DEBUG: IfStmt - Lane 3 executing: thenBlockId=4, elseBlockId=5, mergeBlockId=6
@@ -431,7 +431,7 @@ DEBUG: removeThreadFromUnknown - removing lane 0 from block 8
 DEBUG: Block 8 unknown lanes before removal: {0 1}
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 8
 DEBUG: Block 8 unknown lanes after removal: {1}
-DEBUG: Block 8 areAllUnknownLanesResolvedForWave(0) = 0
+DEBUG: Block 8 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: IfStmt - Lane 0 condition=1, moving to phase=ExecutingThenBlock
 DEBUG: IfStmt - Lane 0 executing: thenBlockId=7, elseBlockId=8, mergeBlockId=9
 DEBUG: ForStmt - Lane 0 child statement needs resume
@@ -482,7 +482,7 @@ DEBUG: removeThreadFromUnknown - removing lane 1 from block 7
 DEBUG: Block 7 unknown lanes before removal: {1}
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 7
 DEBUG: Block 7 unknown lanes after removal: {}
-DEBUG: Block 7 areAllUnknownLanesResolvedForWave(0) = 1
+DEBUG: Block 7 areAllUnknownLanesResolvedForWave(0) = 1 (tracked by registry)
 DEBUG: Block 7 now has all unknowns resolved for wave 0 - checking for ready wave operations
 DEBUG: IfStmt - Lane 1 condition=0, moving to phase=ExecutingElseBlock
 DEBUG: IfStmt - Lane 1 executing: thenBlockId=7, elseBlockId=8, mergeBlockId=9
@@ -1040,7 +1040,7 @@ DEBUG: removeThreadFromUnknown - removing lane 2 from block 10
 DEBUG: Block 10 unknown lanes before removal: {0 1 2 3}
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 10
 DEBUG: Block 10 unknown lanes after removal: {0 1 3}
-DEBUG: Block 10 areAllUnknownLanesResolvedForWave(0) = 0
+DEBUG: Block 10 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: IfStmt - Lane 2 condition=0, moving to phase=ExecutingElseBlock
 DEBUG: IfStmt - Lane 2 executing: thenBlockId=10, elseBlockId=11, mergeBlockId=12
 DEBUG: ForStmt - Lane 2 child statement needs resume
@@ -1085,7 +1085,7 @@ DEBUG: removeThreadFromUnknown - removing lane 3 from block 10
 DEBUG: Block 10 unknown lanes before removal: {0 1 3}
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 10
 DEBUG: Block 10 unknown lanes after removal: {0 1}
-DEBUG: Block 10 areAllUnknownLanesResolvedForWave(0) = 0
+DEBUG: Block 10 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: IfStmt - Lane 3 condition=0, moving to phase=ExecutingElseBlock
 DEBUG: IfStmt - Lane 3 executing: thenBlockId=10, elseBlockId=11, mergeBlockId=12
 DEBUG: ForStmt - Lane 3 child statement needs resume
@@ -1175,7 +1175,7 @@ DEBUG: removeThreadFromUnknown - removing lane 1 from block 11
 DEBUG: Block 11 unknown lanes before removal: {0 1}
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 11
 DEBUG: Block 11 unknown lanes after removal: {0}
-DEBUG: Block 11 areAllUnknownLanesResolvedForWave(0) = 0
+DEBUG: Block 11 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: IfStmt - Lane 1 condition=1, moving to phase=ExecutingThenBlock
 DEBUG: IfStmt - Lane 1 executing: thenBlockId=10, elseBlockId=11, mergeBlockId=12
 DEBUG: ForStmt - Lane 1 child statement needs resume
@@ -1312,7 +1312,7 @@ DEBUG: removeThreadFromUnknown - removing lane 0 from block 11
 DEBUG: Block 11 unknown lanes before removal: {0}
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 11
 DEBUG: Block 11 unknown lanes after removal: {}
-DEBUG: Block 11 areAllUnknownLanesResolvedForWave(0) = 1
+DEBUG: Block 11 areAllUnknownLanesResolvedForWave(0) = 1 (tracked by registry)
 DEBUG: Block 11 now has all unknowns resolved for wave 0 - checking for ready wave operations
 DEBUG: IfStmt - Lane 0 condition=1, moving to phase=ExecutingThenBlock
 DEBUG: IfStmt - Lane 0 executing: thenBlockId=10, elseBlockId=11, mergeBlockId=12
@@ -1373,7 +1373,7 @@ DEBUG: removeThreadFromUnknown - removing lane 1 from block 13
 DEBUG: Block 13 unknown lanes before removal: {0 1}
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 13
 DEBUG: Block 13 unknown lanes after removal: {0}
-DEBUG: Block 13 areAllUnknownLanesResolvedForWave(0) = 0
+DEBUG: Block 13 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: IfStmt - Lane 1 condition=0, moving to phase=ExecutingElseBlock
 DEBUG: IfStmt - Lane 1 executing: thenBlockId=13, elseBlockId=14, mergeBlockId=15
 DEBUG: ForStmt - Lane 1 child statement needs resume
@@ -1430,7 +1430,7 @@ DEBUG: removeThreadFromUnknown - removing lane 0 from block 14
 DEBUG: Block 14 unknown lanes before removal: {0}
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 14
 DEBUG: Block 14 unknown lanes after removal: {}
-DEBUG: Block 14 areAllUnknownLanesResolvedForWave(0) = 1
+DEBUG: Block 14 areAllUnknownLanesResolvedForWave(0) = 1 (tracked by registry)
 DEBUG: Block 14 now has all unknowns resolved for wave 0 - checking for ready wave operations
 DEBUG: IfStmt - Lane 0 condition=1, moving to phase=ExecutingThenBlock
 DEBUG: IfStmt - Lane 0 executing: thenBlockId=13, elseBlockId=14, mergeBlockId=15
@@ -2334,7 +2334,7 @@ DEBUG: removeThreadFromUnknown - removing lane 0 from block 5
 DEBUG: Block 5 unknown lanes before removal: {0 1 2 3}
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 5
 DEBUG: Block 5 unknown lanes after removal: {1 2 3}
-DEBUG: Block 5 areAllUnknownLanesResolvedForWave(0) = 0
+DEBUG: Block 5 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: IfStmt - Lane 0 condition=1, moving to phase=ExecutingThenBlock
 DEBUG: IfStmt - Lane 0 executing: thenBlockId=4, elseBlockId=5, mergeBlockId=6
 DEBUG: ForStmt - Lane 0 child statement needs resume
@@ -2379,7 +2379,7 @@ DEBUG: removeThreadFromUnknown - removing lane 1 from block 5
 DEBUG: Block 5 unknown lanes before removal: {1 2 3}
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 5
 DEBUG: Block 5 unknown lanes after removal: {2 3}
-DEBUG: Block 5 areAllUnknownLanesResolvedForWave(0) = 0
+DEBUG: Block 5 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: IfStmt - Lane 1 condition=1, moving to phase=ExecutingThenBlock
 DEBUG: IfStmt - Lane 1 executing: thenBlockId=4, elseBlockId=5, mergeBlockId=6
 DEBUG: ForStmt - Lane 1 child statement needs resume
@@ -2424,7 +2424,7 @@ DEBUG: removeThreadFromUnknown - removing lane 2 from block 4
 DEBUG: Block 4 unknown lanes before removal: {2 3}
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 4
 DEBUG: Block 4 unknown lanes after removal: {3}
-DEBUG: Block 4 areAllUnknownLanesResolvedForWave(0) = 0
+DEBUG: Block 4 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: IfStmt - Lane 2 condition=0, moving to phase=ExecutingElseBlock
 DEBUG: IfStmt - Lane 2 executing: thenBlockId=4, elseBlockId=5, mergeBlockId=6
 DEBUG: ForStmt - Lane 2 child statement needs resume
@@ -2469,7 +2469,7 @@ DEBUG: removeThreadFromUnknown - removing lane 3 from block 4
 DEBUG: Block 4 unknown lanes before removal: {3}
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 4
 DEBUG: Block 4 unknown lanes after removal: {}
-DEBUG: Block 4 areAllUnknownLanesResolvedForWave(0) = 1
+DEBUG: Block 4 areAllUnknownLanesResolvedForWave(0) = 1 (tracked by registry)
 DEBUG: Block 4 now has all unknowns resolved for wave 0 - checking for ready wave operations
 DEBUG: IfStmt - Lane 3 condition=0, moving to phase=ExecutingElseBlock
 DEBUG: IfStmt - Lane 3 executing: thenBlockId=4, elseBlockId=5, mergeBlockId=6
@@ -2530,7 +2530,7 @@ DEBUG: removeThreadFromUnknown - removing lane 0 from block 8
 DEBUG: Block 8 unknown lanes before removal: {0 1}
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 8
 DEBUG: Block 8 unknown lanes after removal: {1}
-DEBUG: Block 8 areAllUnknownLanesResolvedForWave(0) = 0
+DEBUG: Block 8 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: IfStmt - Lane 0 condition=1, moving to phase=ExecutingThenBlock
 DEBUG: IfStmt - Lane 0 executing: thenBlockId=7, elseBlockId=8, mergeBlockId=9
 DEBUG: ForStmt - Lane 0 child statement needs resume
@@ -2581,7 +2581,7 @@ DEBUG: removeThreadFromUnknown - removing lane 1 from block 7
 DEBUG: Block 7 unknown lanes before removal: {1}
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 7
 DEBUG: Block 7 unknown lanes after removal: {}
-DEBUG: Block 7 areAllUnknownLanesResolvedForWave(0) = 1
+DEBUG: Block 7 areAllUnknownLanesResolvedForWave(0) = 1 (tracked by registry)
 DEBUG: Block 7 now has all unknowns resolved for wave 0 - checking for ready wave operations
 DEBUG: IfStmt - Lane 1 condition=0, moving to phase=ExecutingElseBlock
 DEBUG: IfStmt - Lane 1 executing: thenBlockId=7, elseBlockId=8, mergeBlockId=9
@@ -3139,7 +3139,7 @@ DEBUG: removeThreadFromUnknown - removing lane 2 from block 10
 DEBUG: Block 10 unknown lanes before removal: {0 1 2 3}
 DEBUG: removeUnknownLane - removing lane 2 from unknown lanes of block 10
 DEBUG: Block 10 unknown lanes after removal: {0 1 3}
-DEBUG: Block 10 areAllUnknownLanesResolvedForWave(0) = 0
+DEBUG: Block 10 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: IfStmt - Lane 2 condition=0, moving to phase=ExecutingElseBlock
 DEBUG: IfStmt - Lane 2 executing: thenBlockId=10, elseBlockId=11, mergeBlockId=12
 DEBUG: ForStmt - Lane 2 child statement needs resume
@@ -3184,7 +3184,7 @@ DEBUG: removeThreadFromUnknown - removing lane 3 from block 10
 DEBUG: Block 10 unknown lanes before removal: {0 1 3}
 DEBUG: removeUnknownLane - removing lane 3 from unknown lanes of block 10
 DEBUG: Block 10 unknown lanes after removal: {0 1}
-DEBUG: Block 10 areAllUnknownLanesResolvedForWave(0) = 0
+DEBUG: Block 10 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: IfStmt - Lane 3 condition=0, moving to phase=ExecutingElseBlock
 DEBUG: IfStmt - Lane 3 executing: thenBlockId=10, elseBlockId=11, mergeBlockId=12
 DEBUG: ForStmt - Lane 3 child statement needs resume
@@ -3274,7 +3274,7 @@ DEBUG: removeThreadFromUnknown - removing lane 1 from block 11
 DEBUG: Block 11 unknown lanes before removal: {0 1}
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 11
 DEBUG: Block 11 unknown lanes after removal: {0}
-DEBUG: Block 11 areAllUnknownLanesResolvedForWave(0) = 0
+DEBUG: Block 11 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: IfStmt - Lane 1 condition=1, moving to phase=ExecutingThenBlock
 DEBUG: IfStmt - Lane 1 executing: thenBlockId=10, elseBlockId=11, mergeBlockId=12
 DEBUG: ForStmt - Lane 1 child statement needs resume
@@ -3411,7 +3411,7 @@ DEBUG: removeThreadFromUnknown - removing lane 0 from block 11
 DEBUG: Block 11 unknown lanes before removal: {0}
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 11
 DEBUG: Block 11 unknown lanes after removal: {}
-DEBUG: Block 11 areAllUnknownLanesResolvedForWave(0) = 1
+DEBUG: Block 11 areAllUnknownLanesResolvedForWave(0) = 1 (tracked by registry)
 DEBUG: Block 11 now has all unknowns resolved for wave 0 - checking for ready wave operations
 DEBUG: IfStmt - Lane 0 condition=1, moving to phase=ExecutingThenBlock
 DEBUG: IfStmt - Lane 0 executing: thenBlockId=10, elseBlockId=11, mergeBlockId=12
@@ -3472,7 +3472,7 @@ DEBUG: removeThreadFromUnknown - removing lane 1 from block 13
 DEBUG: Block 13 unknown lanes before removal: {0 1}
 DEBUG: removeUnknownLane - removing lane 1 from unknown lanes of block 13
 DEBUG: Block 13 unknown lanes after removal: {0}
-DEBUG: Block 13 areAllUnknownLanesResolvedForWave(0) = 0
+DEBUG: Block 13 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: IfStmt - Lane 1 condition=0, moving to phase=ExecutingElseBlock
 DEBUG: IfStmt - Lane 1 executing: thenBlockId=13, elseBlockId=14, mergeBlockId=15
 DEBUG: ForStmt - Lane 1 child statement needs resume
@@ -3529,7 +3529,7 @@ DEBUG: removeThreadFromUnknown - removing lane 0 from block 14
 DEBUG: Block 14 unknown lanes before removal: {0}
 DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 14
 DEBUG: Block 14 unknown lanes after removal: {}
-DEBUG: Block 14 areAllUnknownLanesResolvedForWave(0) = 1
+DEBUG: Block 14 areAllUnknownLanesResolvedForWave(0) = 1 (tracked by registry)
 DEBUG: Block 14 now has all unknowns resolved for wave 0 - checking for ready wave operations
 DEBUG: IfStmt - Lane 0 condition=1, moving to phase=ExecutingThenBlock
 DEBUG: IfStmt - Lane 0 executing: thenBlockId=13, elseBlockId=14, mergeBlockId=15
@@ -4688,7 +4688,7 @@ Dynamic Block 3:
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001ae0)
   Unknown Resolution Status by Wave:
-    Wave 0: Resolved
+    Wave 0: Unresolved
 
 Dynamic Block 4:
   Block ID: 4
@@ -5046,7 +5046,7 @@ Dynamic Block 3:
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001ae0)
   Unknown Resolution Status by Wave:
-    Wave 0: Resolved
+    Wave 0: Unresolved
 
 Dynamic Block 4:
   Block ID: 4

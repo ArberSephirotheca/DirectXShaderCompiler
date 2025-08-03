@@ -5952,7 +5952,7 @@ Dynamic Block 3:
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001a20)
   Unknown Resolution Status by Wave:
-    Wave 0: Resolved
+    Wave 0: Unresolved
 
 Dynamic Block 4:
   Block ID: 4
@@ -5996,7 +5996,7 @@ Dynamic Block 6:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
   Unknown Resolution Status by Wave:
-    Wave 0: Resolved
+    Wave 0: Unresolved
 
 Dynamic Block 7:
   Block ID: 7
@@ -6072,7 +6072,7 @@ Dynamic Block 11:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
   Unknown Resolution Status by Wave:
-    Wave 0: Resolved
+    Wave 0: Unresolved
 
 Dynamic Block 12:
   Block ID: 12
@@ -6399,7 +6399,7 @@ Dynamic Block 3:
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001a20)
   Unknown Resolution Status by Wave:
-    Wave 0: Resolved
+    Wave 0: Unresolved
 
 Dynamic Block 4:
   Block ID: 4
@@ -6443,7 +6443,7 @@ Dynamic Block 6:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
   Unknown Resolution Status by Wave:
-    Wave 0: Resolved
+    Wave 0: Unresolved
 
 Dynamic Block 7:
   Block ID: 7
@@ -6519,7 +6519,7 @@ Dynamic Block 11:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
   Unknown Resolution Status by Wave:
-    Wave 0: Resolved
+    Wave 0: Unresolved
 
 Dynamic Block 12:
   Block ID: 12

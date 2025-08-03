@@ -6498,9 +6498,7 @@ void ThreadgroupContext::moveThreadFromUnknownToParticipating(uint32_t blockId,
 
   // Move lane from unknown to participating and arrived - registry is updated by assignLaneToBlock
 
-  // Update resolution status
-  auto unknownLanes = membershipRegistry.getUnknownLanes(waveId, blockId);
-  block.setWaveAllUnknownResolved(waveId, unknownLanes.empty());
+  // Resolution status tracked by registry - no need to update old system metadata
 
   // Update lane assignment
   assignLaneToBlock(waveId, laneId, blockId);
@@ -6547,8 +6545,8 @@ void ThreadgroupContext::removeThreadFromUnknown(uint32_t blockId,
   bool allResolved = unknownLanes.empty();
   std::cout << "DEBUG: Block " << blockId
             << " areAllUnknownLanesResolvedForWave(" << waveId
-            << ") = " << allResolved << std::endl;
-  block.setWaveAllUnknownResolved(waveId, allResolved);
+            << ") = " << allResolved << " (tracked by registry)" << std::endl;
+  // Resolution status tracked by registry - no need for old system metadata
 
   // CRITICAL: Check if removing this unknown lane allows any waiting wave
   // operations to proceed This handles the case where lanes 0,1 are waiting in

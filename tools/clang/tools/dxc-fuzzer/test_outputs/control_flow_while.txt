@@ -1286,7 +1286,7 @@ Dynamic Block 3:
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001960)
   Unknown Resolution Status by Wave:
-    Wave 0: Resolved
+    Wave 0: Unresolved
 
 Dynamic Block 4:
   Block ID: 4
@@ -1492,7 +1492,7 @@ Dynamic Block 3:
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001960)
   Unknown Resolution Status by Wave:
-    Wave 0: Resolved
+    Wave 0: Unresolved
 
 Dynamic Block 4:
   Block ID: 4
