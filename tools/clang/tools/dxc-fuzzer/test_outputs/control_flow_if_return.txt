@@ -314,7 +314,7 @@ DEBUG: IfStmt - Lane 2 in phase ExecutingElseBlock (stack depth=1, our index=0, 
 DEBUG: IfStmt - Lane 2 executing else block from statement 0
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 3, instruction key=(0x503000001b40,3)
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 3
-DEBUG: WAVE_OP: Refreshed block 3 resolution status
+DEBUG: WAVE_OP: Resolution status tracked by registry for block 3
 DEBUG: Block 3 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 2 in block 3: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=0, canExecuteGlobal=0, syncPointPhase=phase_0
@@ -326,7 +326,7 @@ DEBUG: IfStmt - Lane 3 in phase ExecutingElseBlock (stack depth=1, our index=0, 
 DEBUG: IfStmt - Lane 3 executing else block from statement 0
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 3, instruction key=(0x503000001b40,3)
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 3
-DEBUG: WAVE_OP: Refreshed block 3 resolution status
+DEBUG: WAVE_OP: Resolution status tracked by registry for block 3
 DEBUG: Block 3 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 3 in block 3: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_1
@@ -342,20 +342,17 @@ DEBUG: IfStmt - Lane 0 executing then block from statement 0
 DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 0 in phase ExecutingThenBlock (stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 1
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 2
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 3
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 4
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 5
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 6
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 7
+DEBUG: Block 3 wave 0 unknown lanes: {}
+DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
+DEBUG: canExecuteWaveInstruction for lane 2 in block 3: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_2
+DEBUG: Block 3 wave 0 unknown lanes: {}
+DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
+DEBUG: canExecuteWaveInstruction for lane 3 in block 3: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_2
 DEBUG: updateWaveOperationStates - Lane 0 returning, checking 1 active sync points
 DEBUG: updateWaveOperationStates - Sync point 0x503000001b40 in block 3: wasExpected=0, allParticipantsKnown=1
 DEBUG: updateWaveOperationStates - Lane 0 returning: Block 3 isAllParticipantsKnown=1 for instruction 0x503000001b40
 DEBUG: updateWaveOperationStates - Sync point for instruction 0x503000001b40 in block 3 became complete due to lane 0 returning
 DEBUG: updateWaveOperationStates - Waking up lanes waiting at instruction 0x503000001b40 in block 3
-DEBUG: updateWaveOperationStates - Waking up lane 2 from WaitingForWave to Ready
-DEBUG: updateWaveOperationStates - Waking up lane 3 from WaitingForWave to Ready
 DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=2, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 in phase ExecutingThenBlock (stack depth=2, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 executing then block from statement 0
@@ -364,7 +361,7 @@ DEBUG: IfStmt - Lane 1 in phase ExecutingElseBlock (stack depth=2, our index=1, 
 DEBUG: IfStmt - Lane 1 executing else block from statement 0
 DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 6, instruction key=(0x503000001a80,6)
 DEBUG: WAVE_OP: Lane 1 cannot execute, starting to wait in block 6
-DEBUG: WAVE_OP: Refreshed block 6 resolution status
+DEBUG: WAVE_OP: Resolution status tracked by registry for block 6
 DEBUG: Block 6 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 1 in block 6: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_1
@@ -526,7 +523,7 @@ DEBUG: removeThreadFromAllSets - block 6 has 0 participating lanes after removal
 DEBUG: IfStmt - Lane 1 reconvergence complete
 DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 7, instruction key=(0x503000001ae0,7)
 DEBUG: WAVE_OP: Lane 1 cannot execute, starting to wait in block 7
-DEBUG: WAVE_OP: Refreshed block 7 resolution status
+DEBUG: WAVE_OP: Resolution status tracked by registry for block 7
 DEBUG: Block 7 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 1 in block 7: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_1
@@ -538,7 +535,7 @@ DEBUG: WAVE_WAIT: Lane 1 caught WaveOperationWaitException, state=2
 DEBUG: WAVE_OP: Storing collective result for lanes: 1  (phase: 2)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 4, instruction key=(0x503000001bd0,4)
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 4
-DEBUG: WAVE_OP: Refreshed block 4 resolution status
+DEBUG: WAVE_OP: Resolution status tracked by registry for block 4
 DEBUG: Block 4 wave 0 unknown lanes: {1 }
 DEBUG: canExecuteWaveInstruction for lane 2 in block 4: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=0, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: VarDeclStmt - Lane 2 caught WaveOperationWaitException, re-throwing
@@ -548,7 +545,7 @@ DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 3 no stored result found for key (0x503000001bd0,4), continuing with normal execution
 DEBUG: WAVE_OP: Available results for lanes: 
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 4
-DEBUG: WAVE_OP: Refreshed block 4 resolution status
+DEBUG: WAVE_OP: Resolution status tracked by registry for block 4
 DEBUG: Block 4 wave 0 unknown lanes: {1 }
 DEBUG: canExecuteWaveInstruction for lane 3 in block 4: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: VarDeclStmt - Lane 3 caught WaveOperationWaitException, re-throwing
@@ -861,7 +858,7 @@ DEBUG: IfStmt - Lane 2 in phase ExecutingElseBlock (stack depth=1, our index=0, 
 DEBUG: IfStmt - Lane 2 executing else block from statement 0
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 3, instruction key=(0x503000001b40,3)
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 3
-DEBUG: WAVE_OP: Refreshed block 3 resolution status
+DEBUG: WAVE_OP: Resolution status tracked by registry for block 3
 DEBUG: Block 3 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 2 in block 3: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=0, canExecuteGlobal=0, syncPointPhase=phase_0
@@ -873,7 +870,7 @@ DEBUG: IfStmt - Lane 3 in phase ExecutingElseBlock (stack depth=1, our index=0, 
 DEBUG: IfStmt - Lane 3 executing else block from statement 0
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 3, instruction key=(0x503000001b40,3)
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 3
-DEBUG: WAVE_OP: Refreshed block 3 resolution status
+DEBUG: WAVE_OP: Resolution status tracked by registry for block 3
 DEBUG: Block 3 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 3 in block 3: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_1
@@ -889,20 +886,17 @@ DEBUG: IfStmt - Lane 0 executing then block from statement 0
 DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 0 in phase ExecutingThenBlock (stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 1
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 2
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 3
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 4
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 5
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 6
-DEBUG: removeUnknownLane - removing lane 0 from unknown lanes of block 7
+DEBUG: Block 3 wave 0 unknown lanes: {}
+DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
+DEBUG: canExecuteWaveInstruction for lane 2 in block 3: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_2
+DEBUG: Block 3 wave 0 unknown lanes: {}
+DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
+DEBUG: canExecuteWaveInstruction for lane 3 in block 3: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_2
 DEBUG: updateWaveOperationStates - Lane 0 returning, checking 1 active sync points
 DEBUG: updateWaveOperationStates - Sync point 0x503000001b40 in block 3: wasExpected=0, allParticipantsKnown=1
 DEBUG: updateWaveOperationStates - Lane 0 returning: Block 3 isAllParticipantsKnown=1 for instruction 0x503000001b40
 DEBUG: updateWaveOperationStates - Sync point for instruction 0x503000001b40 in block 3 became complete due to lane 0 returning
 DEBUG: updateWaveOperationStates - Waking up lanes waiting at instruction 0x503000001b40 in block 3
-DEBUG: updateWaveOperationStates - Waking up lane 2 from WaitingForWave to Ready
-DEBUG: updateWaveOperationStates - Waking up lane 3 from WaitingForWave to Ready
 DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=2, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 in phase ExecutingThenBlock (stack depth=2, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 executing then block from statement 0
@@ -911,7 +905,7 @@ DEBUG: IfStmt - Lane 1 in phase ExecutingElseBlock (stack depth=2, our index=1, 
 DEBUG: IfStmt - Lane 1 executing else block from statement 0
 DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 6, instruction key=(0x503000001a80,6)
 DEBUG: WAVE_OP: Lane 1 cannot execute, starting to wait in block 6
-DEBUG: WAVE_OP: Refreshed block 6 resolution status
+DEBUG: WAVE_OP: Resolution status tracked by registry for block 6
 DEBUG: Block 6 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 1 in block 6: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_1
@@ -1073,7 +1067,7 @@ DEBUG: removeThreadFromAllSets - block 6 has 0 participating lanes after removal
 DEBUG: IfStmt - Lane 1 reconvergence complete
 DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 7, instruction key=(0x503000001ae0,7)
 DEBUG: WAVE_OP: Lane 1 cannot execute, starting to wait in block 7
-DEBUG: WAVE_OP: Refreshed block 7 resolution status
+DEBUG: WAVE_OP: Resolution status tracked by registry for block 7
 DEBUG: Block 7 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 1 in block 7: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_1
@@ -1085,7 +1079,7 @@ DEBUG: WAVE_WAIT: Lane 1 caught WaveOperationWaitException, state=2
 DEBUG: WAVE_OP: Storing collective result for lanes: 1  (phase: 2)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 4, instruction key=(0x503000001bd0,4)
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 4
-DEBUG: WAVE_OP: Refreshed block 4 resolution status
+DEBUG: WAVE_OP: Resolution status tracked by registry for block 4
 DEBUG: Block 4 wave 0 unknown lanes: {1 }
 DEBUG: canExecuteWaveInstruction for lane 2 in block 4: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=0, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: VarDeclStmt - Lane 2 caught WaveOperationWaitException, re-throwing
@@ -1095,7 +1089,7 @@ DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 3 no stored result found for key (0x503000001bd0,4), continuing with normal execution
 DEBUG: WAVE_OP: Available results for lanes: 
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 4
-DEBUG: WAVE_OP: Refreshed block 4 resolution status
+DEBUG: WAVE_OP: Resolution status tracked by registry for block 4
 DEBUG: Block 4 wave 0 unknown lanes: {1 }
 DEBUG: canExecuteWaveInstruction for lane 3 in block 4: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: VarDeclStmt - Lane 3 caught WaveOperationWaitException, re-throwing

@@ -700,8 +700,12 @@ std::vector<ThreadId> ThreadgroupContext::getReadyThreads() const {
 // WaveOperationSyncPoint method implementation
 bool WaveOperationSyncPoint::isAllParticipantsKnown(const ThreadgroupContext& tg, uint32_t waveId) const {
   auto blockIt = tg.executionBlocks.find(blockId);
-  return blockIt != tg.executionBlocks.end() && 
-         blockIt->second.isWaveAllUnknownResolved(waveId);
+  if (blockIt != tg.executionBlocks.end()) {
+    // Check if all unknown lanes are resolved using registry
+    auto unknownLanes = tg.membershipRegistry.getUnknownLanes(waveId, blockId);
+    return unknownLanes.empty();
+  }
+  return false;
 }
 
 std::vector<ThreadId> ThreadgroupContext::getWaitingThreads() const {
@@ -1152,13 +1156,9 @@ Value WaveActiveOp::evaluate(LaneContext &lane, WaveContext &wave,
     // CRITICAL: Force refresh of block resolution status after marking lane as
     // waiting This is essential because the block needs to know all
     // participants are now resolved
-    auto blockIt = tg.executionBlocks.find(currentBlockId);
-    if (blockIt != tg.executionBlocks.end()) {
-      auto unknownLanes = tg.membershipRegistry.getUnknownLanes(wave.waveId, currentBlockId);
-      blockIt->second.setWaveAllUnknownResolved(wave.waveId, unknownLanes.empty());
-      std::cout << "DEBUG: WAVE_OP: Refreshed block " << currentBlockId
-                << " resolution status" << std::endl;
-    }
+    // Resolution status is now tracked by registry - no need for old system metadata
+    std::cout << "DEBUG: WAVE_OP: Resolution status tracked by registry for block " 
+              << currentBlockId << std::endl;
 
     // CRITICAL: 3-step logic for wave operation re-evaluation
     // Step 1: Check if this newly waiting lane completes the participant set
@@ -2302,11 +2302,7 @@ void ReturnStmt::updateBlockResolutionStates(ThreadgroupContext &tg,
   // Remove lane from ALL execution blocks and check resolution states
   WaveId waveId = wave.waveId;
   for (auto &[blockId, block] : tg.executionBlocks) {
-    // Remove lane from all block participant sets in both old system and registry
-    block.removeUnknownLane(waveId, returningLaneId);
-    block.removeArrivedLane(waveId, returningLaneId);
-    block.removeWaitingLane(waveId, returningLaneId);
-    block.removeParticipatingLane(waveId, returningLaneId);
+    // Remove lane from all block participant sets using registry as single source of truth
     tg.membershipRegistry.setLaneStatus(waveId, returningLaneId, blockId, LaneBlockStatus::Left);
 
     // Remove from per-instruction participants in this block
@@ -2334,7 +2330,7 @@ void ReturnStmt::updateBlockResolutionStates(ThreadgroupContext &tg,
     block.setWaveAllUnknownResolved(waveId, oldResolved);
 
     // If block just became resolved, wake up any lanes waiting for resolution
-    if (!wasResolved && block.isWaveAllUnknownResolved(waveId)) {
+    if (!wasResolved && oldResolved) {
       // All lanes in this block can now proceed with wave operations
       // Use registry instead of old block tracking
       for (LaneId laneId : tg.membershipRegistry.getWaitingLanes(waveId, blockId)) {
