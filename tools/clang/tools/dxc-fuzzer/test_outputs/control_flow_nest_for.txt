@@ -71,10 +71,15 @@ Converted AST to interpreter program with 4 statements
 Thread configuration: [4, 1, 1]
 
 DEBUG: findOrCreateBlockForPath called with 0 waves of unknown lanes
+DEBUG: Initializing wave 0 with 4 lanes in initial block 1
 DEBUG: markLaneArrived - Lane 0 transitioned from Unknown to Participating in block 1
+DEBUG: Lane 0 assigned to block 1
 DEBUG: markLaneArrived - Lane 1 transitioned from Unknown to Participating in block 1
+DEBUG: Lane 1 assigned to block 1
 DEBUG: markLaneArrived - Lane 2 transitioned from Unknown to Participating in block 1
+DEBUG: Lane 2 assigned to block 1
 DEBUG: markLaneArrived - Lane 3 transitioned from Unknown to Participating in block 1
+DEBUG: Lane 3 assigned to block 1
 DEBUG: ForStmt - Lane 0 starting fresh execution (pushed to stack depth=1, this=0x508000002820)
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
@@ -90,12 +95,14 @@ DEBUG: addUnknownLane - adding lane 2 to new block 3
 DEBUG: addUnknownLane - adding lane 3 to new block 3
 DEBUG: ForStmt - Lane 0 in phase EvaluatingInit (stack depth=1, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 evaluating init
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 2
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 2
 DEBUG: assignLaneToBlock - BEFORE: block 2 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 1 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 1
+DEBUG: Removed lane 0 from block 1
 DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 2
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 2
 DEBUG: ForStmt - Lane 1 starting fresh execution (pushed to stack depth=1, this=0x508000002820)
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {1 2 3 } (3 lanes)
@@ -105,12 +112,14 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: Found existing block 3 - not modifying unknown lanes
 DEBUG: ForStmt - Lane 1 in phase EvaluatingInit (stack depth=1, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 evaluating init
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 2
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 2
 DEBUG: assignLaneToBlock - BEFORE: block 2 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 1 from block 1 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
-DEBUG: Removed lane 1 from arrivedLanes of block 1
+DEBUG: Removed lane 1 from block 1
 DEBUG: assignLaneToBlock - AFTER: block 2 has 2 participating lanes (0 1) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 2
+DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 2
 DEBUG: ForStmt - Lane 2 starting fresh execution (pushed to stack depth=1, this=0x508000002820)
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {2 3 } (2 lanes)
@@ -120,12 +129,14 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: Found existing block 3 - not modifying unknown lanes
 DEBUG: ForStmt - Lane 2 in phase EvaluatingInit (stack depth=1, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 evaluating init
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 2
 DEBUG: assignLaneToBlock - BEFORE: block 2 has 2 participating lanes (0 1) and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 2 from block 1 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
-DEBUG: Removed lane 2 from arrivedLanes of block 1
+DEBUG: Removed lane 2 from block 1
 DEBUG: assignLaneToBlock - AFTER: block 2 has 3 participating lanes (0 1 2) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 2
+DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 2
 DEBUG: ForStmt - Lane 3 starting fresh execution (pushed to stack depth=1, this=0x508000002820)
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {3 } (1 lanes)
@@ -135,12 +146,14 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: Found existing block 3 - not modifying unknown lanes
 DEBUG: ForStmt - Lane 3 in phase EvaluatingInit (stack depth=1, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 evaluating init
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 2
 DEBUG: assignLaneToBlock - BEFORE: block 2 has 3 participating lanes (0 1 2) and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 3 from block 1 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
-DEBUG: Removed lane 3 from arrivedLanes of block 1
+DEBUG: Removed lane 3 from block 1
 DEBUG: assignLaneToBlock - AFTER: block 2 has 4 participating lanes (0 1 2 3) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 2
+DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 2
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase EvaluatingCondition (stack depth=1, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 evaluating condition for iteration 0
@@ -164,12 +177,14 @@ DEBUG: addUnknownLane - adding lane 1 to new block 4
 DEBUG: addUnknownLane - adding lane 2 to new block 4
 DEBUG: addUnknownLane - adding lane 3 to new block 4
 DEBUG: ForStmt - Lane 0 created iteration starting block 4 for iteration 0
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 4
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 2
+DEBUG: Removed lane 0 from block 2
 DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 4
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 4
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 4
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 4
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 4, instruction key=(0x5030000018d0,4)
@@ -190,12 +205,14 @@ DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=1, our index=0, this
 DEBUG: ForStmt - Lane 1 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 1 found existing iteration starting block 4 for iteration 0
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 4
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 1 waiting lanes (0)
 DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 1 from arrivedLanes of block 2
+DEBUG: Removed lane 1 from block 2
 DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (1) and 1 waiting lanes (0)
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 4
+DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 4
 DEBUG: ForStmt - Lane 1 moved to iteration starting block 4
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 4
 DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 4, instruction key=(0x5030000018d0,4)
@@ -216,12 +233,14 @@ DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=1, our index=0, this
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 2 found existing iteration starting block 4 for iteration 0
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 4
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 2 waiting lanes (0 1)
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 2 from arrivedLanes of block 2
+DEBUG: Removed lane 2 from block 2
 DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (2) and 2 waiting lanes (0 1)
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 4
+DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 4
 DEBUG: ForStmt - Lane 2 moved to iteration starting block 4
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 4
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 4, instruction key=(0x5030000018d0,4)
@@ -242,12 +261,14 @@ DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=1, our index=0, this
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 3 found existing iteration starting block 4 for iteration 0
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 4
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 3 waiting lanes (0 1 2)
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 3 from arrivedLanes of block 2
+DEBUG: Removed lane 3 from block 2
 DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (3) and 3 waiting lanes (0 1 2)
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 4
+DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 4
 DEBUG: ForStmt - Lane 3 moved to iteration starting block 4
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 4
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 4, instruction key=(0x5030000018d0,4)
@@ -264,6 +285,18 @@ DEBUG: AssignStmt - Lane 3 caught WaveOperationWaitException, re-throwing
 DEBUG: ForStmt - Lane 3 waiting for wave operation in phase 5 at statement 0, iteration 0
 DEBUG: WAVE_WAIT: Lane 3 caught WaveOperationWaitException, state=2
 DEBUG: WAVE_OP: Storing collective result for lanes: 0 1 2 3  (phase: 2)
+DEBUG: onLaneFinishWaveOp - Lane 0 finishing wave op in block 4
+DEBUG: onLaneFinishWaveOp - Current status in block 4: 2
+DEBUG: onLaneFinishWaveOp - Updated lane 0 to Participating in block 4
+DEBUG: onLaneFinishWaveOp - Lane 1 finishing wave op in block 4
+DEBUG: onLaneFinishWaveOp - Current status in block 4: 2
+DEBUG: onLaneFinishWaveOp - Updated lane 1 to Participating in block 4
+DEBUG: onLaneFinishWaveOp - Lane 2 finishing wave op in block 4
+DEBUG: onLaneFinishWaveOp - Current status in block 4: 2
+DEBUG: onLaneFinishWaveOp - Updated lane 2 to Participating in block 4
+DEBUG: onLaneFinishWaveOp - Lane 3 finishing wave op in block 4
+DEBUG: onLaneFinishWaveOp - Current status in block 4: 2
+DEBUG: onLaneFinishWaveOp - Updated lane 3 to Participating in block 4
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=1, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 0
@@ -288,12 +321,14 @@ DEBUG: addUnknownLane - adding lane 2 to new block 6
 DEBUG: addUnknownLane - adding lane 3 to new block 6
 DEBUG: ForStmt - Lane 0 in phase EvaluatingInit (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 evaluating init
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 5
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 5
 DEBUG: assignLaneToBlock - BEFORE: block 5 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 0) to block 5 (type 4), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 4
+DEBUG: Removed lane 0 from block 4
 DEBUG: assignLaneToBlock - AFTER: block 5 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 5
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 5
 DEBUG: ForStmt - Lane 0 child statement needs resume
   Block before: 4, Block after: 5
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
@@ -314,12 +349,14 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: Found existing block 6 - not modifying unknown lanes
 DEBUG: ForStmt - Lane 1 in phase EvaluatingInit (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 1 evaluating init
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 5
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 5
 DEBUG: assignLaneToBlock - BEFORE: block 5 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 1 from block 4 (type 0) to block 5 (type 4), isHeaderToLoopBody=0
-DEBUG: Removed lane 1 from arrivedLanes of block 4
+DEBUG: Removed lane 1 from block 4
 DEBUG: assignLaneToBlock - AFTER: block 5 has 2 participating lanes (0 1) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 5
+DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 5
 DEBUG: ForStmt - Lane 1 child statement needs resume
   Block before: 4, Block after: 5
 DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
@@ -340,12 +377,14 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: Found existing block 6 - not modifying unknown lanes
 DEBUG: ForStmt - Lane 2 in phase EvaluatingInit (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 2 evaluating init
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 5
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 5
 DEBUG: assignLaneToBlock - BEFORE: block 5 has 2 participating lanes (0 1) and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 2 from block 4 (type 0) to block 5 (type 4), isHeaderToLoopBody=0
-DEBUG: Removed lane 2 from arrivedLanes of block 4
+DEBUG: Removed lane 2 from block 4
 DEBUG: assignLaneToBlock - AFTER: block 5 has 3 participating lanes (0 1 2) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 5
+DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 5
 DEBUG: ForStmt - Lane 2 child statement needs resume
   Block before: 4, Block after: 5
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
@@ -366,24 +405,28 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: Found existing block 6 - not modifying unknown lanes
 DEBUG: ForStmt - Lane 3 in phase EvaluatingInit (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 evaluating init
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 5
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 5
 DEBUG: assignLaneToBlock - BEFORE: block 5 has 3 participating lanes (0 1 2) and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 3 from block 4 (type 0) to block 5 (type 4), isHeaderToLoopBody=0
-DEBUG: Removed lane 3 from arrivedLanes of block 4
+DEBUG: Removed lane 3 from block 4
 DEBUG: assignLaneToBlock - AFTER: block 5 has 4 participating lanes (0 1 2 3) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 5
+DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 5
 DEBUG: ForStmt - Lane 3 child statement needs resume
   Block before: 4, Block after: 5
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=2, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 4
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 5
+DEBUG: Removed lane 0 from block 5
 DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 4
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 4
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 4
 DEBUG: ForStmt - Lane 0 executing statement 1 in block 4
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
@@ -395,12 +438,14 @@ DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 4
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 1 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 1 from arrivedLanes of block 5
+DEBUG: Removed lane 1 from block 5
 DEBUG: assignLaneToBlock - AFTER: block 4 has 2 participating lanes (0 1) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 4
+DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 4
 DEBUG: ForStmt - Lane 1 moved to iteration starting block 4
 DEBUG: ForStmt - Lane 1 executing statement 1 in block 4
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
@@ -412,12 +457,14 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 4
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 2 participating lanes (0 1) and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 2 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 2 from arrivedLanes of block 5
+DEBUG: Removed lane 2 from block 5
 DEBUG: assignLaneToBlock - AFTER: block 4 has 3 participating lanes (0 1 2) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 4
+DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 4
 DEBUG: ForStmt - Lane 2 moved to iteration starting block 4
 DEBUG: ForStmt - Lane 2 executing statement 1 in block 4
 DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
@@ -429,12 +476,14 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 4
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 3 participating lanes (0 1 2) and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 3 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 3 from arrivedLanes of block 5
+DEBUG: Removed lane 3 from block 5
 DEBUG: assignLaneToBlock - AFTER: block 4 has 4 participating lanes (0 1 2 3) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 4
+DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 4
 DEBUG: ForStmt - Lane 3 moved to iteration starting block 4
 DEBUG: ForStmt - Lane 3 executing statement 1 in block 4
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
@@ -453,12 +502,14 @@ DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
 DEBUG: findOrCreateBlockForPath called with 0 waves of unknown lanes
 DEBUG: ForStmt - Lane 0 created iteration starting block 7 for iteration 0
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 7
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 7
 DEBUG: assignLaneToBlock - BEFORE: block 7 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 4
+DEBUG: Removed lane 0 from block 4
 DEBUG: assignLaneToBlock - AFTER: block 7 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 7
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 7
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 7
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 7
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 7, instruction key=(0x503000001990,7)
@@ -486,12 +537,14 @@ DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=1, this
 DEBUG: ForStmt - Lane 1 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 1 found existing iteration starting block 7 for iteration 0
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 7
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 7
 DEBUG: assignLaneToBlock - BEFORE: block 7 has 0 participating lanes and 1 waiting lanes (0)
 DEBUG: assignLaneToBlock - moving lane 1 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 1 from arrivedLanes of block 4
+DEBUG: Removed lane 1 from block 4
 DEBUG: assignLaneToBlock - AFTER: block 7 has 1 participating lanes (1) and 1 waiting lanes (0)
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 7
+DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 7
 DEBUG: ForStmt - Lane 1 moved to iteration starting block 7
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 7
 DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 7, instruction key=(0x503000001990,7)
@@ -508,6 +561,12 @@ DEBUG: AssignStmt - Lane 1 caught WaveOperationWaitException, re-throwing
 DEBUG: ForStmt - Lane 1 waiting for wave operation in phase 5 at statement 0, iteration 0
 DEBUG: ForStmt - Lane 1 waiting for wave operation in phase 5 at statement 1, iteration 0
 DEBUG: WAVE_WAIT: Lane 1 caught WaveOperationWaitException, state=2
+DEBUG: onLaneFinishWaveOp - Lane 0 finishing wave op in block 7
+DEBUG: onLaneFinishWaveOp - Current status in block 7: 2
+DEBUG: onLaneFinishWaveOp - Updated lane 0 to Participating in block 7
+DEBUG: onLaneFinishWaveOp - Lane 1 finishing wave op in block 7
+DEBUG: onLaneFinishWaveOp - Current status in block 7: 2
+DEBUG: onLaneFinishWaveOp - Updated lane 1 to Participating in block 7
 DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=2, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 1
@@ -518,12 +577,14 @@ DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=1, this
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 2 found existing iteration starting block 7 for iteration 0
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 7
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 7
 DEBUG: assignLaneToBlock - BEFORE: block 7 has 2 participating lanes (0 1) and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 2 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 2 from arrivedLanes of block 4
+DEBUG: Removed lane 2 from block 4
 DEBUG: assignLaneToBlock - AFTER: block 7 has 3 participating lanes (0 1 2) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 7
+DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 7
 DEBUG: ForStmt - Lane 2 moved to iteration starting block 7
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 7
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 7, instruction key=(0x503000001990,7)
@@ -540,6 +601,9 @@ DEBUG: AssignStmt - Lane 2 caught WaveOperationWaitException, re-throwing
 DEBUG: ForStmt - Lane 2 waiting for wave operation in phase 5 at statement 0, iteration 0
 DEBUG: ForStmt - Lane 2 waiting for wave operation in phase 5 at statement 1, iteration 0
 DEBUG: WAVE_WAIT: Lane 2 caught WaveOperationWaitException, state=2
+DEBUG: onLaneFinishWaveOp - Lane 2 finishing wave op in block 7
+DEBUG: onLaneFinishWaveOp - Current status in block 7: 2
+DEBUG: onLaneFinishWaveOp - Updated lane 2 to Participating in block 7
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=2, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 1
@@ -550,12 +614,14 @@ DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=1, this
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 3 found existing iteration starting block 7 for iteration 0
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 7
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 7
 DEBUG: assignLaneToBlock - BEFORE: block 7 has 3 participating lanes (0 1 2) and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 3 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 3 from arrivedLanes of block 4
+DEBUG: Removed lane 3 from block 4
 DEBUG: assignLaneToBlock - AFTER: block 7 has 4 participating lanes (0 1 2 3) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 7
+DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 7
 DEBUG: ForStmt - Lane 3 moved to iteration starting block 7
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 7
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 7, instruction key=(0x503000001990,7)
@@ -572,64 +638,77 @@ DEBUG: AssignStmt - Lane 3 caught WaveOperationWaitException, re-throwing
 DEBUG: ForStmt - Lane 3 waiting for wave operation in phase 5 at statement 0, iteration 0
 DEBUG: ForStmt - Lane 3 waiting for wave operation in phase 5 at statement 1, iteration 0
 DEBUG: WAVE_WAIT: Lane 3 caught WaveOperationWaitException, state=2
+DEBUG: onLaneFinishWaveOp - Lane 3 finishing wave op in block 7
+DEBUG: onLaneFinishWaveOp - Current status in block 7: 2
+DEBUG: onLaneFinishWaveOp - Updated lane 3 to Participating in block 7
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=2, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 4
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 7 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 7
+DEBUG: Removed lane 0 from block 7
 DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 4
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 4
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 4
 DEBUG: ForStmt - Lane 0 executing statement 1 in block 4
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 7
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 7
 DEBUG: assignLaneToBlock - BEFORE: block 7 has 3 participating lanes (1 2 3) and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 4
+DEBUG: Removed lane 0 from block 4
 DEBUG: assignLaneToBlock - AFTER: block 7 has 4 participating lanes (0 1 2 3) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 7
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 7
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 7
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 7
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 7, instruction key=(0x503000001990,7)
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 1 (phase: Consumed)
 DEBUG: ForStmt - Lane 0 body completed in block 7, moving to header block 5 for increment
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 5
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 5
 DEBUG: assignLaneToBlock - BEFORE: block 5 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 7 (type 0) to block 5 (type 4), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 7
+DEBUG: Removed lane 0 from block 7
 DEBUG: assignLaneToBlock - AFTER: block 5 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 5
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 5
 DEBUG: ForStmt - Lane 0 child statement needs resume
   Block before: 4, Block after: 5
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=2, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 4
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 1 from block 7 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 1 from arrivedLanes of block 7
+DEBUG: Removed lane 1 from block 7
 DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (1) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 4
+DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 4
 DEBUG: ForStmt - Lane 1 moved to iteration starting block 4
 DEBUG: ForStmt - Lane 1 executing statement 1 in block 4
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 1 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 7
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 7
 DEBUG: assignLaneToBlock - BEFORE: block 7 has 2 participating lanes (2 3) and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 1 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 1 from arrivedLanes of block 4
+DEBUG: Removed lane 1 from block 4
 DEBUG: assignLaneToBlock - AFTER: block 7 has 3 participating lanes (1 2 3) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 7
+DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 7
 DEBUG: ForStmt - Lane 1 moved to iteration starting block 7
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 7
 DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 7, instruction key=(0x503000001990,7)
@@ -653,24 +732,28 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 4
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 2 from block 7 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 2 from arrivedLanes of block 7
+DEBUG: Removed lane 2 from block 7
 DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (2) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 4
+DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 4
 DEBUG: ForStmt - Lane 2 moved to iteration starting block 4
 DEBUG: ForStmt - Lane 2 executing statement 1 in block 4
 DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 7
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 7
 DEBUG: assignLaneToBlock - BEFORE: block 7 has 1 participating lanes (3) and 1 waiting lanes (1)
 DEBUG: assignLaneToBlock - moving lane 2 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 2 from arrivedLanes of block 4
+DEBUG: Removed lane 2 from block 4
 DEBUG: assignLaneToBlock - AFTER: block 7 has 2 participating lanes (2 3) and 1 waiting lanes (1)
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 7
+DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 7
 DEBUG: ForStmt - Lane 2 moved to iteration starting block 7
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 7
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 7, instruction key=(0x503000001990,7)
@@ -694,24 +777,28 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 4
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 3 from block 7 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 3 from arrivedLanes of block 7
+DEBUG: Removed lane 3 from block 7
 DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (3) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 4
+DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 4
 DEBUG: ForStmt - Lane 3 moved to iteration starting block 4
 DEBUG: ForStmt - Lane 3 executing statement 1 in block 4
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 7
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 7
 DEBUG: assignLaneToBlock - BEFORE: block 7 has 0 participating lanes and 2 waiting lanes (1 2)
 DEBUG: assignLaneToBlock - moving lane 3 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 3 from arrivedLanes of block 4
+DEBUG: Removed lane 3 from block 4
 DEBUG: assignLaneToBlock - AFTER: block 7 has 1 participating lanes (3) and 2 waiting lanes (1 2)
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 7
+DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 7
 DEBUG: ForStmt - Lane 3 moved to iteration starting block 7
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 7
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 7, instruction key=(0x503000001990,7)
@@ -735,12 +822,14 @@ DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 4
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 5
+DEBUG: Removed lane 0 from block 5
 DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 4
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 4
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 4
 DEBUG: ForStmt - Lane 0 executing statement 1 in block 4
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
@@ -769,12 +858,14 @@ DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
 DEBUG: findOrCreateBlockForPath called with 0 waves of unknown lanes
 DEBUG: ForStmt - Lane 0 created iteration starting block 8 for iteration 1
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 8
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 8
 DEBUG: assignLaneToBlock - BEFORE: block 8 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 0) to block 8 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 4
+DEBUG: Removed lane 0 from block 4
 DEBUG: assignLaneToBlock - AFTER: block 8 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 8
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 8
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 8
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 8
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 8, instruction key=(0x503000001990,8)
@@ -792,52 +883,63 @@ DEBUG: ForStmt - Lane 0 waiting for wave operation in phase 5 at statement 0, it
 DEBUG: ForStmt - Lane 0 waiting for wave operation in phase 5 at statement 1, iteration 0
 DEBUG: WAVE_WAIT: Lane 0 caught WaveOperationWaitException, state=2
 DEBUG: WAVE_OP: Storing collective result for lanes: 0  (phase: 2)
+DEBUG: onLaneFinishWaveOp - Lane 0 finishing wave op in block 8
+DEBUG: onLaneFinishWaveOp - Current status in block 8: 2
+DEBUG: onLaneFinishWaveOp - Updated lane 0 to Participating in block 8
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=2, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 4
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 8 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 8
+DEBUG: Removed lane 0 from block 8
 DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 4
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 4
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 4
 DEBUG: ForStmt - Lane 0 executing statement 1 in block 4
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 8
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 8
 DEBUG: assignLaneToBlock - BEFORE: block 8 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 0) to block 8 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 4
+DEBUG: Removed lane 0 from block 4
 DEBUG: assignLaneToBlock - AFTER: block 8 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 8
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 8
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 8
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 8
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 8, instruction key=(0x503000001990,8)
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 1 (phase: Consumed)
 DEBUG: ForStmt - Lane 0 body completed in block 8, moving to header block 5 for increment
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 5
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 5
 DEBUG: assignLaneToBlock - BEFORE: block 5 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 8 (type 0) to block 5 (type 4), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 8
+DEBUG: Removed lane 0 from block 8
 DEBUG: assignLaneToBlock - AFTER: block 5 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 5
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 5
 DEBUG: ForStmt - Lane 0 child statement needs resume
   Block before: 4, Block after: 5
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=2, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 4
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 5
+DEBUG: Removed lane 0 from block 5
 DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 4
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 4
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 4
 DEBUG: ForStmt - Lane 0 executing statement 1 in block 4
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
@@ -875,20 +977,24 @@ DEBUG: ForStmt - Lane 0 executing statement 1 in block 4
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 in phase Reconverging (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 exiting loop after 2 iterations
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 6
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 6
 DEBUG: assignLaneToBlock - BEFORE: block 6 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 0) to block 6 (type 6), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 4
+DEBUG: Removed lane 0 from block 4
 DEBUG: assignLaneToBlock - AFTER: block 6 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 6
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 6
 DEBUG: ForStmt - Lane 0 natural flow from block 4 to block 6 during statement 1 (likely merge block)
 DEBUG: ForStmt - Lane 0 body completed in block 6, moving to header block 2 for increment
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 2
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 2
 DEBUG: assignLaneToBlock - BEFORE: block 2 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 6 (type 6) to block 2 (type 4), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 6
+DEBUG: Removed lane 0 from block 6
 DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 2
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 2
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase EvaluatingIncrement (stack depth=1, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 evaluating increment for iteration 0
@@ -903,12 +1009,14 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 } (1 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 9
 DEBUG: ForStmt - Lane 0 created iteration starting block 9 for iteration 1
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
 DEBUG: assignLaneToBlock - BEFORE: block 9 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 2
+DEBUG: Removed lane 0 from block 2
 DEBUG: assignLaneToBlock - AFTER: block 9 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 9
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 9
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 9
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 9
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 9, instruction key=(0x5030000018d0,9)
@@ -925,6 +1033,9 @@ DEBUG: AssignStmt - Lane 0 caught WaveOperationWaitException, re-throwing
 DEBUG: ForStmt - Lane 0 waiting for wave operation in phase 5 at statement 0, iteration 1
 DEBUG: WAVE_WAIT: Lane 0 caught WaveOperationWaitException, state=2
 DEBUG: WAVE_OP: Storing collective result for lanes: 0  (phase: 2)
+DEBUG: onLaneFinishWaveOp - Lane 0 finishing wave op in block 9
+DEBUG: onLaneFinishWaveOp - Current status in block 9: 2
+DEBUG: onLaneFinishWaveOp - Updated lane 0 to Participating in block 9
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=1, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 0
@@ -943,24 +1054,28 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: addUnknownLane - adding lane 0 to new block 11
 DEBUG: ForStmt - Lane 0 in phase EvaluatingInit (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 evaluating init
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 10
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 10
 DEBUG: assignLaneToBlock - BEFORE: block 10 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 0) to block 10 (type 4), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 9
+DEBUG: Removed lane 0 from block 9
 DEBUG: assignLaneToBlock - AFTER: block 10 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 10
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 10
 DEBUG: ForStmt - Lane 0 child statement needs resume
   Block before: 9, Block after: 10
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=2, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
 DEBUG: assignLaneToBlock - BEFORE: block 9 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 10 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 10
+DEBUG: Removed lane 0 from block 10
 DEBUG: assignLaneToBlock - AFTER: block 9 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 9
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 9
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 9
 DEBUG: ForStmt - Lane 0 executing statement 1 in block 9
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
@@ -979,12 +1094,14 @@ DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
 DEBUG: findOrCreateBlockForPath called with 0 waves of unknown lanes
 DEBUG: ForStmt - Lane 0 created iteration starting block 12 for iteration 0
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 12
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 12
 DEBUG: assignLaneToBlock - BEFORE: block 12 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 0) to block 12 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 9
+DEBUG: Removed lane 0 from block 9
 DEBUG: assignLaneToBlock - AFTER: block 12 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 12
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 12
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 12
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 12
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 12, instruction key=(0x503000001990,12)
@@ -1002,52 +1119,63 @@ DEBUG: ForStmt - Lane 0 waiting for wave operation in phase 5 at statement 0, it
 DEBUG: ForStmt - Lane 0 waiting for wave operation in phase 5 at statement 1, iteration 1
 DEBUG: WAVE_WAIT: Lane 0 caught WaveOperationWaitException, state=2
 DEBUG: WAVE_OP: Storing collective result for lanes: 0  (phase: 2)
+DEBUG: onLaneFinishWaveOp - Lane 0 finishing wave op in block 12
+DEBUG: onLaneFinishWaveOp - Current status in block 12: 2
+DEBUG: onLaneFinishWaveOp - Updated lane 0 to Participating in block 12
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=2, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
 DEBUG: assignLaneToBlock - BEFORE: block 9 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 12 (type 0) to block 9 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 12
+DEBUG: Removed lane 0 from block 12
 DEBUG: assignLaneToBlock - AFTER: block 9 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 9
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 9
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 9
 DEBUG: ForStmt - Lane 0 executing statement 1 in block 9
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 12
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 12
 DEBUG: assignLaneToBlock - BEFORE: block 12 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 0) to block 12 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 9
+DEBUG: Removed lane 0 from block 9
 DEBUG: assignLaneToBlock - AFTER: block 12 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 12
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 12
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 12
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 12
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 12, instruction key=(0x503000001990,12)
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 1 (phase: Consumed)
 DEBUG: ForStmt - Lane 0 body completed in block 12, moving to header block 10 for increment
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 10
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 10
 DEBUG: assignLaneToBlock - BEFORE: block 10 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 12 (type 0) to block 10 (type 4), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 12
+DEBUG: Removed lane 0 from block 12
 DEBUG: assignLaneToBlock - AFTER: block 10 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 10
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 10
 DEBUG: ForStmt - Lane 0 child statement needs resume
   Block before: 9, Block after: 10
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=2, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
 DEBUG: assignLaneToBlock - BEFORE: block 9 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 10 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 10
+DEBUG: Removed lane 0 from block 10
 DEBUG: assignLaneToBlock - AFTER: block 9 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 9
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 9
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 9
 DEBUG: ForStmt - Lane 0 executing statement 1 in block 9
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
@@ -1076,12 +1204,14 @@ DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
 DEBUG: findOrCreateBlockForPath called with 0 waves of unknown lanes
 DEBUG: ForStmt - Lane 0 created iteration starting block 13 for iteration 1
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 13
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 13
 DEBUG: assignLaneToBlock - BEFORE: block 13 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 0) to block 13 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 9
+DEBUG: Removed lane 0 from block 9
 DEBUG: assignLaneToBlock - AFTER: block 13 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 13
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 13
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 13
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 13
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 13, instruction key=(0x503000001990,13)
@@ -1099,52 +1229,63 @@ DEBUG: ForStmt - Lane 0 waiting for wave operation in phase 5 at statement 0, it
 DEBUG: ForStmt - Lane 0 waiting for wave operation in phase 5 at statement 1, iteration 1
 DEBUG: WAVE_WAIT: Lane 0 caught WaveOperationWaitException, state=2
 DEBUG: WAVE_OP: Storing collective result for lanes: 0  (phase: 2)
+DEBUG: onLaneFinishWaveOp - Lane 0 finishing wave op in block 13
+DEBUG: onLaneFinishWaveOp - Current status in block 13: 2
+DEBUG: onLaneFinishWaveOp - Updated lane 0 to Participating in block 13
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=2, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
 DEBUG: assignLaneToBlock - BEFORE: block 9 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 13 (type 0) to block 9 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 13
+DEBUG: Removed lane 0 from block 13
 DEBUG: assignLaneToBlock - AFTER: block 9 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 9
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 9
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 9
 DEBUG: ForStmt - Lane 0 executing statement 1 in block 9
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 13
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 13
 DEBUG: assignLaneToBlock - BEFORE: block 13 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 0) to block 13 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 9
+DEBUG: Removed lane 0 from block 9
 DEBUG: assignLaneToBlock - AFTER: block 13 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 13
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 13
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 13
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 13
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 13, instruction key=(0x503000001990,13)
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 1 (phase: Consumed)
 DEBUG: ForStmt - Lane 0 body completed in block 13, moving to header block 10 for increment
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 10
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 10
 DEBUG: assignLaneToBlock - BEFORE: block 10 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 13 (type 0) to block 10 (type 4), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 13
+DEBUG: Removed lane 0 from block 13
 DEBUG: assignLaneToBlock - AFTER: block 10 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 10
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 10
 DEBUG: ForStmt - Lane 0 child statement needs resume
   Block before: 9, Block after: 10
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=2, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
 DEBUG: assignLaneToBlock - BEFORE: block 9 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 10 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 10
+DEBUG: Removed lane 0 from block 10
 DEBUG: assignLaneToBlock - AFTER: block 9 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 9
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 9
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 9
 DEBUG: ForStmt - Lane 0 executing statement 1 in block 9
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
@@ -1182,20 +1323,24 @@ DEBUG: ForStmt - Lane 0 executing statement 1 in block 9
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 in phase Reconverging (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 exiting loop after 2 iterations
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 11
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 11
 DEBUG: assignLaneToBlock - BEFORE: block 11 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 0) to block 11 (type 6), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 9
+DEBUG: Removed lane 0 from block 9
 DEBUG: assignLaneToBlock - AFTER: block 11 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 11
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 11
 DEBUG: ForStmt - Lane 0 natural flow from block 9 to block 11 during statement 1 (likely merge block)
 DEBUG: ForStmt - Lane 0 body completed in block 11, moving to header block 2 for increment
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 2
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 2
 DEBUG: assignLaneToBlock - BEFORE: block 2 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 11 (type 6) to block 2 (type 4), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 11
+DEBUG: Removed lane 0 from block 11
 DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 2
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 2
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase EvaluatingIncrement (stack depth=1, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 evaluating increment for iteration 1
@@ -1243,12 +1388,12 @@ DEBUG: removeThreadFromAllSets - block 13 has 0 participating lanes after remova
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase Reconverging (stack depth=1, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 exiting loop after 2 iterations
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 3
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 3
 DEBUG: assignLaneToBlock - BEFORE: block 3 has 0 participating lanes and 0 waiting lanes
-DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 3 (type 6), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - AFTER: block 3 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 3
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 3
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 3, instruction key=(0x503000001a20,3)
 DEBUG: markLaneWaitingForWave - Lane 0 wave 0 in block 3
 DEBUG: markLaneWaitingForWave - Successfully set lane 0 to WaitingForWave in block 3
@@ -1358,10 +1503,15 @@ DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 3 unknown lanes: 1 2 3  - The
 === Sequential Execution ===
 ❌ Execution failed: Execution timeout: possible infinite loop or deadlock
 DEBUG: findOrCreateBlockForPath called with 0 waves of unknown lanes
+DEBUG: Initializing wave 0 with 4 lanes in initial block 1
 DEBUG: markLaneArrived - Lane 0 transitioned from Unknown to Participating in block 1
+DEBUG: Lane 0 assigned to block 1
 DEBUG: markLaneArrived - Lane 1 transitioned from Unknown to Participating in block 1
+DEBUG: Lane 1 assigned to block 1
 DEBUG: markLaneArrived - Lane 2 transitioned from Unknown to Participating in block 1
+DEBUG: Lane 2 assigned to block 1
 DEBUG: markLaneArrived - Lane 3 transitioned from Unknown to Participating in block 1
+DEBUG: Lane 3 assigned to block 1
 DEBUG: ForStmt - Lane 0 starting fresh execution (pushed to stack depth=1, this=0x508000002820)
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
@@ -1377,12 +1527,14 @@ DEBUG: addUnknownLane - adding lane 2 to new block 3
 DEBUG: addUnknownLane - adding lane 3 to new block 3
 DEBUG: ForStmt - Lane 0 in phase EvaluatingInit (stack depth=1, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 evaluating init
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 2
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 2
 DEBUG: assignLaneToBlock - BEFORE: block 2 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 1 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 1
+DEBUG: Removed lane 0 from block 1
 DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 2
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 2
 DEBUG: ForStmt - Lane 1 starting fresh execution (pushed to stack depth=1, this=0x508000002820)
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {1 2 3 } (3 lanes)
@@ -1392,12 +1544,14 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: Found existing block 3 - not modifying unknown lanes
 DEBUG: ForStmt - Lane 1 in phase EvaluatingInit (stack depth=1, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 evaluating init
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 2
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 2
 DEBUG: assignLaneToBlock - BEFORE: block 2 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 1 from block 1 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
-DEBUG: Removed lane 1 from arrivedLanes of block 1
+DEBUG: Removed lane 1 from block 1
 DEBUG: assignLaneToBlock - AFTER: block 2 has 2 participating lanes (0 1) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 2
+DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 2
 DEBUG: ForStmt - Lane 2 starting fresh execution (pushed to stack depth=1, this=0x508000002820)
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {2 3 } (2 lanes)
@@ -1407,12 +1561,14 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: Found existing block 3 - not modifying unknown lanes
 DEBUG: ForStmt - Lane 2 in phase EvaluatingInit (stack depth=1, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 evaluating init
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 2
 DEBUG: assignLaneToBlock - BEFORE: block 2 has 2 participating lanes (0 1) and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 2 from block 1 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
-DEBUG: Removed lane 2 from arrivedLanes of block 1
+DEBUG: Removed lane 2 from block 1
 DEBUG: assignLaneToBlock - AFTER: block 2 has 3 participating lanes (0 1 2) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 2
+DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 2
 DEBUG: ForStmt - Lane 3 starting fresh execution (pushed to stack depth=1, this=0x508000002820)
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {3 } (1 lanes)
@@ -1422,12 +1578,14 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: Found existing block 3 - not modifying unknown lanes
 DEBUG: ForStmt - Lane 3 in phase EvaluatingInit (stack depth=1, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 evaluating init
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 2
 DEBUG: assignLaneToBlock - BEFORE: block 2 has 3 participating lanes (0 1 2) and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 3 from block 1 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
-DEBUG: Removed lane 3 from arrivedLanes of block 1
+DEBUG: Removed lane 3 from block 1
 DEBUG: assignLaneToBlock - AFTER: block 2 has 4 participating lanes (0 1 2 3) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 2
+DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 2
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase EvaluatingCondition (stack depth=1, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 evaluating condition for iteration 0
@@ -1451,12 +1609,14 @@ DEBUG: addUnknownLane - adding lane 1 to new block 4
 DEBUG: addUnknownLane - adding lane 2 to new block 4
 DEBUG: addUnknownLane - adding lane 3 to new block 4
 DEBUG: ForStmt - Lane 0 created iteration starting block 4 for iteration 0
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 4
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 2
+DEBUG: Removed lane 0 from block 2
 DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 4
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 4
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 4
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 4
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 4, instruction key=(0x5030000018d0,4)
@@ -1477,12 +1637,14 @@ DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=1, our index=0, this
 DEBUG: ForStmt - Lane 1 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 1 found existing iteration starting block 4 for iteration 0
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 4
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 1 waiting lanes (0)
 DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 1 from arrivedLanes of block 2
+DEBUG: Removed lane 1 from block 2
 DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (1) and 1 waiting lanes (0)
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 4
+DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 4
 DEBUG: ForStmt - Lane 1 moved to iteration starting block 4
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 4
 DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 4, instruction key=(0x5030000018d0,4)
@@ -1503,12 +1665,14 @@ DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=1, our index=0, this
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 2 found existing iteration starting block 4 for iteration 0
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 4
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 2 waiting lanes (0 1)
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 2 from arrivedLanes of block 2
+DEBUG: Removed lane 2 from block 2
 DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (2) and 2 waiting lanes (0 1)
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 4
+DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 4
 DEBUG: ForStmt - Lane 2 moved to iteration starting block 4
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 4
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 4, instruction key=(0x5030000018d0,4)
@@ -1529,12 +1693,14 @@ DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=1, our index=0, this
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 3 found existing iteration starting block 4 for iteration 0
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 4
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 3 waiting lanes (0 1 2)
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 3 from arrivedLanes of block 2
+DEBUG: Removed lane 3 from block 2
 DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (3) and 3 waiting lanes (0 1 2)
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 4
+DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 4
 DEBUG: ForStmt - Lane 3 moved to iteration starting block 4
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 4
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 4, instruction key=(0x5030000018d0,4)
@@ -1551,6 +1717,18 @@ DEBUG: AssignStmt - Lane 3 caught WaveOperationWaitException, re-throwing
 DEBUG: ForStmt - Lane 3 waiting for wave operation in phase 5 at statement 0, iteration 0
 DEBUG: WAVE_WAIT: Lane 3 caught WaveOperationWaitException, state=2
 DEBUG: WAVE_OP: Storing collective result for lanes: 0 1 2 3  (phase: 2)
+DEBUG: onLaneFinishWaveOp - Lane 0 finishing wave op in block 4
+DEBUG: onLaneFinishWaveOp - Current status in block 4: 2
+DEBUG: onLaneFinishWaveOp - Updated lane 0 to Participating in block 4
+DEBUG: onLaneFinishWaveOp - Lane 1 finishing wave op in block 4
+DEBUG: onLaneFinishWaveOp - Current status in block 4: 2
+DEBUG: onLaneFinishWaveOp - Updated lane 1 to Participating in block 4
+DEBUG: onLaneFinishWaveOp - Lane 2 finishing wave op in block 4
+DEBUG: onLaneFinishWaveOp - Current status in block 4: 2
+DEBUG: onLaneFinishWaveOp - Updated lane 2 to Participating in block 4
+DEBUG: onLaneFinishWaveOp - Lane 3 finishing wave op in block 4
+DEBUG: onLaneFinishWaveOp - Current status in block 4: 2
+DEBUG: onLaneFinishWaveOp - Updated lane 3 to Participating in block 4
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=1, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 0
@@ -1575,12 +1753,14 @@ DEBUG: addUnknownLane - adding lane 2 to new block 6
 DEBUG: addUnknownLane - adding lane 3 to new block 6
 DEBUG: ForStmt - Lane 0 in phase EvaluatingInit (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 evaluating init
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 5
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 5
 DEBUG: assignLaneToBlock - BEFORE: block 5 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 0) to block 5 (type 4), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 4
+DEBUG: Removed lane 0 from block 4
 DEBUG: assignLaneToBlock - AFTER: block 5 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 5
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 5
 DEBUG: ForStmt - Lane 0 child statement needs resume
   Block before: 4, Block after: 5
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
@@ -1601,12 +1781,14 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: Found existing block 6 - not modifying unknown lanes
 DEBUG: ForStmt - Lane 1 in phase EvaluatingInit (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 1 evaluating init
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 5
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 5
 DEBUG: assignLaneToBlock - BEFORE: block 5 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 1 from block 4 (type 0) to block 5 (type 4), isHeaderToLoopBody=0
-DEBUG: Removed lane 1 from arrivedLanes of block 4
+DEBUG: Removed lane 1 from block 4
 DEBUG: assignLaneToBlock - AFTER: block 5 has 2 participating lanes (0 1) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 5
+DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 5
 DEBUG: ForStmt - Lane 1 child statement needs resume
   Block before: 4, Block after: 5
 DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
@@ -1627,12 +1809,14 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: Found existing block 6 - not modifying unknown lanes
 DEBUG: ForStmt - Lane 2 in phase EvaluatingInit (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 2 evaluating init
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 5
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 5
 DEBUG: assignLaneToBlock - BEFORE: block 5 has 2 participating lanes (0 1) and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 2 from block 4 (type 0) to block 5 (type 4), isHeaderToLoopBody=0
-DEBUG: Removed lane 2 from arrivedLanes of block 4
+DEBUG: Removed lane 2 from block 4
 DEBUG: assignLaneToBlock - AFTER: block 5 has 3 participating lanes (0 1 2) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 5
+DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 5
 DEBUG: ForStmt - Lane 2 child statement needs resume
   Block before: 4, Block after: 5
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
@@ -1653,24 +1837,28 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: Found existing block 6 - not modifying unknown lanes
 DEBUG: ForStmt - Lane 3 in phase EvaluatingInit (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 evaluating init
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 5
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 5
 DEBUG: assignLaneToBlock - BEFORE: block 5 has 3 participating lanes (0 1 2) and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 3 from block 4 (type 0) to block 5 (type 4), isHeaderToLoopBody=0
-DEBUG: Removed lane 3 from arrivedLanes of block 4
+DEBUG: Removed lane 3 from block 4
 DEBUG: assignLaneToBlock - AFTER: block 5 has 4 participating lanes (0 1 2 3) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 5
+DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 5
 DEBUG: ForStmt - Lane 3 child statement needs resume
   Block before: 4, Block after: 5
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=2, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 4
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 5
+DEBUG: Removed lane 0 from block 5
 DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 4
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 4
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 4
 DEBUG: ForStmt - Lane 0 executing statement 1 in block 4
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
@@ -1682,12 +1870,14 @@ DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 4
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 1 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 1 from arrivedLanes of block 5
+DEBUG: Removed lane 1 from block 5
 DEBUG: assignLaneToBlock - AFTER: block 4 has 2 participating lanes (0 1) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 4
+DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 4
 DEBUG: ForStmt - Lane 1 moved to iteration starting block 4
 DEBUG: ForStmt - Lane 1 executing statement 1 in block 4
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
@@ -1699,12 +1889,14 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 4
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 2 participating lanes (0 1) and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 2 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 2 from arrivedLanes of block 5
+DEBUG: Removed lane 2 from block 5
 DEBUG: assignLaneToBlock - AFTER: block 4 has 3 participating lanes (0 1 2) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 4
+DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 4
 DEBUG: ForStmt - Lane 2 moved to iteration starting block 4
 DEBUG: ForStmt - Lane 2 executing statement 1 in block 4
 DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
@@ -1716,12 +1908,14 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 4
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 3 participating lanes (0 1 2) and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 3 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 3 from arrivedLanes of block 5
+DEBUG: Removed lane 3 from block 5
 DEBUG: assignLaneToBlock - AFTER: block 4 has 4 participating lanes (0 1 2 3) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 4
+DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 4
 DEBUG: ForStmt - Lane 3 moved to iteration starting block 4
 DEBUG: ForStmt - Lane 3 executing statement 1 in block 4
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
@@ -1740,12 +1934,14 @@ DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
 DEBUG: findOrCreateBlockForPath called with 0 waves of unknown lanes
 DEBUG: ForStmt - Lane 0 created iteration starting block 7 for iteration 0
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 7
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 7
 DEBUG: assignLaneToBlock - BEFORE: block 7 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 4
+DEBUG: Removed lane 0 from block 4
 DEBUG: assignLaneToBlock - AFTER: block 7 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 7
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 7
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 7
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 7
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 7, instruction key=(0x503000001990,7)
@@ -1773,12 +1969,14 @@ DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=1, this
 DEBUG: ForStmt - Lane 1 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 1 found existing iteration starting block 7 for iteration 0
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 7
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 7
 DEBUG: assignLaneToBlock - BEFORE: block 7 has 0 participating lanes and 1 waiting lanes (0)
 DEBUG: assignLaneToBlock - moving lane 1 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 1 from arrivedLanes of block 4
+DEBUG: Removed lane 1 from block 4
 DEBUG: assignLaneToBlock - AFTER: block 7 has 1 participating lanes (1) and 1 waiting lanes (0)
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 7
+DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 7
 DEBUG: ForStmt - Lane 1 moved to iteration starting block 7
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 7
 DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 7, instruction key=(0x503000001990,7)
@@ -1795,6 +1993,12 @@ DEBUG: AssignStmt - Lane 1 caught WaveOperationWaitException, re-throwing
 DEBUG: ForStmt - Lane 1 waiting for wave operation in phase 5 at statement 0, iteration 0
 DEBUG: ForStmt - Lane 1 waiting for wave operation in phase 5 at statement 1, iteration 0
 DEBUG: WAVE_WAIT: Lane 1 caught WaveOperationWaitException, state=2
+DEBUG: onLaneFinishWaveOp - Lane 0 finishing wave op in block 7
+DEBUG: onLaneFinishWaveOp - Current status in block 7: 2
+DEBUG: onLaneFinishWaveOp - Updated lane 0 to Participating in block 7
+DEBUG: onLaneFinishWaveOp - Lane 1 finishing wave op in block 7
+DEBUG: onLaneFinishWaveOp - Current status in block 7: 2
+DEBUG: onLaneFinishWaveOp - Updated lane 1 to Participating in block 7
 DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=2, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 1
@@ -1805,12 +2009,14 @@ DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=1, this
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 2 found existing iteration starting block 7 for iteration 0
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 7
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 7
 DEBUG: assignLaneToBlock - BEFORE: block 7 has 2 participating lanes (0 1) and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 2 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 2 from arrivedLanes of block 4
+DEBUG: Removed lane 2 from block 4
 DEBUG: assignLaneToBlock - AFTER: block 7 has 3 participating lanes (0 1 2) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 7
+DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 7
 DEBUG: ForStmt - Lane 2 moved to iteration starting block 7
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 7
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 7, instruction key=(0x503000001990,7)
@@ -1827,6 +2033,9 @@ DEBUG: AssignStmt - Lane 2 caught WaveOperationWaitException, re-throwing
 DEBUG: ForStmt - Lane 2 waiting for wave operation in phase 5 at statement 0, iteration 0
 DEBUG: ForStmt - Lane 2 waiting for wave operation in phase 5 at statement 1, iteration 0
 DEBUG: WAVE_WAIT: Lane 2 caught WaveOperationWaitException, state=2
+DEBUG: onLaneFinishWaveOp - Lane 2 finishing wave op in block 7
+DEBUG: onLaneFinishWaveOp - Current status in block 7: 2
+DEBUG: onLaneFinishWaveOp - Updated lane 2 to Participating in block 7
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=2, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 1
@@ -1837,12 +2046,14 @@ DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=1, this
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
 DEBUG: ForStmt - Lane 3 found existing iteration starting block 7 for iteration 0
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 7
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 7
 DEBUG: assignLaneToBlock - BEFORE: block 7 has 3 participating lanes (0 1 2) and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 3 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 3 from arrivedLanes of block 4
+DEBUG: Removed lane 3 from block 4
 DEBUG: assignLaneToBlock - AFTER: block 7 has 4 participating lanes (0 1 2 3) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 7
+DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 7
 DEBUG: ForStmt - Lane 3 moved to iteration starting block 7
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 7
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 7, instruction key=(0x503000001990,7)
@@ -1859,64 +2070,77 @@ DEBUG: AssignStmt - Lane 3 caught WaveOperationWaitException, re-throwing
 DEBUG: ForStmt - Lane 3 waiting for wave operation in phase 5 at statement 0, iteration 0
 DEBUG: ForStmt - Lane 3 waiting for wave operation in phase 5 at statement 1, iteration 0
 DEBUG: WAVE_WAIT: Lane 3 caught WaveOperationWaitException, state=2
+DEBUG: onLaneFinishWaveOp - Lane 3 finishing wave op in block 7
+DEBUG: onLaneFinishWaveOp - Current status in block 7: 2
+DEBUG: onLaneFinishWaveOp - Updated lane 3 to Participating in block 7
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=2, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 4
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 7 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 7
+DEBUG: Removed lane 0 from block 7
 DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 4
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 4
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 4
 DEBUG: ForStmt - Lane 0 executing statement 1 in block 4
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 7
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 7
 DEBUG: assignLaneToBlock - BEFORE: block 7 has 3 participating lanes (1 2 3) and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 4
+DEBUG: Removed lane 0 from block 4
 DEBUG: assignLaneToBlock - AFTER: block 7 has 4 participating lanes (0 1 2 3) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 7
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 7
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 7
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 7
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 7, instruction key=(0x503000001990,7)
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 1 (phase: Consumed)
 DEBUG: ForStmt - Lane 0 body completed in block 7, moving to header block 5 for increment
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 5
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 5
 DEBUG: assignLaneToBlock - BEFORE: block 5 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 7 (type 0) to block 5 (type 4), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 7
+DEBUG: Removed lane 0 from block 7
 DEBUG: assignLaneToBlock - AFTER: block 5 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 5
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 5
 DEBUG: ForStmt - Lane 0 child statement needs resume
   Block before: 4, Block after: 5
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=2, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 4
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 1 from block 7 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 1 from arrivedLanes of block 7
+DEBUG: Removed lane 1 from block 7
 DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (1) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 4
+DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 4
 DEBUG: ForStmt - Lane 1 moved to iteration starting block 4
 DEBUG: ForStmt - Lane 1 executing statement 1 in block 4
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 1 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 7
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 7
 DEBUG: assignLaneToBlock - BEFORE: block 7 has 2 participating lanes (2 3) and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 1 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 1 from arrivedLanes of block 4
+DEBUG: Removed lane 1 from block 4
 DEBUG: assignLaneToBlock - AFTER: block 7 has 3 participating lanes (1 2 3) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 7
+DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 7
 DEBUG: ForStmt - Lane 1 moved to iteration starting block 7
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 7
 DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 7, instruction key=(0x503000001990,7)
@@ -1940,24 +2164,28 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 4
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 2 from block 7 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 2 from arrivedLanes of block 7
+DEBUG: Removed lane 2 from block 7
 DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (2) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 4
+DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 4
 DEBUG: ForStmt - Lane 2 moved to iteration starting block 4
 DEBUG: ForStmt - Lane 2 executing statement 1 in block 4
 DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 7
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 7
 DEBUG: assignLaneToBlock - BEFORE: block 7 has 1 participating lanes (3) and 1 waiting lanes (1)
 DEBUG: assignLaneToBlock - moving lane 2 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 2 from arrivedLanes of block 4
+DEBUG: Removed lane 2 from block 4
 DEBUG: assignLaneToBlock - AFTER: block 7 has 2 participating lanes (2 3) and 1 waiting lanes (1)
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 7
+DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 7
 DEBUG: ForStmt - Lane 2 moved to iteration starting block 7
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 7
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 7, instruction key=(0x503000001990,7)
@@ -1981,24 +2209,28 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 4
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 3 from block 7 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 3 from arrivedLanes of block 7
+DEBUG: Removed lane 3 from block 7
 DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (3) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 4
+DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 4
 DEBUG: ForStmt - Lane 3 moved to iteration starting block 4
 DEBUG: ForStmt - Lane 3 executing statement 1 in block 4
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 7
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 7
 DEBUG: assignLaneToBlock - BEFORE: block 7 has 0 participating lanes and 2 waiting lanes (1 2)
 DEBUG: assignLaneToBlock - moving lane 3 from block 4 (type 0) to block 7 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 3 from arrivedLanes of block 4
+DEBUG: Removed lane 3 from block 4
 DEBUG: assignLaneToBlock - AFTER: block 7 has 1 participating lanes (3) and 2 waiting lanes (1 2)
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 7
+DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 7
 DEBUG: ForStmt - Lane 3 moved to iteration starting block 7
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 7
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 7, instruction key=(0x503000001990,7)
@@ -2022,12 +2254,14 @@ DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 4
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 5
+DEBUG: Removed lane 0 from block 5
 DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 4
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 4
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 4
 DEBUG: ForStmt - Lane 0 executing statement 1 in block 4
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
@@ -2056,12 +2290,14 @@ DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
 DEBUG: findOrCreateBlockForPath called with 0 waves of unknown lanes
 DEBUG: ForStmt - Lane 0 created iteration starting block 8 for iteration 1
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 8
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 8
 DEBUG: assignLaneToBlock - BEFORE: block 8 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 0) to block 8 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 4
+DEBUG: Removed lane 0 from block 4
 DEBUG: assignLaneToBlock - AFTER: block 8 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 8
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 8
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 8
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 8
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 8, instruction key=(0x503000001990,8)
@@ -2079,52 +2315,63 @@ DEBUG: ForStmt - Lane 0 waiting for wave operation in phase 5 at statement 0, it
 DEBUG: ForStmt - Lane 0 waiting for wave operation in phase 5 at statement 1, iteration 0
 DEBUG: WAVE_WAIT: Lane 0 caught WaveOperationWaitException, state=2
 DEBUG: WAVE_OP: Storing collective result for lanes: 0  (phase: 2)
+DEBUG: onLaneFinishWaveOp - Lane 0 finishing wave op in block 8
+DEBUG: onLaneFinishWaveOp - Current status in block 8: 2
+DEBUG: onLaneFinishWaveOp - Updated lane 0 to Participating in block 8
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=2, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 4
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 8 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 8
+DEBUG: Removed lane 0 from block 8
 DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 4
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 4
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 4
 DEBUG: ForStmt - Lane 0 executing statement 1 in block 4
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 8
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 8
 DEBUG: assignLaneToBlock - BEFORE: block 8 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 0) to block 8 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 4
+DEBUG: Removed lane 0 from block 4
 DEBUG: assignLaneToBlock - AFTER: block 8 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 8
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 8
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 8
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 8
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 8, instruction key=(0x503000001990,8)
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 1 (phase: Consumed)
 DEBUG: ForStmt - Lane 0 body completed in block 8, moving to header block 5 for increment
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 5
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 5
 DEBUG: assignLaneToBlock - BEFORE: block 5 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 8 (type 0) to block 5 (type 4), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 8
+DEBUG: Removed lane 0 from block 8
 DEBUG: assignLaneToBlock - AFTER: block 5 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 5
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 5
 DEBUG: ForStmt - Lane 0 child statement needs resume
   Block before: 4, Block after: 5
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=2, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 4
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 5 (type 4) to block 4 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 5
+DEBUG: Removed lane 0 from block 5
 DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 4
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 4
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 4
 DEBUG: ForStmt - Lane 0 executing statement 1 in block 4
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
@@ -2162,20 +2409,24 @@ DEBUG: ForStmt - Lane 0 executing statement 1 in block 4
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 in phase Reconverging (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 exiting loop after 2 iterations
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 6
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 6
 DEBUG: assignLaneToBlock - BEFORE: block 6 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 0) to block 6 (type 6), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 4
+DEBUG: Removed lane 0 from block 4
 DEBUG: assignLaneToBlock - AFTER: block 6 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 6
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 6
 DEBUG: ForStmt - Lane 0 natural flow from block 4 to block 6 during statement 1 (likely merge block)
 DEBUG: ForStmt - Lane 0 body completed in block 6, moving to header block 2 for increment
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 2
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 2
 DEBUG: assignLaneToBlock - BEFORE: block 2 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 6 (type 6) to block 2 (type 4), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 6
+DEBUG: Removed lane 0 from block 6
 DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 2
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 2
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase EvaluatingIncrement (stack depth=1, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 evaluating increment for iteration 0
@@ -2190,12 +2441,14 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 } (1 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 9
 DEBUG: ForStmt - Lane 0 created iteration starting block 9 for iteration 1
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
 DEBUG: assignLaneToBlock - BEFORE: block 9 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 2
+DEBUG: Removed lane 0 from block 2
 DEBUG: assignLaneToBlock - AFTER: block 9 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 9
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 9
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 9
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 9
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 9, instruction key=(0x5030000018d0,9)
@@ -2212,6 +2465,9 @@ DEBUG: AssignStmt - Lane 0 caught WaveOperationWaitException, re-throwing
 DEBUG: ForStmt - Lane 0 waiting for wave operation in phase 5 at statement 0, iteration 1
 DEBUG: WAVE_WAIT: Lane 0 caught WaveOperationWaitException, state=2
 DEBUG: WAVE_OP: Storing collective result for lanes: 0  (phase: 2)
+DEBUG: onLaneFinishWaveOp - Lane 0 finishing wave op in block 9
+DEBUG: onLaneFinishWaveOp - Current status in block 9: 2
+DEBUG: onLaneFinishWaveOp - Updated lane 0 to Participating in block 9
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=1, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 0
@@ -2230,24 +2486,28 @@ DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
 DEBUG: addUnknownLane - adding lane 0 to new block 11
 DEBUG: ForStmt - Lane 0 in phase EvaluatingInit (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 evaluating init
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 10
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 10
 DEBUG: assignLaneToBlock - BEFORE: block 10 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 0) to block 10 (type 4), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 9
+DEBUG: Removed lane 0 from block 9
 DEBUG: assignLaneToBlock - AFTER: block 10 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 10
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 10
 DEBUG: ForStmt - Lane 0 child statement needs resume
   Block before: 9, Block after: 10
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=2, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
 DEBUG: assignLaneToBlock - BEFORE: block 9 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 10 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 10
+DEBUG: Removed lane 0 from block 10
 DEBUG: assignLaneToBlock - AFTER: block 9 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 9
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 9
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 9
 DEBUG: ForStmt - Lane 0 executing statement 1 in block 9
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
@@ -2266,12 +2526,14 @@ DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
 DEBUG: findOrCreateBlockForPath called with 0 waves of unknown lanes
 DEBUG: ForStmt - Lane 0 created iteration starting block 12 for iteration 0
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 12
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 12
 DEBUG: assignLaneToBlock - BEFORE: block 12 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 0) to block 12 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 9
+DEBUG: Removed lane 0 from block 9
 DEBUG: assignLaneToBlock - AFTER: block 12 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 12
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 12
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 12
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 12
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 12, instruction key=(0x503000001990,12)
@@ -2289,52 +2551,63 @@ DEBUG: ForStmt - Lane 0 waiting for wave operation in phase 5 at statement 0, it
 DEBUG: ForStmt - Lane 0 waiting for wave operation in phase 5 at statement 1, iteration 1
 DEBUG: WAVE_WAIT: Lane 0 caught WaveOperationWaitException, state=2
 DEBUG: WAVE_OP: Storing collective result for lanes: 0  (phase: 2)
+DEBUG: onLaneFinishWaveOp - Lane 0 finishing wave op in block 12
+DEBUG: onLaneFinishWaveOp - Current status in block 12: 2
+DEBUG: onLaneFinishWaveOp - Updated lane 0 to Participating in block 12
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=2, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
 DEBUG: assignLaneToBlock - BEFORE: block 9 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 12 (type 0) to block 9 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 12
+DEBUG: Removed lane 0 from block 12
 DEBUG: assignLaneToBlock - AFTER: block 9 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 9
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 9
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 9
 DEBUG: ForStmt - Lane 0 executing statement 1 in block 9
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 executing body for iteration 0 from statement 0
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 12
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 12
 DEBUG: assignLaneToBlock - BEFORE: block 12 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 0) to block 12 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 9
+DEBUG: Removed lane 0 from block 9
 DEBUG: assignLaneToBlock - AFTER: block 12 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 12
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 12
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 12
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 12
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 12, instruction key=(0x503000001990,12)
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 1 (phase: Consumed)
 DEBUG: ForStmt - Lane 0 body completed in block 12, moving to header block 10 for increment
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 10
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 10
 DEBUG: assignLaneToBlock - BEFORE: block 10 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 12 (type 0) to block 10 (type 4), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 12
+DEBUG: Removed lane 0 from block 12
 DEBUG: assignLaneToBlock - AFTER: block 10 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 10
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 10
 DEBUG: ForStmt - Lane 0 child statement needs resume
   Block before: 9, Block after: 10
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=2, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
 DEBUG: assignLaneToBlock - BEFORE: block 9 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 10 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 10
+DEBUG: Removed lane 0 from block 10
 DEBUG: assignLaneToBlock - AFTER: block 9 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 9
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 9
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 9
 DEBUG: ForStmt - Lane 0 executing statement 1 in block 9
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
@@ -2363,12 +2636,14 @@ DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
 DEBUG: findOrCreateBlockForPath called with 0 waves of unknown lanes
 DEBUG: ForStmt - Lane 0 created iteration starting block 13 for iteration 1
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 13
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 13
 DEBUG: assignLaneToBlock - BEFORE: block 13 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 0) to block 13 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 9
+DEBUG: Removed lane 0 from block 9
 DEBUG: assignLaneToBlock - AFTER: block 13 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 13
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 13
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 13
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 13
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 13, instruction key=(0x503000001990,13)
@@ -2386,52 +2661,63 @@ DEBUG: ForStmt - Lane 0 waiting for wave operation in phase 5 at statement 0, it
 DEBUG: ForStmt - Lane 0 waiting for wave operation in phase 5 at statement 1, iteration 1
 DEBUG: WAVE_WAIT: Lane 0 caught WaveOperationWaitException, state=2
 DEBUG: WAVE_OP: Storing collective result for lanes: 0  (phase: 2)
+DEBUG: onLaneFinishWaveOp - Lane 0 finishing wave op in block 13
+DEBUG: onLaneFinishWaveOp - Current status in block 13: 2
+DEBUG: onLaneFinishWaveOp - Updated lane 0 to Participating in block 13
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=2, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
 DEBUG: assignLaneToBlock - BEFORE: block 9 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 13 (type 0) to block 9 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 13
+DEBUG: Removed lane 0 from block 13
 DEBUG: assignLaneToBlock - AFTER: block 9 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 9
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 9
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 9
 DEBUG: ForStmt - Lane 0 executing statement 1 in block 9
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 0
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 13
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 13
 DEBUG: assignLaneToBlock - BEFORE: block 13 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 0) to block 13 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 9
+DEBUG: Removed lane 0 from block 9
 DEBUG: assignLaneToBlock - AFTER: block 13 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 13
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 13
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 13
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 13
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 13, instruction key=(0x503000001990,13)
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 1 (phase: Consumed)
 DEBUG: ForStmt - Lane 0 body completed in block 13, moving to header block 10 for increment
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 10
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 10
 DEBUG: assignLaneToBlock - BEFORE: block 10 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 13 (type 0) to block 10 (type 4), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 13
+DEBUG: Removed lane 0 from block 13
 DEBUG: assignLaneToBlock - AFTER: block 10 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 10
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 10
 DEBUG: ForStmt - Lane 0 child statement needs resume
   Block before: 9, Block after: 10
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=2, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (stack depth=2, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 0 needs iteration block (first statement is not control flow)
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
 DEBUG: assignLaneToBlock - BEFORE: block 9 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 10 (type 4) to block 9 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 10
+DEBUG: Removed lane 0 from block 10
 DEBUG: assignLaneToBlock - AFTER: block 9 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 9
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 9
 DEBUG: ForStmt - Lane 0 moved to iteration starting block 9
 DEBUG: ForStmt - Lane 0 executing statement 1 in block 9
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
@@ -2469,20 +2755,24 @@ DEBUG: ForStmt - Lane 0 executing statement 1 in block 9
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 in phase Reconverging (stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 exiting loop after 2 iterations
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 11
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 11
 DEBUG: assignLaneToBlock - BEFORE: block 11 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 9 (type 0) to block 11 (type 6), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 9
+DEBUG: Removed lane 0 from block 9
 DEBUG: assignLaneToBlock - AFTER: block 11 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 11
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 11
 DEBUG: ForStmt - Lane 0 natural flow from block 9 to block 11 during statement 1 (likely merge block)
 DEBUG: ForStmt - Lane 0 body completed in block 11, moving to header block 2 for increment
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 2
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 2
 DEBUG: assignLaneToBlock - BEFORE: block 2 has 0 participating lanes and 0 waiting lanes
 DEBUG: assignLaneToBlock - moving lane 0 from block 11 (type 6) to block 2 (type 4), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 11
+DEBUG: Removed lane 0 from block 11
 DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 2
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 2
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase EvaluatingIncrement (stack depth=1, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 evaluating increment for iteration 1
@@ -2530,12 +2820,12 @@ DEBUG: removeThreadFromAllSets - block 13 has 0 participating lanes after remova
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase Reconverging (stack depth=1, our index=0, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 exiting loop after 2 iterations
+DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 3
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 3
 DEBUG: assignLaneToBlock - BEFORE: block 3 has 0 participating lanes and 0 waiting lanes
-DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 3 (type 6), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from arrivedLanes of block 2
 DEBUG: assignLaneToBlock - AFTER: block 3 has 1 participating lanes (0) and 0 waiting lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 3
+DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 3
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 3, instruction key=(0x503000001a20,3)
 DEBUG: markLaneWaitingForWave - Lane 0 wave 0 in block 3
 DEBUG: markLaneWaitingForWave - Successfully set lane 0 to WaitingForWave in block 3
@@ -3216,7 +3506,7 @@ Wave 0:
   Lane Count: 4
   Active Lanes: 4
   Currently Active Lanes: 4
-  Lane to Block Mapping:
+  Lane to Block Mapping (from registry):
     Lane 0 -> Block 3
     Lane 1 -> Block 7
     Lane 2 -> Block 7
@@ -3547,7 +3837,7 @@ Wave 0:
   Lane Count: 4
   Active Lanes: 4
   Currently Active Lanes: 4
-  Lane to Block Mapping:
+  Lane to Block Mapping (from registry):
     Lane 0 -> Block 3
     Lane 1 -> Block 7
     Lane 2 -> Block 7
