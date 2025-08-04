@@ -2466,8 +2466,9 @@ void ReturnStmt::updateWaveOperationStates(ThreadgroupContext &tg,
             true; // Set resuming flag
         
         // CRITICAL FIX: Update registry status from WaitingForWave back to Participating
-        uint32_t blockId = instructionKey.second;
-        tg.membershipRegistry.onLaneFinishWaveOp(wave.waveId, waitingLaneId, blockId);
+        // Use lane's current block, not stale block from instruction key
+        uint32_t currentBlockId = tg.getCurrentBlock(wave.waveId, waitingLaneId);
+        tg.membershipRegistry.onLaneFinishWaveOp(wave.waveId, waitingLaneId, currentBlockId);
       }
     }
   }
@@ -2902,8 +2903,9 @@ void MiniHLSLInterpreter::processWaveOperations(ThreadgroupContext &tgContext) {
             wave.laneWaitingAtInstruction.erase(laneId);
             
             // CRITICAL FIX: Update registry status from WaitingForWave back to Participating
-            uint32_t blockId = instructionKey.second;
-            tgContext.membershipRegistry.onLaneFinishWaveOp(waveId, laneId, blockId);
+            // Use lane's current block, not stale block from instruction key
+            uint32_t currentBlockId = tgContext.getCurrentBlock(waveId, laneId);
+            tgContext.membershipRegistry.onLaneFinishWaveOp(waveId, laneId, currentBlockId);
           }
         }
 
@@ -6386,9 +6388,10 @@ void ThreadgroupContext::releaseWaveSyncPoint(
         waves[waveId]->lanes[laneId]->isResumingFromWaveOp =
             true; // Set resuming flag
             
-        // CRITICAL FIX: Update registry status from WaitingForWave back to Participating
-        uint32_t blockId = instructionKey.second;
-        membershipRegistry.onLaneFinishWaveOp(waveId, laneId, blockId);
+        // CRITICAL FIX: Update registry status from WaitingForWave back to Participating  
+        // Use lane's current block, not stale block from instruction key
+        uint32_t currentBlockId = getCurrentBlock(waveId, laneId);
+        membershipRegistry.onLaneFinishWaveOp(waveId, laneId, currentBlockId);
       }
       waves[waveId]->laneWaitingAtInstruction.erase(laneId);
     }

@@ -518,9 +518,9 @@ DEBUG: canExecuteWaveInstruction for lane 1 in block 5: canExecuteInBlock=0, all
 DEBUG: AssignStmt - Lane 1 caught WaveOperationWaitException, re-throwing
 DEBUG: SwitchStmt - Lane 1 waiting for wave operation in case 2 at statement 0
 DEBUG: WAVE_WAIT: Lane 1 caught WaveOperationWaitException, state=2
-DEBUG: onLaneFinishWaveOp - Lane 1 finishing wave op in block 4
-DEBUG: onLaneFinishWaveOp - Current status in block 4: 0
-WARNING: onLaneFinishWaveOp - Lane 1 not WaitingForWave in block 4, skipping update
+DEBUG: onLaneFinishWaveOp - Lane 1 finishing wave op in block 5
+DEBUG: onLaneFinishWaveOp - Current status in block 5: 2
+DEBUG: onLaneFinishWaveOp - Updated lane 1 to Participating in block 5
 DEBUG: isAllParticipantsKnown - Block 5 wave 0 has 1 unknown lanes: 0  - These lanes need to be resolved to Participating or Left
 DEBUG: isAllParticipantsKnown - Block 6 wave 0 has 3 unknown lanes: 0 1 2  - These lanes need to be resolved to Participating or Left
 DEBUG: SwitchStmt - Lane 0 resuming switch statement
@@ -534,10 +534,10 @@ DEBUG: SwitchStmt - Lane 0 completed case 1, falling through to next
 DEBUG: SwitchStmt - Lane 0 moving from case block 4 to case block 5 (fallthrough)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 5
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 5
-DEBUG: assignLaneToBlock - BEFORE: block 5 has 0 participating lanes and 2 waiting lanes (1 2)
+DEBUG: assignLaneToBlock - BEFORE: block 5 has 1 participating lanes (1) and 1 waiting lanes (2)
 DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 8) to block 5 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from block 4
-DEBUG: assignLaneToBlock - AFTER: block 5 has 1 participating lanes (0) and 2 waiting lanes (1 2)
+DEBUG: assignLaneToBlock - AFTER: block 5 has 2 participating lanes (0 1) and 1 waiting lanes (2)
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 5
 DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 5
 DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 4
@@ -557,6 +557,7 @@ DEBUG: WAVE_OP: Updated sync point - allParticipantsKnown=1, allParticipantsArri
 DEBUG: AssignStmt - Lane 0 caught WaveOperationWaitException, re-throwing
 DEBUG: SwitchStmt - Lane 0 waiting for wave operation in case 2 at statement 0
 DEBUG: WAVE_WAIT: Lane 0 caught WaveOperationWaitException, state=2
+DEBUG: WAVE_OP: Updated participants before execution to include all current block lanes: 0 1 2 
 DEBUG: WAVE_OP: Storing collective result for lanes: 0 1 2  (phase: 2)
 DEBUG: isAllParticipantsKnown - Block 6 wave 0 has 3 unknown lanes: 0 1 2  - These lanes need to be resolved to Participating or Left
 DEBUG: SwitchStmt - Lane 1 resuming switch statement
@@ -578,7 +579,7 @@ DEBUG: removeThreadFromAllSets - block 4 had 0 participating lanes before remova
 DEBUG: removeThreadFromAllSets - block 4 has 0 participating lanes after removal
 DEBUG: SwitchStmt - Lane 1 removing from case block 5 (case 2) due to break
 DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 5
-DEBUG: removeThreadFromAllSets - block 5 had 3 participating lanes before removal (waiting: 0 1 2 )
+DEBUG: removeThreadFromAllSets - block 5 had 3 participating lanes before removal (participating: 1 ) (waiting: 0 2 )
 DEBUG: removeThreadFromAllSets - block 5 has 2 participating lanes after removal (waiting: 0 2 )
 DEBUG: SwitchStmt - Lane 1 removing from case block 6 (case 3) due to break
 DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 6
@@ -1225,9 +1226,9 @@ DEBUG: canExecuteWaveInstruction for lane 1 in block 5: canExecuteInBlock=0, all
 DEBUG: AssignStmt - Lane 1 caught WaveOperationWaitException, re-throwing
 DEBUG: SwitchStmt - Lane 1 waiting for wave operation in case 2 at statement 0
 DEBUG: WAVE_WAIT: Lane 1 caught WaveOperationWaitException, state=2
-DEBUG: onLaneFinishWaveOp - Lane 1 finishing wave op in block 4
-DEBUG: onLaneFinishWaveOp - Current status in block 4: 0
-WARNING: onLaneFinishWaveOp - Lane 1 not WaitingForWave in block 4, skipping update
+DEBUG: onLaneFinishWaveOp - Lane 1 finishing wave op in block 5
+DEBUG: onLaneFinishWaveOp - Current status in block 5: 2
+DEBUG: onLaneFinishWaveOp - Updated lane 1 to Participating in block 5
 DEBUG: isAllParticipantsKnown - Block 5 wave 0 has 1 unknown lanes: 0  - These lanes need to be resolved to Participating or Left
 DEBUG: isAllParticipantsKnown - Block 6 wave 0 has 3 unknown lanes: 0 1 2  - These lanes need to be resolved to Participating or Left
 DEBUG: SwitchStmt - Lane 0 resuming switch statement
@@ -1241,10 +1242,10 @@ DEBUG: SwitchStmt - Lane 0 completed case 1, falling through to next
 DEBUG: SwitchStmt - Lane 0 moving from case block 4 to case block 5 (fallthrough)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 5
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 5
-DEBUG: assignLaneToBlock - BEFORE: block 5 has 0 participating lanes and 2 waiting lanes (1 2)
+DEBUG: assignLaneToBlock - BEFORE: block 5 has 1 participating lanes (1) and 1 waiting lanes (2)
 DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 8) to block 5 (type 8), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from block 4
-DEBUG: assignLaneToBlock - AFTER: block 5 has 1 participating lanes (0) and 2 waiting lanes (1 2)
+DEBUG: assignLaneToBlock - AFTER: block 5 has 2 participating lanes (0 1) and 1 waiting lanes (2)
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 5
 DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 5
 DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 4
@@ -1264,6 +1265,7 @@ DEBUG: WAVE_OP: Updated sync point - allParticipantsKnown=1, allParticipantsArri
 DEBUG: AssignStmt - Lane 0 caught WaveOperationWaitException, re-throwing
 DEBUG: SwitchStmt - Lane 0 waiting for wave operation in case 2 at statement 0
 DEBUG: WAVE_WAIT: Lane 0 caught WaveOperationWaitException, state=2
+DEBUG: WAVE_OP: Updated participants before execution to include all current block lanes: 0 1 2 
 DEBUG: WAVE_OP: Storing collective result for lanes: 0 1 2  (phase: 2)
 DEBUG: isAllParticipantsKnown - Block 6 wave 0 has 3 unknown lanes: 0 1 2  - These lanes need to be resolved to Participating or Left
 DEBUG: SwitchStmt - Lane 1 resuming switch statement
@@ -1285,7 +1287,7 @@ DEBUG: removeThreadFromAllSets - block 4 had 0 participating lanes before remova
 DEBUG: removeThreadFromAllSets - block 4 has 0 participating lanes after removal
 DEBUG: SwitchStmt - Lane 1 removing from case block 5 (case 2) due to break
 DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 5
-DEBUG: removeThreadFromAllSets - block 5 had 3 participating lanes before removal (waiting: 0 1 2 )
+DEBUG: removeThreadFromAllSets - block 5 had 3 participating lanes before removal (participating: 1 ) (waiting: 0 2 )
 DEBUG: removeThreadFromAllSets - block 5 has 2 participating lanes after removal (waiting: 0 2 )
 DEBUG: SwitchStmt - Lane 1 removing from case block 6 (case 3) due to break
 DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 6
