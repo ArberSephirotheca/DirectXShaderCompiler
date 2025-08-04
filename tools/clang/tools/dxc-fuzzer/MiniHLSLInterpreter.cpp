@@ -5682,6 +5682,7 @@ void ThreadgroupContext::assignLaneToBlock(WaveId waveId, LaneId laneId,
   // Show current state before assignment
   auto partBefore = membershipRegistry.getParticipatingLanes(waveId, blockId);
   auto waitBefore = membershipRegistry.getWaitingLanes(waveId, blockId);
+  auto unknownBefore = membershipRegistry.getUnknownLanes(waveId, blockId);
   std::cout << "DEBUG: assignLaneToBlock - BEFORE: block " << blockId 
             << " has " << partBefore.size() << " participating lanes";
   if (!partBefore.empty()) {
@@ -5692,11 +5693,20 @@ void ThreadgroupContext::assignLaneToBlock(WaveId waveId, LaneId laneId,
     }
     std::cout << ")";
   }
-  std::cout << " and " << waitBefore.size() << " waiting lanes";
+  std::cout << ", " << waitBefore.size() << " waiting lanes";
   if (!waitBefore.empty()) {
     std::cout << " (";
     for (auto it = waitBefore.begin(); it != waitBefore.end(); ++it) {
       if (it != waitBefore.begin()) std::cout << " ";
+      std::cout << *it;
+    }
+    std::cout << ")";
+  }
+  std::cout << ", " << unknownBefore.size() << " unknown lanes";
+  if (!unknownBefore.empty()) {
+    std::cout << " (";
+    for (auto it = unknownBefore.begin(); it != unknownBefore.end(); ++it) {
+      if (it != unknownBefore.begin()) std::cout << " ";
       std::cout << *it;
     }
     std::cout << ")";
@@ -5762,6 +5772,7 @@ void ThreadgroupContext::assignLaneToBlock(WaveId waveId, LaneId laneId,
   // Show state after assignment
   auto partAfter = membershipRegistry.getParticipatingLanes(waveId, blockId);
   auto waitAfter = membershipRegistry.getWaitingLanes(waveId, blockId);
+  auto unknownAfter = membershipRegistry.getUnknownLanes(waveId, blockId);
   std::cout << "DEBUG: assignLaneToBlock - AFTER: block " << blockId 
             << " has " << partAfter.size() << " participating lanes";
   if (!partAfter.empty()) {
@@ -5772,11 +5783,20 @@ void ThreadgroupContext::assignLaneToBlock(WaveId waveId, LaneId laneId,
     }
     std::cout << ")";
   }
-  std::cout << " and " << waitAfter.size() << " waiting lanes";
+  std::cout << ", " << waitAfter.size() << " waiting lanes";
   if (!waitAfter.empty()) {
     std::cout << " (";
     for (auto it = waitAfter.begin(); it != waitAfter.end(); ++it) {
       if (it != waitAfter.begin()) std::cout << " ";
+      std::cout << *it;
+    }
+    std::cout << ")";
+  }
+  std::cout << ", " << unknownAfter.size() << " unknown lanes";
+  if (!unknownAfter.empty()) {
+    std::cout << " (";
+    for (auto it = unknownAfter.begin(); it != unknownAfter.end(); ++it) {
+      if (it != unknownAfter.begin()) std::cout << " ";
       std::cout << *it;
     }
     std::cout << ")";
@@ -6014,11 +6034,11 @@ ThreadgroupContext::getWaveOperationParticipants(WaveId waveId,
 
   const auto &block = blockIt->second;
 
-  // Return all lanes from the same wave that have arrived at this block and are
-  // still active
+  // Return all lanes from the same wave that are CURRENTLY participating in this block
+  // Use participating lanes instead of arrived lanes to avoid stale membership
   std::vector<LaneId> participants;
-  auto arrivedLanes = membershipRegistry.getArrivedLanes(waveId, blockId);
-  for (LaneId participantId : arrivedLanes) {
+  auto participatingLanes = membershipRegistry.getParticipatingLanes(waveId, blockId);
+  for (LaneId participantId : participatingLanes) {
     if (participantId < waves[waveId]->lanes.size() &&
         waves[waveId]->lanes[participantId]->isActive &&
         !waves[waveId]->lanes[participantId]->hasReturned) {

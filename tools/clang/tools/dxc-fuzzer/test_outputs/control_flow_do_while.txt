@@ -91,10 +91,10 @@ DEBUG: addUnknownLane - adding lane 3 to new block 4
 DEBUG: DoWhileStmt - Lane 0 created iteration starting block 4 for iteration 0
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 4
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 4
-DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 0 waiting lanes
+DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes, 0 waiting lanes, 4 unknown lanes (0 1 2 3)
 DEBUG: assignLaneToBlock - moving lane 0 from block 1 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from block 1
-DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (0) and 0 waiting lanes
+DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (0), 0 waiting lanes, 3 unknown lanes (1 2 3)
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 4
 DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 4
 DEBUG: DoWhileStmt - Lane 0 moved to iteration starting block 4 for iteration 0
@@ -123,10 +123,10 @@ DEBUG: DoWhileStmt - Lane 1 needs iteration block (first statement is not contro
 DEBUG: DoWhileStmt - Lane 1 found existing iteration starting block 4 for iteration 0
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 4
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 4
-DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 1 waiting lanes (0)
+DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes, 1 waiting lanes (0), 3 unknown lanes (1 2 3)
 DEBUG: assignLaneToBlock - moving lane 1 from block 1 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from block 1
-DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (1) and 1 waiting lanes (0)
+DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (1), 1 waiting lanes (0), 2 unknown lanes (2 3)
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 4
 DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 4
 DEBUG: DoWhileStmt - Lane 1 moved to iteration starting block 4 for iteration 0
@@ -155,10 +155,10 @@ DEBUG: DoWhileStmt - Lane 2 needs iteration block (first statement is not contro
 DEBUG: DoWhileStmt - Lane 2 found existing iteration starting block 4 for iteration 0
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 4
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 4
-DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 2 waiting lanes (0 1)
+DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes, 2 waiting lanes (0 1), 2 unknown lanes (2 3)
 DEBUG: assignLaneToBlock - moving lane 2 from block 1 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from block 1
-DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (2) and 2 waiting lanes (0 1)
+DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (2), 2 waiting lanes (0 1), 1 unknown lanes (3)
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 4
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 4
 DEBUG: DoWhileStmt - Lane 2 moved to iteration starting block 4 for iteration 0
@@ -187,10 +187,10 @@ DEBUG: DoWhileStmt - Lane 3 needs iteration block (first statement is not contro
 DEBUG: DoWhileStmt - Lane 3 found existing iteration starting block 4 for iteration 0
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 4
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 4
-DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 3 waiting lanes (0 1 2)
+DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes, 3 waiting lanes (0 1 2), 1 unknown lanes (3)
 DEBUG: assignLaneToBlock - moving lane 3 from block 1 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from block 1
-DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (3) and 3 waiting lanes (0 1 2)
+DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (3), 3 waiting lanes (0 1 2), 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 4
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 4
 DEBUG: DoWhileStmt - Lane 3 moved to iteration starting block 4 for iteration 0
@@ -228,10 +228,10 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 4 (phase: Executed)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 2
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 2
-DEBUG: assignLaneToBlock - BEFORE: block 2 has 0 participating lanes and 0 waiting lanes
+DEBUG: assignLaneToBlock - BEFORE: block 2 has 0 participating lanes, 0 waiting lanes, 4 unknown lanes (0 1 2 3)
 DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from block 4
-DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (0) and 0 waiting lanes
+DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (0), 0 waiting lanes, 3 unknown lanes (1 2 3)
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 2
 DEBUG: DoWhileStmt - Lane 0 completed body for iteration 0
@@ -243,10 +243,10 @@ DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 4 (phase: Executed)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 2
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 2
-DEBUG: assignLaneToBlock - BEFORE: block 2 has 1 participating lanes (0) and 0 waiting lanes
+DEBUG: assignLaneToBlock - BEFORE: block 2 has 1 participating lanes (0), 0 waiting lanes, 3 unknown lanes (1 2 3)
 DEBUG: assignLaneToBlock - moving lane 1 from block 4 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from block 4
-DEBUG: assignLaneToBlock - AFTER: block 2 has 2 participating lanes (0 1) and 0 waiting lanes
+DEBUG: assignLaneToBlock - AFTER: block 2 has 2 participating lanes (0 1), 0 waiting lanes, 2 unknown lanes (2 3)
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 2
 DEBUG: DoWhileStmt - Lane 1 completed body for iteration 0
@@ -258,10 +258,10 @@ DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 4 (phase: Executed)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 2
-DEBUG: assignLaneToBlock - BEFORE: block 2 has 2 participating lanes (0 1) and 0 waiting lanes
+DEBUG: assignLaneToBlock - BEFORE: block 2 has 2 participating lanes (0 1), 0 waiting lanes, 2 unknown lanes (2 3)
 DEBUG: assignLaneToBlock - moving lane 2 from block 4 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from block 4
-DEBUG: assignLaneToBlock - AFTER: block 2 has 3 participating lanes (0 1 2) and 0 waiting lanes
+DEBUG: assignLaneToBlock - AFTER: block 2 has 3 participating lanes (0 1 2), 0 waiting lanes, 1 unknown lanes (3)
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 2
 DEBUG: DoWhileStmt - Lane 2 completed body for iteration 0
@@ -273,10 +273,10 @@ DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 4 (phase: Consumed)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 2
-DEBUG: assignLaneToBlock - BEFORE: block 2 has 3 participating lanes (0 1 2) and 0 waiting lanes
+DEBUG: assignLaneToBlock - BEFORE: block 2 has 3 participating lanes (0 1 2), 0 waiting lanes, 1 unknown lanes (3)
 DEBUG: assignLaneToBlock - moving lane 3 from block 4 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from block 4
-DEBUG: assignLaneToBlock - AFTER: block 2 has 4 participating lanes (0 1 2 3) and 0 waiting lanes
+DEBUG: assignLaneToBlock - AFTER: block 2 has 4 participating lanes (0 1 2 3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 2
 DEBUG: DoWhileStmt - Lane 3 completed body for iteration 0
@@ -308,16 +308,16 @@ DEBUG: DoWhileStmt - Lane 0 resuming do-while loop
 DEBUG: DoWhileStmt - Lane 0 reconverging from do-while loop
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 3
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 3
-DEBUG: assignLaneToBlock - BEFORE: block 3 has 0 participating lanes and 0 waiting lanes
-DEBUG: assignLaneToBlock - AFTER: block 3 has 1 participating lanes (0) and 0 waiting lanes
+DEBUG: assignLaneToBlock - BEFORE: block 3 has 0 participating lanes, 0 waiting lanes, 4 unknown lanes (0 1 2 3)
+DEBUG: assignLaneToBlock - AFTER: block 3 has 1 participating lanes (0), 0 waiting lanes, 3 unknown lanes (1 2 3)
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 3
 DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 3
 DEBUG: DoWhileStmt - Lane 1 resuming do-while loop
 DEBUG: DoWhileStmt - Lane 1 reconverging from do-while loop
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 3
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 3
-DEBUG: assignLaneToBlock - BEFORE: block 3 has 1 participating lanes (0) and 0 waiting lanes
-DEBUG: assignLaneToBlock - AFTER: block 3 has 2 participating lanes (0 1) and 0 waiting lanes
+DEBUG: assignLaneToBlock - BEFORE: block 3 has 1 participating lanes (0), 0 waiting lanes, 3 unknown lanes (1 2 3)
+DEBUG: assignLaneToBlock - AFTER: block 3 has 2 participating lanes (0 1), 0 waiting lanes, 2 unknown lanes (2 3)
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 3
 DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 3
 DEBUG: DoWhileStmt - Lane 2 resuming do-while loop
@@ -330,10 +330,10 @@ DEBUG: addUnknownLane - adding lane 3 to new block 5
 DEBUG: DoWhileStmt - Lane 2 created iteration starting block 5 for iteration 1
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 5
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 5
-DEBUG: assignLaneToBlock - BEFORE: block 5 has 0 participating lanes and 0 waiting lanes
+DEBUG: assignLaneToBlock - BEFORE: block 5 has 0 participating lanes, 0 waiting lanes, 2 unknown lanes (2 3)
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 5 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from block 2
-DEBUG: assignLaneToBlock - AFTER: block 5 has 1 participating lanes (2) and 0 waiting lanes
+DEBUG: assignLaneToBlock - AFTER: block 5 has 1 participating lanes (2), 0 waiting lanes, 1 unknown lanes (3)
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 5
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 5
 DEBUG: DoWhileStmt - Lane 2 moved to iteration starting block 5 for iteration 1
@@ -356,10 +356,10 @@ DEBUG: DoWhileStmt - Lane 3 needs iteration block (first statement is not contro
 DEBUG: DoWhileStmt - Lane 3 found existing iteration starting block 5 for iteration 1
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 5
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 5
-DEBUG: assignLaneToBlock - BEFORE: block 5 has 0 participating lanes and 1 waiting lanes (2)
+DEBUG: assignLaneToBlock - BEFORE: block 5 has 0 participating lanes, 1 waiting lanes (2), 1 unknown lanes (3)
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 5 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from block 2
-DEBUG: assignLaneToBlock - AFTER: block 5 has 1 participating lanes (3) and 1 waiting lanes (2)
+DEBUG: assignLaneToBlock - AFTER: block 5 has 1 participating lanes (3), 1 waiting lanes (2), 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 5
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 5
 DEBUG: DoWhileStmt - Lane 3 moved to iteration starting block 5 for iteration 1
@@ -415,10 +415,10 @@ DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 2 (phase: Executed)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 2
-DEBUG: assignLaneToBlock - BEFORE: block 2 has 0 participating lanes and 0 waiting lanes
+DEBUG: assignLaneToBlock - BEFORE: block 2 has 0 participating lanes, 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - moving lane 2 from block 5 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from block 5
-DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (2) and 0 waiting lanes
+DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (2), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 2
 DEBUG: DoWhileStmt - Lane 2 completed body for iteration 1
@@ -431,10 +431,10 @@ DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 2 (phase: Consumed)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 2
-DEBUG: assignLaneToBlock - BEFORE: block 2 has 1 participating lanes (2) and 0 waiting lanes
+DEBUG: assignLaneToBlock - BEFORE: block 2 has 1 participating lanes (2), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - moving lane 3 from block 5 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from block 5
-DEBUG: assignLaneToBlock - AFTER: block 2 has 2 participating lanes (2 3) and 0 waiting lanes
+DEBUG: assignLaneToBlock - AFTER: block 2 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 2
 DEBUG: DoWhileStmt - Lane 3 completed body for iteration 1
@@ -461,8 +461,8 @@ DEBUG: DoWhileStmt - Lane 2 resuming do-while loop
 DEBUG: DoWhileStmt - Lane 2 reconverging from do-while loop
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 3
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 3
-DEBUG: assignLaneToBlock - BEFORE: block 3 has 0 participating lanes and 2 waiting lanes (0 1)
-DEBUG: assignLaneToBlock - AFTER: block 3 has 1 participating lanes (2) and 2 waiting lanes (0 1)
+DEBUG: assignLaneToBlock - BEFORE: block 3 has 0 participating lanes, 2 waiting lanes (0 1), 2 unknown lanes (2 3)
+DEBUG: assignLaneToBlock - AFTER: block 3 has 1 participating lanes (2), 2 waiting lanes (0 1), 1 unknown lanes (3)
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 3
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 3
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 1 unknown lanes: 3  - These lanes need to be resolved to Participating or Left
@@ -475,10 +475,10 @@ DEBUG: addUnknownLane - adding lane 3 to new block 6
 DEBUG: DoWhileStmt - Lane 3 created iteration starting block 6 for iteration 2
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 6
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 6
-DEBUG: assignLaneToBlock - BEFORE: block 6 has 0 participating lanes and 0 waiting lanes
+DEBUG: assignLaneToBlock - BEFORE: block 6 has 0 participating lanes, 0 waiting lanes, 1 unknown lanes (3)
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 6 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from block 2
-DEBUG: assignLaneToBlock - AFTER: block 6 has 1 participating lanes (3) and 0 waiting lanes
+DEBUG: assignLaneToBlock - AFTER: block 6 has 1 participating lanes (3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 6
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 6
 DEBUG: DoWhileStmt - Lane 3 moved to iteration starting block 6 for iteration 2
@@ -520,10 +520,10 @@ DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 1 (phase: Consumed)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 2
-DEBUG: assignLaneToBlock - BEFORE: block 2 has 0 participating lanes and 0 waiting lanes
+DEBUG: assignLaneToBlock - BEFORE: block 2 has 0 participating lanes, 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - moving lane 3 from block 6 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from block 6
-DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (3) and 0 waiting lanes
+DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 2
 DEBUG: DoWhileStmt - Lane 3 completed body for iteration 2
@@ -551,8 +551,8 @@ DEBUG: DoWhileStmt - Lane 3 resuming do-while loop
 DEBUG: DoWhileStmt - Lane 3 reconverging from do-while loop
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 3
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 3
-DEBUG: assignLaneToBlock - BEFORE: block 3 has 0 participating lanes and 3 waiting lanes (0 1 2)
-DEBUG: assignLaneToBlock - AFTER: block 3 has 1 participating lanes (3) and 3 waiting lanes (0 1 2)
+DEBUG: assignLaneToBlock - BEFORE: block 3 has 0 participating lanes, 3 waiting lanes (0 1 2), 1 unknown lanes (3)
+DEBUG: assignLaneToBlock - AFTER: block 3 has 1 participating lanes (3), 3 waiting lanes (0 1 2), 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 3
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 3
 DEBUG: WAVE_OP: Updated participants before execution to include all current block lanes: 0 1 2 3 
@@ -622,10 +622,10 @@ DEBUG: addUnknownLane - adding lane 3 to new block 4
 DEBUG: DoWhileStmt - Lane 0 created iteration starting block 4 for iteration 0
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 4
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 4
-DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 0 waiting lanes
+DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes, 0 waiting lanes, 4 unknown lanes (0 1 2 3)
 DEBUG: assignLaneToBlock - moving lane 0 from block 1 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from block 1
-DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (0) and 0 waiting lanes
+DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (0), 0 waiting lanes, 3 unknown lanes (1 2 3)
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 4
 DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 4
 DEBUG: DoWhileStmt - Lane 0 moved to iteration starting block 4 for iteration 0
@@ -654,10 +654,10 @@ DEBUG: DoWhileStmt - Lane 1 needs iteration block (first statement is not contro
 DEBUG: DoWhileStmt - Lane 1 found existing iteration starting block 4 for iteration 0
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 4
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 4
-DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 1 waiting lanes (0)
+DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes, 1 waiting lanes (0), 3 unknown lanes (1 2 3)
 DEBUG: assignLaneToBlock - moving lane 1 from block 1 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from block 1
-DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (1) and 1 waiting lanes (0)
+DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (1), 1 waiting lanes (0), 2 unknown lanes (2 3)
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 4
 DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 4
 DEBUG: DoWhileStmt - Lane 1 moved to iteration starting block 4 for iteration 0
@@ -686,10 +686,10 @@ DEBUG: DoWhileStmt - Lane 2 needs iteration block (first statement is not contro
 DEBUG: DoWhileStmt - Lane 2 found existing iteration starting block 4 for iteration 0
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 4
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 4
-DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 2 waiting lanes (0 1)
+DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes, 2 waiting lanes (0 1), 2 unknown lanes (2 3)
 DEBUG: assignLaneToBlock - moving lane 2 from block 1 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from block 1
-DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (2) and 2 waiting lanes (0 1)
+DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (2), 2 waiting lanes (0 1), 1 unknown lanes (3)
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 4
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 4
 DEBUG: DoWhileStmt - Lane 2 moved to iteration starting block 4 for iteration 0
@@ -718,10 +718,10 @@ DEBUG: DoWhileStmt - Lane 3 needs iteration block (first statement is not contro
 DEBUG: DoWhileStmt - Lane 3 found existing iteration starting block 4 for iteration 0
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 4
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 4
-DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes and 3 waiting lanes (0 1 2)
+DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes, 3 waiting lanes (0 1 2), 1 unknown lanes (3)
 DEBUG: assignLaneToBlock - moving lane 3 from block 1 (type 0) to block 4 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from block 1
-DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (3) and 3 waiting lanes (0 1 2)
+DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (3), 3 waiting lanes (0 1 2), 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 4
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 4
 DEBUG: DoWhileStmt - Lane 3 moved to iteration starting block 4 for iteration 0
@@ -759,10 +759,10 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 4 (phase: Executed)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 2
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 2
-DEBUG: assignLaneToBlock - BEFORE: block 2 has 0 participating lanes and 0 waiting lanes
+DEBUG: assignLaneToBlock - BEFORE: block 2 has 0 participating lanes, 0 waiting lanes, 4 unknown lanes (0 1 2 3)
 DEBUG: assignLaneToBlock - moving lane 0 from block 4 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 0 from block 4
-DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (0) and 0 waiting lanes
+DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (0), 0 waiting lanes, 3 unknown lanes (1 2 3)
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 2
 DEBUG: DoWhileStmt - Lane 0 completed body for iteration 0
@@ -774,10 +774,10 @@ DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 4 (phase: Executed)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 2
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 2
-DEBUG: assignLaneToBlock - BEFORE: block 2 has 1 participating lanes (0) and 0 waiting lanes
+DEBUG: assignLaneToBlock - BEFORE: block 2 has 1 participating lanes (0), 0 waiting lanes, 3 unknown lanes (1 2 3)
 DEBUG: assignLaneToBlock - moving lane 1 from block 4 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 1 from block 4
-DEBUG: assignLaneToBlock - AFTER: block 2 has 2 participating lanes (0 1) and 0 waiting lanes
+DEBUG: assignLaneToBlock - AFTER: block 2 has 2 participating lanes (0 1), 0 waiting lanes, 2 unknown lanes (2 3)
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 2
 DEBUG: DoWhileStmt - Lane 1 completed body for iteration 0
@@ -789,10 +789,10 @@ DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 4 (phase: Executed)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 2
-DEBUG: assignLaneToBlock - BEFORE: block 2 has 2 participating lanes (0 1) and 0 waiting lanes
+DEBUG: assignLaneToBlock - BEFORE: block 2 has 2 participating lanes (0 1), 0 waiting lanes, 2 unknown lanes (2 3)
 DEBUG: assignLaneToBlock - moving lane 2 from block 4 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from block 4
-DEBUG: assignLaneToBlock - AFTER: block 2 has 3 participating lanes (0 1 2) and 0 waiting lanes
+DEBUG: assignLaneToBlock - AFTER: block 2 has 3 participating lanes (0 1 2), 0 waiting lanes, 1 unknown lanes (3)
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 2
 DEBUG: DoWhileStmt - Lane 2 completed body for iteration 0
@@ -804,10 +804,10 @@ DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 4 (phase: Consumed)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 2
-DEBUG: assignLaneToBlock - BEFORE: block 2 has 3 participating lanes (0 1 2) and 0 waiting lanes
+DEBUG: assignLaneToBlock - BEFORE: block 2 has 3 participating lanes (0 1 2), 0 waiting lanes, 1 unknown lanes (3)
 DEBUG: assignLaneToBlock - moving lane 3 from block 4 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from block 4
-DEBUG: assignLaneToBlock - AFTER: block 2 has 4 participating lanes (0 1 2 3) and 0 waiting lanes
+DEBUG: assignLaneToBlock - AFTER: block 2 has 4 participating lanes (0 1 2 3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 2
 DEBUG: DoWhileStmt - Lane 3 completed body for iteration 0
@@ -839,16 +839,16 @@ DEBUG: DoWhileStmt - Lane 0 resuming do-while loop
 DEBUG: DoWhileStmt - Lane 0 reconverging from do-while loop
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 3
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 3
-DEBUG: assignLaneToBlock - BEFORE: block 3 has 0 participating lanes and 0 waiting lanes
-DEBUG: assignLaneToBlock - AFTER: block 3 has 1 participating lanes (0) and 0 waiting lanes
+DEBUG: assignLaneToBlock - BEFORE: block 3 has 0 participating lanes, 0 waiting lanes, 4 unknown lanes (0 1 2 3)
+DEBUG: assignLaneToBlock - AFTER: block 3 has 1 participating lanes (0), 0 waiting lanes, 3 unknown lanes (1 2 3)
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 3
 DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 3
 DEBUG: DoWhileStmt - Lane 1 resuming do-while loop
 DEBUG: DoWhileStmt - Lane 1 reconverging from do-while loop
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 3
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 3
-DEBUG: assignLaneToBlock - BEFORE: block 3 has 1 participating lanes (0) and 0 waiting lanes
-DEBUG: assignLaneToBlock - AFTER: block 3 has 2 participating lanes (0 1) and 0 waiting lanes
+DEBUG: assignLaneToBlock - BEFORE: block 3 has 1 participating lanes (0), 0 waiting lanes, 3 unknown lanes (1 2 3)
+DEBUG: assignLaneToBlock - AFTER: block 3 has 2 participating lanes (0 1), 0 waiting lanes, 2 unknown lanes (2 3)
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 3
 DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 3
 DEBUG: DoWhileStmt - Lane 2 resuming do-while loop
@@ -861,10 +861,10 @@ DEBUG: addUnknownLane - adding lane 3 to new block 5
 DEBUG: DoWhileStmt - Lane 2 created iteration starting block 5 for iteration 1
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 5
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 5
-DEBUG: assignLaneToBlock - BEFORE: block 5 has 0 participating lanes and 0 waiting lanes
+DEBUG: assignLaneToBlock - BEFORE: block 5 has 0 participating lanes, 0 waiting lanes, 2 unknown lanes (2 3)
 DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 5 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from block 2
-DEBUG: assignLaneToBlock - AFTER: block 5 has 1 participating lanes (2) and 0 waiting lanes
+DEBUG: assignLaneToBlock - AFTER: block 5 has 1 participating lanes (2), 0 waiting lanes, 1 unknown lanes (3)
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 5
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 5
 DEBUG: DoWhileStmt - Lane 2 moved to iteration starting block 5 for iteration 1
@@ -887,10 +887,10 @@ DEBUG: DoWhileStmt - Lane 3 needs iteration block (first statement is not contro
 DEBUG: DoWhileStmt - Lane 3 found existing iteration starting block 5 for iteration 1
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 5
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 5
-DEBUG: assignLaneToBlock - BEFORE: block 5 has 0 participating lanes and 1 waiting lanes (2)
+DEBUG: assignLaneToBlock - BEFORE: block 5 has 0 participating lanes, 1 waiting lanes (2), 1 unknown lanes (3)
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 5 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from block 2
-DEBUG: assignLaneToBlock - AFTER: block 5 has 1 participating lanes (3) and 1 waiting lanes (2)
+DEBUG: assignLaneToBlock - AFTER: block 5 has 1 participating lanes (3), 1 waiting lanes (2), 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 5
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 5
 DEBUG: DoWhileStmt - Lane 3 moved to iteration starting block 5 for iteration 1
@@ -946,10 +946,10 @@ DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 2 (phase: Executed)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 2
-DEBUG: assignLaneToBlock - BEFORE: block 2 has 0 participating lanes and 0 waiting lanes
+DEBUG: assignLaneToBlock - BEFORE: block 2 has 0 participating lanes, 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - moving lane 2 from block 5 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from block 5
-DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (2) and 0 waiting lanes
+DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (2), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 2
 DEBUG: DoWhileStmt - Lane 2 completed body for iteration 1
@@ -962,10 +962,10 @@ DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 2 (phase: Consumed)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 2
-DEBUG: assignLaneToBlock - BEFORE: block 2 has 1 participating lanes (2) and 0 waiting lanes
+DEBUG: assignLaneToBlock - BEFORE: block 2 has 1 participating lanes (2), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - moving lane 3 from block 5 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from block 5
-DEBUG: assignLaneToBlock - AFTER: block 2 has 2 participating lanes (2 3) and 0 waiting lanes
+DEBUG: assignLaneToBlock - AFTER: block 2 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 2
 DEBUG: DoWhileStmt - Lane 3 completed body for iteration 1
@@ -992,8 +992,8 @@ DEBUG: DoWhileStmt - Lane 2 resuming do-while loop
 DEBUG: DoWhileStmt - Lane 2 reconverging from do-while loop
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 3
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 3
-DEBUG: assignLaneToBlock - BEFORE: block 3 has 0 participating lanes and 2 waiting lanes (0 1)
-DEBUG: assignLaneToBlock - AFTER: block 3 has 1 participating lanes (2) and 2 waiting lanes (0 1)
+DEBUG: assignLaneToBlock - BEFORE: block 3 has 0 participating lanes, 2 waiting lanes (0 1), 2 unknown lanes (2 3)
+DEBUG: assignLaneToBlock - AFTER: block 3 has 1 participating lanes (2), 2 waiting lanes (0 1), 1 unknown lanes (3)
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 3
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 3
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 1 unknown lanes: 3  - These lanes need to be resolved to Participating or Left
@@ -1006,10 +1006,10 @@ DEBUG: addUnknownLane - adding lane 3 to new block 6
 DEBUG: DoWhileStmt - Lane 3 created iteration starting block 6 for iteration 2
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 6
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 6
-DEBUG: assignLaneToBlock - BEFORE: block 6 has 0 participating lanes and 0 waiting lanes
+DEBUG: assignLaneToBlock - BEFORE: block 6 has 0 participating lanes, 0 waiting lanes, 1 unknown lanes (3)
 DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 6 (type 0), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from block 2
-DEBUG: assignLaneToBlock - AFTER: block 6 has 1 participating lanes (3) and 0 waiting lanes
+DEBUG: assignLaneToBlock - AFTER: block 6 has 1 participating lanes (3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 6
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 6
 DEBUG: DoWhileStmt - Lane 3 moved to iteration starting block 6 for iteration 2
@@ -1051,10 +1051,10 @@ DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 1 (phase: Consumed)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 2
-DEBUG: assignLaneToBlock - BEFORE: block 2 has 0 participating lanes and 0 waiting lanes
+DEBUG: assignLaneToBlock - BEFORE: block 2 has 0 participating lanes, 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - moving lane 3 from block 6 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from block 6
-DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (3) and 0 waiting lanes
+DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 2
 DEBUG: DoWhileStmt - Lane 3 completed body for iteration 2
@@ -1082,8 +1082,8 @@ DEBUG: DoWhileStmt - Lane 3 resuming do-while loop
 DEBUG: DoWhileStmt - Lane 3 reconverging from do-while loop
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 3
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 3
-DEBUG: assignLaneToBlock - BEFORE: block 3 has 0 participating lanes and 3 waiting lanes (0 1 2)
-DEBUG: assignLaneToBlock - AFTER: block 3 has 1 participating lanes (3) and 3 waiting lanes (0 1 2)
+DEBUG: assignLaneToBlock - BEFORE: block 3 has 0 participating lanes, 3 waiting lanes (0 1 2), 1 unknown lanes (3)
+DEBUG: assignLaneToBlock - AFTER: block 3 has 1 participating lanes (3), 3 waiting lanes (0 1 2), 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 3
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 3
 DEBUG: WAVE_OP: Updated participants before execution to include all current block lanes: 0 1 2 3 
