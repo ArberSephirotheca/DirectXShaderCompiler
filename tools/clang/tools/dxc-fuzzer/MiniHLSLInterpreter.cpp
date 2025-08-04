@@ -516,14 +516,27 @@ LaneBlockStatus BlockMembershipRegistry::getLaneStatus(uint32_t waveId, LaneId l
 
 uint32_t BlockMembershipRegistry::getCurrentBlock(uint32_t waveId, LaneId laneId) const {
   // Find the block where this lane is currently participating or waiting
+  // Prefer non-header blocks over header blocks for dual membership scenarios
+  uint32_t headerBlock = 0;
+  uint32_t nonHeaderBlock = 0;
+  
   for (const auto& [key, status] : membership_) {
     if (std::get<0>(key) == waveId && std::get<1>(key) == laneId) {
       if (status == LaneBlockStatus::Participating || status == LaneBlockStatus::WaitingForWave) {
-        return std::get<2>(key);
+        uint32_t blockId = std::get<2>(key);
+        // TODO: We need block type info to distinguish header vs non-header
+        // For now, use heuristic: higher block IDs are usually body blocks
+        if (blockId > headerBlock) {
+          nonHeaderBlock = blockId;
+        } else if (headerBlock == 0) {
+          headerBlock = blockId;
+        }
       }
     }
   }
-  return 0; // Not in any block
+  
+  // Return non-header block if found, otherwise header block
+  return nonHeaderBlock != 0 ? nonHeaderBlock : headerBlock;
 }
 
 std::set<LaneId> BlockMembershipRegistry::getParticipatingLanes(uint32_t waveId, uint32_t blockId) const {
@@ -5744,7 +5757,7 @@ void ThreadgroupContext::assignLaneToBlock(WaveId waveId, LaneId laneId,
       bool isHeaderToLoopBody =
           (oldBlockIt->second.getBlockType() == BlockType::LOOP_HEADER &&
            newBlockIt != executionBlocks.end() &&
-           newBlockIt->second.getBlockType() == BlockType::LOOP_BODY);
+           newBlockIt->second.getBlockType() != BlockType::LOOP_EXIT);
 
       std::cout << "DEBUG: assignLaneToBlock - moving lane " << laneId
                 << " from block " << currentBlockId << " (type "
@@ -5759,9 +5772,11 @@ void ThreadgroupContext::assignLaneToBlock(WaveId waveId, LaneId laneId,
         std::cout << "DEBUG: Removed lane " << laneId
                   << " from block " << currentBlockId << std::endl;
       } else {
+        // Keep lane as Participating in header block for proper unknown lane tracking
+        // This allows nested blocks to correctly determine expected participants
         std::cout << "DEBUG: Keeping lane " << laneId
-                  << " in arrivedLanes of header block " << currentBlockId
-                  << std::endl;
+                  << " as Participating in header block " << currentBlockId
+                  << " while also adding to loop body block " << blockId << std::endl;
       }
     }
   }

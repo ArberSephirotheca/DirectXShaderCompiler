@@ -202,13 +202,15 @@ DEBUG: IfStmt - Lane 0 setup complete: thenBlockId=4, elseBlockId=0, mergeBlockI
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 4
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes, 0 waiting lanes, 4 unknown lanes (0 1 2 3)
-DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 4 (type 1), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from block 2
+DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 4 (type 1), isHeaderToLoopBody=1
+DEBUG: Keeping lane 0 as Participating in header block 2 while also adding to loop body block 4
 DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (0), 0 waiting lanes, 3 unknown lanes (1 2 3)
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 4
+WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 4
 DEBUG: IfStmt - Lane 0 condition=1, moving to phase=ExecutingThenBlock
 DEBUG: IfStmt - Lane 0 executing: thenBlockId=4, elseBlockId=0, mergeBlockId=5
+WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 0 child statement needs resume
   Block before: 2, Block after: 4
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -233,23 +235,25 @@ DEBUG: createIfBlocks - mergeStack size=3
   MergeStack[2]: sourceStatement=0x5060000015e0
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {1 2 3 } (3 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 4 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {1 2 3 } (3 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 5 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=4, elseBlockId=0, mergeBlockId=5
 DEBUG: IfStmt - Lane 1 setup complete: thenBlockId=4, elseBlockId=0, mergeBlockId=5
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 4
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 1 participating lanes (0), 0 waiting lanes, 3 unknown lanes (1 2 3)
-DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 4) to block 4 (type 1), isHeaderToLoopBody=0
-DEBUG: Removed lane 1 from block 2
+DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 4) to block 4 (type 1), isHeaderToLoopBody=1
+DEBUG: Keeping lane 1 as Participating in header block 2 while also adding to loop body block 4
 DEBUG: assignLaneToBlock - AFTER: block 4 has 2 participating lanes (0 1), 0 waiting lanes, 2 unknown lanes (2 3)
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 4
+WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 4
 DEBUG: IfStmt - Lane 1 condition=1, moving to phase=ExecutingThenBlock
 DEBUG: IfStmt - Lane 1 executing: thenBlockId=4, elseBlockId=0, mergeBlockId=5
+WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 1 child statement needs resume
   Block before: 2, Block after: 4
 DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -274,10 +278,10 @@ DEBUG: createIfBlocks - mergeStack size=3
   MergeStack[2]: sourceStatement=0x5060000015e0
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {2 3 } (2 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 4 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {2 3 } (2 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 5 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=4, elseBlockId=0, mergeBlockId=5
 DEBUG: IfStmt - Lane 2 setup complete: thenBlockId=4, elseBlockId=0, mergeBlockId=5
@@ -288,13 +292,15 @@ DEBUG: Block 4 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 5
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 5
 DEBUG: assignLaneToBlock - BEFORE: block 5 has 0 participating lanes, 0 waiting lanes, 4 unknown lanes (0 1 2 3)
-DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 5 (type 3), isHeaderToLoopBody=0
-DEBUG: Removed lane 2 from block 2
+DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 5 (type 3), isHeaderToLoopBody=1
+DEBUG: Keeping lane 2 as Participating in header block 2 while also adding to loop body block 5
 DEBUG: assignLaneToBlock - AFTER: block 5 has 1 participating lanes (2), 0 waiting lanes, 3 unknown lanes (0 1 3)
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 5
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 5
 DEBUG: IfStmt - Lane 2 condition=0, moving to phase=Reconverging
 DEBUG: IfStmt - Lane 2 executing: thenBlockId=4, elseBlockId=0, mergeBlockId=5
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 child statement needs resume
   Block before: 2, Block after: 5
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -319,10 +325,10 @@ DEBUG: createIfBlocks - mergeStack size=3
   MergeStack[2]: sourceStatement=0x5060000015e0
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 4 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 5 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=4, elseBlockId=0, mergeBlockId=5
 DEBUG: IfStmt - Lane 3 setup complete: thenBlockId=4, elseBlockId=0, mergeBlockId=5
@@ -334,13 +340,15 @@ DEBUG: Block 4 now has all unknowns resolved for wave 0 - checking for ready wav
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 5
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 5
 DEBUG: assignLaneToBlock - BEFORE: block 5 has 1 participating lanes (2), 0 waiting lanes, 3 unknown lanes (0 1 3)
-DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 5 (type 3), isHeaderToLoopBody=0
-DEBUG: Removed lane 3 from block 2
+DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 5 (type 3), isHeaderToLoopBody=1
+DEBUG: Keeping lane 3 as Participating in header block 2 while also adding to loop body block 5
 DEBUG: assignLaneToBlock - AFTER: block 5 has 2 participating lanes (2 3), 0 waiting lanes, 2 unknown lanes (0 1)
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 5
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 5
 DEBUG: IfStmt - Lane 3 condition=0, moving to phase=Reconverging
 DEBUG: IfStmt - Lane 3 executing: thenBlockId=4, elseBlockId=0, mergeBlockId=5
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 child statement needs resume
   Block before: 2, Block after: 5
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=2, this=0x5080000027a0)
@@ -353,9 +361,12 @@ DEBUG: ForStmt - Lane 0 merge stack size: 3
   Stack[2]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x5080000077a0
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 0 executing directly in current block 4 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 0 executing directly in current block WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4 (registry returned: 4)
+4 (no iteration block needed, but merge stack modified)
+WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 4
 DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
+WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: IfStmt - Lane 0 in phase ExecutingThenBlock (stack depth=2, our index=1, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0
 DEBUG: IfStmt - Lane 0 popping stack due to ControlFlowException (depth 2->1, this=0x5060000015e0)
@@ -367,8 +378,8 @@ DEBUG: removeThreadFromAllSets - block 5 had 2 participating lanes before remova
 DEBUG: removeThreadFromAllSets - block 5 has 2 participating lanes after removal (participating: 2 3 )
 DEBUG: ForStmt - Lane 0 breaking from loop
 DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 2
-DEBUG: removeThreadFromAllSets - block 2 had 0 participating lanes before removal
-DEBUG: removeThreadFromAllSets - block 2 has 0 participating lanes after removal
+DEBUG: removeThreadFromAllSets - block 2 had 4 participating lanes before removal (participating: 0 1 2 3 )
+DEBUG: removeThreadFromAllSets - block 2 has 3 participating lanes after removal (participating: 1 2 3 )
 DEBUG: removeThreadFromNestedBlocks - skipping 3 (LOOP_EXIT block where lanes should go)
 DEBUG: removeThreadFromNestedBlocks - removing lane 0 from block 4 (child of 2)
 DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 4
@@ -388,9 +399,12 @@ DEBUG: ForStmt - Lane 1 merge stack size: 3
   Stack[2]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x5080000077a0
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 1 executing directly in current block 4 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 1 executing directly in current block WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
+4 (no iteration block needed, but merge stack modified)
+WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 4
 DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
+WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: IfStmt - Lane 1 in phase ExecutingThenBlock (stack depth=2, our index=1, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 1 executing then block from statement 0
 DEBUG: IfStmt - Lane 1 popping stack due to ControlFlowException (depth 2->1, this=0x5060000015e0)
@@ -402,8 +416,8 @@ DEBUG: removeThreadFromAllSets - block 5 had 2 participating lanes before remova
 DEBUG: removeThreadFromAllSets - block 5 has 2 participating lanes after removal (participating: 2 3 )
 DEBUG: ForStmt - Lane 1 breaking from loop
 DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 2
-DEBUG: removeThreadFromAllSets - block 2 had 0 participating lanes before removal
-DEBUG: removeThreadFromAllSets - block 2 has 0 participating lanes after removal
+DEBUG: removeThreadFromAllSets - block 2 had 3 participating lanes before removal (participating: 1 2 3 )
+DEBUG: removeThreadFromAllSets - block 2 has 2 participating lanes after removal (participating: 2 3 )
 DEBUG: removeThreadFromNestedBlocks - skipping 3 (LOOP_EXIT block where lanes should go)
 DEBUG: removeThreadFromNestedBlocks - removing lane 1 from block 4 (child of 2)
 DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 4
@@ -423,10 +437,14 @@ DEBUG: ForStmt - Lane 2 merge stack size: 3
   Stack[2]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x5080000077a0
 DEBUG: ForStmt - Lane 2 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 2 executing directly in current block 5 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 2 executing directly in current block WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
+5 (no iteration block needed, but merge stack modified)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 5
 DEBUG: IfStmt - Lane 2 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: IfStmt - Lane 2 in phase Reconverging (stack depth=2, our index=1, this=0x5060000015e0)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: IfStmt - Lane 2 performing reconvergence from block 5 to laneSpecificMergeBlockId=5
 DEBUG: IfStmt - Lane 2 merge stack before reconvergence (size=3):
   Stack[0]: sourceStatement=0x5080000027a0
@@ -439,17 +457,24 @@ DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 5
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 5
 DEBUG: assignLaneToBlock - BEFORE: block 5 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - lane 2 already in block 5, skipping redundant assignment
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 5
 DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 4
 DEBUG: removeThreadFromAllSets - block 4 had 0 participating lanes before removal
 DEBUG: removeThreadFromAllSets - block 4 has 0 participating lanes after removal
 DEBUG: IfStmt - Lane 2 reconvergence complete
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 executing statement 1 in block 5
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 5, instruction key=(0x503000001990,5)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: markLaneWaitingForWave - Lane 2 wave 0 in block 5
 DEBUG: markLaneWaitingForWave - Successfully set lane 2 to WaitingForWave in block 5
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 5
 DEBUG: WAVE_OP: Resolution status tracked by registry for block 5
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: Block 5 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 2 in block 5: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=0, canExecuteGlobal=0, syncPointPhase=phase_0
@@ -466,10 +491,14 @@ DEBUG: ForStmt - Lane 3 merge stack size: 3
   Stack[2]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x5080000077a0
 DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 3 executing directly in current block 5 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 3 executing directly in current block WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
+5 (no iteration block needed, but merge stack modified)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 5
 DEBUG: IfStmt - Lane 3 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: IfStmt - Lane 3 in phase Reconverging (stack depth=2, our index=1, this=0x5060000015e0)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: IfStmt - Lane 3 performing reconvergence from block 5 to laneSpecificMergeBlockId=5
 DEBUG: IfStmt - Lane 3 merge stack before reconvergence (size=3):
   Stack[0]: sourceStatement=0x5080000027a0
@@ -482,17 +511,24 @@ DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 5
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 5
 DEBUG: assignLaneToBlock - BEFORE: block 5 has 1 participating lanes (3), 1 waiting lanes (2), 0 unknown lanes
 DEBUG: assignLaneToBlock - lane 3 already in block 5, skipping redundant assignment
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 5
 DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 4
 DEBUG: removeThreadFromAllSets - block 4 had 0 participating lanes before removal
 DEBUG: removeThreadFromAllSets - block 4 has 0 participating lanes after removal
 DEBUG: IfStmt - Lane 3 reconvergence complete
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 executing statement 1 in block 5
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 5, instruction key=(0x503000001990,5)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: markLaneWaitingForWave - Lane 3 wave 0 in block 5
 DEBUG: markLaneWaitingForWave - Successfully set lane 3 to WaitingForWave in block 5
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 5
 DEBUG: WAVE_OP: Resolution status tracked by registry for block 5
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: Block 5 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 3 in block 5: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_1
@@ -511,9 +547,11 @@ DEBUG: assignLaneToBlock - BEFORE: block 3 has 0 participating lanes, 0 waiting 
 DEBUG: assignLaneToBlock - AFTER: block 3 has 1 participating lanes (0), 0 waiting lanes, 3 unknown lanes (1 2 3)
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 3
 DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 3
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: onLaneFinishWaveOp - Lane 2 finishing wave op in block 5
 DEBUG: onLaneFinishWaveOp - Current status in block 5: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 2 to Participating in block 5
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: onLaneFinishWaveOp - Lane 3 finishing wave op in block 5
 DEBUG: onLaneFinishWaveOp - Current status in block 5: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 3 to Participating in block 5
@@ -530,33 +568,39 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=1, our index=0, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 2 no iteration block needed (first statement is control flow)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 executing statement 1 in block 5
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 5, instruction key=(0x503000001990,5)
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 2 (phase: Executed)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 popped iteration merge point 0x5080000077a0 after iteration 0
 DEBUG: ForStmt - Lane 2 body completed in block 5, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 2
-DEBUG: assignLaneToBlock - BEFORE: block 2 has 0 participating lanes, 0 waiting lanes, 0 unknown lanes
+DEBUG: assignLaneToBlock - BEFORE: block 2 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - moving lane 2 from block 5 (type 3) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from block 5
-DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (2), 0 waiting lanes, 0 unknown lanes
+DEBUG: assignLaneToBlock - AFTER: block 2 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 2
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=1, our index=0, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 3 no iteration block needed (first statement is control flow)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 executing statement 1 in block 5
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 5, instruction key=(0x503000001990,5)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 2 (phase: Consumed)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 popped iteration merge point 0x5080000077a0 after iteration 0
 DEBUG: ForStmt - Lane 3 body completed in block 5, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 2
-DEBUG: assignLaneToBlock - BEFORE: block 2 has 1 participating lanes (2), 0 waiting lanes, 0 unknown lanes
+DEBUG: assignLaneToBlock - BEFORE: block 2 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - moving lane 3 from block 5 (type 3) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from block 5
 DEBUG: assignLaneToBlock - AFTER: block 2 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
@@ -640,13 +684,15 @@ DEBUG: Block 6 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 7
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 7
 DEBUG: assignLaneToBlock - BEFORE: block 7 has 0 participating lanes, 0 waiting lanes, 2 unknown lanes (2 3)
-DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 7 (type 3), isHeaderToLoopBody=0
-DEBUG: Removed lane 2 from block 2
+DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 7 (type 3), isHeaderToLoopBody=1
+DEBUG: Keeping lane 2 as Participating in header block 2 while also adding to loop body block 7
 DEBUG: assignLaneToBlock - AFTER: block 7 has 1 participating lanes (2), 0 waiting lanes, 1 unknown lanes (3)
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 7
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 7
 DEBUG: IfStmt - Lane 2 condition=0, moving to phase=Reconverging
 DEBUG: IfStmt - Lane 2 executing: thenBlockId=6, elseBlockId=0, mergeBlockId=7
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 2 child statement needs resume
   Block before: 2, Block after: 7
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
@@ -672,10 +718,10 @@ DEBUG: createIfBlocks - mergeStack size=3
   MergeStack[2]: sourceStatement=0x5060000015e0
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {2 3 } (2 lanes)
 DEBUG: Found existing block 6 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {2 3 } (2 lanes)
 DEBUG: Found existing block 7 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=6, elseBlockId=0, mergeBlockId=7
 DEBUG: IfStmt - Lane 3 setup complete: thenBlockId=6, elseBlockId=0, mergeBlockId=7
@@ -687,13 +733,15 @@ DEBUG: Block 6 now has all unknowns resolved for wave 0 - checking for ready wav
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 7
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 7
 DEBUG: assignLaneToBlock - BEFORE: block 7 has 1 participating lanes (2), 0 waiting lanes, 1 unknown lanes (3)
-DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 7 (type 3), isHeaderToLoopBody=0
-DEBUG: Removed lane 3 from block 2
+DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 7 (type 3), isHeaderToLoopBody=1
+DEBUG: Keeping lane 3 as Participating in header block 2 while also adding to loop body block 7
 DEBUG: assignLaneToBlock - AFTER: block 7 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 7
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 7
 DEBUG: IfStmt - Lane 3 condition=0, moving to phase=Reconverging
 DEBUG: IfStmt - Lane 3 executing: thenBlockId=6, elseBlockId=0, mergeBlockId=7
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 3 child statement needs resume
   Block before: 2, Block after: 7
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
@@ -707,10 +755,14 @@ DEBUG: ForStmt - Lane 2 merge stack size: 3
   Stack[2]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x5080000177a0
 DEBUG: ForStmt - Lane 2 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 2 executing directly in current block 7 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 2 executing directly in current block WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
+7 (no iteration block needed, but merge stack modified)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 7
 DEBUG: IfStmt - Lane 2 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: IfStmt - Lane 2 in phase Reconverging (stack depth=2, our index=1, this=0x5060000015e0)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: IfStmt - Lane 2 performing reconvergence from block 7 to laneSpecificMergeBlockId=7
 DEBUG: IfStmt - Lane 2 merge stack before reconvergence (size=3):
   Stack[0]: sourceStatement=0x5080000027a0
@@ -723,17 +775,24 @@ DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 7
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 7
 DEBUG: assignLaneToBlock - BEFORE: block 7 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - lane 2 already in block 7, skipping redundant assignment
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 7
 DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 6
 DEBUG: removeThreadFromAllSets - block 6 had 0 participating lanes before removal
 DEBUG: removeThreadFromAllSets - block 6 has 0 participating lanes after removal
 DEBUG: IfStmt - Lane 2 reconvergence complete
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 2 executing statement 1 in block 7
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 7, instruction key=(0x503000001990,7)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: markLaneWaitingForWave - Lane 2 wave 0 in block 7
 DEBUG: markLaneWaitingForWave - Successfully set lane 2 to WaitingForWave in block 7
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 7
 DEBUG: WAVE_OP: Resolution status tracked by registry for block 7
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: Block 7 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 2 in block 7: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=0, canExecuteGlobal=0, syncPointPhase=phase_0
@@ -751,10 +810,14 @@ DEBUG: ForStmt - Lane 3 merge stack size: 3
   Stack[2]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x5080000177a0
 DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 3 executing directly in current block 7 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 3 executing directly in current block WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
+7 (no iteration block needed, but merge stack modified)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 7
 DEBUG: IfStmt - Lane 3 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: IfStmt - Lane 3 in phase Reconverging (stack depth=2, our index=1, this=0x5060000015e0)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: IfStmt - Lane 3 performing reconvergence from block 7 to laneSpecificMergeBlockId=7
 DEBUG: IfStmt - Lane 3 merge stack before reconvergence (size=3):
   Stack[0]: sourceStatement=0x5080000027a0
@@ -767,17 +830,24 @@ DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 7
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 7
 DEBUG: assignLaneToBlock - BEFORE: block 7 has 1 participating lanes (3), 1 waiting lanes (2), 0 unknown lanes
 DEBUG: assignLaneToBlock - lane 3 already in block 7, skipping redundant assignment
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 7
 DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 6
 DEBUG: removeThreadFromAllSets - block 6 had 0 participating lanes before removal
 DEBUG: removeThreadFromAllSets - block 6 has 0 participating lanes after removal
 DEBUG: IfStmt - Lane 3 reconvergence complete
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 3 executing statement 1 in block 7
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 7, instruction key=(0x503000001990,7)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: markLaneWaitingForWave - Lane 3 wave 0 in block 7
 DEBUG: markLaneWaitingForWave - Successfully set lane 3 to WaitingForWave in block 7
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 7
 DEBUG: WAVE_OP: Resolution status tracked by registry for block 7
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: Block 7 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 3 in block 7: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_1
@@ -788,9 +858,11 @@ DEBUG: ForStmt - Lane 3 waiting for wave operation in phase 5 at statement 1, it
 DEBUG: WAVE_WAIT: Lane 3 caught WaveOperationWaitException, state=2
 DEBUG: WAVE_OP: Storing collective result for lanes: 2 3  (phase: 2)
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: onLaneFinishWaveOp - Lane 2 finishing wave op in block 7
 DEBUG: onLaneFinishWaveOp - Current status in block 7: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 2 to Participating in block 7
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: onLaneFinishWaveOp - Lane 3 finishing wave op in block 7
 DEBUG: onLaneFinishWaveOp - Current status in block 7: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 3 to Participating in block 7
@@ -799,18 +871,21 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=1, our index=0, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 2 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 2 no iteration block needed (first statement is control flow)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 2 executing statement 1 in block 7
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 7, instruction key=(0x503000001990,7)
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 2 (phase: Executed)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 2 popped iteration merge point 0x5080000177a0 after iteration 1
 DEBUG: ForStmt - Lane 2 body completed in block 7, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 2
-DEBUG: assignLaneToBlock - BEFORE: block 2 has 0 participating lanes, 0 waiting lanes, 0 unknown lanes
+DEBUG: assignLaneToBlock - BEFORE: block 2 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - moving lane 2 from block 7 (type 3) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from block 7
-DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (2), 0 waiting lanes, 0 unknown lanes
+DEBUG: assignLaneToBlock - AFTER: block 2 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 2
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
@@ -818,15 +893,18 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=1, our index=0, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 3 no iteration block needed (first statement is control flow)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 3 executing statement 1 in block 7
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 7, instruction key=(0x503000001990,7)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 2 (phase: Consumed)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 3 popped iteration merge point 0x5080000177a0 after iteration 1
 DEBUG: ForStmt - Lane 3 body completed in block 7, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 2
-DEBUG: assignLaneToBlock - BEFORE: block 2 has 1 participating lanes (2), 0 waiting lanes, 0 unknown lanes
+DEBUG: assignLaneToBlock - BEFORE: block 2 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - moving lane 3 from block 7 (type 3) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from block 7
 DEBUG: assignLaneToBlock - AFTER: block 2 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
@@ -883,13 +961,15 @@ DEBUG: IfStmt - Lane 2 setup complete: thenBlockId=8, elseBlockId=0, mergeBlockI
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 8
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 8
 DEBUG: assignLaneToBlock - BEFORE: block 8 has 0 participating lanes, 0 waiting lanes, 2 unknown lanes (2 3)
-DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 8 (type 1), isHeaderToLoopBody=0
-DEBUG: Removed lane 2 from block 2
+DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 8 (type 1), isHeaderToLoopBody=1
+DEBUG: Keeping lane 2 as Participating in header block 2 while also adding to loop body block 8
 DEBUG: assignLaneToBlock - AFTER: block 8 has 1 participating lanes (2), 0 waiting lanes, 1 unknown lanes (3)
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 8
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 8 (registry returned: 8)
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 8
 DEBUG: IfStmt - Lane 2 condition=1, moving to phase=ExecutingThenBlock
 DEBUG: IfStmt - Lane 2 executing: thenBlockId=8, elseBlockId=0, mergeBlockId=9
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 8 (registry returned: 8)
 DEBUG: ForStmt - Lane 2 child statement needs resume
   Block before: 2, Block after: 8
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
@@ -915,10 +995,10 @@ DEBUG: createIfBlocks - mergeStack size=3
   MergeStack[2]: sourceStatement=0x5060000015e0
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {2 3 } (2 lanes)
 DEBUG: Found existing block 8 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {2 3 } (2 lanes)
 DEBUG: Found existing block 9 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=8, elseBlockId=0, mergeBlockId=9
 DEBUG: IfStmt - Lane 3 setup complete: thenBlockId=8, elseBlockId=0, mergeBlockId=9
@@ -930,13 +1010,15 @@ DEBUG: Block 8 now has all unknowns resolved for wave 0 - checking for ready wav
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 9
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 9
 DEBUG: assignLaneToBlock - BEFORE: block 9 has 0 participating lanes, 0 waiting lanes, 2 unknown lanes (2 3)
-DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 9 (type 3), isHeaderToLoopBody=0
-DEBUG: Removed lane 3 from block 2
+DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 9 (type 3), isHeaderToLoopBody=1
+DEBUG: Keeping lane 3 as Participating in header block 2 while also adding to loop body block 9
 DEBUG: assignLaneToBlock - AFTER: block 9 has 1 participating lanes (3), 0 waiting lanes, 1 unknown lanes (2)
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 9
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 9
 DEBUG: IfStmt - Lane 3 condition=0, moving to phase=Reconverging
 DEBUG: IfStmt - Lane 3 executing: thenBlockId=8, elseBlockId=0, mergeBlockId=9
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: ForStmt - Lane 3 child statement needs resume
   Block before: 2, Block after: 9
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
@@ -950,9 +1032,12 @@ DEBUG: ForStmt - Lane 2 merge stack size: 3
   Stack[2]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x5080000277a0
 DEBUG: ForStmt - Lane 2 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 2 executing directly in current block 8 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 2 executing directly in current block WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 8 (registry returned: 8)
+8 (no iteration block needed, but merge stack modified)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 8 (registry returned: 8)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 8
 DEBUG: IfStmt - Lane 2 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 8 (registry returned: 8)
 DEBUG: IfStmt - Lane 2 in phase ExecutingThenBlock (stack depth=2, our index=1, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 2 executing then block from statement 0
 DEBUG: IfStmt - Lane 2 popping stack due to ControlFlowException (depth 2->1, this=0x5060000015e0)
@@ -964,8 +1049,8 @@ DEBUG: removeThreadFromAllSets - block 9 had 1 participating lanes before remova
 DEBUG: removeThreadFromAllSets - block 9 has 1 participating lanes after removal (participating: 3 )
 DEBUG: ForStmt - Lane 2 breaking from loop
 DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 2
-DEBUG: removeThreadFromAllSets - block 2 had 0 participating lanes before removal
-DEBUG: removeThreadFromAllSets - block 2 has 0 participating lanes after removal
+DEBUG: removeThreadFromAllSets - block 2 had 2 participating lanes before removal (participating: 2 3 )
+DEBUG: removeThreadFromAllSets - block 2 has 1 participating lanes after removal (participating: 3 )
 DEBUG: removeThreadFromNestedBlocks - skipping 3 (LOOP_EXIT block where lanes should go)
 DEBUG: removeThreadFromNestedBlocks - removing lane 2 from block 4 (child of 2)
 DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 4
@@ -1002,10 +1087,14 @@ DEBUG: ForStmt - Lane 3 merge stack size: 3
   Stack[2]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x5080000277a0
 DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 3 executing directly in current block 9 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 3 executing directly in current block WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
+9 (no iteration block needed, but merge stack modified)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 9
 DEBUG: IfStmt - Lane 3 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: IfStmt - Lane 3 in phase Reconverging (stack depth=2, our index=1, this=0x5060000015e0)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: IfStmt - Lane 3 performing reconvergence from block 9 to laneSpecificMergeBlockId=9
 DEBUG: IfStmt - Lane 3 merge stack before reconvergence (size=3):
   Stack[0]: sourceStatement=0x5080000027a0
@@ -1018,17 +1107,24 @@ DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 9
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 9
 DEBUG: assignLaneToBlock - BEFORE: block 9 has 1 participating lanes (3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - lane 3 already in block 9, skipping redundant assignment
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 9
 DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 8
 DEBUG: removeThreadFromAllSets - block 8 had 0 participating lanes before removal
 DEBUG: removeThreadFromAllSets - block 8 has 0 participating lanes after removal
 DEBUG: IfStmt - Lane 3 reconvergence complete
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: ForStmt - Lane 3 executing statement 1 in block 9
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 9, instruction key=(0x503000001990,9)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: markLaneWaitingForWave - Lane 3 wave 0 in block 9
 DEBUG: markLaneWaitingForWave - Successfully set lane 3 to WaitingForWave in block 9
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 9
 DEBUG: WAVE_OP: Resolution status tracked by registry for block 9
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: Block 9 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 3 in block 9: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_1
@@ -1048,6 +1144,7 @@ DEBUG: assignLaneToBlock - BEFORE: block 3 has 0 participating lanes, 2 waiting 
 DEBUG: assignLaneToBlock - AFTER: block 3 has 1 participating lanes (2), 2 waiting lanes (0 1), 1 unknown lanes (3)
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 3
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 3
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: onLaneFinishWaveOp - Lane 3 finishing wave op in block 9
 DEBUG: onLaneFinishWaveOp - Current status in block 9: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 3 to Participating in block 9
@@ -1056,15 +1153,18 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=1, our index=0, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 executing body for iteration 2 from statement 1
 DEBUG: ForStmt - Lane 3 no iteration block needed (first statement is control flow)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: ForStmt - Lane 3 executing statement 1 in block 9
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 9, instruction key=(0x503000001990,9)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 1 (phase: Consumed)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: ForStmt - Lane 3 popped iteration merge point 0x5080000277a0 after iteration 2
 DEBUG: ForStmt - Lane 3 body completed in block 9, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 2
-DEBUG: assignLaneToBlock - BEFORE: block 2 has 0 participating lanes, 0 waiting lanes, 0 unknown lanes
+DEBUG: assignLaneToBlock - BEFORE: block 2 has 1 participating lanes (3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - moving lane 3 from block 9 (type 3) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from block 9
 DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (3), 0 waiting lanes, 0 unknown lanes
@@ -1123,13 +1223,15 @@ DEBUG: IfStmt - Lane 3 setup complete: thenBlockId=10, elseBlockId=0, mergeBlock
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 10
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 10
 DEBUG: assignLaneToBlock - BEFORE: block 10 has 0 participating lanes, 0 waiting lanes, 1 unknown lanes (3)
-DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 10 (type 1), isHeaderToLoopBody=0
-DEBUG: Removed lane 3 from block 2
+DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 10 (type 1), isHeaderToLoopBody=1
+DEBUG: Keeping lane 3 as Participating in header block 2 while also adding to loop body block 10
 DEBUG: assignLaneToBlock - AFTER: block 10 has 1 participating lanes (3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 10
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 10 (registry returned: 10)
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 10
 DEBUG: IfStmt - Lane 3 condition=1, moving to phase=ExecutingThenBlock
 DEBUG: IfStmt - Lane 3 executing: thenBlockId=10, elseBlockId=0, mergeBlockId=11
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 3 child statement needs resume
   Block before: 2, Block after: 10
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 1 unknown lanes: 3  - These lanes need to be resolved to Participating or Left
@@ -1143,9 +1245,12 @@ DEBUG: ForStmt - Lane 3 merge stack size: 3
   Stack[2]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x5080000377a0
 DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 3 executing directly in current block 10 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 3 executing directly in current block WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 10 (registry returned: 10)
+10 (no iteration block needed, but merge stack modified)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 10
 DEBUG: IfStmt - Lane 3 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 10 (registry returned: 10)
 DEBUG: IfStmt - Lane 3 in phase ExecutingThenBlock (stack depth=2, our index=1, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 3 executing then block from statement 0
 DEBUG: IfStmt - Lane 3 popping stack due to ControlFlowException (depth 2->1, this=0x5060000015e0)
@@ -1157,7 +1262,7 @@ DEBUG: removeThreadFromAllSets - block 11 had 0 participating lanes before remov
 DEBUG: removeThreadFromAllSets - block 11 has 0 participating lanes after removal
 DEBUG: ForStmt - Lane 3 breaking from loop
 DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 2
-DEBUG: removeThreadFromAllSets - block 2 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 2 had 1 participating lanes before removal (participating: 3 )
 DEBUG: removeThreadFromAllSets - block 2 has 0 participating lanes after removal
 DEBUG: removeThreadFromNestedBlocks - skipping 3 (LOOP_EXIT block where lanes should go)
 DEBUG: removeThreadFromNestedBlocks - removing lane 3 from block 4 (child of 2)
@@ -1369,13 +1474,15 @@ DEBUG: IfStmt - Lane 0 setup complete: thenBlockId=4, elseBlockId=0, mergeBlockI
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 4
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 0 participating lanes, 0 waiting lanes, 4 unknown lanes (0 1 2 3)
-DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 4 (type 1), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from block 2
+DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 4 (type 1), isHeaderToLoopBody=1
+DEBUG: Keeping lane 0 as Participating in header block 2 while also adding to loop body block 4
 DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (0), 0 waiting lanes, 3 unknown lanes (1 2 3)
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 4
+WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 4
 DEBUG: IfStmt - Lane 0 condition=1, moving to phase=ExecutingThenBlock
 DEBUG: IfStmt - Lane 0 executing: thenBlockId=4, elseBlockId=0, mergeBlockId=5
+WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 0 child statement needs resume
   Block before: 2, Block after: 4
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -1400,23 +1507,25 @@ DEBUG: createIfBlocks - mergeStack size=3
   MergeStack[2]: sourceStatement=0x5060000015e0
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {1 2 3 } (3 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 4 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {1 2 3 } (3 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 5 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=4, elseBlockId=0, mergeBlockId=5
 DEBUG: IfStmt - Lane 1 setup complete: thenBlockId=4, elseBlockId=0, mergeBlockId=5
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 4
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 4
 DEBUG: assignLaneToBlock - BEFORE: block 4 has 1 participating lanes (0), 0 waiting lanes, 3 unknown lanes (1 2 3)
-DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 4) to block 4 (type 1), isHeaderToLoopBody=0
-DEBUG: Removed lane 1 from block 2
+DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 4) to block 4 (type 1), isHeaderToLoopBody=1
+DEBUG: Keeping lane 1 as Participating in header block 2 while also adding to loop body block 4
 DEBUG: assignLaneToBlock - AFTER: block 4 has 2 participating lanes (0 1), 0 waiting lanes, 2 unknown lanes (2 3)
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 4
+WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 4
 DEBUG: IfStmt - Lane 1 condition=1, moving to phase=ExecutingThenBlock
 DEBUG: IfStmt - Lane 1 executing: thenBlockId=4, elseBlockId=0, mergeBlockId=5
+WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 1 child statement needs resume
   Block before: 2, Block after: 4
 DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -1441,10 +1550,10 @@ DEBUG: createIfBlocks - mergeStack size=3
   MergeStack[2]: sourceStatement=0x5060000015e0
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {2 3 } (2 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 4 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {2 3 } (2 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 5 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=4, elseBlockId=0, mergeBlockId=5
 DEBUG: IfStmt - Lane 2 setup complete: thenBlockId=4, elseBlockId=0, mergeBlockId=5
@@ -1455,13 +1564,15 @@ DEBUG: Block 4 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 5
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 5
 DEBUG: assignLaneToBlock - BEFORE: block 5 has 0 participating lanes, 0 waiting lanes, 4 unknown lanes (0 1 2 3)
-DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 5 (type 3), isHeaderToLoopBody=0
-DEBUG: Removed lane 2 from block 2
+DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 5 (type 3), isHeaderToLoopBody=1
+DEBUG: Keeping lane 2 as Participating in header block 2 while also adding to loop body block 5
 DEBUG: assignLaneToBlock - AFTER: block 5 has 1 participating lanes (2), 0 waiting lanes, 3 unknown lanes (0 1 3)
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 5
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 5
 DEBUG: IfStmt - Lane 2 condition=0, moving to phase=Reconverging
 DEBUG: IfStmt - Lane 2 executing: thenBlockId=4, elseBlockId=0, mergeBlockId=5
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 child statement needs resume
   Block before: 2, Block after: 5
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -1486,10 +1597,10 @@ DEBUG: createIfBlocks - mergeStack size=3
   MergeStack[2]: sourceStatement=0x5060000015e0
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 4 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: Found existing block 5 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=4, elseBlockId=0, mergeBlockId=5
 DEBUG: IfStmt - Lane 3 setup complete: thenBlockId=4, elseBlockId=0, mergeBlockId=5
@@ -1501,13 +1612,15 @@ DEBUG: Block 4 now has all unknowns resolved for wave 0 - checking for ready wav
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 5
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 5
 DEBUG: assignLaneToBlock - BEFORE: block 5 has 1 participating lanes (2), 0 waiting lanes, 3 unknown lanes (0 1 3)
-DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 5 (type 3), isHeaderToLoopBody=0
-DEBUG: Removed lane 3 from block 2
+DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 5 (type 3), isHeaderToLoopBody=1
+DEBUG: Keeping lane 3 as Participating in header block 2 while also adding to loop body block 5
 DEBUG: assignLaneToBlock - AFTER: block 5 has 2 participating lanes (2 3), 0 waiting lanes, 2 unknown lanes (0 1)
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 5
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 5
 DEBUG: IfStmt - Lane 3 condition=0, moving to phase=Reconverging
 DEBUG: IfStmt - Lane 3 executing: thenBlockId=4, elseBlockId=0, mergeBlockId=5
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 child statement needs resume
   Block before: 2, Block after: 5
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=2, this=0x5080000027a0)
@@ -1520,9 +1633,12 @@ DEBUG: ForStmt - Lane 0 merge stack size: 3
   Stack[2]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x5080000077a0
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 0 executing directly in current block 4 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 0 executing directly in current block WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4 (registry returned: 4)
+4 (no iteration block needed, but merge stack modified)
+WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 4
 DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
+WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: IfStmt - Lane 0 in phase ExecutingThenBlock (stack depth=2, our index=1, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0
 DEBUG: IfStmt - Lane 0 popping stack due to ControlFlowException (depth 2->1, this=0x5060000015e0)
@@ -1534,8 +1650,8 @@ DEBUG: removeThreadFromAllSets - block 5 had 2 participating lanes before remova
 DEBUG: removeThreadFromAllSets - block 5 has 2 participating lanes after removal (participating: 2 3 )
 DEBUG: ForStmt - Lane 0 breaking from loop
 DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 2
-DEBUG: removeThreadFromAllSets - block 2 had 0 participating lanes before removal
-DEBUG: removeThreadFromAllSets - block 2 has 0 participating lanes after removal
+DEBUG: removeThreadFromAllSets - block 2 had 4 participating lanes before removal (participating: 0 1 2 3 )
+DEBUG: removeThreadFromAllSets - block 2 has 3 participating lanes after removal (participating: 1 2 3 )
 DEBUG: removeThreadFromNestedBlocks - skipping 3 (LOOP_EXIT block where lanes should go)
 DEBUG: removeThreadFromNestedBlocks - removing lane 0 from block 4 (child of 2)
 DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 4
@@ -1555,9 +1671,12 @@ DEBUG: ForStmt - Lane 1 merge stack size: 3
   Stack[2]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x5080000077a0
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 1 executing directly in current block 4 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 1 executing directly in current block WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
+4 (no iteration block needed, but merge stack modified)
+WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 4
 DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
+WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: IfStmt - Lane 1 in phase ExecutingThenBlock (stack depth=2, our index=1, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 1 executing then block from statement 0
 DEBUG: IfStmt - Lane 1 popping stack due to ControlFlowException (depth 2->1, this=0x5060000015e0)
@@ -1569,8 +1688,8 @@ DEBUG: removeThreadFromAllSets - block 5 had 2 participating lanes before remova
 DEBUG: removeThreadFromAllSets - block 5 has 2 participating lanes after removal (participating: 2 3 )
 DEBUG: ForStmt - Lane 1 breaking from loop
 DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 2
-DEBUG: removeThreadFromAllSets - block 2 had 0 participating lanes before removal
-DEBUG: removeThreadFromAllSets - block 2 has 0 participating lanes after removal
+DEBUG: removeThreadFromAllSets - block 2 had 3 participating lanes before removal (participating: 1 2 3 )
+DEBUG: removeThreadFromAllSets - block 2 has 2 participating lanes after removal (participating: 2 3 )
 DEBUG: removeThreadFromNestedBlocks - skipping 3 (LOOP_EXIT block where lanes should go)
 DEBUG: removeThreadFromNestedBlocks - removing lane 1 from block 4 (child of 2)
 DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 4
@@ -1590,10 +1709,14 @@ DEBUG: ForStmt - Lane 2 merge stack size: 3
   Stack[2]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x5080000077a0
 DEBUG: ForStmt - Lane 2 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 2 executing directly in current block 5 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 2 executing directly in current block WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
+5 (no iteration block needed, but merge stack modified)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 5
 DEBUG: IfStmt - Lane 2 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: IfStmt - Lane 2 in phase Reconverging (stack depth=2, our index=1, this=0x5060000015e0)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: IfStmt - Lane 2 performing reconvergence from block 5 to laneSpecificMergeBlockId=5
 DEBUG: IfStmt - Lane 2 merge stack before reconvergence (size=3):
   Stack[0]: sourceStatement=0x5080000027a0
@@ -1606,17 +1729,24 @@ DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 5
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 5
 DEBUG: assignLaneToBlock - BEFORE: block 5 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - lane 2 already in block 5, skipping redundant assignment
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 5
 DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 4
 DEBUG: removeThreadFromAllSets - block 4 had 0 participating lanes before removal
 DEBUG: removeThreadFromAllSets - block 4 has 0 participating lanes after removal
 DEBUG: IfStmt - Lane 2 reconvergence complete
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 executing statement 1 in block 5
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 5, instruction key=(0x503000001990,5)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: markLaneWaitingForWave - Lane 2 wave 0 in block 5
 DEBUG: markLaneWaitingForWave - Successfully set lane 2 to WaitingForWave in block 5
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 5
 DEBUG: WAVE_OP: Resolution status tracked by registry for block 5
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: Block 5 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 2 in block 5: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=0, canExecuteGlobal=0, syncPointPhase=phase_0
@@ -1633,10 +1763,14 @@ DEBUG: ForStmt - Lane 3 merge stack size: 3
   Stack[2]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x5080000077a0
 DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 3 executing directly in current block 5 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 3 executing directly in current block WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
+5 (no iteration block needed, but merge stack modified)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 5
 DEBUG: IfStmt - Lane 3 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: IfStmt - Lane 3 in phase Reconverging (stack depth=2, our index=1, this=0x5060000015e0)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: IfStmt - Lane 3 performing reconvergence from block 5 to laneSpecificMergeBlockId=5
 DEBUG: IfStmt - Lane 3 merge stack before reconvergence (size=3):
   Stack[0]: sourceStatement=0x5080000027a0
@@ -1649,17 +1783,24 @@ DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 5
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 5
 DEBUG: assignLaneToBlock - BEFORE: block 5 has 1 participating lanes (3), 1 waiting lanes (2), 0 unknown lanes
 DEBUG: assignLaneToBlock - lane 3 already in block 5, skipping redundant assignment
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 5
 DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 4
 DEBUG: removeThreadFromAllSets - block 4 had 0 participating lanes before removal
 DEBUG: removeThreadFromAllSets - block 4 has 0 participating lanes after removal
 DEBUG: IfStmt - Lane 3 reconvergence complete
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 executing statement 1 in block 5
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 5, instruction key=(0x503000001990,5)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: markLaneWaitingForWave - Lane 3 wave 0 in block 5
 DEBUG: markLaneWaitingForWave - Successfully set lane 3 to WaitingForWave in block 5
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 5
 DEBUG: WAVE_OP: Resolution status tracked by registry for block 5
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: Block 5 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 3 in block 5: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_1
@@ -1678,9 +1819,11 @@ DEBUG: assignLaneToBlock - BEFORE: block 3 has 0 participating lanes, 0 waiting 
 DEBUG: assignLaneToBlock - AFTER: block 3 has 1 participating lanes (0), 0 waiting lanes, 3 unknown lanes (1 2 3)
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 3
 DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 3
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: onLaneFinishWaveOp - Lane 2 finishing wave op in block 5
 DEBUG: onLaneFinishWaveOp - Current status in block 5: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 2 to Participating in block 5
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: onLaneFinishWaveOp - Lane 3 finishing wave op in block 5
 DEBUG: onLaneFinishWaveOp - Current status in block 5: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 3 to Participating in block 5
@@ -1697,33 +1840,39 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=1, our index=0, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 2 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 2 no iteration block needed (first statement is control flow)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 executing statement 1 in block 5
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 5, instruction key=(0x503000001990,5)
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 2 (phase: Executed)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 popped iteration merge point 0x5080000077a0 after iteration 0
 DEBUG: ForStmt - Lane 2 body completed in block 5, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 2
-DEBUG: assignLaneToBlock - BEFORE: block 2 has 0 participating lanes, 0 waiting lanes, 0 unknown lanes
+DEBUG: assignLaneToBlock - BEFORE: block 2 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - moving lane 2 from block 5 (type 3) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from block 5
-DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (2), 0 waiting lanes, 0 unknown lanes
+DEBUG: assignLaneToBlock - AFTER: block 2 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 2
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=1, our index=0, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 executing body for iteration 0 from statement 1
 DEBUG: ForStmt - Lane 3 no iteration block needed (first statement is control flow)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 executing statement 1 in block 5
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 5, instruction key=(0x503000001990,5)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 2 (phase: Consumed)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 popped iteration merge point 0x5080000077a0 after iteration 0
 DEBUG: ForStmt - Lane 3 body completed in block 5, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 2
-DEBUG: assignLaneToBlock - BEFORE: block 2 has 1 participating lanes (2), 0 waiting lanes, 0 unknown lanes
+DEBUG: assignLaneToBlock - BEFORE: block 2 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - moving lane 3 from block 5 (type 3) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from block 5
 DEBUG: assignLaneToBlock - AFTER: block 2 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
@@ -1807,13 +1956,15 @@ DEBUG: Block 6 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 7
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 7
 DEBUG: assignLaneToBlock - BEFORE: block 7 has 0 participating lanes, 0 waiting lanes, 2 unknown lanes (2 3)
-DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 7 (type 3), isHeaderToLoopBody=0
-DEBUG: Removed lane 2 from block 2
+DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 7 (type 3), isHeaderToLoopBody=1
+DEBUG: Keeping lane 2 as Participating in header block 2 while also adding to loop body block 7
 DEBUG: assignLaneToBlock - AFTER: block 7 has 1 participating lanes (2), 0 waiting lanes, 1 unknown lanes (3)
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 7
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 7
 DEBUG: IfStmt - Lane 2 condition=0, moving to phase=Reconverging
 DEBUG: IfStmt - Lane 2 executing: thenBlockId=6, elseBlockId=0, mergeBlockId=7
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 2 child statement needs resume
   Block before: 2, Block after: 7
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
@@ -1839,10 +1990,10 @@ DEBUG: createIfBlocks - mergeStack size=3
   MergeStack[2]: sourceStatement=0x5060000015e0
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {2 3 } (2 lanes)
 DEBUG: Found existing block 6 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {2 3 } (2 lanes)
 DEBUG: Found existing block 7 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=6, elseBlockId=0, mergeBlockId=7
 DEBUG: IfStmt - Lane 3 setup complete: thenBlockId=6, elseBlockId=0, mergeBlockId=7
@@ -1854,13 +2005,15 @@ DEBUG: Block 6 now has all unknowns resolved for wave 0 - checking for ready wav
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 7
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 7
 DEBUG: assignLaneToBlock - BEFORE: block 7 has 1 participating lanes (2), 0 waiting lanes, 1 unknown lanes (3)
-DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 7 (type 3), isHeaderToLoopBody=0
-DEBUG: Removed lane 3 from block 2
+DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 7 (type 3), isHeaderToLoopBody=1
+DEBUG: Keeping lane 3 as Participating in header block 2 while also adding to loop body block 7
 DEBUG: assignLaneToBlock - AFTER: block 7 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 7
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 7
 DEBUG: IfStmt - Lane 3 condition=0, moving to phase=Reconverging
 DEBUG: IfStmt - Lane 3 executing: thenBlockId=6, elseBlockId=0, mergeBlockId=7
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 3 child statement needs resume
   Block before: 2, Block after: 7
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
@@ -1874,10 +2027,14 @@ DEBUG: ForStmt - Lane 2 merge stack size: 3
   Stack[2]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x5080000177a0
 DEBUG: ForStmt - Lane 2 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 2 executing directly in current block 7 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 2 executing directly in current block WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
+7 (no iteration block needed, but merge stack modified)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 7
 DEBUG: IfStmt - Lane 2 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: IfStmt - Lane 2 in phase Reconverging (stack depth=2, our index=1, this=0x5060000015e0)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: IfStmt - Lane 2 performing reconvergence from block 7 to laneSpecificMergeBlockId=7
 DEBUG: IfStmt - Lane 2 merge stack before reconvergence (size=3):
   Stack[0]: sourceStatement=0x5080000027a0
@@ -1890,17 +2047,24 @@ DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 7
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 7
 DEBUG: assignLaneToBlock - BEFORE: block 7 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - lane 2 already in block 7, skipping redundant assignment
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 7
 DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 6
 DEBUG: removeThreadFromAllSets - block 6 had 0 participating lanes before removal
 DEBUG: removeThreadFromAllSets - block 6 has 0 participating lanes after removal
 DEBUG: IfStmt - Lane 2 reconvergence complete
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 2 executing statement 1 in block 7
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 7, instruction key=(0x503000001990,7)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: markLaneWaitingForWave - Lane 2 wave 0 in block 7
 DEBUG: markLaneWaitingForWave - Successfully set lane 2 to WaitingForWave in block 7
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 7
 DEBUG: WAVE_OP: Resolution status tracked by registry for block 7
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: Block 7 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 2 in block 7: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=0, canExecuteGlobal=0, syncPointPhase=phase_0
@@ -1918,10 +2082,14 @@ DEBUG: ForStmt - Lane 3 merge stack size: 3
   Stack[2]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x5080000177a0
 DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 3 executing directly in current block 7 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 3 executing directly in current block WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
+7 (no iteration block needed, but merge stack modified)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 7
 DEBUG: IfStmt - Lane 3 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: IfStmt - Lane 3 in phase Reconverging (stack depth=2, our index=1, this=0x5060000015e0)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: IfStmt - Lane 3 performing reconvergence from block 7 to laneSpecificMergeBlockId=7
 DEBUG: IfStmt - Lane 3 merge stack before reconvergence (size=3):
   Stack[0]: sourceStatement=0x5080000027a0
@@ -1934,17 +2102,24 @@ DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 7
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 7
 DEBUG: assignLaneToBlock - BEFORE: block 7 has 1 participating lanes (3), 1 waiting lanes (2), 0 unknown lanes
 DEBUG: assignLaneToBlock - lane 3 already in block 7, skipping redundant assignment
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 7
 DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 6
 DEBUG: removeThreadFromAllSets - block 6 had 0 participating lanes before removal
 DEBUG: removeThreadFromAllSets - block 6 has 0 participating lanes after removal
 DEBUG: IfStmt - Lane 3 reconvergence complete
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 3 executing statement 1 in block 7
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 7, instruction key=(0x503000001990,7)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: markLaneWaitingForWave - Lane 3 wave 0 in block 7
 DEBUG: markLaneWaitingForWave - Successfully set lane 3 to WaitingForWave in block 7
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 7
 DEBUG: WAVE_OP: Resolution status tracked by registry for block 7
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: Block 7 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 3 in block 7: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_1
@@ -1955,9 +2130,11 @@ DEBUG: ForStmt - Lane 3 waiting for wave operation in phase 5 at statement 1, it
 DEBUG: WAVE_WAIT: Lane 3 caught WaveOperationWaitException, state=2
 DEBUG: WAVE_OP: Storing collective result for lanes: 2 3  (phase: 2)
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: onLaneFinishWaveOp - Lane 2 finishing wave op in block 7
 DEBUG: onLaneFinishWaveOp - Current status in block 7: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 2 to Participating in block 7
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: onLaneFinishWaveOp - Lane 3 finishing wave op in block 7
 DEBUG: onLaneFinishWaveOp - Current status in block 7: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 3 to Participating in block 7
@@ -1966,18 +2143,21 @@ DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (stack depth=1, our index=0, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 2 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 2 no iteration block needed (first statement is control flow)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 2 executing statement 1 in block 7
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 7, instruction key=(0x503000001990,7)
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 2 (phase: Executed)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 2 popped iteration merge point 0x5080000177a0 after iteration 1
 DEBUG: ForStmt - Lane 2 body completed in block 7, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 2
-DEBUG: assignLaneToBlock - BEFORE: block 2 has 0 participating lanes, 0 waiting lanes, 0 unknown lanes
+DEBUG: assignLaneToBlock - BEFORE: block 2 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - moving lane 2 from block 7 (type 3) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from block 7
-DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (2), 0 waiting lanes, 0 unknown lanes
+DEBUG: assignLaneToBlock - AFTER: block 2 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 2
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
@@ -1985,15 +2165,18 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=1, our index=0, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 executing body for iteration 1 from statement 1
 DEBUG: ForStmt - Lane 3 no iteration block needed (first statement is control flow)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 3 executing statement 1 in block 7
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 7, instruction key=(0x503000001990,7)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 2 (phase: Consumed)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 3 popped iteration merge point 0x5080000177a0 after iteration 1
 DEBUG: ForStmt - Lane 3 body completed in block 7, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 2
-DEBUG: assignLaneToBlock - BEFORE: block 2 has 1 participating lanes (2), 0 waiting lanes, 0 unknown lanes
+DEBUG: assignLaneToBlock - BEFORE: block 2 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - moving lane 3 from block 7 (type 3) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from block 7
 DEBUG: assignLaneToBlock - AFTER: block 2 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
@@ -2050,13 +2233,15 @@ DEBUG: IfStmt - Lane 2 setup complete: thenBlockId=8, elseBlockId=0, mergeBlockI
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 8
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 8
 DEBUG: assignLaneToBlock - BEFORE: block 8 has 0 participating lanes, 0 waiting lanes, 2 unknown lanes (2 3)
-DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 8 (type 1), isHeaderToLoopBody=0
-DEBUG: Removed lane 2 from block 2
+DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 8 (type 1), isHeaderToLoopBody=1
+DEBUG: Keeping lane 2 as Participating in header block 2 while also adding to loop body block 8
 DEBUG: assignLaneToBlock - AFTER: block 8 has 1 participating lanes (2), 0 waiting lanes, 1 unknown lanes (3)
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 8
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 8 (registry returned: 8)
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 8
 DEBUG: IfStmt - Lane 2 condition=1, moving to phase=ExecutingThenBlock
 DEBUG: IfStmt - Lane 2 executing: thenBlockId=8, elseBlockId=0, mergeBlockId=9
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 8 (registry returned: 8)
 DEBUG: ForStmt - Lane 2 child statement needs resume
   Block before: 2, Block after: 8
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
@@ -2082,10 +2267,10 @@ DEBUG: createIfBlocks - mergeStack size=3
   MergeStack[2]: sourceStatement=0x5060000015e0
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {2 3 } (2 lanes)
 DEBUG: Found existing block 8 - not modifying unknown lanes
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
-  Wave 0: {3 } (1 lanes)
+  Wave 0: {2 3 } (2 lanes)
 DEBUG: Found existing block 9 - not modifying unknown lanes
 DEBUG: createIfBlocks - Created blocks: thenBlockId=8, elseBlockId=0, mergeBlockId=9
 DEBUG: IfStmt - Lane 3 setup complete: thenBlockId=8, elseBlockId=0, mergeBlockId=9
@@ -2097,13 +2282,15 @@ DEBUG: Block 8 now has all unknowns resolved for wave 0 - checking for ready wav
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 9
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 9
 DEBUG: assignLaneToBlock - BEFORE: block 9 has 0 participating lanes, 0 waiting lanes, 2 unknown lanes (2 3)
-DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 9 (type 3), isHeaderToLoopBody=0
-DEBUG: Removed lane 3 from block 2
+DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 9 (type 3), isHeaderToLoopBody=1
+DEBUG: Keeping lane 3 as Participating in header block 2 while also adding to loop body block 9
 DEBUG: assignLaneToBlock - AFTER: block 9 has 1 participating lanes (3), 0 waiting lanes, 1 unknown lanes (2)
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 9
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 9
 DEBUG: IfStmt - Lane 3 condition=0, moving to phase=Reconverging
 DEBUG: IfStmt - Lane 3 executing: thenBlockId=8, elseBlockId=0, mergeBlockId=9
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: ForStmt - Lane 3 child statement needs resume
   Block before: 2, Block after: 9
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
@@ -2117,9 +2304,12 @@ DEBUG: ForStmt - Lane 2 merge stack size: 3
   Stack[2]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x5080000277a0
 DEBUG: ForStmt - Lane 2 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 2 executing directly in current block 8 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 2 executing directly in current block WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 8 (registry returned: 8)
+8 (no iteration block needed, but merge stack modified)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 8 (registry returned: 8)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 8
 DEBUG: IfStmt - Lane 2 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 8 (registry returned: 8)
 DEBUG: IfStmt - Lane 2 in phase ExecutingThenBlock (stack depth=2, our index=1, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 2 executing then block from statement 0
 DEBUG: IfStmt - Lane 2 popping stack due to ControlFlowException (depth 2->1, this=0x5060000015e0)
@@ -2131,8 +2321,8 @@ DEBUG: removeThreadFromAllSets - block 9 had 1 participating lanes before remova
 DEBUG: removeThreadFromAllSets - block 9 has 1 participating lanes after removal (participating: 3 )
 DEBUG: ForStmt - Lane 2 breaking from loop
 DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 2
-DEBUG: removeThreadFromAllSets - block 2 had 0 participating lanes before removal
-DEBUG: removeThreadFromAllSets - block 2 has 0 participating lanes after removal
+DEBUG: removeThreadFromAllSets - block 2 had 2 participating lanes before removal (participating: 2 3 )
+DEBUG: removeThreadFromAllSets - block 2 has 1 participating lanes after removal (participating: 3 )
 DEBUG: removeThreadFromNestedBlocks - skipping 3 (LOOP_EXIT block where lanes should go)
 DEBUG: removeThreadFromNestedBlocks - removing lane 2 from block 4 (child of 2)
 DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 4
@@ -2169,10 +2359,14 @@ DEBUG: ForStmt - Lane 3 merge stack size: 3
   Stack[2]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x5080000277a0
 DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 3 executing directly in current block 9 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 3 executing directly in current block WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
+9 (no iteration block needed, but merge stack modified)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 9
 DEBUG: IfStmt - Lane 3 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: IfStmt - Lane 3 in phase Reconverging (stack depth=2, our index=1, this=0x5060000015e0)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: IfStmt - Lane 3 performing reconvergence from block 9 to laneSpecificMergeBlockId=9
 DEBUG: IfStmt - Lane 3 merge stack before reconvergence (size=3):
   Stack[0]: sourceStatement=0x5080000027a0
@@ -2185,17 +2379,24 @@ DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 9
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 9
 DEBUG: assignLaneToBlock - BEFORE: block 9 has 1 participating lanes (3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - lane 3 already in block 9, skipping redundant assignment
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 9
 DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 8
 DEBUG: removeThreadFromAllSets - block 8 had 0 participating lanes before removal
 DEBUG: removeThreadFromAllSets - block 8 has 0 participating lanes after removal
 DEBUG: IfStmt - Lane 3 reconvergence complete
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: ForStmt - Lane 3 executing statement 1 in block 9
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 9, instruction key=(0x503000001990,9)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: markLaneWaitingForWave - Lane 3 wave 0 in block 9
 DEBUG: markLaneWaitingForWave - Successfully set lane 3 to WaitingForWave in block 9
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 9
 DEBUG: WAVE_OP: Resolution status tracked by registry for block 9
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: Block 9 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 3 in block 9: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_1
@@ -2215,6 +2416,7 @@ DEBUG: assignLaneToBlock - BEFORE: block 3 has 0 participating lanes, 2 waiting 
 DEBUG: assignLaneToBlock - AFTER: block 3 has 1 participating lanes (2), 2 waiting lanes (0 1), 1 unknown lanes (3)
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 3
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 3
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: onLaneFinishWaveOp - Lane 3 finishing wave op in block 9
 DEBUG: onLaneFinishWaveOp - Current status in block 9: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 3 to Participating in block 9
@@ -2223,15 +2425,18 @@ DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stac
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (stack depth=1, our index=0, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 executing body for iteration 2 from statement 1
 DEBUG: ForStmt - Lane 3 no iteration block needed (first statement is control flow)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: ForStmt - Lane 3 executing statement 1 in block 9
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 9, instruction key=(0x503000001990,9)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 1 (phase: Consumed)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: ForStmt - Lane 3 popped iteration merge point 0x5080000277a0 after iteration 2
 DEBUG: ForStmt - Lane 3 body completed in block 9, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 2
-DEBUG: assignLaneToBlock - BEFORE: block 2 has 0 participating lanes, 0 waiting lanes, 0 unknown lanes
+DEBUG: assignLaneToBlock - BEFORE: block 2 has 1 participating lanes (3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - moving lane 3 from block 9 (type 3) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from block 9
 DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (3), 0 waiting lanes, 0 unknown lanes
@@ -2290,13 +2495,15 @@ DEBUG: IfStmt - Lane 3 setup complete: thenBlockId=10, elseBlockId=0, mergeBlock
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 10
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 10
 DEBUG: assignLaneToBlock - BEFORE: block 10 has 0 participating lanes, 0 waiting lanes, 1 unknown lanes (3)
-DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 10 (type 1), isHeaderToLoopBody=0
-DEBUG: Removed lane 3 from block 2
+DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 10 (type 1), isHeaderToLoopBody=1
+DEBUG: Keeping lane 3 as Participating in header block 2 while also adding to loop body block 10
 DEBUG: assignLaneToBlock - AFTER: block 10 has 1 participating lanes (3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 10
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 10 (registry returned: 10)
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 10
 DEBUG: IfStmt - Lane 3 condition=1, moving to phase=ExecutingThenBlock
 DEBUG: IfStmt - Lane 3 executing: thenBlockId=10, elseBlockId=0, mergeBlockId=11
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 3 child statement needs resume
   Block before: 2, Block after: 10
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 1 unknown lanes: 3  - These lanes need to be resolved to Participating or Left
@@ -2310,9 +2517,12 @@ DEBUG: ForStmt - Lane 3 merge stack size: 3
   Stack[2]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x5080000377a0
 DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 3 executing directly in current block 10 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 3 executing directly in current block WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 10 (registry returned: 10)
+10 (no iteration block needed, but merge stack modified)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 10
 DEBUG: IfStmt - Lane 3 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 10 (registry returned: 10)
 DEBUG: IfStmt - Lane 3 in phase ExecutingThenBlock (stack depth=2, our index=1, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 3 executing then block from statement 0
 DEBUG: IfStmt - Lane 3 popping stack due to ControlFlowException (depth 2->1, this=0x5060000015e0)
@@ -2324,7 +2534,7 @@ DEBUG: removeThreadFromAllSets - block 11 had 0 participating lanes before remov
 DEBUG: removeThreadFromAllSets - block 11 has 0 participating lanes after removal
 DEBUG: ForStmt - Lane 3 breaking from loop
 DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 2
-DEBUG: removeThreadFromAllSets - block 2 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 2 had 1 participating lanes before removal (participating: 3 )
 DEBUG: removeThreadFromAllSets - block 2 has 0 participating lanes after removal
 DEBUG: removeThreadFromNestedBlocks - skipping 3 (LOOP_EXIT block where lanes should go)
 DEBUG: removeThreadFromNestedBlocks - removing lane 3 from block 4 (child of 2)

@@ -331,17 +331,22 @@ DEBUG: DoWhileStmt - Lane 2 created iteration starting block 5 for iteration 1
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 5
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 5
 DEBUG: assignLaneToBlock - BEFORE: block 5 has 0 participating lanes, 0 waiting lanes, 2 unknown lanes (2 3)
-DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 5 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 2 from block 2
+DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 5 (type 0), isHeaderToLoopBody=1
+DEBUG: Keeping lane 2 as Participating in header block 2 while also adding to loop body block 5
 DEBUG: assignLaneToBlock - AFTER: block 5 has 1 participating lanes (2), 0 waiting lanes, 1 unknown lanes (3)
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 5
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 5
 DEBUG: DoWhileStmt - Lane 2 moved to iteration starting block 5 for iteration 1
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 5, instruction key=(0x5030000018a0,5)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: markLaneWaitingForWave - Lane 2 wave 0 in block 5
 DEBUG: markLaneWaitingForWave - Successfully set lane 2 to WaitingForWave in block 5
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 5
 DEBUG: WAVE_OP: Resolution status tracked by registry for block 5
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: Block 5 wave 0 unknown lanes: {3 }
 DEBUG: isAllParticipantsKnown - Block 5 wave 0 has 1 unknown lanes: 3  - These lanes need to be resolved to Participating or Left
 DEBUG: isAllParticipantsKnown - Block 5 wave 0 has 1 unknown lanes: 3  - These lanes need to be resolved to Participating or Left
@@ -357,17 +362,22 @@ DEBUG: DoWhileStmt - Lane 3 found existing iteration starting block 5 for iterat
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 5
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 5
 DEBUG: assignLaneToBlock - BEFORE: block 5 has 0 participating lanes, 1 waiting lanes (2), 1 unknown lanes (3)
-DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 5 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 3 from block 2
+DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 5 (type 0), isHeaderToLoopBody=1
+DEBUG: Keeping lane 3 as Participating in header block 2 while also adding to loop body block 5
 DEBUG: assignLaneToBlock - AFTER: block 5 has 1 participating lanes (3), 1 waiting lanes (2), 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 5
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 5
 DEBUG: DoWhileStmt - Lane 3 moved to iteration starting block 5 for iteration 1
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 5, instruction key=(0x5030000018a0,5)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: markLaneWaitingForWave - Lane 3 wave 0 in block 5
 DEBUG: markLaneWaitingForWave - Successfully set lane 3 to WaitingForWave in block 5
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 5
 DEBUG: WAVE_OP: Resolution status tracked by registry for block 5
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: Block 5 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 3 in block 5: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_1
@@ -388,9 +398,11 @@ DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These
 DEBUG: canExecuteWaveInstruction for lane 0 in block 3: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=0, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: VarDeclStmt - Lane 0 caught WaveOperationWaitException, re-throwing
 DEBUG: WAVE_WAIT: Lane 0 caught WaveOperationWaitException, state=2
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: onLaneFinishWaveOp - Lane 2 finishing wave op in block 5
 DEBUG: onLaneFinishWaveOp - Current status in block 5: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 2 to Participating in block 5
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: onLaneFinishWaveOp - Lane 3 finishing wave op in block 5
 DEBUG: onLaneFinishWaveOp - Current status in block 5: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 3 to Participating in block 5
@@ -410,15 +422,17 @@ DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These
 DEBUG: DoWhileStmt - Lane 2 resuming do-while loop
 DEBUG: DoWhileStmt - Lane 2 executing body for iteration 1 from statement 0
 DEBUG: DoWhileStmt - Lane 2 needs iteration block (first statement is not control flow)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 5, instruction key=(0x5030000018a0,5)
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 2 (phase: Executed)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 2
-DEBUG: assignLaneToBlock - BEFORE: block 2 has 0 participating lanes, 0 waiting lanes, 0 unknown lanes
+DEBUG: assignLaneToBlock - BEFORE: block 2 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - moving lane 2 from block 5 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from block 5
-DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (2), 0 waiting lanes, 0 unknown lanes
+DEBUG: assignLaneToBlock - AFTER: block 2 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 2
 DEBUG: DoWhileStmt - Lane 2 completed body for iteration 1
@@ -426,12 +440,14 @@ DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These
 DEBUG: DoWhileStmt - Lane 3 resuming do-while loop
 DEBUG: DoWhileStmt - Lane 3 executing body for iteration 1 from statement 0
 DEBUG: DoWhileStmt - Lane 3 needs iteration block (first statement is not control flow)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 5, instruction key=(0x5030000018a0,5)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 2 (phase: Consumed)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 2
-DEBUG: assignLaneToBlock - BEFORE: block 2 has 1 participating lanes (2), 0 waiting lanes, 0 unknown lanes
+DEBUG: assignLaneToBlock - BEFORE: block 2 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - moving lane 3 from block 5 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from block 5
 DEBUG: assignLaneToBlock - AFTER: block 2 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
@@ -476,17 +492,22 @@ DEBUG: DoWhileStmt - Lane 3 created iteration starting block 6 for iteration 2
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 6
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 6
 DEBUG: assignLaneToBlock - BEFORE: block 6 has 0 participating lanes, 0 waiting lanes, 1 unknown lanes (3)
-DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 6 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 3 from block 2
+DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 6 (type 0), isHeaderToLoopBody=1
+DEBUG: Keeping lane 3 as Participating in header block 2 while also adding to loop body block 6
 DEBUG: assignLaneToBlock - AFTER: block 6 has 1 participating lanes (3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 6
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 6
 DEBUG: DoWhileStmt - Lane 3 moved to iteration starting block 6 for iteration 2
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 6, instruction key=(0x5030000018a0,6)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
 DEBUG: markLaneWaitingForWave - Lane 3 wave 0 in block 6
 DEBUG: markLaneWaitingForWave - Successfully set lane 3 to WaitingForWave in block 6
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 6
 DEBUG: WAVE_OP: Resolution status tracked by registry for block 6
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
 DEBUG: Block 6 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 3 in block 6: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_1
@@ -508,6 +529,7 @@ DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 1 unknown lanes: 3  - These l
 DEBUG: canExecuteWaveInstruction for lane 2 in block 3: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: VarDeclStmt - Lane 2 caught WaveOperationWaitException, re-throwing
 DEBUG: WAVE_WAIT: Lane 2 caught WaveOperationWaitException, state=2
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
 DEBUG: onLaneFinishWaveOp - Lane 3 finishing wave op in block 6
 DEBUG: onLaneFinishWaveOp - Current status in block 6: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 3 to Participating in block 6
@@ -515,12 +537,14 @@ DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 1 unknown lanes: 3  - These l
 DEBUG: DoWhileStmt - Lane 3 resuming do-while loop
 DEBUG: DoWhileStmt - Lane 3 executing body for iteration 2 from statement 0
 DEBUG: DoWhileStmt - Lane 3 needs iteration block (first statement is not control flow)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 6, instruction key=(0x5030000018a0,6)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 1 (phase: Consumed)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 2
-DEBUG: assignLaneToBlock - BEFORE: block 2 has 0 participating lanes, 0 waiting lanes, 0 unknown lanes
+DEBUG: assignLaneToBlock - BEFORE: block 2 has 1 participating lanes (3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - moving lane 3 from block 6 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from block 6
 DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (3), 0 waiting lanes, 0 unknown lanes
@@ -862,17 +886,22 @@ DEBUG: DoWhileStmt - Lane 2 created iteration starting block 5 for iteration 1
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 5
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 5
 DEBUG: assignLaneToBlock - BEFORE: block 5 has 0 participating lanes, 0 waiting lanes, 2 unknown lanes (2 3)
-DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 5 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 2 from block 2
+DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 5 (type 0), isHeaderToLoopBody=1
+DEBUG: Keeping lane 2 as Participating in header block 2 while also adding to loop body block 5
 DEBUG: assignLaneToBlock - AFTER: block 5 has 1 participating lanes (2), 0 waiting lanes, 1 unknown lanes (3)
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 5
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 5
 DEBUG: DoWhileStmt - Lane 2 moved to iteration starting block 5 for iteration 1
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 5, instruction key=(0x5030000018a0,5)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: markLaneWaitingForWave - Lane 2 wave 0 in block 5
 DEBUG: markLaneWaitingForWave - Successfully set lane 2 to WaitingForWave in block 5
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 5
 DEBUG: WAVE_OP: Resolution status tracked by registry for block 5
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: Block 5 wave 0 unknown lanes: {3 }
 DEBUG: isAllParticipantsKnown - Block 5 wave 0 has 1 unknown lanes: 3  - These lanes need to be resolved to Participating or Left
 DEBUG: isAllParticipantsKnown - Block 5 wave 0 has 1 unknown lanes: 3  - These lanes need to be resolved to Participating or Left
@@ -888,17 +917,22 @@ DEBUG: DoWhileStmt - Lane 3 found existing iteration starting block 5 for iterat
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 5
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 5
 DEBUG: assignLaneToBlock - BEFORE: block 5 has 0 participating lanes, 1 waiting lanes (2), 1 unknown lanes (3)
-DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 5 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 3 from block 2
+DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 5 (type 0), isHeaderToLoopBody=1
+DEBUG: Keeping lane 3 as Participating in header block 2 while also adding to loop body block 5
 DEBUG: assignLaneToBlock - AFTER: block 5 has 1 participating lanes (3), 1 waiting lanes (2), 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 5
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 5
 DEBUG: DoWhileStmt - Lane 3 moved to iteration starting block 5 for iteration 1
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 5, instruction key=(0x5030000018a0,5)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: markLaneWaitingForWave - Lane 3 wave 0 in block 5
 DEBUG: markLaneWaitingForWave - Successfully set lane 3 to WaitingForWave in block 5
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 5
 DEBUG: WAVE_OP: Resolution status tracked by registry for block 5
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: Block 5 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 3 in block 5: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_1
@@ -919,9 +953,11 @@ DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These
 DEBUG: canExecuteWaveInstruction for lane 0 in block 3: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=0, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: VarDeclStmt - Lane 0 caught WaveOperationWaitException, re-throwing
 DEBUG: WAVE_WAIT: Lane 0 caught WaveOperationWaitException, state=2
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: onLaneFinishWaveOp - Lane 2 finishing wave op in block 5
 DEBUG: onLaneFinishWaveOp - Current status in block 5: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 2 to Participating in block 5
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: onLaneFinishWaveOp - Lane 3 finishing wave op in block 5
 DEBUG: onLaneFinishWaveOp - Current status in block 5: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 3 to Participating in block 5
@@ -941,15 +977,17 @@ DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These
 DEBUG: DoWhileStmt - Lane 2 resuming do-while loop
 DEBUG: DoWhileStmt - Lane 2 executing body for iteration 1 from statement 0
 DEBUG: DoWhileStmt - Lane 2 needs iteration block (first statement is not control flow)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
+WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 5, instruction key=(0x5030000018a0,5)
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 2 (phase: Executed)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 2
-DEBUG: assignLaneToBlock - BEFORE: block 2 has 0 participating lanes, 0 waiting lanes, 0 unknown lanes
+DEBUG: assignLaneToBlock - BEFORE: block 2 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - moving lane 2 from block 5 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 2 from block 5
-DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (2), 0 waiting lanes, 0 unknown lanes
+DEBUG: assignLaneToBlock - AFTER: block 2 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 2
 DEBUG: DoWhileStmt - Lane 2 completed body for iteration 1
@@ -957,12 +995,14 @@ DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These
 DEBUG: DoWhileStmt - Lane 3 resuming do-while loop
 DEBUG: DoWhileStmt - Lane 3 executing body for iteration 1 from statement 0
 DEBUG: DoWhileStmt - Lane 3 needs iteration block (first statement is not control flow)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 5, instruction key=(0x5030000018a0,5)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 2 (phase: Consumed)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 2
-DEBUG: assignLaneToBlock - BEFORE: block 2 has 1 participating lanes (2), 0 waiting lanes, 0 unknown lanes
+DEBUG: assignLaneToBlock - BEFORE: block 2 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - moving lane 3 from block 5 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from block 5
 DEBUG: assignLaneToBlock - AFTER: block 2 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
@@ -1007,17 +1047,22 @@ DEBUG: DoWhileStmt - Lane 3 created iteration starting block 6 for iteration 2
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 6
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 6
 DEBUG: assignLaneToBlock - BEFORE: block 6 has 0 participating lanes, 0 waiting lanes, 1 unknown lanes (3)
-DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 6 (type 0), isHeaderToLoopBody=0
-DEBUG: Removed lane 3 from block 2
+DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 6 (type 0), isHeaderToLoopBody=1
+DEBUG: Keeping lane 3 as Participating in header block 2 while also adding to loop body block 6
 DEBUG: assignLaneToBlock - AFTER: block 6 has 1 participating lanes (3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 6
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 6
 DEBUG: DoWhileStmt - Lane 3 moved to iteration starting block 6 for iteration 2
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 6, instruction key=(0x5030000018a0,6)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
 DEBUG: markLaneWaitingForWave - Lane 3 wave 0 in block 6
 DEBUG: markLaneWaitingForWave - Successfully set lane 3 to WaitingForWave in block 6
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 6
 DEBUG: WAVE_OP: Resolution status tracked by registry for block 6
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
 DEBUG: Block 6 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 3 in block 6: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_1
@@ -1039,6 +1084,7 @@ DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 1 unknown lanes: 3  - These l
 DEBUG: canExecuteWaveInstruction for lane 2 in block 3: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=1, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: VarDeclStmt - Lane 2 caught WaveOperationWaitException, re-throwing
 DEBUG: WAVE_WAIT: Lane 2 caught WaveOperationWaitException, state=2
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
 DEBUG: onLaneFinishWaveOp - Lane 3 finishing wave op in block 6
 DEBUG: onLaneFinishWaveOp - Current status in block 6: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 3 to Participating in block 6
@@ -1046,12 +1092,14 @@ DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 1 unknown lanes: 3  - These l
 DEBUG: DoWhileStmt - Lane 3 resuming do-while loop
 DEBUG: DoWhileStmt - Lane 3 executing body for iteration 2 from statement 0
 DEBUG: DoWhileStmt - Lane 3 needs iteration block (first statement is not control flow)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
+WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 6, instruction key=(0x5030000018a0,6)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 1 (phase: Consumed)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 2
-DEBUG: assignLaneToBlock - BEFORE: block 2 has 0 participating lanes, 0 waiting lanes, 0 unknown lanes
+DEBUG: assignLaneToBlock - BEFORE: block 2 has 1 participating lanes (3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - moving lane 3 from block 6 (type 0) to block 2 (type 4), isHeaderToLoopBody=0
 DEBUG: Removed lane 3 from block 6
 DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (3), 0 waiting lanes, 0 unknown lanes
