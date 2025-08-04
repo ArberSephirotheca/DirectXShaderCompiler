@@ -235,6 +235,17 @@ enum class SyncPointState {
   Consumed                 // All results retrieved, ready for cleanup
 };
 
+// Helper function to convert SyncPointState to string for debugging
+inline const char* syncPointStateToString(SyncPointState state) {
+  switch(state) {
+    case SyncPointState::WaitingForParticipants: return "WaitingForParticipants";
+    case SyncPointState::ReadyToExecute: return "ReadyToExecute";
+    case SyncPointState::Executed: return "Executed";
+    case SyncPointState::Consumed: return "Consumed";
+    default: return "Unknown";
+  }
+}
+
 // Wave operation synchronization point for instruction-level coordination
 struct WaveOperationSyncPoint {
   const void *instruction; // Specific wave operation instruction pointer
@@ -296,6 +307,7 @@ struct WaveOperationSyncPoint {
     if (it != pendingResults.end()) {
       Value result = it->second;
       pendingResults.erase(it);
+      // TODO: implement separate function for check
       if (pendingResults.empty()) {
         state = SyncPointState::Consumed;
       }
@@ -499,9 +511,10 @@ public:
   uint32_t getBlockId() const { return blockId_; }
   BlockType getBlockType() const { return identity_.blockType; }
   const BlockIdentity &getIdentity() const { return identity_; }
-  // const std::map<WaveId, std::set<LaneId>> &getParticipatingLanes() const {
-  //   return participatingLanes_;
-  // }
+  std::map<WaveId, std::set<LaneId>> getParticipatingLanes(const struct ThreadgroupContext& tg) const;
+  std::map<WaveId, std::set<LaneId>> getArrivedLanes(const struct ThreadgroupContext& tg) const;
+  std::map<WaveId, std::set<LaneId>> getUnknownLanes(const struct ThreadgroupContext& tg) const;
+  std::map<WaveId, std::set<LaneId>> getWaitingLanes(const struct ThreadgroupContext& tg) const;
   uint32_t getProgramPoint() const { return programPoint_; }
   uint32_t getParentBlockId() const { return parentBlockId_; }
   bool getIsConverged() const { return isConverged_; }
@@ -901,7 +914,7 @@ struct ThreadgroupContext {
   // Instruction-level synchronization methods for wave operation
   bool canExecuteWaveInstruction(WaveId waveId, LaneId laneId,
                                  const void *instruction) const;
-  void markLaneArrivedAtWaveInstruction(WaveId waveId, LaneId laneId,
+  void markLaneWaitingAtWaveInstruction(WaveId waveId, LaneId laneId,
                                         const void *instruction,
                                         const std::string &instructionType);
   bool areAllParticipantsKnownForWaveInstruction(

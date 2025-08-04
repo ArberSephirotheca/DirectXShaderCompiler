@@ -636,68 +636,50 @@ void BlockMembershipRegistry::removeParticipatingLaneFromBlock(uint32_t blockId,
   // }
 }
 
-// DynamicExecutionBlock dual-tracking methods
-// void DynamicExecutionBlock::addUnknownLane(WaveId waveId, LaneId laneId) {
-//   // Update old data structure
-//   unknownLanes_[waveId].insert(laneId);
-  
-//   // TODO: Update BlockMembershipRegistry when ThreadgroupContext is accessible
-//   std::cout << "DEBUG: addUnknownLane - added lane " << laneId 
-//             << " to unknown lanes of block " << blockId_ << std::endl;
-// }
+// Registry-based implementations of lane set getters
+std::map<WaveId, std::set<LaneId>> DynamicExecutionBlock::getParticipatingLanes(const ThreadgroupContext& tg) const {
+  std::map<WaveId, std::set<LaneId>> result;
+  for (size_t waveId = 0; waveId < tg.waves.size(); ++waveId) {
+    auto lanes = tg.membershipRegistry.getParticipatingLanes(waveId, blockId_);
+    if (!lanes.empty()) {
+      result[waveId] = lanes;
+    }
+  }
+  return result;
+}
 
-// void DynamicExecutionBlock::removeUnknownLane(WaveId waveId, LaneId laneId) {
-//   // Update old data structure
-//   std::cout << "DEBUG: removeUnknownLane - removing lane " << laneId
-//             << " from unknown lanes of block " << blockId_ << std::endl;
-//   unknownLanes_[waveId].erase(laneId);
-//   if (unknownLanes_[waveId].empty()) {
-//     unknownLanes_.erase(waveId);
-//   }
-  
-//   // TODO: Update BlockMembershipRegistry when ThreadgroupContext is accessible
-// }
+std::map<WaveId, std::set<LaneId>> DynamicExecutionBlock::getArrivedLanes(const ThreadgroupContext& tg) const {
+  std::map<WaveId, std::set<LaneId>> result;
+  for (size_t waveId = 0; waveId < tg.waves.size(); ++waveId) {
+    auto lanes = tg.membershipRegistry.getArrivedLanes(waveId, blockId_);
+    if (!lanes.empty()) {
+      result[waveId] = lanes;
+    }
+  }
+  return result;
+}
 
-// void DynamicExecutionBlock::addArrivedLane(WaveId waveId, LaneId laneId) {
-//   // Update old data structure
-//   arrivedLanes_[waveId].insert(laneId);
-  
-//   // TODO: Update BlockMembershipRegistry when ThreadgroupContext is accessible
-// }
+std::map<WaveId, std::set<LaneId>> DynamicExecutionBlock::getUnknownLanes(const ThreadgroupContext& tg) const {
+  std::map<WaveId, std::set<LaneId>> result;
+  for (size_t waveId = 0; waveId < tg.waves.size(); ++waveId) {
+    auto lanes = tg.membershipRegistry.getUnknownLanes(waveId, blockId_);
+    if (!lanes.empty()) {
+      result[waveId] = lanes;
+    }
+  }
+  return result;
+}
 
-// void DynamicExecutionBlock::removeArrivedLane(WaveId waveId, LaneId laneId) {
-//   // Update old data structure
-//   arrivedLanes_[waveId].erase(laneId);
-//   if (arrivedLanes_[waveId].empty()) {
-//     arrivedLanes_.erase(waveId);
-//   }
-  
-//   // TODO: Update BlockMembershipRegistry when ThreadgroupContext is accessible
-// }
-
-// void DynamicExecutionBlock::addWaitingLane(WaveId waveId, LaneId laneId) {
-//   // Update old data structure
-//   waitingLanes_[waveId].insert(laneId);
-  
-//   // TODO: Update BlockMembershipRegistry when ThreadgroupContext is accessible
-// }
-
-// void DynamicExecutionBlock::removeWaitingLane(WaveId waveId, LaneId laneId) {
-//   // Update old data structure
-//   waitingLanes_[waveId].erase(laneId);
-//   if (waitingLanes_[waveId].empty()) {
-//     waitingLanes_.erase(waveId);
-//   }
-  
-//   // TODO: Update BlockMembershipRegistry when ThreadgroupContext is accessible
-// }
-
-// void DynamicExecutionBlock::setWaveAllUnknownResolved(WaveId waveId, bool resolved) {
-//   // Update old data structure
-//   allUnknownResolved_[waveId] = resolved;
-  
-//   // TODO: Update BlockMembershipRegistry when ThreadgroupContext is accessible
-// }
+std::map<WaveId, std::set<LaneId>> DynamicExecutionBlock::getWaitingLanes(const ThreadgroupContext& tg) const {
+  std::map<WaveId, std::set<LaneId>> result;
+  for (size_t waveId = 0; waveId < tg.waves.size(); ++waveId) {
+    auto lanes = tg.membershipRegistry.getWaitingLanes(waveId, blockId_);
+    if (!lanes.empty()) {
+      result[waveId] = lanes;
+    }
+  }
+  return result;
+}
 
 ThreadId ThreadgroupContext::getGlobalThreadId(WaveId wid, LaneId lid) const {
   return wid * waveSize + lid;
@@ -1086,7 +1068,7 @@ Value WaveActiveOp::evaluate(LaneContext &lane, WaveContext &wave,
   }
 
   // Create block-scoped instruction identity using compound key
-  uint32_t currentBlockId = tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
+  uint32_t currentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
   std::pair<const void *, uint32_t> instructionKey = {
       static_cast<const void *>(this), currentBlockId};
 
@@ -1111,11 +1093,10 @@ Value WaveActiveOp::evaluate(LaneContext &lane, WaveContext &wave,
           Value result = syncPoint.retrieveResult(lane.laneId);
           std::cout << "DEBUG: WAVE_OP: Lane " << lane.laneId
                     << " retrieving stored wave result: " << result.toString()
-                    << " (phase: " << (int)syncPoint.getPhase() << ")" << std::endl;
+                    << " (phase: " << syncPointStateToString(syncPoint.getPhase()) << ")" << std::endl;
 
           // Clear the resuming flag - we successfully retrieved the result
           const_cast<LaneContext &>(lane).isResumingFromWaveOp = false;
-
           return result;
         } catch (const std::runtime_error& e) {
           std::cout << "DEBUG: WAVE_OP: Lane " << lane.laneId
@@ -1169,8 +1150,8 @@ Value WaveActiveOp::evaluate(LaneContext &lane, WaveContext &wave,
     }
   }
 
-  // Mark this lane as arrived at this specific instruction
-  tg.markLaneArrivedAtWaveInstruction(wave.waveId, lane.laneId,
+  // Mark this lane as waiting at this specific instruction
+  tg.markLaneWaitingAtWaveInstruction(wave.waveId, lane.laneId,
                                       static_cast<const void *>(this),
                                       "WaveActiveOp");
   // No stored result - check if we can execute or need to wait
@@ -1460,7 +1441,7 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
   // Don't hold reference to vector element - it can be invalidated during
   // nested execution
   bool hasElse = !elseBlock_.empty();
-  uint32_t parentBlockId = tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
+  uint32_t parentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
   // Check if this lane has already set up blocks in its execution stack
   auto &ourEntry = lane.executionStack[ourStackIndex];
   bool setupComplete =
@@ -1658,7 +1639,7 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
     }
 
     case LaneContext::ControlFlowPhase::Reconverging: {
-      uint32_t currentBlockId = tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
+      uint32_t currentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
       uint32_t laneSpecificMergeBlockId = ourEntry.ifMergeBlockId;
       std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
                 << " performing reconvergence from block " << currentBlockId
@@ -1695,7 +1676,7 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
       std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
                 << " assigning to merge block " << laneSpecificMergeBlockId
                 << std::endl;
-      tg.assignLaneToBlock(wave.waveId, lane.laneId, laneSpecificMergeBlockId);
+      // tg.assignLaneToBlock(wave.waveId, lane.laneId, laneSpecificMergeBlockId);
 
       // Move lane to merge block as participating (reconvergence)
       tg.moveThreadFromUnknownToParticipating(laneSpecificMergeBlockId,
@@ -1896,7 +1877,7 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
       lane.variables[loopVar_] = init_->evaluate(lane, wave, tg);
 
       // Move to loop header block
-      tg.assignLaneToBlock(wave.waveId, lane.laneId, headerBlockId);
+      // tg.assignLaneToBlock(wave.waveId, lane.laneId, headerBlockId);
       tg.moveThreadFromUnknownToParticipating(headerBlockId, wave.waveId,
                                               lane.laneId);
 
@@ -2023,7 +2004,7 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
         }
 
         // Move to iteration-specific block
-        if (tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId) !=
+        if (tg.getCurrentBlock(wave.waveId, lane.laneId) !=
             iterationStartBlockId) {
           tg.moveThreadFromUnknownToParticipating(iterationStartBlockId,
                                                   wave.waveId, lane.laneId);
@@ -2066,7 +2047,7 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
             std::set<uint32_t>
                 emptyDivergentBlocks; // No actual divergence, just context
             tg.pushMergePoint(wave.waveId, lane.laneId, iterationMarker,
-                              tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId),
+                              tg.getCurrentBlock(wave.waveId, lane.laneId),
                               emptyDivergentBlocks);
             std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
                       << " pushed iteration merge point " << iterationMarker
@@ -2076,7 +2057,7 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
 
           std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
                     << " executing directly in current block "
-                    << tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId)
+                    << tg.getCurrentBlock(wave.waveId, lane.laneId)
                     << " (no iteration block needed, but merge stack modified)"
                     << std::endl;
         }
@@ -2088,7 +2069,7 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
         lane.executionStack[ourStackIndex].statementIndex = i;
 
         uint32_t blockBeforeStatement =
-            tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
+            tg.getCurrentBlock(wave.waveId, lane.laneId);
         std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
                   << " executing statement " << i << " in block "
                   << blockBeforeStatement << std::endl;
@@ -2120,7 +2101,7 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
         if (lane.state != ThreadState::Ready) {
           // Child statement needs to resume - preserve current block context
           uint32_t blockAfterStatement =
-              tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
+              tg.getCurrentBlock(wave.waveId, lane.laneId);
           std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
                     << " child statement needs resume" << std::endl;
           std::cout << "  Block before: " << blockBeforeStatement
@@ -2130,7 +2111,7 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
 
         // Log block transitions (shows natural flow to merge blocks)
         uint32_t blockAfterStatement =
-            tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
+            tg.getCurrentBlock(wave.waveId, lane.laneId);
         if (blockBeforeStatement != blockAfterStatement) {
           std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
                     << " natural flow from block " << blockBeforeStatement
@@ -2207,7 +2188,7 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
 
       // Pop merge point and move to merge block
       tg.popMergePoint(wave.waveId, lane.laneId);
-      tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
+      // tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
       tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId,
                                               lane.laneId);
       return;
@@ -2701,7 +2682,7 @@ ExecutionResult MiniHLSLInterpreter::executeWithOrdering(
 
       // Process completed wave operations and barriers
       processWaveOperations(tgContext);
-      processBarriers(tgContext);
+      // processBarriers(tgContext);
 
       // Process lanes waiting to resume control flow
       processControlFlowResumption(tgContext);
@@ -4391,7 +4372,7 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
     // First time execution - setup blocks and push onto execution stack
 
     // Get current block before entering loop
-    uint32_t parentBlockId = tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
+    uint32_t parentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
 
     // Get current merge stack for block creation
     std::vector<MergeStackEntry> currentMergeStack =
@@ -4419,7 +4400,7 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
     ourStackIndex = lane.executionStack.size() - 1;
 
     // Move to loop header block
-    tg.assignLaneToBlock(wave.waveId, lane.laneId, headerBlockId);
+    // tg.assignLaneToBlock(wave.waveId, lane.laneId, headerBlockId);
     tg.moveThreadFromUnknownToParticipating(headerBlockId, wave.waveId,
                                             lane.laneId);
   }
@@ -4537,7 +4518,7 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
               iterationStartBlockId;
         }
 
-        if (tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId) !=
+        if (tg.getCurrentBlock(wave.waveId, lane.laneId) !=
             iterationStartBlockId) {
           tg.moveThreadFromUnknownToParticipating(iterationStartBlockId,
                                                   wave.waveId, lane.laneId);
@@ -4580,7 +4561,7 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
             std::set<uint32_t>
                 emptyDivergentBlocks; // No actual divergence, just context
             tg.pushMergePoint(wave.waveId, lane.laneId, iterationMarker,
-                              tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId),
+                              tg.getCurrentBlock(wave.waveId, lane.laneId),
                               emptyDivergentBlocks);
             std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
                       << " pushed iteration merge point " << iterationMarker
@@ -4590,7 +4571,7 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
 
           std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
                     << " executing directly in current block "
-                    << tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId)
+                    << tg.getCurrentBlock(wave.waveId, lane.laneId)
                     << " (no iteration block needed, but merge stack modified)"
                     << std::endl;
         }
@@ -4601,7 +4582,7 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
         lane.executionStack[ourStackIndex].statementIndex = i;
 
         uint32_t blockBeforeStatement =
-            tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
+            tg.getCurrentBlock(wave.waveId, lane.laneId);
         std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
                   << " executing statement " << i << " in block "
                   << blockBeforeStatement << std::endl;
@@ -4633,7 +4614,7 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
 
         if (lane.state != ThreadState::Ready) {
           uint32_t blockAfterStatement =
-              tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
+              tg.getCurrentBlock(wave.waveId, lane.laneId);
           std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
                     << " child statement needs resume" << std::endl;
           std::cout << "  Block before: " << blockBeforeStatement
@@ -4643,7 +4624,7 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
 
         // Log block transitions (shows natural flow to merge blocks)
         uint32_t blockAfterStatement =
-            tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
+            tg.getCurrentBlock(wave.waveId, lane.laneId);
         if (blockBeforeStatement != blockAfterStatement) {
           std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
                     << " natural flow from block " << blockBeforeStatement
@@ -4704,7 +4685,7 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
 
       // Pop merge point and move to merge block
       tg.popMergePoint(wave.waveId, lane.laneId);
-      tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
+      // tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
       tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId,
                                               lane.laneId);
 
@@ -4841,7 +4822,7 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
     // First time execution - setup blocks and push onto execution stack
 
     // Get current block before entering loop
-    uint32_t parentBlockId = tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
+    uint32_t parentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
 
     // Get current merge stack for block creation
     std::vector<MergeStackEntry> currentMergeStack =
@@ -4955,7 +4936,7 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
         }
 
         // Move to iteration starting block if not already there
-        if (tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId) !=
+        if (tg.getCurrentBlock(wave.waveId, lane.laneId) !=
             iterationStartBlockId) {
           tg.moveThreadFromUnknownToParticipating(iterationStartBlockId,
                                                   wave.waveId, lane.laneId);
@@ -4990,7 +4971,7 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
             std::set<uint32_t>
                 emptyDivergentBlocks; // No actual divergence, just context
             tg.pushMergePoint(wave.waveId, lane.laneId, iterationMarker,
-                              tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId),
+                              tg.getCurrentBlock(wave.waveId, lane.laneId),
                               emptyDivergentBlocks);
             std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId
                       << " pushed iteration merge point " << iterationMarker
@@ -5000,7 +4981,7 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
 
           std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId
                     << " executing directly in current block "
-                    << tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId)
+                    << tg.getCurrentBlock(wave.waveId, lane.laneId)
                     << " (no iteration block needed, but merge stack modified)"
                     << std::endl;
         }
@@ -5119,7 +5100,7 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
 
       // Pop merge point and move to merge block
       tg.popMergePoint(wave.waveId, lane.laneId);
-      tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
+      // tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
       tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId,
                                               lane.laneId);
 
@@ -5260,7 +5241,7 @@ void SwitchStmt::execute(LaneContext &lane, WaveContext &wave,
               << std::endl;
 
     // Create blocks for all cases
-    uint32_t parentBlockId = tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
+    uint32_t parentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
     std::vector<MergeStackEntry> currentMergeStack =
         tg.getCurrentMergeStack(wave.waveId, lane.laneId);
 
@@ -5305,8 +5286,8 @@ void SwitchStmt::execute(LaneContext &lane, WaveContext &wave,
               << std::endl;
 
     // Move to header block for condition evaluation
-    tg.assignLaneToBlock(wave.waveId, lane.laneId,
-                         ourEntry.switchHeaderBlockId);
+    // tg.assignLaneToBlock(wave.waveId, lane.laneId,
+    //                      ourEntry.switchHeaderBlockId);
     tg.moveThreadFromUnknownToParticipating(ourEntry.switchHeaderBlockId,
                                             wave.waveId, lane.laneId);
   } else {
@@ -5416,7 +5397,7 @@ void SwitchStmt::execute(LaneContext &lane, WaveContext &wave,
                   << firstCaseBlockId << " (case " << matchingCaseIndex << ")"
                   << std::endl;
 
-        tg.assignLaneToBlock(wave.waveId, lane.laneId, firstCaseBlockId);
+        // tg.assignLaneToBlock(wave.waveId, lane.laneId, firstCaseBlockId);
         tg.moveThreadFromUnknownToParticipating(firstCaseBlockId, wave.waveId,
                                                 lane.laneId);
 
@@ -5508,7 +5489,7 @@ void SwitchStmt::execute(LaneContext &lane, WaveContext &wave,
                     << std::endl;
 
           // Move to next case block (fallthrough)
-          tg.assignLaneToBlock(wave.waveId, lane.laneId, nextCaseBlockId);
+          // tg.assignLaneToBlock(wave.waveId, lane.laneId, nextCaseBlockId);
           tg.moveThreadFromUnknownToParticipating(nextCaseBlockId, wave.waveId,
                                                   lane.laneId);
 
@@ -5544,7 +5525,7 @@ void SwitchStmt::execute(LaneContext &lane, WaveContext &wave,
 
       // Pop merge point and move to merge block
       tg.popMergePoint(wave.waveId, lane.laneId);
-      tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
+      // tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
       tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId,
                                               lane.laneId);
       return;
@@ -5667,6 +5648,33 @@ uint32_t ThreadgroupContext::createExecutionBlock(
 
 void ThreadgroupContext::assignLaneToBlock(WaveId waveId, LaneId laneId,
                                            uint32_t blockId) {
+  std::cout << "DEBUG: assignLaneToBlock - START: lane " << laneId 
+            << " being assigned to block " << blockId << std::endl;
+  
+  // Show current state before assignment
+  auto partBefore = membershipRegistry.getParticipatingLanes(waveId, blockId);
+  auto waitBefore = membershipRegistry.getWaitingLanes(waveId, blockId);
+  std::cout << "DEBUG: assignLaneToBlock - BEFORE: block " << blockId 
+            << " has " << partBefore.size() << " participating lanes";
+  if (!partBefore.empty()) {
+    std::cout << " (";
+    for (auto it = partBefore.begin(); it != partBefore.end(); ++it) {
+      if (it != partBefore.begin()) std::cout << " ";
+      std::cout << *it;
+    }
+    std::cout << ")";
+  }
+  std::cout << " and " << waitBefore.size() << " waiting lanes";
+  if (!waitBefore.empty()) {
+    std::cout << " (";
+    for (auto it = waitBefore.begin(); it != waitBefore.end(); ++it) {
+      if (it != waitBefore.begin()) std::cout << " ";
+      std::cout << *it;
+    }
+    std::cout << ")";
+  }
+  std::cout << std::endl;
+
   // Don't move lanes that are waiting for wave operations or barriers
   if (waveId < waves.size() && laneId < waves[waveId]->lanes.size()) {
     auto state = waves[waveId]->lanes[laneId]->state;
@@ -5722,7 +5730,10 @@ void ThreadgroupContext::assignLaneToBlock(WaveId waveId, LaneId laneId,
 
       if (!isHeaderToLoopBody) {
         // Update registry: lane is leaving the old block
+        // todo: maybe shift the functionality to removethreadsfromallSet
         membershipRegistry.setLaneStatus(waveId, laneId, oldBlockId, LaneBlockStatus::Left);
+          membershipRegistry.setLaneStatus(waveId, laneId, blockId, LaneBlockStatus::Participating);
+
         std::cout << "DEBUG: Removed lane " << laneId
                   << " from arrivedLanes of block " << oldBlockId << std::endl;
       } else {
@@ -5735,77 +5746,97 @@ void ThreadgroupContext::assignLaneToBlock(WaveId waveId, LaneId laneId,
 
   waves[waveId]->laneToCurrentBlock[laneId] = blockId;
 
+  // CRITICAL FIX: Remove lane from old block in registry before assigning to new block
+  // This prevents lanes from being registered in multiple blocks simultaneously
+  // if (currentBlockIt != waves[waveId]->laneToCurrentBlock.end()) {
+  //   uint32_t oldBlockId = currentBlockIt->second;
+  //   std::cout << "DEBUG: assignLaneToBlock - removing lane " << laneId 
+  //             << " from old block " << oldBlockId << " in registry" << std::endl;
+  //   membershipRegistry.setLaneStatus(waveId, laneId, oldBlockId, LaneBlockStatus::Left);
+  // }
+
   // Also update the BlockMembershipRegistry
-  membershipRegistry.setLaneStatus(waveId, laneId, blockId, LaneBlockStatus::Participating);
+
+  // Show state after assignment
+  auto partAfter = membershipRegistry.getParticipatingLanes(waveId, blockId);
+  auto waitAfter = membershipRegistry.getWaitingLanes(waveId, blockId);
+  std::cout << "DEBUG: assignLaneToBlock - AFTER: block " << blockId 
+            << " has " << partAfter.size() << " participating lanes";
+  if (!partAfter.empty()) {
+    std::cout << " (";
+    for (auto it = partAfter.begin(); it != partAfter.end(); ++it) {
+      if (it != partAfter.begin()) std::cout << " ";
+      std::cout << *it;
+    }
+    std::cout << ")";
+  }
+  std::cout << " and " << waitAfter.size() << " waiting lanes";
+  if (!waitAfter.empty()) {
+    std::cout << " (";
+    for (auto it = waitAfter.begin(); it != waitAfter.end(); ++it) {
+      if (it != waitAfter.begin()) std::cout << " ";
+      std::cout << *it;
+    }
+    std::cout << ")";
+  }
+  std::cout << std::endl;
+  
+  std::cout << "DEBUG: assignLaneToBlock - END: lane " << laneId 
+            << " successfully assigned to block " << blockId << std::endl;
 
   // Add lane to the block's participating lanes
-  auto it = executionBlocks.find(blockId);
-  if (it != executionBlocks.end()) {
-    std::cout << "DEBUG: assignLaneToBlock - adding lane " << laneId
-              << " to block " << blockId << std::endl;
-    // Registry already updated above as single source of truth
-    auto partLanes = membershipRegistry.getParticipatingLanes(waveId, blockId);
-    size_t laneCount = partLanes.size();
-    std::cout << "DEBUG: assignLaneToBlock - block " << blockId << " now has "
-              << laneCount << " participating lanes" << std::endl;
+  // auto it = executionBlocks.find(blockId);
+  // if (it != executionBlocks.end()) {
+  //   std::cout << "DEBUG: assignLaneToBlock - adding lane " << laneId
+  //             << " to block " << blockId << std::endl;
+  //   // Registry already updated above as single source of truth
+  //   auto partLanes = membershipRegistry.getParticipatingLanes(waveId, blockId);
+  //   auto waitingLanes = membershipRegistry.getWaitingLanes(waveId, blockId);
+  //   size_t laneCount = partLanes.size() + waitingLanes.size();
+  //   std::cout << "DEBUG: assignLaneToBlock - block " << blockId << " now has "
+  //             << laneCount << " participating/waitingLanes lanes" << std::endl;
 
-    // Check if converged - all lanes from all waves are in this block (using registry)
-    size_t totalLanesInBlock = 0;
-    for (WaveId wid = 0; wid < waves.size(); ++wid) {
-      auto participatingLanes = membershipRegistry.getParticipatingLanes(wid, blockId);
-      totalLanesInBlock += participatingLanes.size();
-    }
-    // todo: now convergence is at threadgroup level
-    it->second.setIsConverged(totalLanesInBlock == threadgroupSize);
-  }
-}
-
-// get all active lanes of same wave in the same dynamic block
-std::vector<LaneId>
-ThreadgroupContext::getWaveActiveLanesInSameBlock(WaveId waveId,
-                                                  LaneId laneId) const {
-  auto it = waves[waveId]->laneToCurrentBlock.find(laneId);
-  if (it == waves[waveId]->laneToCurrentBlock.end()) {
-    return {}; // Lane not in any block
-  }
-
-  uint32_t blockId = it->second;
-  auto blockIt = executionBlocks.find(blockId);
-  if (blockIt == executionBlocks.end()) {
-    return {}; // Block not found
-  }
-
-  // Return only currently active lanes from the same wave in the same block
-  std::vector<LaneId> result;
-  auto participatingLanes = membershipRegistry.getParticipatingLanes(waveId, blockId);
-  for (LaneId otherLaneId : participatingLanes) {
-    if (otherLaneId < waves[waveId]->lanes.size() &&
-        waves[waveId]->lanes[otherLaneId]->isActive &&
-        waves[waveId]->lanes[otherLaneId]->state == ThreadState::Ready &&
-        !waves[waveId]->lanes[otherLaneId]->hasReturned) {
-      result.push_back(otherLaneId);
-    }
-  }
-  return result;
+  //   // Check if converged - all lanes from all waves are in this block (using registry)
+  //   size_t totalLanesInBlock = 0;
+  //   for (WaveId wid = 0; wid < waves.size(); ++wid) {
+  //     auto participatingLanes = membershipRegistry.getParticipatingLanes(wid, blockId);
+  //     totalLanesInBlock += participatingLanes.size();
+  //   }
+  //   // todo: now convergence is at threadgroup level
+  //   it->second.setIsConverged(totalLanesInBlock == threadgroupSize);
+  // }
+  membershipRegistry.getCurrentBlock(waveId, laneId);
 }
 
 uint32_t ThreadgroupContext::getCurrentBlock(WaveId waveId,
                                              LaneId laneId) const {
   auto it = waves[waveId]->laneToCurrentBlock.find(laneId);
-  return it != waves[waveId]->laneToCurrentBlock.end() ? it->second : 0;
-}
-
-bool ThreadgroupContext::areInSameBlock(WaveId wave1, LaneId lane1,
-                                        WaveId wave2, LaneId lane2) const {
-  auto it1 = waves[wave1]->laneToCurrentBlock.find(lane1);
-  auto it2 = waves[wave2]->laneToCurrentBlock.find(lane2);
-
-  if (it1 == waves[wave1]->laneToCurrentBlock.end() ||
-      it2 == waves[wave2]->laneToCurrentBlock.end()) {
-    return false;
+  uint32_t resultBlockId = it != waves[waveId]->laneToCurrentBlock.end() ? it->second : 0;
+  
+  // DEBUG: Check if lane exists in multiple blocks (which shouldn't happen)
+  std::vector<uint32_t> foundInBlocks;
+  for (const auto &[blockId, block] : executionBlocks) {
+    auto participatingLanes = membershipRegistry.getParticipatingLanes(waveId, blockId);
+    auto waitingLanes = membershipRegistry.getWaitingLanes(waveId, blockId);
+    
+    bool isParticipating = participatingLanes.find(laneId) != participatingLanes.end();
+    bool isWaiting = waitingLanes.find(laneId) != waitingLanes.end();
+    
+    if (isParticipating || isWaiting) {
+      foundInBlocks.push_back(blockId);
+    }
   }
-
-  return it1->second == it2->second;
+  
+  if (foundInBlocks.size() > 1) {
+    std::cout << "WARNING: getCurrentBlock - Lane " << laneId << " found in multiple blocks: ";
+    for (size_t i = 0; i < foundInBlocks.size(); ++i) {
+      if (i > 0) std::cout << ", ";
+      std::cout << foundInBlocks[i];
+    }
+    std::cout << " (laneToCurrentBlock says: " << resultBlockId << ")" << std::endl;
+  }
+  
+  return resultBlockId;
 }
 
 void ThreadgroupContext::mergeExecutionPaths(
@@ -5885,11 +5916,19 @@ void ThreadgroupContext::markLaneArrived(WaveId waveId, LaneId laneId,
                                          uint32_t blockId) {
   auto it = executionBlocks.find(blockId);
   if (it != executionBlocks.end()) {
-    // it->second.addArrivedLane(waveId, laneId);
-    // it->second.removeUnknownLane(waveId, laneId); // No longer unknown
+    // Update BlockMembershipRegistry: lane arrived and is no longer unknown
+    // First check current status to handle the transition properly
+    LaneBlockStatus currentStatus = membershipRegistry.getLaneStatus(waveId, laneId, blockId);
     
-    // Update BlockMembershipRegistry: lane has arrived
-    membershipRegistry.setLaneStatus(waveId, laneId, blockId, LaneBlockStatus::Participating);
+    // If lane was unknown, it's now participating (arrived)
+    if (currentStatus == LaneBlockStatus::Unknown) {
+      membershipRegistry.setLaneStatus(waveId, laneId, blockId, LaneBlockStatus::Participating);
+      std::cout << "DEBUG: markLaneArrived - Lane " << laneId << " transitioned from Unknown to Participating in block " << blockId << std::endl;
+    } else {
+      // Lane was already participating, just ensure it stays participating  
+      membershipRegistry.setLaneStatus(waveId, laneId, blockId, LaneBlockStatus::Participating);
+      std::cout << "DEBUG: markLaneArrived - Lane " << laneId << " confirmed as Participating in block " << blockId << std::endl;
+    }
     
     // Validate registry state (single source of truth)
     LaneBlockStatus registryStatus = membershipRegistry.getLaneStatus(waveId, laneId, blockId);
@@ -5939,6 +5978,9 @@ void ThreadgroupContext::markLaneWaitingForWave(WaveId waveId, LaneId laneId,
   } else {
     std::cout << "DEBUG: markLaneWaitingForWave - Block " << blockId << " not found!" << std::endl;
   }
+  // debugging purpose
+    membershipRegistry.getCurrentBlock(waveId, laneId);
+
 }
 
 bool ThreadgroupContext::canExecuteWaveOperation(WaveId waveId,
@@ -6171,7 +6213,7 @@ bool ThreadgroupContext::canExecuteWaveInstruction(
   return canExecuteInBlock && canExecuteGlobal;
 }
 
-void ThreadgroupContext::markLaneArrivedAtWaveInstruction(
+void ThreadgroupContext::markLaneWaitingAtWaveInstruction(
     WaveId waveId, LaneId laneId, const void *instruction,
     const std::string &instructionType) {
   // Create instruction identity
@@ -6682,16 +6724,17 @@ void ThreadgroupContext::removeThreadFromAllSets(uint32_t blockId,
                                                  WaveId waveId, LaneId laneId) {
   // CRITICAL: Don't remove lanes that are waiting for wave operations
   // They need to stay in their blocks until the wave operation completes
-  if (waveId < waves.size() && laneId < waves[waveId]->lanes.size()) {
-    auto state = waves[waveId]->lanes[laneId]->state;
-    if (state == ThreadState::WaitingForWave ||
-        state == ThreadState::WaitingAtBarrier) {
-      std::cout << "DEBUG: removeThreadFromAllSets - NOT removing waiting lane "
-                << laneId << " (state=" << (int)state << ") from block "
-                << blockId << std::endl;
-      return;
-    }
-  }
+  // TODO: but wait, should it happen??
+  // if (waveId < waves.size() && laneId < waves[waveId]->lanes.size()) {
+  //   auto state = waves[waveId]->lanes[laneId]->state;
+  //   if (state == ThreadState::WaitingForWave ||
+  //       state == ThreadState::WaitingAtBarrier) {
+  //     std::cout << "DEBUG: removeThreadFromAllSets - NOT removing waiting lane "
+  //               << laneId << " (state=" << (int)state << ") from block "
+  //               << blockId << std::endl;
+  //     return;
+  //   }
+  // }
 
   auto blockIt = executionBlocks.find(blockId);
   if (blockIt != executionBlocks.end()) {
@@ -6699,75 +6742,53 @@ void ThreadgroupContext::removeThreadFromAllSets(uint32_t blockId,
               << " from all sets of block " << blockId << std::endl;
     
     // Also update the BlockMembershipRegistry
-    membershipRegistry.setLaneStatus(waveId, laneId, blockId, LaneBlockStatus::Left);
     auto partLanesBefore = membershipRegistry.getParticipatingLanes(waveId, blockId);
-    size_t laneCountBefore = partLanesBefore.size();
+    auto waitingLanesBefore = membershipRegistry.getWaitingLanes(waveId, blockId);
+    size_t laneCountBefore = partLanesBefore.size() + waitingLanesBefore.size();
+    
+    // Show which lanes are in the block before removal
     std::cout << "DEBUG: removeThreadFromAllSets - block " << blockId << " had "
-              << laneCountBefore << " participating lanes before removal"
-              << std::endl;
-
-    // // Update both old system and registry for consistency
-    // blockIt->second.removeParticipatingLane(waveId, laneId);
-    // blockIt->second.removeArrivedLane(waveId, laneId);
-    // blockIt->second.removeWaitingLane(waveId, laneId);
-    // blockIt->second.removeUnknownLane(waveId, laneId);
-
-    // Check resolution status from registry (no need to update old system metadata)
-    auto unknownLanes = membershipRegistry.getUnknownLanes(waveId, blockId);
-    bool allResolved = unknownLanes.empty();
-
-    // CRITICAL: Add the same wakeup logic as removeThreadFromUnknown
-    // Check if removing this unknown lane allows any waiting wave operations to
-    // proceed
-    if (allResolved) {
-      std::cout << "DEBUG: removeThreadFromAllSets - Block " << blockId
-                << " now has all unknowns resolved for wave " << waveId
-                << " - checking for ready wave operations" << std::endl;
-
-      // Check all waiting lanes in this block to see if their wave operations
-      // can now proceed
-      auto waitingLanes = membershipRegistry.getWaitingLanes(waveId, blockId);
-      for (LaneId waitingLaneId : waitingLanes) {
-        // Check if this lane is waiting for a wave operation in this block
-        if (waves[waveId]->laneWaitingAtInstruction.count(waitingLaneId)) {
-          auto &instructionKey =
-              waves[waveId]->laneWaitingAtInstruction[waitingLaneId];
-          // Only process if the instruction is in this block
-          if (instructionKey.second == blockId) {
-            std::cout
-                << "DEBUG: removeThreadFromAllSets - Checking if waiting lane "
-                << waitingLaneId << " can now execute wave operation in block "
-                << blockId << std::endl;
-
-            // Update the sync point to reflect that all participants are now
-            // known
-            auto syncIt = waves[waveId]->activeSyncPoints.find(instructionKey);
-            if (syncIt != waves[waveId]->activeSyncPoints.end()) {
-              // Sync point participants knowledge is now computed on-demand
-              std::cout << "DEBUG: removeThreadFromAllSets - Sync point for instruction "
-                        << instructionKey.first << " in block " << blockId
-                        << " will compute participants knowledge on-demand" << std::endl;
-            }
-
-            // Check if the wave operation can now proceed
-            if (canExecuteWaveInstruction(waveId, waitingLaneId,
-                                          instructionKey.first)) {
-              std::cout << "DEBUG: removeThreadFromAllSets - Waking up lane "
-                        << waitingLaneId << " in block " << blockId
-                        << " - wave operation can now proceed" << std::endl;
-              waves[waveId]->lanes[waitingLaneId]->state = ThreadState::Ready;
-              waves[waveId]->lanes[waitingLaneId]->isResumingFromWaveOp = true;
-            }
-          }
-        }
+              << laneCountBefore << " participating lanes before removal";
+    if (!partLanesBefore.empty()) {
+      std::cout << " (participating: ";
+      for (auto lid : partLanesBefore) {
+        std::cout << lid << " ";
       }
+      std::cout << ")";
     }
+    if (!waitingLanesBefore.empty()) {
+      std::cout << " (waiting: ";
+      for (auto lid : waitingLanesBefore) {
+        std::cout << lid << " ";
+      }
+      std::cout << ")";
+    }
+    std::cout << std::endl;
+    
+    membershipRegistry.setLaneStatus(waveId, laneId, blockId, LaneBlockStatus::Left);
 
     auto partLanesAfter = membershipRegistry.getParticipatingLanes(waveId, blockId);
-    size_t laneCountAfter = partLanesAfter.size();
+    auto waitingLanesAfter = membershipRegistry.getWaitingLanes(waveId, blockId);
+    size_t laneCountAfter = partLanesAfter.size() + waitingLanesAfter.size();
+    
+    // Show which lanes are in the block after removal
     std::cout << "DEBUG: removeThreadFromAllSets - block " << blockId << " has "
-              << laneCountAfter << " participating lanes after removal"
-              << std::endl;
+              << laneCountAfter << " participating lanes after removal";
+    if (!partLanesAfter.empty()) {
+      std::cout << " (participating: ";
+      for (auto lid : partLanesAfter) {
+        std::cout << lid << " ";
+      }
+      std::cout << ")";
+    }
+    if (!waitingLanesAfter.empty()) {
+      std::cout << " (waiting: ";
+      for (auto lid : waitingLanesAfter) {
+        std::cout << lid << " ";
+      }
+      std::cout << ")";
+    }
+    std::cout << std::endl;
   }
 }
 
@@ -6808,27 +6829,17 @@ ThreadgroupContext::getCurrentBlockParticipants(uint32_t blockId) const {
     std::map<WaveId, std::set<LaneId>> allLanes;
     const auto &block = blockIt->second;
 
-    // for (const auto &[waveId, lanes] : block.getParticipatingLanes()) {
-    //   allLanes[waveId].insert(lanes.begin(), lanes.end());
-    // }
-    // for (const auto &[waveId, lanes] : block.getArrivedLanes()) {
-    //   allLanes[waveId].insert(lanes.begin(), lanes.end());
-    // }
-    // for (const auto &[waveId, lanes] : block.getWaitingLanes()) {
-    //   allLanes[waveId].insert(lanes.begin(), lanes.end());
-    // }
-    // for (const auto &[waveId, lanes] : block.getUnknownLanes()) {
-    //   allLanes[waveId].insert(lanes.begin(), lanes.end());
-    // }
-    for (size_t waveId = 0; waveId < waveCount; ++waveId) {
-      const auto& participatingLanes = membershipRegistry.getParticipatingLanes(waveId, blockId);
-      const auto& unknownLanes = membershipRegistry.getUnknownLanes(waveId, blockId);
-      const auto& waitingLanes = membershipRegistry.getWaitingLanes(waveId, blockId);
-      // Note: In simplified model, arrivedLanes == participatingLanes, so we skip arrivedLanes to avoid double-counting
-
-      allLanes[waveId].insert(participatingLanes.begin(), participatingLanes.end());
-      allLanes[waveId].insert(unknownLanes.begin(), unknownLanes.end());
-      allLanes[waveId].insert(waitingLanes.begin(), waitingLanes.end());
+    for (const auto &[waveId, lanes] : block.getParticipatingLanes(*this)) {
+      allLanes[waveId].insert(lanes.begin(), lanes.end());
+    }
+    for (const auto &[waveId, lanes] : block.getArrivedLanes(*this)) {
+      allLanes[waveId].insert(lanes.begin(), lanes.end());
+    }
+    for (const auto &[waveId, lanes] : block.getWaitingLanes(*this)) {
+      allLanes[waveId].insert(lanes.begin(), lanes.end());
+    }
+    for (const auto &[waveId, lanes] : block.getUnknownLanes(*this)) {
+      allLanes[waveId].insert(lanes.begin(), lanes.end());
     }
 
     return allLanes;
