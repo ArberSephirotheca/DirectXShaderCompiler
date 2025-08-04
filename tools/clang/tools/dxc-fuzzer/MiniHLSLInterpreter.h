@@ -478,16 +478,16 @@ private:
                                 // organized by wave
 
   // Cooperative scheduling state
-  std::map<WaveId, std::set<LaneId>>
-      unknownLanes_; // Lanes that haven't reached this control flow point yet,
+  // std::map<WaveId, std::set<LaneId>>
+  //     unknownLanes_; // Lanes that haven't reached this control flow point yet,
                      // organized by wave
-  std::map<WaveId, std::set<LaneId>>
-      arrivedLanes_; // Lanes that have arrived at this block, organized by wave
-  std::map<WaveId, std::set<LaneId>>
-      waitingLanes_; // Lanes waiting for wave operations in this block,
-                     // organized by wave
-  std::map<WaveId, bool>
-      allUnknownResolved_; // Whether all unknown lanes are resolved
+  // std::map<WaveId, std::set<LaneId>>
+  //     arrivedLanes_; // Lanes that have arrived at this block, organized by wave
+  // std::map<WaveId, std::set<LaneId>>
+  //     waitingLanes_; // Lanes waiting for wave operations in this block,
+  //                    // organized by wave
+  // std::map<WaveId, bool>
+  //     allUnknownResolved_; // Whether all unknown lanes are resolved
 
 public:
   // Constructor
@@ -499,9 +499,9 @@ public:
   uint32_t getBlockId() const { return blockId_; }
   BlockType getBlockType() const { return identity_.blockType; }
   const BlockIdentity &getIdentity() const { return identity_; }
-  const std::map<WaveId, std::set<LaneId>> &getParticipatingLanes() const {
-    return participatingLanes_;
-  }
+  // const std::map<WaveId, std::set<LaneId>> &getParticipatingLanes() const {
+  //   return participatingLanes_;
+  // }
   uint32_t getProgramPoint() const { return programPoint_; }
   uint32_t getParentBlockId() const { return parentBlockId_; }
   bool getIsConverged() const { return isConverged_; }
@@ -514,45 +514,45 @@ public:
   getInstructionParticipants() const {
     return instructionParticipants_;
   }
-  const std::map<WaveId, std::set<LaneId>> &getUnknownLanes() const {
-    return unknownLanes_;
-  }
-  const std::map<WaveId, std::set<LaneId>> &getArrivedLanes() const {
-    return arrivedLanes_;
-  }
-  const std::map<WaveId, std::set<LaneId>> &getWaitingLanes() const {
-    return waitingLanes_;
-  }
-  const std::map<WaveId, bool> &getAllUnknownResolved() const {
-    return allUnknownResolved_;
-  }
+  // const std::map<WaveId, std::set<LaneId>> &getUnknownLanes() const {
+  //   return unknownLanes_;
+  // }
+  // const std::map<WaveId, std::set<LaneId>> &getArrivedLanes() const {
+  //   return arrivedLanes_;
+  // }
+  // const std::map<WaveId, std::set<LaneId>> &getWaitingLanes() const {
+  //   return waitingLanes_;
+  // }
+  // const std::map<WaveId, bool> &getAllUnknownResolved() const {
+  //   return allUnknownResolved_;
+  // }
 
   // Wave-specific getters
-  std::set<LaneId> getParticipatingLanesForWave(WaveId waveId) const {
-    auto it = participatingLanes_.find(waveId);
-    return (it != participatingLanes_.end()) ? it->second : std::set<LaneId>{};
-  }
+  // std::set<LaneId> getParticipatingLanesForWave(WaveId waveId) const {
+  //   auto it = participatingLanes_.find(waveId);
+  //   return (it != participatingLanes_.end()) ? it->second : std::set<LaneId>{};
+  // }
 
   // These methods now delegate to BlockMembershipRegistry when available
-  std::set<LaneId> getUnknownLanesForWave(WaveId waveId) const;
-  std::set<LaneId> getArrivedLanesForWave(WaveId waveId) const;
-  std::set<LaneId> getWaitingLanesForWave(WaveId waveId) const;
+  // std::set<LaneId> getUnknownLanesForWave(WaveId waveId) const;
+  // std::set<LaneId> getArrivedLanesForWave(WaveId waveId) const;
+  // std::set<LaneId> getWaitingLanesForWave(WaveId waveId) const;
 
-  bool isWaveAllUnknownResolved(WaveId waveId) const {
-    auto it = allUnknownResolved_.find(waveId);
-    return (it != allUnknownResolved_.end()) ? it->second : true;
-  }
+  // bool isWaveAllUnknownResolved(WaveId waveId) const {
+  //   auto it = allUnknownResolved_.find(waveId);
+  //   return (it != allUnknownResolved_.end()) ? it->second : true;
+  // }
 
-  bool areAllUnknownLanesResolved() const {
-    // Check if all unknown lanes from all waves are resolved
-    return unknownLanes_.empty();
-  }
+  // bool areAllUnknownLanesResolved() const {
+  //   // Check if all unknown lanes from all waves are resolved
+  //   return unknownLanes_.empty();
+  // }
 
-  bool areAllUnknownLanesResolvedForWave(WaveId waveId) const {
-    // Check if all unknown lanes for a specific wave are resolved
-    auto it = unknownLanes_.find(waveId);
-    return (it == unknownLanes_.end()) || it->second.empty();
-  }
+  // bool areAllUnknownLanesResolvedForWave(WaveId waveId) const {
+  //   // Check if all unknown lanes for a specific wave are resolved
+  //   auto it = unknownLanes_.find(waveId);
+  //   return (it == unknownLanes_.end()) || it->second.empty();
+  // }
 
   // Setters
   void setBlockId(uint32_t id) { blockId_ = id; }
@@ -564,25 +564,25 @@ public:
   void setNestingLevel(int level) { nestingLevel_ = level; }
 
   // Lane management methods
-  void addParticipatingLane(WaveId waveId, LaneId laneId) {
-    participatingLanes_[waveId].insert(laneId);
-  }
+  // void addParticipatingLane(WaveId waveId, LaneId laneId) {
+  //   participatingLanes_[waveId].insert(laneId);
+  // }
 
-  void removeParticipatingLane(WaveId waveId, LaneId laneId) {
-    participatingLanes_[waveId].erase(laneId);
-    if (participatingLanes_[waveId].empty()) {
-      participatingLanes_.erase(waveId);
-    }
-  }
+  // void removeParticipatingLane(WaveId waveId, LaneId laneId) {
+  //   participatingLanes_[waveId].erase(laneId);
+  //   if (participatingLanes_[waveId].empty()) {
+  //     participatingLanes_.erase(waveId);
+  //   }
+  // }
 
   // Lane tracking methods - maintain both old and new state tracking
-  void addUnknownLane(WaveId waveId, LaneId laneId);
-  void removeUnknownLane(WaveId waveId, LaneId laneId);
-  void addArrivedLane(WaveId waveId, LaneId laneId);
-  void removeArrivedLane(WaveId waveId, LaneId laneId);
-  void addWaitingLane(WaveId waveId, LaneId laneId);
-  void removeWaitingLane(WaveId waveId, LaneId laneId);
-  void setWaveAllUnknownResolved(WaveId waveId, bool resolved);
+  // void addUnknownLane(WaveId waveId, LaneId laneId);
+  // void removeUnknownLane(WaveId waveId, LaneId laneId);
+  // void addArrivedLane(WaveId waveId, LaneId laneId);
+  // void removeArrivedLane(WaveId waveId, LaneId laneId);
+  // void addWaitingLane(WaveId waveId, LaneId laneId);
+  // void removeWaitingLane(WaveId waveId, LaneId laneId);
+  // void setWaveAllUnknownResolved(WaveId waveId, bool resolved);
 
   // Instruction management methods
   void addInstruction(const InstructionIdentity &instruction) {
@@ -794,6 +794,12 @@ public:
   void onLaneFinishWaveOp(uint32_t waveId, LaneId laneId, uint32_t blockId);
   void onLaneReturn(uint32_t waveId, LaneId laneId);
   
+  // High-level block operations that maintain consistency between registry and old system
+  void addParticipatingLaneToBlock(uint32_t blockId, WaveId waveId, LaneId laneId, 
+                                  std::map<uint32_t, DynamicExecutionBlock>& executionBlocks);
+  void removeParticipatingLaneFromBlock(uint32_t blockId, WaveId waveId, LaneId laneId,
+                                       std::map<uint32_t, DynamicExecutionBlock>& executionBlocks);
+
   // Debug
   void printMembershipState() const;
 };
@@ -931,9 +937,6 @@ struct ThreadgroupContext {
   bool
   canExecuteInstructionInBlock(uint32_t blockId,
                                const InstructionIdentity &instruction) const;
-  std::map<WaveId, std::set<LaneId>>
-  getExpectedParticipantsInBlock(uint32_t blockId,
-                                 const InstructionIdentity &instruction) const;
 
   // Merge stack management
   void pushMergePoint(WaveId waveId, LaneId laneId, const void *sourceStmt,
