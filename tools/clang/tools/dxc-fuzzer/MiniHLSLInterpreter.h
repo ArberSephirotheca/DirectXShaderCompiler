@@ -1390,6 +1390,10 @@ class ForStmt : public Statement {
                                           ThreadgroupContext &tg, size_t &statementIndex);
   Result<Unit, ExecutionError> executeIncrement(LaneContext &lane, WaveContext &wave,
                                                ThreadgroupContext &tg);
+  
+  // Helper method for body execution (extracted for better readability)
+  void executeBodyStatements(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                            int ourStackIndex, uint32_t headerBlockId);
 
 public:
   ForStmt(const std::string &var, std::unique_ptr<Expression> init,

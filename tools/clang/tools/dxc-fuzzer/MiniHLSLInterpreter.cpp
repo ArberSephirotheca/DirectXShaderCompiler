@@ -2392,69 +2392,12 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
         }
       }
 
-      // Execute statements - start in iteration block, naturally flow to merge
-      // blocks
-      for (size_t i = ourEntry.statementIndex; i < body_.size(); i++) {
-        lane.executionStack[ourStackIndex].statementIndex = i;
-
-        uint32_t blockBeforeStatement =
-            tg.getCurrentBlock(wave.waveId, lane.laneId);
-        std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
-                  << " executing statement " << i << " in block "
-                  << blockBeforeStatement << std::endl;
-
-        body_[i]->execute(lane, wave, tg);
-
-        if (lane.hasReturned) {
-          // Clean up iteration-specific merge point if it exists
-          const void *iterationMarker = reinterpret_cast<const void *>(
-              reinterpret_cast<uintptr_t>(this) +
-              (ourEntry.loopIteration << 16) + 0x5000);
-
-          std::vector<MergeStackEntry> currentMergeStack =
-              tg.getCurrentMergeStack(wave.waveId, lane.laneId);
-          if (!currentMergeStack.empty() &&
-              currentMergeStack.back().sourceStatement == iterationMarker) {
-            tg.popMergePoint(wave.waveId, lane.laneId);
-            std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
-                      << " popped iteration merge point on early return"
-                      << std::endl;
-          }
-          // TODO: check if need additional cleanup
-          // Pop our entry and return from loop
-          lane.executionStack.pop_back();
-          tg.popMergePoint(wave.waveId, lane.laneId);
-          return;
-        }
-
-        if (lane.state != ThreadState::Ready) {
-          // Child statement needs to resume - preserve current block context
-          uint32_t blockAfterStatement =
-              tg.getCurrentBlock(wave.waveId, lane.laneId);
-          std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
-                    << " child statement needs resume" << std::endl;
-          std::cout << "  Block before: " << blockBeforeStatement
-                    << ", Block after: " << blockAfterStatement << std::endl;
-          return;
-        }
-
-        // Log block transitions (shows natural flow to merge blocks)
-        uint32_t blockAfterStatement =
-            tg.getCurrentBlock(wave.waveId, lane.laneId);
-        if (blockBeforeStatement != blockAfterStatement) {
-          std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
-                    << " natural flow from block " << blockBeforeStatement
-                    << " to block " << blockAfterStatement
-                    << " during statement " << i << " (likely merge block)"
-                    << std::endl;
-        }
-
-        // Update statement index
-        lane.executionStack[ourStackIndex].statementIndex = i + 1;
-
-        // After control flow completes, continue in whatever block we naturally
-        // ended up in (This allows wave ops after control flow to execute in
-        // correct merge block context)
+      // Execute body statements using extracted helper method
+      executeBodyStatements(lane, wave, tg, ourStackIndex, headerBlockId);
+      
+      // Check if we need to return early (lane returned or needs resume)
+      if (lane.hasReturned || lane.state != ThreadState::Ready) {
+        return;
       }
 
       // Body completed - clean up iteration-specific merge point
@@ -2718,6 +2661,59 @@ Result<Unit, ExecutionError> ForStmt::execute_result(LaneContext &lane, WaveCont
   
   std::cout << "DEBUG: ForStmt - Loop completed successfully" << std::endl;
   return Ok<Unit, ExecutionError>(Unit{});
+}
+
+// Helper method for executing body statements in ForStmt
+void ForStmt::executeBodyStatements(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                                   int ourStackIndex, uint32_t headerBlockId) {
+  auto &ourEntry = lane.executionStack[ourStackIndex];
+  
+  // Execute statements - start in iteration block, naturally flow to merge blocks
+  for (size_t i = ourEntry.statementIndex; i < body_.size(); i++) {
+    lane.executionStack[ourStackIndex].statementIndex = i;
+
+    uint32_t blockBeforeStatement = tg.getCurrentBlock(wave.waveId, lane.laneId);
+    std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " executing statement " << i 
+              << " in block " << blockBeforeStatement << std::endl;
+
+    body_[i]->execute(lane, wave, tg);
+
+    if (lane.hasReturned) {
+      // Clean up iteration-specific merge point if it exists
+      const void *iterationMarker = reinterpret_cast<const void *>(
+          reinterpret_cast<uintptr_t>(this) + (ourEntry.loopIteration << 16) + 0x5000);
+
+      std::vector<MergeStackEntry> currentMergeStack = tg.getCurrentMergeStack(wave.waveId, lane.laneId);
+      if (!currentMergeStack.empty() && currentMergeStack.back().sourceStatement == iterationMarker) {
+        tg.popMergePoint(wave.waveId, lane.laneId);
+        std::cout << "DEBUG: ForStmt - Lane " << lane.laneId 
+                  << " popped iteration merge point on early return" << std::endl;
+      }
+      // Pop our entry and return from loop
+      lane.executionStack.pop_back();
+      tg.popMergePoint(wave.waveId, lane.laneId);
+      return;
+    }
+
+    if (lane.state != ThreadState::Ready) {
+      // Child statement needs to resume - preserve current block context
+      uint32_t blockAfterStatement = tg.getCurrentBlock(wave.waveId, lane.laneId);
+      std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " child statement needs resume" << std::endl;
+      std::cout << "  Block before: " << blockBeforeStatement 
+                << ", Block after: " << blockAfterStatement << std::endl;
+      return;
+    }
+
+    // Log block transitions (shows natural flow to merge blocks)
+    uint32_t blockAfterStatement = tg.getCurrentBlock(wave.waveId, lane.laneId);
+    if (blockBeforeStatement != blockAfterStatement) {
+      std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " natural flow from block " << blockBeforeStatement
+                << " to block " << blockAfterStatement << " during statement " << i << " (likely merge block)" << std::endl;
+    }
+
+    // Update statement index
+    lane.executionStack[ourStackIndex].statementIndex = i + 1;
+  }
 }
 
 std::string ForStmt::toString() const {
