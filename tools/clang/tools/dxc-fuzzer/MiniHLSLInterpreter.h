@@ -1398,6 +1398,24 @@ class ForStmt : public Statement {
   // Helper method for setting up iteration-specific blocks
   void setupIterationBlocks(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
                            int ourStackIndex, uint32_t headerBlockId);
+  
+  // Helper method for body completion cleanup
+  void cleanupAfterBodyExecution(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                                int ourStackIndex, uint32_t headerBlockId);
+  
+  // Helper method for increment evaluation phase
+  void evaluateIncrementPhase(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                             int ourStackIndex);
+  
+  // Helper method for loop exit/reconverging phase
+  void handleLoopExit(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                     int ourStackIndex, uint32_t mergeBlockId);
+  
+  // Helper methods for exception handling
+  void handleBreakException(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                           int ourStackIndex, uint32_t headerBlockId);
+  void handleContinueException(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                              int ourStackIndex, uint32_t headerBlockId);
 
 public:
   ForStmt(const std::string &var, std::unique_ptr<Expression> init,
