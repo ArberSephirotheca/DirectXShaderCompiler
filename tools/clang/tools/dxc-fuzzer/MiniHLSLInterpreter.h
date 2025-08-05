@@ -129,15 +129,13 @@ public:
 
   // Factory methods
   static Result Ok(T value) {
-    Result result;
-    result.is_ok_ = true;
+    Result result(true);
     new (&result.ok_value_) T(std::move(value));
     return result;
   }
 
   static Result Err(E error) {
-    Result result;
-    result.is_ok_ = false;
+    Result result(false);
     new (&result.err_value_) E(std::move(error));
     return result;
   }
@@ -168,7 +166,8 @@ public:
   }
 
 private:
-  Result() = default;
+  explicit Result(bool is_ok) : is_ok_(is_ok) {}
+  Result() = delete;
 };
 
 // Helper functions for creating Results
@@ -182,9 +181,20 @@ Result<T, E> Err(E error) {
   return Result<T, E>::Err(std::move(error));
 }
 
+// Rust-like ? operator macro for Result handling
+#define TRY_RESULT(expr, ret_type, err_type) \
+  ({ \
+    auto _result = (expr); \
+    if (_result.is_err()) { \
+      return Err<ret_type, err_type>(_result.unwrap_err()); \
+    } \
+    _result.unwrap(); \
+  })
+
 // Forward declarations
 class Expression;
 class Statement;
+class WaveOperationWaitException;
 class WaveOp;
 class SharedMemoryOp;
 
@@ -1058,6 +1068,19 @@ public:
   virtual ~Expression() = default;
   virtual Value evaluate(LaneContext &lane, WaveContext &wave,
                          ThreadgroupContext &tg) const = 0;
+  virtual Result<Value, ExecutionError> evaluate_result(LaneContext &lane, WaveContext &wave,
+                                                       ThreadgroupContext &tg) const {
+    // Default implementation: call exception-based evaluate and wrap in try-catch
+    // Individual expressions can override this for pure Result-based implementations
+    try {
+      Value result = evaluate(lane, wave, tg);
+      return Ok<Value, ExecutionError>(std::move(result));
+    } catch (const std::exception &) {
+      // For now, treat all exceptions as WaveOperationWait to maintain compatibility
+      // Individual expression classes should override this method for true Result-based behavior
+      return Err<Value, ExecutionError>(ExecutionError::WaveOperationWait);
+    }
+  }
   virtual bool isDeterministic() const = 0;
   virtual std::string toString() const = 0;
 };
@@ -1284,6 +1307,8 @@ public:
   VarDeclStmt(const std::string &name, std::unique_ptr<Expression> init);
   void execute(LaneContext &lane, WaveContext &wave,
                ThreadgroupContext &tg) override;
+  Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
+                                            ThreadgroupContext &tg) override;
   std::string toString() const override;
 };
 
@@ -1327,6 +1352,16 @@ class ForStmt : public Statement {
   std::unique_ptr<Expression> increment_;
   std::vector<std::unique_ptr<Statement>> body_;
 
+  // Result-based phase methods
+  Result<Unit, ExecutionError> executeInit(LaneContext &lane, WaveContext &wave,
+                                          ThreadgroupContext &tg);
+  Result<bool, ExecutionError> evaluateCondition(LaneContext &lane, WaveContext &wave,
+                                                ThreadgroupContext &tg);
+  Result<Unit, ExecutionError> executeBody(LaneContext &lane, WaveContext &wave,
+                                          ThreadgroupContext &tg, size_t &statementIndex);
+  Result<Unit, ExecutionError> executeIncrement(LaneContext &lane, WaveContext &wave,
+                                               ThreadgroupContext &tg);
+
 public:
   ForStmt(const std::string &var, std::unique_ptr<Expression> init,
           std::unique_ptr<Expression> cond, std::unique_ptr<Expression> inc,
@@ -1341,6 +1376,12 @@ public:
 class WhileStmt : public Statement {
   std::unique_ptr<Expression> condition_;
   std::vector<std::unique_ptr<Statement>> body_;
+
+  // Result-based phase methods
+  Result<bool, ExecutionError> evaluateCondition(LaneContext &lane, WaveContext &wave,
+                                                ThreadgroupContext &tg);
+  Result<Unit, ExecutionError> executeBody(LaneContext &lane, WaveContext &wave,
+                                          ThreadgroupContext &tg);
 
 public:
   WhileStmt(std::unique_ptr<Expression> cond,

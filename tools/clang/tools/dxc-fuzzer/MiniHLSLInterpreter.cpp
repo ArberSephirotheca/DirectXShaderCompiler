@@ -1424,6 +1424,23 @@ void VarDeclStmt::execute(LaneContext &lane, WaveContext &wave,
   }
 }
 
+Result<Unit, ExecutionError> VarDeclStmt::execute_result(LaneContext &lane, WaveContext &wave,
+                                                       ThreadgroupContext &tg) {
+  if (!lane.isActive)
+    return Ok<Unit, ExecutionError>(Unit{});
+  
+  // Pure Result-based implementation - no exceptions!
+  Value initVal;
+  if (init_) {
+    initVal = TRY_RESULT(init_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+  } else {
+    initVal = Value(0);
+  }
+  
+  lane.variables[name_] = initVal;
+  return Ok<Unit, ExecutionError>(Unit{});
+}
+
 std::string VarDeclStmt::toString() const {
   return "var " + name_ + " = " + (init_ ? init_->toString() : "0") + ";";
 }
@@ -1454,18 +1471,10 @@ Result<Unit, ExecutionError> AssignStmt::execute_result(LaneContext &lane, WaveC
   if (!lane.isActive)
     return Ok<Unit, ExecutionError>(Unit{});
   
-  try {
-    Value val = expr_->evaluate(lane, wave, tg);
-    lane.variables[name_] = val;
-    return Ok<Unit, ExecutionError>(Unit{});
-  } catch (const WaveOperationWaitException &) {
-    // Lane is waiting for wave operation - this represents a control flow state change
-    std::cout << "DEBUG: AssignStmt - Lane " << lane.laneId
-              << " caught WaveOperationWaitException in execute_result" << std::endl;
-    return Err<Unit, ExecutionError>(ExecutionError::WaveOperationWait);
-  } catch (const std::exception &) {
-    return Err<Unit, ExecutionError>(ExecutionError::InvalidState);
-  }
+  // Pure Result-based implementation - no exceptions!
+  Value val = TRY_RESULT(expr_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+  lane.variables[name_] = val;
+  return Ok<Unit, ExecutionError>(Unit{});
 }
 
 std::string AssignStmt::toString() const {
@@ -1838,26 +1847,37 @@ Result<Unit, ExecutionError> IfStmt::execute_result(LaneContext &lane, WaveConte
   if (!lane.isActive)
     return Ok<Unit, ExecutionError>(Unit{});
 
-  try {
-    execute(lane, wave, tg);
-    return Ok<Unit, ExecutionError>(Unit{});
-  } catch (const WaveOperationWaitException &) {
-    // Wave operation is waiting - this represents a control flow state change
-    std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
-              << " caught WaveOperationWaitException in execute_result" << std::endl;
-    return Err<Unit, ExecutionError>(ExecutionError::WaveOperationWait);
-  } catch (const ControlFlowException &e) {
-    // Convert ControlFlowException to appropriate Result error
-    if (e.type == ControlFlowException::Break) {
-      return Err<Unit, ExecutionError>(ExecutionError::ControlFlowBreak);
-    } else if (e.type == ControlFlowException::Continue) {
-      return Err<Unit, ExecutionError>(ExecutionError::ControlFlowContinue);
-    } else {
-      return Err<Unit, ExecutionError>(ExecutionError::ControlFlowViolation);
-    }
-  } catch (const std::exception &) {
-    return Err<Unit, ExecutionError>(ExecutionError::InvalidState);
+  // Pure Result-based implementation for basic if statements
+  // For now, implement a simplified version that evaluates condition and executes branches
+  
+  // Evaluate condition using Result-based approach
+  auto conditionResult = condition_->evaluate_result(lane, wave, tg);
+  if (conditionResult.is_err()) {
+    return Err<Unit, ExecutionError>(conditionResult.unwrap_err());
   }
+  
+  bool condValue = conditionResult.unwrap().asBool();
+  
+  // Execute appropriate branch
+  if (condValue && !thenBlock_.empty()) {
+    // Execute then block statements
+    for (const auto &stmt : thenBlock_) {
+      auto result = stmt->execute_result(lane, wave, tg);
+      if (result.is_err()) {
+        return result; // Propagate error (including control flow errors)
+      }
+    }
+  } else if (!condValue && !elseBlock_.empty()) {
+    // Execute else block statements  
+    for (const auto &stmt : elseBlock_) {
+      auto result = stmt->execute_result(lane, wave, tg);
+      if (result.is_err()) {
+        return result; // Propagate error (including control flow errors)
+      }
+    }
+  }
+  
+  return Ok<Unit, ExecutionError>(Unit{});
 }
 
 bool IfStmt::requiresAllLanesActive() const {
@@ -2371,31 +2391,125 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
   }
 }
 
+// Pure Result-based ForStmt phase implementations
+Result<Unit, ExecutionError> ForStmt::executeInit(LaneContext &lane, WaveContext &wave,
+                                                 ThreadgroupContext &tg) {
+  std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " executing init (Result-based)" << std::endl;
+  
+  // Initialize loop variable using Result-based evaluation
+  Value initVal = TRY_RESULT(init_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+  lane.variables[loopVar_] = initVal;
+  
+  return Ok<Unit, ExecutionError>(Unit{});
+}
+
+Result<bool, ExecutionError> ForStmt::evaluateCondition(LaneContext &lane, WaveContext &wave,
+                                                       ThreadgroupContext &tg) {
+  std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " evaluating condition (Result-based)" << std::endl;
+  
+  // Evaluate condition using Result-based evaluation
+  Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), bool, ExecutionError);
+  bool shouldContinue = condVal.asBool();
+  
+  return Ok<bool, ExecutionError>(shouldContinue);
+}
+
+Result<Unit, ExecutionError> ForStmt::executeBody(LaneContext &lane, WaveContext &wave,
+                                                 ThreadgroupContext &tg, size_t &statementIndex) {
+  std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " executing body (Result-based)" << std::endl;
+  
+  // Execute body statements using Result-based approach
+  for (size_t i = statementIndex; i < body_.size(); ++i) {
+    auto result = body_[i]->execute_result(lane, wave, tg);
+    if (result.is_err()) {
+      // Handle control flow errors
+      ExecutionError error = result.unwrap_err();
+      if (error == ExecutionError::ControlFlowBreak) {
+        std::cout << "DEBUG: ForStmt - Break encountered in body" << std::endl;
+        return Err<Unit, ExecutionError>(ExecutionError::ControlFlowBreak);
+      } else if (error == ExecutionError::ControlFlowContinue) {
+        std::cout << "DEBUG: ForStmt - Continue encountered in body" << std::endl;
+        statementIndex = body_.size(); // Skip remaining statements
+        return Ok<Unit, ExecutionError>(Unit{}); // Continue to increment phase
+      } else {
+        // Other errors (like WaveOperationWait) should be propagated
+        statementIndex = i; // Save position for resumption
+        return result;
+      }
+    }
+  }
+  
+  statementIndex = 0; // Reset for next iteration
+  return Ok<Unit, ExecutionError>(Unit{});
+}
+
+Result<Unit, ExecutionError> ForStmt::executeIncrement(LaneContext &lane, WaveContext &wave,
+                                                     ThreadgroupContext &tg) {
+  std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " executing increment (Result-based)" << std::endl;
+  
+  // Execute increment expression using Result-based evaluation
+  TRY_RESULT(increment_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+  
+  return Ok<Unit, ExecutionError>(Unit{});
+}
+
 Result<Unit, ExecutionError> ForStmt::execute_result(LaneContext &lane, WaveContext &wave,
                                                    ThreadgroupContext &tg) {
   if (!lane.isActive)
     return Ok<Unit, ExecutionError>(Unit{});
 
-  try {
-    execute(lane, wave, tg);
-    return Ok<Unit, ExecutionError>(Unit{});
-  } catch (const WaveOperationWaitException &) {
-    // Wave operation is waiting - this represents a control flow state change
-    std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
-              << " caught WaveOperationWaitException in execute_result" << std::endl;
-    return Err<Unit, ExecutionError>(ExecutionError::WaveOperationWait);
-  } catch (const ControlFlowException &e) {
-    // Convert ControlFlowException to appropriate Result error
-    if (e.type == ControlFlowException::Break) {
-      return Err<Unit, ExecutionError>(ExecutionError::ControlFlowBreak);
-    } else if (e.type == ControlFlowException::Continue) {
-      return Err<Unit, ExecutionError>(ExecutionError::ControlFlowContinue);
-    } else {
-      return Err<Unit, ExecutionError>(ExecutionError::ControlFlowViolation);
-    }
-  } catch (const std::exception &) {
-    return Err<Unit, ExecutionError>(ExecutionError::InvalidState);
+  std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " executing pure Result-based for loop" << std::endl;
+
+  // Pure Result-based for loop implementation (simplified, no complex state management)
+  // This is a basic implementation - for full compatibility with the complex phase-based
+  // execution, we'd need to implement the full state machine with Results
+  
+  // Phase 1: Initialize
+  auto initResult = executeInit(lane, wave, tg);
+  if (initResult.is_err()) {
+    return initResult;
   }
+  
+  // Phase 2: Loop with condition checking
+  size_t statementIndex = 0;
+  while (true) {
+    // Evaluate condition
+    auto condResult = evaluateCondition(lane, wave, tg);
+    if (condResult.is_err()) {
+      return Err<Unit, ExecutionError>(condResult.unwrap_err());
+    }
+    
+    bool shouldContinue = condResult.unwrap();
+    if (!shouldContinue) {
+      std::cout << "DEBUG: ForStmt - Loop condition false, exiting" << std::endl;
+      break; // Exit loop
+    }
+    
+    // Execute body
+    auto bodyResult = executeBody(lane, wave, tg, statementIndex);
+    if (bodyResult.is_err()) {
+      ExecutionError error = bodyResult.unwrap_err();
+      if (error == ExecutionError::ControlFlowBreak) {
+        std::cout << "DEBUG: ForStmt - Breaking from loop" << std::endl;
+        break; // Exit loop
+      } else if (error == ExecutionError::ControlFlowContinue) {
+        std::cout << "DEBUG: ForStmt - Continuing loop" << std::endl;
+        // Continue to increment phase
+      } else {
+        // Other errors (like WaveOperationWait) should be propagated
+        return bodyResult;
+      }
+    }
+    
+    // Execute increment
+    auto incResult = executeIncrement(lane, wave, tg);
+    if (incResult.is_err()) {
+      return incResult;
+    }
+  }
+  
+  std::cout << "DEBUG: ForStmt - Loop completed successfully" << std::endl;
+  return Ok<Unit, ExecutionError>(Unit{});
 }
 
 std::string ForStmt::toString() const {
@@ -2747,20 +2861,12 @@ Result<Unit, ExecutionError> ExprStmt::execute_result(LaneContext &lane, WaveCon
   if (!lane.isActive)
     return Ok<Unit, ExecutionError>(Unit{});
 
-  try {
+  // Pure Result-based implementation - no exceptions!
+  if (expr_) {
     // Execute the expression (evaluate it but don't store the result)
-    if (expr_) {
-      expr_->evaluate(lane, wave, tg);
-    }
-    return Ok<Unit, ExecutionError>(Unit{});
-  } catch (const WaveOperationWaitException &) {
-    // Lane is waiting for wave operation - this represents a control flow state change
-    std::cout << "DEBUG: ExprStmt - Lane " << lane.laneId
-              << " caught WaveOperationWaitException in execute_result" << std::endl;
-    return Err<Unit, ExecutionError>(ExecutionError::WaveOperationWait);
-  } catch (const std::exception &) {
-    return Err<Unit, ExecutionError>(ExecutionError::InvalidState);
+    TRY_RESULT(expr_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
   }
+  return Ok<Unit, ExecutionError>(Unit{});
 }
 
 std::string ExprStmt::toString() const {
@@ -4964,31 +5070,82 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
   }
 }
 
+// Pure Result-based WhileStmt phase implementations
+Result<bool, ExecutionError> WhileStmt::evaluateCondition(LaneContext &lane, WaveContext &wave,
+                                                         ThreadgroupContext &tg) {
+  std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " evaluating condition (Result-based)" << std::endl;
+  
+  Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), bool, ExecutionError);
+  bool shouldContinue = condVal.asBool();
+  
+  return Ok<bool, ExecutionError>(shouldContinue);
+}
+
+Result<Unit, ExecutionError> WhileStmt::executeBody(LaneContext &lane, WaveContext &wave,
+                                                   ThreadgroupContext &tg) {
+  std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " executing body (Result-based)" << std::endl;
+  
+  // Execute body statements using Result-based approach
+  for (const auto &stmt : body_) {
+    auto result = stmt->execute_result(lane, wave, tg);
+    if (result.is_err()) {
+      ExecutionError error = result.unwrap_err();
+      if (error == ExecutionError::ControlFlowBreak) {
+        std::cout << "DEBUG: WhileStmt - Break encountered in body" << std::endl;
+        return Err<Unit, ExecutionError>(ExecutionError::ControlFlowBreak);
+      } else if (error == ExecutionError::ControlFlowContinue) {
+        std::cout << "DEBUG: WhileStmt - Continue encountered in body" << std::endl;
+        return Ok<Unit, ExecutionError>(Unit{}); // Continue to next iteration
+      } else {
+        // Other errors (like WaveOperationWait) should be propagated
+        return result;
+      }
+    }
+  }
+  
+  return Ok<Unit, ExecutionError>(Unit{});
+}
+
 Result<Unit, ExecutionError> WhileStmt::execute_result(LaneContext &lane, WaveContext &wave,
                                                      ThreadgroupContext &tg) {
   if (!lane.isActive)
     return Ok<Unit, ExecutionError>(Unit{});
 
-  try {
-    execute(lane, wave, tg);
-    return Ok<Unit, ExecutionError>(Unit{});
-  } catch (const WaveOperationWaitException &) {
-    // Wave operation is waiting - this represents a control flow state change
-    std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
-              << " caught WaveOperationWaitException in execute_result" << std::endl;
-    return Err<Unit, ExecutionError>(ExecutionError::WaveOperationWait);
-  } catch (const ControlFlowException &e) {
-    // Convert ControlFlowException to appropriate Result error
-    if (e.type == ControlFlowException::Break) {
-      return Err<Unit, ExecutionError>(ExecutionError::ControlFlowBreak);
-    } else if (e.type == ControlFlowException::Continue) {
-      return Err<Unit, ExecutionError>(ExecutionError::ControlFlowContinue);
-    } else {
-      return Err<Unit, ExecutionError>(ExecutionError::ControlFlowViolation);
+  std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " executing pure Result-based while loop" << std::endl;
+
+  // Pure Result-based while loop implementation
+  while (true) {
+    // Evaluate condition
+    auto condResult = evaluateCondition(lane, wave, tg);
+    if (condResult.is_err()) {
+      return Err<Unit, ExecutionError>(condResult.unwrap_err());
     }
-  } catch (const std::exception &) {
-    return Err<Unit, ExecutionError>(ExecutionError::InvalidState);
+    
+    bool shouldContinue = condResult.unwrap();
+    if (!shouldContinue) {
+      std::cout << "DEBUG: WhileStmt - Loop condition false, exiting" << std::endl;
+      break; // Exit loop
+    }
+    
+    // Execute body
+    auto bodyResult = executeBody(lane, wave, tg);
+    if (bodyResult.is_err()) {
+      ExecutionError error = bodyResult.unwrap_err();
+      if (error == ExecutionError::ControlFlowBreak) {
+        std::cout << "DEBUG: WhileStmt - Breaking from loop" << std::endl;
+        break; // Exit loop
+      } else if (error == ExecutionError::ControlFlowContinue) {
+        std::cout << "DEBUG: WhileStmt - Continuing loop" << std::endl;
+        continue; // Continue to next iteration
+      } else {
+        // Other errors (like WaveOperationWait) should be propagated
+        return bodyResult;
+      }
+    }
   }
+  
+  std::cout << "DEBUG: WhileStmt - Loop completed successfully" << std::endl;
+  return Ok<Unit, ExecutionError>(Unit{});
 }
 
 std::string WhileStmt::toString() const {
@@ -5875,8 +6032,10 @@ Result<Unit, ExecutionError> BreakStmt::execute_result(LaneContext &lane, WaveCo
   if (!lane.isActive)
     return Ok<Unit, ExecutionError>(Unit{});
   
-  // Break represents a control flow change that needs to be handled by parent statements
-  return Err<Unit, ExecutionError>(ExecutionError::BreakException);
+  // Pure Result-based break - no exceptions thrown!
+  std::cout << "DEBUG: BreakStmt - Lane " << lane.laneId
+            << " executing break via Result" << std::endl;
+  return Err<Unit, ExecutionError>(ExecutionError::ControlFlowBreak);
 }
 
 // ContinueStmt implementation
@@ -5892,8 +6051,10 @@ Result<Unit, ExecutionError> ContinueStmt::execute_result(LaneContext &lane, Wav
   if (!lane.isActive)
     return Ok<Unit, ExecutionError>(Unit{});
   
-  // Continue represents a control flow change that needs to be handled by parent statements
-  return Err<Unit, ExecutionError>(ExecutionError::ContinueException);
+  // Pure Result-based continue - no exceptions thrown!
+  std::cout << "DEBUG: ContinueStmt - Lane " << lane.laneId
+            << " executing continue via Result" << std::endl;
+  return Err<Unit, ExecutionError>(ExecutionError::ControlFlowContinue);
 }
 
 // Dynamic execution block methods
