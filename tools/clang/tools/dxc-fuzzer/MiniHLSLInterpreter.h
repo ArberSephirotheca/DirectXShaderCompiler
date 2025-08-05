@@ -1311,6 +1311,17 @@ public:
 
 // Statement AST nodes
 class Statement {
+protected:
+  // Helper method to find this statement's index in the execution stack
+  int findStackIndex(LaneContext &lane) const {
+    for (size_t i = 0; i < lane.executionStack.size(); i++) {
+      if (lane.executionStack[i].statement == static_cast<const void *>(this)) {
+        return static_cast<int>(i);
+      }
+    }
+    return -1; // Not found
+  }
+
 public:
   virtual ~Statement() = default;
   virtual void execute(LaneContext &lane, WaveContext &wave,
@@ -1416,6 +1427,14 @@ class ForStmt : public Statement {
                            int ourStackIndex, uint32_t headerBlockId);
   void handleContinueException(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
                               int ourStackIndex, uint32_t headerBlockId);
+  
+  // Helper methods for initialization and setup phases
+  void setupFreshExecution(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                          int ourStackIndex, uint32_t &headerBlockId, uint32_t &mergeBlockId);
+  void evaluateInitPhase(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                        int ourStackIndex, uint32_t headerBlockId);
+  void evaluateConditionPhase(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                             int ourStackIndex, uint32_t headerBlockId);
 
 public:
   ForStmt(const std::string &var, std::unique_ptr<Expression> init,
