@@ -1456,6 +1456,24 @@ class WhileStmt : public Statement {
                                                 ThreadgroupContext &tg);
   Result<Unit, ExecutionError> executeBody(LaneContext &lane, WaveContext &wave,
                                           ThreadgroupContext &tg);
+  
+  // Helper methods for phase execution
+  void setupFreshExecution(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                          int ourStackIndex, uint32_t &headerBlockId, uint32_t &mergeBlockId);
+  void evaluateConditionPhase(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                             int ourStackIndex, uint32_t headerBlockId);
+  void setupIterationBlocks(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                           int ourStackIndex, uint32_t headerBlockId);
+  void executeBodyStatements(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                            int ourStackIndex, uint32_t headerBlockId);
+  void cleanupAfterBodyExecution(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                                int ourStackIndex, uint32_t headerBlockId);
+  void handleLoopExit(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                     int ourStackIndex, uint32_t mergeBlockId);
+  void handleBreakException(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                           int ourStackIndex, uint32_t headerBlockId);
+  void handleContinueException(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                              int ourStackIndex, uint32_t headerBlockId);
 
 public:
   WhileStmt(std::unique_ptr<Expression> cond,
