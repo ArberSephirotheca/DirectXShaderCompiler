@@ -1449,6 +1449,25 @@ void AssignStmt::execute(LaneContext &lane, WaveContext &wave,
   }
 }
 
+Result<Unit, ExecutionError> AssignStmt::execute_result(LaneContext &lane, WaveContext &wave,
+                                                      ThreadgroupContext &tg) {
+  if (!lane.isActive)
+    return Ok<Unit, ExecutionError>(Unit{});
+  
+  try {
+    Value val = expr_->evaluate(lane, wave, tg);
+    lane.variables[name_] = val;
+    return Ok<Unit, ExecutionError>(Unit{});
+  } catch (const WaveOperationWaitException &) {
+    // Lane is waiting for wave operation - this represents a control flow state change
+    std::cout << "DEBUG: AssignStmt - Lane " << lane.laneId
+              << " caught WaveOperationWaitException in execute_result" << std::endl;
+    return Err<Unit, ExecutionError>(ExecutionError::WaveOperationWait);
+  } catch (const std::exception &) {
+    return Err<Unit, ExecutionError>(ExecutionError::InvalidState);
+  }
+}
+
 std::string AssignStmt::toString() const {
   return name_ + " = " + expr_->toString() + ";";
 }
@@ -1812,6 +1831,33 @@ void IfStmt::execute(LaneContext &lane, WaveContext &wave,
 
   // Restore active state (reconvergence)
   lane.isActive = lane.isActive && !lane.hasReturned;
+}
+
+Result<Unit, ExecutionError> IfStmt::execute_result(LaneContext &lane, WaveContext &wave,
+                                                  ThreadgroupContext &tg) {
+  if (!lane.isActive)
+    return Ok<Unit, ExecutionError>(Unit{});
+
+  try {
+    execute(lane, wave, tg);
+    return Ok<Unit, ExecutionError>(Unit{});
+  } catch (const WaveOperationWaitException &) {
+    // Wave operation is waiting - this represents a control flow state change
+    std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
+              << " caught WaveOperationWaitException in execute_result" << std::endl;
+    return Err<Unit, ExecutionError>(ExecutionError::WaveOperationWait);
+  } catch (const ControlFlowException &e) {
+    // Convert ControlFlowException to appropriate Result error
+    if (e.type == ControlFlowException::Break) {
+      return Err<Unit, ExecutionError>(ExecutionError::ControlFlowBreak);
+    } else if (e.type == ControlFlowException::Continue) {
+      return Err<Unit, ExecutionError>(ExecutionError::ControlFlowContinue);
+    } else {
+      return Err<Unit, ExecutionError>(ExecutionError::ControlFlowViolation);
+    }
+  } catch (const std::exception &) {
+    return Err<Unit, ExecutionError>(ExecutionError::InvalidState);
+  }
 }
 
 bool IfStmt::requiresAllLanesActive() const {
@@ -2325,6 +2371,33 @@ void ForStmt::execute(LaneContext &lane, WaveContext &wave,
   }
 }
 
+Result<Unit, ExecutionError> ForStmt::execute_result(LaneContext &lane, WaveContext &wave,
+                                                   ThreadgroupContext &tg) {
+  if (!lane.isActive)
+    return Ok<Unit, ExecutionError>(Unit{});
+
+  try {
+    execute(lane, wave, tg);
+    return Ok<Unit, ExecutionError>(Unit{});
+  } catch (const WaveOperationWaitException &) {
+    // Wave operation is waiting - this represents a control flow state change
+    std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
+              << " caught WaveOperationWaitException in execute_result" << std::endl;
+    return Err<Unit, ExecutionError>(ExecutionError::WaveOperationWait);
+  } catch (const ControlFlowException &e) {
+    // Convert ControlFlowException to appropriate Result error
+    if (e.type == ControlFlowException::Break) {
+      return Err<Unit, ExecutionError>(ExecutionError::ControlFlowBreak);
+    } else if (e.type == ControlFlowException::Continue) {
+      return Err<Unit, ExecutionError>(ExecutionError::ControlFlowContinue);
+    } else {
+      return Err<Unit, ExecutionError>(ExecutionError::ControlFlowViolation);
+    }
+  } catch (const std::exception &) {
+    return Err<Unit, ExecutionError>(ExecutionError::InvalidState);
+  }
+}
+
 std::string ForStmt::toString() const {
   std::string result = "for (" + loopVar_ + " = " + init_->toString() + "; ";
   result += condition_->toString() + "; ";
@@ -2666,6 +2739,27 @@ void ExprStmt::execute(LaneContext &lane, WaveContext &wave,
   // Execute the expression (evaluate it but don't store the result)
   if (expr_) {
     expr_->evaluate(lane, wave, tg);
+  }
+}
+
+Result<Unit, ExecutionError> ExprStmt::execute_result(LaneContext &lane, WaveContext &wave,
+                                                    ThreadgroupContext &tg) {
+  if (!lane.isActive)
+    return Ok<Unit, ExecutionError>(Unit{});
+
+  try {
+    // Execute the expression (evaluate it but don't store the result)
+    if (expr_) {
+      expr_->evaluate(lane, wave, tg);
+    }
+    return Ok<Unit, ExecutionError>(Unit{});
+  } catch (const WaveOperationWaitException &) {
+    // Lane is waiting for wave operation - this represents a control flow state change
+    std::cout << "DEBUG: ExprStmt - Lane " << lane.laneId
+              << " caught WaveOperationWaitException in execute_result" << std::endl;
+    return Err<Unit, ExecutionError>(ExecutionError::WaveOperationWait);
+  } catch (const std::exception &) {
+    return Err<Unit, ExecutionError>(ExecutionError::InvalidState);
   }
 }
 
@@ -4870,6 +4964,33 @@ void WhileStmt::execute(LaneContext &lane, WaveContext &wave,
   }
 }
 
+Result<Unit, ExecutionError> WhileStmt::execute_result(LaneContext &lane, WaveContext &wave,
+                                                     ThreadgroupContext &tg) {
+  if (!lane.isActive)
+    return Ok<Unit, ExecutionError>(Unit{});
+
+  try {
+    execute(lane, wave, tg);
+    return Ok<Unit, ExecutionError>(Unit{});
+  } catch (const WaveOperationWaitException &) {
+    // Wave operation is waiting - this represents a control flow state change
+    std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
+              << " caught WaveOperationWaitException in execute_result" << std::endl;
+    return Err<Unit, ExecutionError>(ExecutionError::WaveOperationWait);
+  } catch (const ControlFlowException &e) {
+    // Convert ControlFlowException to appropriate Result error
+    if (e.type == ControlFlowException::Break) {
+      return Err<Unit, ExecutionError>(ExecutionError::ControlFlowBreak);
+    } else if (e.type == ControlFlowException::Continue) {
+      return Err<Unit, ExecutionError>(ExecutionError::ControlFlowContinue);
+    } else {
+      return Err<Unit, ExecutionError>(ExecutionError::ControlFlowViolation);
+    }
+  } catch (const std::exception &) {
+    return Err<Unit, ExecutionError>(ExecutionError::InvalidState);
+  }
+}
+
 std::string WhileStmt::toString() const {
   std::string result = "while (" + condition_->toString() + ") {\n";
   for (const auto &stmt : body_) {
@@ -5266,6 +5387,33 @@ void DoWhileStmt::execute(LaneContext &lane, WaveContext &wave,
       }
       return; // Exit to prevent currentStatement increment, will resume later
     }
+  }
+}
+
+Result<Unit, ExecutionError> DoWhileStmt::execute_result(LaneContext &lane, WaveContext &wave,
+                                                       ThreadgroupContext &tg) {
+  if (!lane.isActive)
+    return Ok<Unit, ExecutionError>(Unit{});
+
+  try {
+    execute(lane, wave, tg);
+    return Ok<Unit, ExecutionError>(Unit{});
+  } catch (const WaveOperationWaitException &) {
+    // Wave operation is waiting - this represents a control flow state change
+    std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId
+              << " caught WaveOperationWaitException in execute_result" << std::endl;
+    return Err<Unit, ExecutionError>(ExecutionError::WaveOperationWait);
+  } catch (const ControlFlowException &e) {
+    // Convert ControlFlowException to appropriate Result error
+    if (e.type == ControlFlowException::Break) {
+      return Err<Unit, ExecutionError>(ExecutionError::ControlFlowBreak);
+    } else if (e.type == ControlFlowException::Continue) {
+      return Err<Unit, ExecutionError>(ExecutionError::ControlFlowContinue);
+    } else {
+      return Err<Unit, ExecutionError>(ExecutionError::ControlFlowViolation);
+    }
+  } catch (const std::exception &) {
+    return Err<Unit, ExecutionError>(ExecutionError::InvalidState);
   }
 }
 
@@ -5671,6 +5819,33 @@ void SwitchStmt::execute(LaneContext &lane, WaveContext &wave,
   }
 }
 
+Result<Unit, ExecutionError> SwitchStmt::execute_result(LaneContext &lane, WaveContext &wave,
+                                                      ThreadgroupContext &tg) {
+  if (!lane.isActive)
+    return Ok<Unit, ExecutionError>(Unit{});
+
+  try {
+    execute(lane, wave, tg);
+    return Ok<Unit, ExecutionError>(Unit{});
+  } catch (const WaveOperationWaitException &) {
+    // Wave operation is waiting - this represents a control flow state change
+    std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
+              << " caught WaveOperationWaitException in execute_result" << std::endl;
+    return Err<Unit, ExecutionError>(ExecutionError::WaveOperationWait);
+  } catch (const ControlFlowException &e) {
+    // Convert ControlFlowException to appropriate Result error
+    if (e.type == ControlFlowException::Break) {
+      return Err<Unit, ExecutionError>(ExecutionError::ControlFlowBreak);
+    } else if (e.type == ControlFlowException::Continue) {
+      return Err<Unit, ExecutionError>(ExecutionError::ControlFlowContinue);
+    } else {
+      return Err<Unit, ExecutionError>(ExecutionError::ControlFlowViolation);
+    }
+  } catch (const std::exception &) {
+    return Err<Unit, ExecutionError>(ExecutionError::InvalidState);
+  }
+}
+
 std::string SwitchStmt::toString() const {
   std::string result = "switch (" + condition_->toString() + ") {\n";
   for (const auto &caseBlock : cases_) {
@@ -5695,12 +5870,30 @@ void BreakStmt::execute(LaneContext &lane, WaveContext &wave,
   throw ControlFlowException(ControlFlowException::Break);
 }
 
+Result<Unit, ExecutionError> BreakStmt::execute_result(LaneContext &lane, WaveContext &wave,
+                                                     ThreadgroupContext &tg) {
+  if (!lane.isActive)
+    return Ok<Unit, ExecutionError>(Unit{});
+  
+  // Break represents a control flow change that needs to be handled by parent statements
+  return Err<Unit, ExecutionError>(ExecutionError::BreakException);
+}
+
 // ContinueStmt implementation
 void ContinueStmt::execute(LaneContext &lane, WaveContext &wave,
                            ThreadgroupContext &tg) {
   if (!lane.isActive)
     return;
   throw ControlFlowException(ControlFlowException::Continue);
+}
+
+Result<Unit, ExecutionError> ContinueStmt::execute_result(LaneContext &lane, WaveContext &wave,
+                                                        ThreadgroupContext &tg) {
+  if (!lane.isActive)
+    return Ok<Unit, ExecutionError>(Unit{});
+  
+  // Continue represents a control flow change that needs to be handled by parent statements
+  return Err<Unit, ExecutionError>(ExecutionError::ContinueException);
 }
 
 // Dynamic execution block methods

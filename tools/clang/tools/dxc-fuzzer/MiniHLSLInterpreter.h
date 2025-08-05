@@ -48,6 +48,140 @@ class CXXBoolLiteralExpr;
 namespace minihlsl {
 namespace interpreter {
 
+// Rust-like functional programming types
+struct Unit {};
+
+// Error types for execution
+enum class ExecutionError {
+  VariableRedefinition,
+  ControlFlowViolation,
+  InvalidState,
+  WaveOperationWait,
+  BreakException,
+  ContinueException,
+  ControlFlowBreak,
+  ControlFlowContinue
+};
+
+// Result type implementation (Rust-like)
+template<typename T, typename E>
+class Result {
+private:
+  bool is_ok_;
+  union {
+    T ok_value_;
+    E err_value_;  
+  };
+
+public:
+  // Constructors
+  Result(const Result& other) : is_ok_(other.is_ok_) {
+    if (is_ok_) {
+      new (&ok_value_) T(other.ok_value_);
+    } else {
+      new (&err_value_) E(other.err_value_);
+    }
+  }
+
+  Result(Result&& other) noexcept : is_ok_(other.is_ok_) {
+    if (is_ok_) {
+      new (&ok_value_) T(std::move(other.ok_value_));
+    } else {
+      new (&err_value_) E(std::move(other.err_value_));
+    }
+  }
+
+  // Destructor
+  ~Result() {
+    if (is_ok_) {
+      ok_value_.~T();
+    } else {
+      err_value_.~E();
+    }
+  }
+
+  // Assignment operators
+  Result& operator=(const Result& other) {
+    if (this != &other) {
+      this->~Result();
+      is_ok_ = other.is_ok_;
+      if (is_ok_) {
+        new (&ok_value_) T(other.ok_value_);
+      } else {
+        new (&err_value_) E(other.err_value_);
+      }
+    }
+    return *this;
+  }
+
+  Result& operator=(Result&& other) noexcept {
+    if (this != &other) {
+      this->~Result();
+      is_ok_ = other.is_ok_;
+      if (is_ok_) {
+        new (&ok_value_) T(std::move(other.ok_value_));
+      } else {
+        new (&err_value_) E(std::move(other.err_value_));
+      }
+    }
+    return *this;
+  }
+
+  // Factory methods
+  static Result Ok(T value) {
+    Result result;
+    result.is_ok_ = true;
+    new (&result.ok_value_) T(std::move(value));
+    return result;
+  }
+
+  static Result Err(E error) {
+    Result result;
+    result.is_ok_ = false;
+    new (&result.err_value_) E(std::move(error));
+    return result;
+  }
+
+  // Query methods
+  bool is_ok() const { return is_ok_; }
+  bool is_err() const { return !is_ok_; }
+
+  // Access methods
+  T& unwrap() {
+    if (!is_ok_) throw std::runtime_error("Called unwrap on an error value");
+    return ok_value_;
+  }
+
+  const T& unwrap() const {
+    if (!is_ok_) throw std::runtime_error("Called unwrap on an error value");
+    return ok_value_;
+  }
+
+  E& unwrap_err() {
+    if (is_ok_) throw std::runtime_error("Called unwrap_err on an ok value");
+    return err_value_;
+  }
+
+  const E& unwrap_err() const {
+    if (is_ok_) throw std::runtime_error("Called unwrap_err on an ok value");
+    return err_value_;
+  }
+
+private:
+  Result() = default;
+};
+
+// Helper functions for creating Results
+template<typename T, typename E>
+Result<T, E> Ok(T value) {
+  return Result<T, E>::Ok(std::move(value));
+}
+
+template<typename T, typename E>
+Result<T, E> Err(E error) {
+  return Result<T, E>::Err(std::move(error));
+}
+
 // Forward declarations
 class Expression;
 class Statement;
@@ -1129,6 +1263,15 @@ public:
   virtual ~Statement() = default;
   virtual void execute(LaneContext &lane, WaveContext &wave,
                        ThreadgroupContext &tg) = 0;
+  virtual Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
+                                                    ThreadgroupContext &tg) {
+    try {
+      execute(lane, wave, tg);
+      return Ok<Unit, ExecutionError>(Unit{});
+    } catch (const std::exception&) {
+      return Err<Unit, ExecutionError>(ExecutionError::InvalidState);
+    }
+  }
   virtual bool requiresAllLanesActive() const { return false; }
   virtual std::string toString() const = 0;
 };
@@ -1152,6 +1295,8 @@ public:
   AssignStmt(const std::string &name, std::unique_ptr<Expression> expr);
   void execute(LaneContext &lane, WaveContext &wave,
                ThreadgroupContext &tg) override;
+  Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
+                                            ThreadgroupContext &tg) override;
   std::string toString() const override;
 };
 
@@ -1169,6 +1314,8 @@ public:
          std::vector<std::unique_ptr<Statement>> elseBlock = {});
   void execute(LaneContext &lane, WaveContext &wave,
                ThreadgroupContext &tg) override;
+  Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
+                                            ThreadgroupContext &tg) override;
   bool requiresAllLanesActive() const override;
   std::string toString() const override;
 };
@@ -1186,6 +1333,8 @@ public:
           std::vector<std::unique_ptr<Statement>> body);
   void execute(LaneContext &lane, WaveContext &wave,
                ThreadgroupContext &tg) override;
+  Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
+                                            ThreadgroupContext &tg) override;
   std::string toString() const override;
 };
 
@@ -1198,6 +1347,8 @@ public:
             std::vector<std::unique_ptr<Statement>> body);
   void execute(LaneContext &lane, WaveContext &wave,
                ThreadgroupContext &tg) override;
+  Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
+                                            ThreadgroupContext &tg) override;
   std::string toString() const override;
 };
 
@@ -1210,6 +1361,8 @@ public:
               std::unique_ptr<Expression> cond);
   void execute(LaneContext &lane, WaveContext &wave,
                ThreadgroupContext &tg) override;
+  Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
+                                            ThreadgroupContext &tg) override;
   std::string toString() const override;
 };
 
@@ -1227,6 +1380,8 @@ public:
   void addDefault(std::vector<std::unique_ptr<Statement>> stmts);
   void execute(LaneContext &lane, WaveContext &wave,
                ThreadgroupContext &tg) override;
+  Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
+                                            ThreadgroupContext &tg) override;
   std::string toString() const override;
 };
 
@@ -1250,6 +1405,8 @@ class BreakStmt : public Statement {
 public:
   void execute(LaneContext &lane, WaveContext &wave,
                ThreadgroupContext &tg) override;
+  Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
+                                            ThreadgroupContext &tg) override;
   std::string toString() const override { return "break;"; }
 };
 
@@ -1257,6 +1414,8 @@ class ContinueStmt : public Statement {
 public:
   void execute(LaneContext &lane, WaveContext &wave,
                ThreadgroupContext &tg) override;
+  Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
+                                            ThreadgroupContext &tg) override;
   std::string toString() const override { return "continue;"; }
 };
 
@@ -1296,6 +1455,8 @@ public:
   explicit ExprStmt(std::unique_ptr<Expression> expr);
   void execute(LaneContext &lane, WaveContext &wave,
                ThreadgroupContext &tg) override;
+  Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
+                                            ThreadgroupContext &tg) override;
   std::string toString() const override;
 };
 
