@@ -1394,6 +1394,10 @@ class ForStmt : public Statement {
   // Helper method for body execution (extracted for better readability)
   void executeBodyStatements(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
                             int ourStackIndex, uint32_t headerBlockId);
+  
+  // Helper method for setting up iteration-specific blocks
+  void setupIterationBlocks(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                           int ourStackIndex, uint32_t headerBlockId);
 
 public:
   ForStmt(const std::string &var, std::unique_ptr<Expression> init,

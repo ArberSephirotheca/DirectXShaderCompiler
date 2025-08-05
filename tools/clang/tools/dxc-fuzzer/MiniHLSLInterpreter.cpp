@@ -2716,6 +2716,104 @@ void ForStmt::executeBodyStatements(LaneContext &lane, WaveContext &wave, Thread
   }
 }
 
+// Helper method for setting up iteration-specific blocks in ForStmt
+void ForStmt::setupIterationBlocks(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
+                                  int ourStackIndex, uint32_t headerBlockId) {
+  auto &ourEntry = lane.executionStack[ourStackIndex];
+  
+  // Check if we need an iteration-specific starting block
+  // Only create one if we have non-control-flow statements before any control flow
+  bool needsIterationBlock = false;
+  uint32_t iterationStartBlockId = 0;
+
+  // Look ahead to see if first statement (statement 0) requires unique iteration context
+  if (!body_.empty()) {
+    bool firstStatementIsControlFlow =
+        dynamic_cast<IfStmt *>(body_[0].get()) != nullptr ||
+        dynamic_cast<ForStmt *>(body_[0].get()) != nullptr ||
+        dynamic_cast<WhileStmt *>(body_[0].get()) != nullptr ||
+        dynamic_cast<DoWhileStmt *>(body_[0].get()) != nullptr;
+
+    if (!firstStatementIsControlFlow) {
+      // We have regular statements that need unique iteration context
+      needsIterationBlock = true;
+      std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
+                << " needs iteration block (first statement is not control flow)" << std::endl;
+    } else {
+      std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
+                << " no iteration block needed (first statement is control flow)" << std::endl;
+    }
+  }
+
+  if (needsIterationBlock) {
+    // Create iteration-specific starting block (unique context for this iteration)
+    iterationStartBlockId = ourEntry.loopBodyBlockId;
+    if (iterationStartBlockId == 0) {
+      std::vector<MergeStackEntry> currentMergeStack = tg.getCurrentMergeStack(wave.waveId, lane.laneId);
+
+      // Create unique identity for this iteration's starting block
+      const void *iterationPtr = reinterpret_cast<const void *>(
+          reinterpret_cast<uintptr_t>(this) + (ourEntry.loopIteration << 16) + 0x3000);
+
+      // Use REGULAR block type - this is the starting context for this iteration
+      BlockIdentity iterationIdentity = tg.createBlockIdentity(
+          iterationPtr, BlockType::REGULAR, headerBlockId, currentMergeStack, true, lane.executionPath);
+
+      // Try to find existing block first
+      iterationStartBlockId = tg.findBlockByIdentity(iterationIdentity);
+
+      if (iterationStartBlockId == 0) {
+        // Create new iteration starting block
+        std::map<WaveId, std::set<LaneId>> expectedLanes = tg.getCurrentBlockParticipants(headerBlockId);
+        iterationStartBlockId = tg.findOrCreateBlockForPath(iterationIdentity, expectedLanes);
+        std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " created iteration starting block "
+                  << iterationStartBlockId << " for iteration " << ourEntry.loopIteration << std::endl;
+      } else {
+        std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " found existing iteration starting block "
+                  << iterationStartBlockId << " for iteration " << ourEntry.loopIteration << std::endl;
+      }
+
+      ourEntry.loopBodyBlockId = iterationStartBlockId;
+    }
+
+    // Move to iteration-specific block
+    if (tg.getCurrentBlock(wave.waveId, lane.laneId) != iterationStartBlockId) {
+      tg.moveThreadFromUnknownToParticipating(iterationStartBlockId, wave.waveId, lane.laneId);
+      std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " moved to iteration starting block "
+                << iterationStartBlockId << std::endl;
+    }
+  } else {
+    // No iteration block needed - but we still need to ensure unique execution context per iteration
+    // Only push merge point if we're at the beginning of the body (statement 0)
+    if (ourEntry.statementIndex == 0) {
+      // Push iteration-specific merge point so nested control flow sees different merge stack
+      const void *iterationMarker = reinterpret_cast<const void *>(
+          reinterpret_cast<uintptr_t>(this) + (ourEntry.loopIteration << 16) + 0x5000);
+
+      // Push iteration-specific merge point if not already done
+      std::vector<MergeStackEntry> currentMergeStack = tg.getCurrentMergeStack(wave.waveId, lane.laneId);
+      std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " merge stack size: " << currentMergeStack.size() << std::endl;
+      for (size_t i = 0; i < currentMergeStack.size(); i++) {
+        std::cout << "  Stack[" << i << "]: sourceStatement=" << currentMergeStack[i].sourceStatement << std::endl;
+      }
+      std::cout << "  Looking for iterationMarker=" << iterationMarker << std::endl;
+      bool alreadyPushed = hasIterationMarkerInStack(currentMergeStack, iterationMarker);
+      if (alreadyPushed) {
+        std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
+                  << " iteration merge point already found in merge stack" << std::endl;
+      }
+
+      if (!alreadyPushed) {
+        std::set<uint32_t> emptyDivergentBlocks; // No actual divergence, just context
+        tg.pushMergePoint(wave.waveId, lane.laneId, iterationMarker,
+                          tg.getCurrentBlock(wave.waveId, lane.laneId), emptyDivergentBlocks);
+        std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " pushed iteration merge point "
+                  << iterationMarker << " (no iteration block needed, but merge stack modified)" << std::endl;
+      }
+    }
+  }
+}
+
 std::string ForStmt::toString() const {
   std::string result = "for (" + loopVar_ + " = " + init_->toString() + "; ";
   result += condition_->toString() + "; ";
