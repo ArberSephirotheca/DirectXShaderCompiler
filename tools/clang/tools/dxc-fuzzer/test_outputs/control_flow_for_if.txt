@@ -178,8 +178,7 @@ DEBUG: ForStmt - Lane 0 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 0 merge stack size: 1
   Stack[0]: sourceStatement=0x508000002820
   Looking for iterationMarker=0x508000007820
-DEBUG: ForStmt - Lane 0 pushed iteration merge point 0x508000007820 for iteration 0
-DEBUG: ForStmt - Lane 0 executing directly in current block 2 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 0 pushed iteration merge point 0x508000007820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 2
 DEBUG: IfStmt - Lane 0 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
 DEBUG: IfStmt - Lane 0 in phase EvaluatingCondition (stack depth=2, our index=1, this=0x506000001640)
@@ -237,8 +236,7 @@ DEBUG: ForStmt - Lane 1 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 1 merge stack size: 1
   Stack[0]: sourceStatement=0x508000002820
   Looking for iterationMarker=0x508000007820
-DEBUG: ForStmt - Lane 1 pushed iteration merge point 0x508000007820 for iteration 0
-DEBUG: ForStmt - Lane 1 executing directly in current block 2 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 1 pushed iteration merge point 0x508000007820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 2
 DEBUG: IfStmt - Lane 1 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
 DEBUG: IfStmt - Lane 1 in phase EvaluatingCondition (stack depth=2, our index=1, this=0x506000001640)
@@ -287,8 +285,7 @@ DEBUG: ForStmt - Lane 2 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 2 merge stack size: 1
   Stack[0]: sourceStatement=0x508000002820
   Looking for iterationMarker=0x508000007820
-DEBUG: ForStmt - Lane 2 pushed iteration merge point 0x508000007820 for iteration 0
-DEBUG: ForStmt - Lane 2 executing directly in current block 2 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 2 pushed iteration merge point 0x508000007820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 2
 DEBUG: IfStmt - Lane 2 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
 DEBUG: IfStmt - Lane 2 in phase EvaluatingCondition (stack depth=2, our index=1, this=0x506000001640)
@@ -337,8 +334,7 @@ DEBUG: ForStmt - Lane 3 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 3 merge stack size: 1
   Stack[0]: sourceStatement=0x508000002820
   Looking for iterationMarker=0x508000007820
-DEBUG: ForStmt - Lane 3 pushed iteration merge point 0x508000007820 for iteration 0
-DEBUG: ForStmt - Lane 3 executing directly in current block 2 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 3 pushed iteration merge point 0x508000007820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 2
 DEBUG: IfStmt - Lane 3 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
 DEBUG: IfStmt - Lane 3 in phase EvaluatingCondition (stack depth=2, our index=1, this=0x506000001640)
@@ -391,8 +387,6 @@ DEBUG: ForStmt - Lane 0 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 0 executing directly in current block WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4 (registry returned: 4)
-4 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 4
 DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
@@ -454,8 +448,6 @@ DEBUG: ForStmt - Lane 1 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 1 executing directly in current block WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
-4 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 4
 DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
@@ -515,8 +507,6 @@ DEBUG: ForStmt - Lane 2 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 2 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 2 executing directly in current block WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
-5 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 5
 DEBUG: IfStmt - Lane 2 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
@@ -537,8 +527,6 @@ DEBUG: ForStmt - Lane 3 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 3 executing directly in current block WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
-5 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 5
 DEBUG: IfStmt - Lane 3 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
@@ -560,8 +548,6 @@ DEBUG: ForStmt - Lane 0 merge stack size: 4
   Stack[3]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 0 executing directly in current block WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
-7 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 7
 DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=3, this=0x506000001640)
@@ -603,8 +589,6 @@ DEBUG: ForStmt - Lane 1 merge stack size: 4
   Stack[3]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 1 executing directly in current block WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 8 (registry returned: 8)
-8 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 8 (registry returned: 8)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 8
 DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=3, this=0x506000001640)
@@ -633,8 +617,6 @@ DEBUG: ForStmt - Lane 2 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 2 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 2 executing directly in current block WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
-5 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 5
 DEBUG: IfStmt - Lane 2 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
@@ -699,8 +681,6 @@ DEBUG: ForStmt - Lane 3 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 3 executing directly in current block WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
-5 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 5
 DEBUG: IfStmt - Lane 3 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
@@ -766,8 +746,6 @@ DEBUG: ForStmt - Lane 0 merge stack size: 4
   Stack[3]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 0 executing directly in current block WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
-7 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 7
 DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=3, this=0x506000001640)
@@ -797,8 +775,6 @@ DEBUG: ForStmt - Lane 1 merge stack size: 4
   Stack[3]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 1 executing directly in current block WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 8 (registry returned: 8)
-8 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 8 (registry returned: 8)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 8
 DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=3, this=0x506000001640)
@@ -855,8 +831,6 @@ DEBUG: ForStmt - Lane 0 merge stack size: 4
   Stack[3]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 0 executing directly in current block WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
-7 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 7
 DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=3, this=0x506000001640)
@@ -906,8 +880,6 @@ DEBUG: ForStmt - Lane 1 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 1 executing directly in current block WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 9 (registry returned: 9)
-9 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 9
 DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
@@ -978,8 +950,6 @@ DEBUG: ForStmt - Lane 0 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 0 executing directly in current block WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry returned: 9)
-9 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 9
 DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
@@ -1044,8 +1014,7 @@ DEBUG: ForStmt - Lane 2 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 2 merge stack size: 1
   Stack[0]: sourceStatement=0x508000002820
   Looking for iterationMarker=0x508000017820
-DEBUG: ForStmt - Lane 2 pushed iteration merge point 0x508000017820 for iteration 1
-DEBUG: ForStmt - Lane 2 executing directly in current block 2 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 2 pushed iteration merge point 0x508000017820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 2
 DEBUG: IfStmt - Lane 2 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
 DEBUG: IfStmt - Lane 2 in phase EvaluatingCondition (stack depth=2, our index=1, this=0x506000001640)
@@ -1103,8 +1072,7 @@ DEBUG: ForStmt - Lane 3 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 3 merge stack size: 1
   Stack[0]: sourceStatement=0x508000002820
   Looking for iterationMarker=0x508000017820
-DEBUG: ForStmt - Lane 3 pushed iteration merge point 0x508000017820 for iteration 1
-DEBUG: ForStmt - Lane 3 executing directly in current block 2 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 3 pushed iteration merge point 0x508000017820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 2
 DEBUG: IfStmt - Lane 3 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
 DEBUG: IfStmt - Lane 3 in phase EvaluatingCondition (stack depth=2, our index=1, this=0x506000001640)
@@ -1162,8 +1130,6 @@ DEBUG: ForStmt - Lane 2 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 2 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 2 executing directly in current block WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
-11 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 11
 DEBUG: IfStmt - Lane 2 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
@@ -1184,8 +1150,6 @@ DEBUG: ForStmt - Lane 3 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 3 executing directly in current block WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 11 (registry returned: 11)
-11 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 11
 DEBUG: IfStmt - Lane 3 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
@@ -1206,8 +1170,7 @@ DEBUG: ForStmt - Lane 1 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 1 merge stack size: 1
   Stack[0]: sourceStatement=0x508000002820
   Looking for iterationMarker=0x508000017820
-DEBUG: ForStmt - Lane 1 pushed iteration merge point 0x508000017820 for iteration 1
-DEBUG: ForStmt - Lane 1 executing directly in current block 2 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 1 pushed iteration merge point 0x508000017820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 2
 DEBUG: IfStmt - Lane 1 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
 DEBUG: IfStmt - Lane 1 in phase EvaluatingCondition (stack depth=2, our index=1, this=0x506000001640)
@@ -1259,8 +1222,6 @@ DEBUG: ForStmt - Lane 2 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 2 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 2 executing directly in current block WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
-11 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 11
 DEBUG: IfStmt - Lane 2 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
@@ -1313,8 +1274,6 @@ DEBUG: ForStmt - Lane 3 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 3 executing directly in current block WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 11 (registry returned: 11)
-11 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 11
 DEBUG: IfStmt - Lane 3 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
@@ -1364,8 +1323,7 @@ DEBUG: ForStmt - Lane 0 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 0 merge stack size: 1
   Stack[0]: sourceStatement=0x508000002820
   Looking for iterationMarker=0x508000017820
-DEBUG: ForStmt - Lane 0 pushed iteration merge point 0x508000017820 for iteration 1
-DEBUG: ForStmt - Lane 0 executing directly in current block 2 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 0 pushed iteration merge point 0x508000017820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 2
 DEBUG: IfStmt - Lane 0 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
 DEBUG: IfStmt - Lane 0 in phase EvaluatingCondition (stack depth=2, our index=1, this=0x506000001640)
@@ -1418,8 +1376,6 @@ DEBUG: ForStmt - Lane 1 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 1 executing directly in current block WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 10 (registry returned: 10)
-10 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 10
 DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
@@ -1487,8 +1443,6 @@ DEBUG: ForStmt - Lane 0 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 0 executing directly in current block WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 10 (registry returned: 10)
-10 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 10
 DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
@@ -1549,8 +1503,6 @@ DEBUG: ForStmt - Lane 1 merge stack size: 4
   Stack[3]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 1 executing directly in current block WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 14 (registry returned: 14)
-14 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 14 (registry returned: 14)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 14
 DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=3, this=0x506000001640)
@@ -1686,8 +1638,6 @@ DEBUG: ForStmt - Lane 0 merge stack size: 4
   Stack[3]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 0 executing directly in current block WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
-13 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 13
 DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=3, this=0x506000001640)
@@ -1729,8 +1679,6 @@ DEBUG: ForStmt - Lane 1 merge stack size: 4
   Stack[3]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 1 executing directly in current block WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 14 (registry returned: 14)
-14 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 14 (registry returned: 14)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 14
 DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=3, this=0x506000001640)
@@ -1803,8 +1751,6 @@ DEBUG: ForStmt - Lane 0 merge stack size: 4
   Stack[3]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 0 executing directly in current block WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
-13 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 13
 DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=3, this=0x506000001640)
@@ -1833,8 +1779,6 @@ DEBUG: ForStmt - Lane 1 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 1 executing directly in current block WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 15 (registry returned: 15)
-15 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 15 (registry returned: 15)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 15
 DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
@@ -1924,8 +1868,6 @@ DEBUG: ForStmt - Lane 0 merge stack size: 4
   Stack[3]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 0 executing directly in current block WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
-13 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 13
 DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=3, this=0x506000001640)
@@ -1980,8 +1922,6 @@ DEBUG: ForStmt - Lane 0 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 0 executing directly in current block WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 15 (registry returned: 15)
-15 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 15 (registry returned: 15)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 15
 DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
@@ -2320,8 +2260,7 @@ DEBUG: ForStmt - Lane 0 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 0 merge stack size: 1
   Stack[0]: sourceStatement=0x508000002820
   Looking for iterationMarker=0x508000007820
-DEBUG: ForStmt - Lane 0 pushed iteration merge point 0x508000007820 for iteration 0
-DEBUG: ForStmt - Lane 0 executing directly in current block 2 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 0 pushed iteration merge point 0x508000007820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 2
 DEBUG: IfStmt - Lane 0 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
 DEBUG: IfStmt - Lane 0 in phase EvaluatingCondition (stack depth=2, our index=1, this=0x506000001640)
@@ -2379,8 +2318,7 @@ DEBUG: ForStmt - Lane 1 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 1 merge stack size: 1
   Stack[0]: sourceStatement=0x508000002820
   Looking for iterationMarker=0x508000007820
-DEBUG: ForStmt - Lane 1 pushed iteration merge point 0x508000007820 for iteration 0
-DEBUG: ForStmt - Lane 1 executing directly in current block 2 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 1 pushed iteration merge point 0x508000007820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 2
 DEBUG: IfStmt - Lane 1 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
 DEBUG: IfStmt - Lane 1 in phase EvaluatingCondition (stack depth=2, our index=1, this=0x506000001640)
@@ -2429,8 +2367,7 @@ DEBUG: ForStmt - Lane 2 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 2 merge stack size: 1
   Stack[0]: sourceStatement=0x508000002820
   Looking for iterationMarker=0x508000007820
-DEBUG: ForStmt - Lane 2 pushed iteration merge point 0x508000007820 for iteration 0
-DEBUG: ForStmt - Lane 2 executing directly in current block 2 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 2 pushed iteration merge point 0x508000007820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 2
 DEBUG: IfStmt - Lane 2 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
 DEBUG: IfStmt - Lane 2 in phase EvaluatingCondition (stack depth=2, our index=1, this=0x506000001640)
@@ -2479,8 +2416,7 @@ DEBUG: ForStmt - Lane 3 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 3 merge stack size: 1
   Stack[0]: sourceStatement=0x508000002820
   Looking for iterationMarker=0x508000007820
-DEBUG: ForStmt - Lane 3 pushed iteration merge point 0x508000007820 for iteration 0
-DEBUG: ForStmt - Lane 3 executing directly in current block 2 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 3 pushed iteration merge point 0x508000007820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 2
 DEBUG: IfStmt - Lane 3 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
 DEBUG: IfStmt - Lane 3 in phase EvaluatingCondition (stack depth=2, our index=1, this=0x506000001640)
@@ -2533,8 +2469,6 @@ DEBUG: ForStmt - Lane 0 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 0 executing directly in current block WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4 (registry returned: 4)
-4 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 4
 DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
@@ -2596,8 +2530,6 @@ DEBUG: ForStmt - Lane 1 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 1 executing directly in current block WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
-4 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 4
 DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
@@ -2657,8 +2589,6 @@ DEBUG: ForStmt - Lane 2 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 2 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 2 executing directly in current block WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
-5 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 5
 DEBUG: IfStmt - Lane 2 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
@@ -2679,8 +2609,6 @@ DEBUG: ForStmt - Lane 3 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 3 executing directly in current block WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
-5 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 5
 DEBUG: IfStmt - Lane 3 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
@@ -2702,8 +2630,6 @@ DEBUG: ForStmt - Lane 0 merge stack size: 4
   Stack[3]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 0 executing directly in current block WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
-7 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 7
 DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=3, this=0x506000001640)
@@ -2745,8 +2671,6 @@ DEBUG: ForStmt - Lane 1 merge stack size: 4
   Stack[3]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 1 executing directly in current block WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 8 (registry returned: 8)
-8 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 8 (registry returned: 8)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 8
 DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=3, this=0x506000001640)
@@ -2775,8 +2699,6 @@ DEBUG: ForStmt - Lane 2 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 2 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 2 executing directly in current block WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
-5 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 5
 DEBUG: IfStmt - Lane 2 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
@@ -2841,8 +2763,6 @@ DEBUG: ForStmt - Lane 3 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 3 executing directly in current block WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
-5 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 5
 DEBUG: IfStmt - Lane 3 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
@@ -2908,8 +2828,6 @@ DEBUG: ForStmt - Lane 0 merge stack size: 4
   Stack[3]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 0 executing directly in current block WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
-7 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 7
 DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=3, this=0x506000001640)
@@ -2939,8 +2857,6 @@ DEBUG: ForStmt - Lane 1 merge stack size: 4
   Stack[3]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 1 executing directly in current block WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 8 (registry returned: 8)
-8 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 8 (registry returned: 8)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 8
 DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=3, this=0x506000001640)
@@ -2997,8 +2913,6 @@ DEBUG: ForStmt - Lane 0 merge stack size: 4
   Stack[3]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 0 executing directly in current block WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
-7 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 7
 DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=3, this=0x506000001640)
@@ -3048,8 +2962,6 @@ DEBUG: ForStmt - Lane 1 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 1 executing directly in current block WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 9 (registry returned: 9)
-9 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 9
 DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
@@ -3120,8 +3032,6 @@ DEBUG: ForStmt - Lane 0 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 0 executing directly in current block WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry returned: 9)
-9 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 9
 DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
@@ -3186,8 +3096,7 @@ DEBUG: ForStmt - Lane 2 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 2 merge stack size: 1
   Stack[0]: sourceStatement=0x508000002820
   Looking for iterationMarker=0x508000017820
-DEBUG: ForStmt - Lane 2 pushed iteration merge point 0x508000017820 for iteration 1
-DEBUG: ForStmt - Lane 2 executing directly in current block 2 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 2 pushed iteration merge point 0x508000017820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 2
 DEBUG: IfStmt - Lane 2 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
 DEBUG: IfStmt - Lane 2 in phase EvaluatingCondition (stack depth=2, our index=1, this=0x506000001640)
@@ -3245,8 +3154,7 @@ DEBUG: ForStmt - Lane 3 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 3 merge stack size: 1
   Stack[0]: sourceStatement=0x508000002820
   Looking for iterationMarker=0x508000017820
-DEBUG: ForStmt - Lane 3 pushed iteration merge point 0x508000017820 for iteration 1
-DEBUG: ForStmt - Lane 3 executing directly in current block 2 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 3 pushed iteration merge point 0x508000017820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 2
 DEBUG: IfStmt - Lane 3 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
 DEBUG: IfStmt - Lane 3 in phase EvaluatingCondition (stack depth=2, our index=1, this=0x506000001640)
@@ -3304,8 +3212,6 @@ DEBUG: ForStmt - Lane 2 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 2 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 2 executing directly in current block WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
-11 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 11
 DEBUG: IfStmt - Lane 2 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
@@ -3326,8 +3232,6 @@ DEBUG: ForStmt - Lane 3 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 3 executing directly in current block WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 11 (registry returned: 11)
-11 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 11
 DEBUG: IfStmt - Lane 3 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
@@ -3348,8 +3252,7 @@ DEBUG: ForStmt - Lane 1 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 1 merge stack size: 1
   Stack[0]: sourceStatement=0x508000002820
   Looking for iterationMarker=0x508000017820
-DEBUG: ForStmt - Lane 1 pushed iteration merge point 0x508000017820 for iteration 1
-DEBUG: ForStmt - Lane 1 executing directly in current block 2 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 1 pushed iteration merge point 0x508000017820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 2
 DEBUG: IfStmt - Lane 1 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
 DEBUG: IfStmt - Lane 1 in phase EvaluatingCondition (stack depth=2, our index=1, this=0x506000001640)
@@ -3401,8 +3304,6 @@ DEBUG: ForStmt - Lane 2 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 2 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 2 executing directly in current block WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
-11 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 11
 DEBUG: IfStmt - Lane 2 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
@@ -3455,8 +3356,6 @@ DEBUG: ForStmt - Lane 3 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 3 executing directly in current block WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 11 (registry returned: 11)
-11 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 11
 DEBUG: IfStmt - Lane 3 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
@@ -3506,8 +3405,7 @@ DEBUG: ForStmt - Lane 0 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 0 merge stack size: 1
   Stack[0]: sourceStatement=0x508000002820
   Looking for iterationMarker=0x508000017820
-DEBUG: ForStmt - Lane 0 pushed iteration merge point 0x508000017820 for iteration 1
-DEBUG: ForStmt - Lane 0 executing directly in current block 2 (no iteration block needed, but merge stack modified)
+DEBUG: ForStmt - Lane 0 pushed iteration merge point 0x508000017820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 2
 DEBUG: IfStmt - Lane 0 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
 DEBUG: IfStmt - Lane 0 in phase EvaluatingCondition (stack depth=2, our index=1, this=0x506000001640)
@@ -3560,8 +3458,6 @@ DEBUG: ForStmt - Lane 1 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 1 executing directly in current block WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 10 (registry returned: 10)
-10 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 10
 DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
@@ -3629,8 +3525,6 @@ DEBUG: ForStmt - Lane 0 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 0 executing directly in current block WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 10 (registry returned: 10)
-10 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 10
 DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
@@ -3691,8 +3585,6 @@ DEBUG: ForStmt - Lane 1 merge stack size: 4
   Stack[3]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 1 executing directly in current block WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 14 (registry returned: 14)
-14 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 14 (registry returned: 14)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 14
 DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=3, this=0x506000001640)
@@ -3828,8 +3720,6 @@ DEBUG: ForStmt - Lane 0 merge stack size: 4
   Stack[3]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 0 executing directly in current block WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
-13 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 13
 DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=3, this=0x506000001640)
@@ -3871,8 +3761,6 @@ DEBUG: ForStmt - Lane 1 merge stack size: 4
   Stack[3]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 1 executing directly in current block WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 14 (registry returned: 14)
-14 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 14 (registry returned: 14)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 14
 DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=3, this=0x506000001640)
@@ -3945,8 +3833,6 @@ DEBUG: ForStmt - Lane 0 merge stack size: 4
   Stack[3]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 0 executing directly in current block WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
-13 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 13
 DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=3, this=0x506000001640)
@@ -3975,8 +3861,6 @@ DEBUG: ForStmt - Lane 1 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 1 executing directly in current block WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 15 (registry returned: 15)
-15 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 15 (registry returned: 15)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 15
 DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
@@ -4066,8 +3950,6 @@ DEBUG: ForStmt - Lane 0 merge stack size: 4
   Stack[3]: sourceStatement=0x5060000015e0
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 0 executing directly in current block WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
-13 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 13
 DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=3, this=0x506000001640)
@@ -4122,8 +4004,6 @@ DEBUG: ForStmt - Lane 0 merge stack size: 3
   Stack[2]: sourceStatement=0x506000001640
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
-DEBUG: ForStmt - Lane 0 executing directly in current block WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 15 (registry returned: 15)
-15 (no iteration block needed, but merge stack modified)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 15 (registry returned: 15)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 15
 DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x506000001640)
