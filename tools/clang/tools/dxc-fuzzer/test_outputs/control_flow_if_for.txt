@@ -671,9 +671,11 @@ DEBUG: ForStmt - Lane 0 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 in phase EvaluatingIncrement (Result-based, stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 evaluating increment (Result-based)
-DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation (Result-based)
+DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 0 at 0x50f000000040)
+DEBUG: UnaryOpExpr - Lane 0 calling exception-based evaluate for PreIncrement
+DEBUG: UnaryOpExpr - Lane 0 PreIncrement succeeded, result=1
 DEBUG: IfStmt - Lane 0 variables AFTER statement: i=1 laneId=0 result=2 
 DEBUG: isAllParticipantsKnown - Block 4 wave 0 has 2 unknown lanes: 0 1  - These lanes need to be resolved to Participating or Left
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
@@ -688,9 +690,11 @@ DEBUG: ForStmt - Lane 1 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 1 in phase EvaluatingIncrement (Result-based, stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 1 evaluating increment (Result-based)
-DEBUG: UnaryOpExpr - Lane 1 evaluating unary operation (Result-based)
+DEBUG: UnaryOpExpr - Lane 1 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 1 at 0x50f000000130)
+DEBUG: UnaryOpExpr - Lane 1 calling exception-based evaluate for PreIncrement
+DEBUG: UnaryOpExpr - Lane 1 PreIncrement succeeded, result=1
 DEBUG: IfStmt - Lane 1 variables AFTER statement: i=1 laneId=1 result=2 
 DEBUG: isAllParticipantsKnown - Block 4 wave 0 has 2 unknown lanes: 0 1  - These lanes need to be resolved to Participating or Left
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
@@ -922,9 +926,11 @@ DEBUG: ForStmt - Lane 0 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 in phase EvaluatingIncrement (Result-based, stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 evaluating increment (Result-based)
-DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation (Result-based)
+DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 0 at 0x50f000000040)
+DEBUG: UnaryOpExpr - Lane 0 calling exception-based evaluate for PreIncrement
+DEBUG: UnaryOpExpr - Lane 0 PreIncrement succeeded, result=2
 DEBUG: IfStmt - Lane 0 variables AFTER statement: i=2 laneId=0 result=4 
 DEBUG: isAllParticipantsKnown - Block 4 wave 0 has 2 unknown lanes: 0 1  - These lanes need to be resolved to Participating or Left
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
@@ -939,9 +945,11 @@ DEBUG: ForStmt - Lane 1 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 1 in phase EvaluatingIncrement (Result-based, stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 1 evaluating increment (Result-based)
-DEBUG: UnaryOpExpr - Lane 1 evaluating unary operation (Result-based)
+DEBUG: UnaryOpExpr - Lane 1 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 1 at 0x50f000000130)
+DEBUG: UnaryOpExpr - Lane 1 calling exception-based evaluate for PreIncrement
+DEBUG: UnaryOpExpr - Lane 1 PreIncrement succeeded, result=2
 DEBUG: IfStmt - Lane 1 variables AFTER statement: i=2 laneId=1 result=4 
 DEBUG: isAllParticipantsKnown - Block 4 wave 0 has 2 unknown lanes: 0 1  - These lanes need to be resolved to Participating or Left
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
@@ -1013,7 +1021,7 @@ DEBUG: IfStmt - Lane 0 variables BEFORE statement: i=2 laneId=0 result=4
 DEBUG: ForStmt - Lane 0 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5080000027a0)
-DEBUG: ForStmt - Lane 0 exiting loop after 2 iterations
+DEBUG: ForStmt - Lane 0 exiting loop after 2 iterations (state before=0)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 6
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 6
 DEBUG: assignLaneToBlock - BEFORE: block 6 has 0 participating lanes, 0 waiting lanes, 2 unknown lanes (0 1)
@@ -1049,7 +1057,7 @@ DEBUG: IfStmt - Lane 1 variables BEFORE statement: i=2 laneId=1 result=4
 DEBUG: ForStmt - Lane 1 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 1 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5080000027a0)
-DEBUG: ForStmt - Lane 1 exiting loop after 2 iterations
+DEBUG: ForStmt - Lane 1 exiting loop after 2 iterations (state before=0)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 6
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 6
 DEBUG: assignLaneToBlock - BEFORE: block 6 has 0 participating lanes, 1 waiting lanes (0), 1 unknown lanes (1)
@@ -1808,9 +1816,11 @@ DEBUG: ForStmt - Lane 0 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 in phase EvaluatingIncrement (Result-based, stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 evaluating increment (Result-based)
-DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation (Result-based)
+DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 0 at 0x50f000000400)
+DEBUG: UnaryOpExpr - Lane 0 calling exception-based evaluate for PreIncrement
+DEBUG: UnaryOpExpr - Lane 0 PreIncrement succeeded, result=1
 DEBUG: IfStmt - Lane 0 variables AFTER statement: i=1 laneId=0 result=2 
 DEBUG: isAllParticipantsKnown - Block 4 wave 0 has 2 unknown lanes: 0 1  - These lanes need to be resolved to Participating or Left
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
@@ -1825,9 +1835,11 @@ DEBUG: ForStmt - Lane 1 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 1 in phase EvaluatingIncrement (Result-based, stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 1 evaluating increment (Result-based)
-DEBUG: UnaryOpExpr - Lane 1 evaluating unary operation (Result-based)
+DEBUG: UnaryOpExpr - Lane 1 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 1 at 0x50f0000004f0)
+DEBUG: UnaryOpExpr - Lane 1 calling exception-based evaluate for PreIncrement
+DEBUG: UnaryOpExpr - Lane 1 PreIncrement succeeded, result=1
 DEBUG: IfStmt - Lane 1 variables AFTER statement: i=1 laneId=1 result=2 
 DEBUG: isAllParticipantsKnown - Block 4 wave 0 has 2 unknown lanes: 0 1  - These lanes need to be resolved to Participating or Left
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
@@ -2059,9 +2071,11 @@ DEBUG: ForStmt - Lane 0 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 in phase EvaluatingIncrement (Result-based, stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 evaluating increment (Result-based)
-DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation (Result-based)
+DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 0 at 0x50f000000400)
+DEBUG: UnaryOpExpr - Lane 0 calling exception-based evaluate for PreIncrement
+DEBUG: UnaryOpExpr - Lane 0 PreIncrement succeeded, result=2
 DEBUG: IfStmt - Lane 0 variables AFTER statement: i=2 laneId=0 result=4 
 DEBUG: isAllParticipantsKnown - Block 4 wave 0 has 2 unknown lanes: 0 1  - These lanes need to be resolved to Participating or Left
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
@@ -2076,9 +2090,11 @@ DEBUG: ForStmt - Lane 1 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 1 in phase EvaluatingIncrement (Result-based, stack depth=2, our index=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 1 evaluating increment (Result-based)
-DEBUG: UnaryOpExpr - Lane 1 evaluating unary operation (Result-based)
+DEBUG: UnaryOpExpr - Lane 1 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 1 at 0x50f0000004f0)
+DEBUG: UnaryOpExpr - Lane 1 calling exception-based evaluate for PreIncrement
+DEBUG: UnaryOpExpr - Lane 1 PreIncrement succeeded, result=2
 DEBUG: IfStmt - Lane 1 variables AFTER statement: i=2 laneId=1 result=4 
 DEBUG: isAllParticipantsKnown - Block 4 wave 0 has 2 unknown lanes: 0 1  - These lanes need to be resolved to Participating or Left
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
@@ -2150,7 +2166,7 @@ DEBUG: IfStmt - Lane 0 variables BEFORE statement: i=2 laneId=0 result=4
 DEBUG: ForStmt - Lane 0 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5080000027a0)
-DEBUG: ForStmt - Lane 0 exiting loop after 2 iterations
+DEBUG: ForStmt - Lane 0 exiting loop after 2 iterations (state before=0)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 6
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 6
 DEBUG: assignLaneToBlock - BEFORE: block 6 has 0 participating lanes, 0 waiting lanes, 2 unknown lanes (0 1)
@@ -2186,7 +2202,7 @@ DEBUG: IfStmt - Lane 1 variables BEFORE statement: i=2 laneId=1 result=4
 DEBUG: ForStmt - Lane 1 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 1 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5080000027a0)
-DEBUG: ForStmt - Lane 1 exiting loop after 2 iterations
+DEBUG: ForStmt - Lane 1 exiting loop after 2 iterations (state before=0)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 6
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 6
 DEBUG: assignLaneToBlock - BEFORE: block 6 has 0 participating lanes, 1 waiting lanes (0), 1 unknown lanes (1)

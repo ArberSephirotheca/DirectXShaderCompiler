@@ -625,9 +625,13 @@ DEBUG: AssignStmt - Lane 2 assigned value 2 to variable 'result'
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WhileStmt - Lane 2 executing statement 2 in block 5 (Result-based)
-DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation (Result-based)
+DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation op_=3 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 2 at 0x50f000000220)
+DEBUG: UnaryOpExpr - Lane 2 calling exception-based evaluate for PostIncrement
+DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 2 variable 'i' before increment = 0
+DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 2 variable 'i' after increment = 1, returning old value = 0
+DEBUG: UnaryOpExpr - Lane 2 PostIncrement succeeded, result=0
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WhileStmt - Lane 2 popped iteration merge point 0x5040000094d0 after iteration 0
 DEBUG: WhileStmt - Lane 2 body completed in block 5, moving to header block 2 for next iteration
@@ -657,9 +661,13 @@ DEBUG: AssignStmt - Lane 3 assigned value 2 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WhileStmt - Lane 3 executing statement 2 in block 5 (Result-based)
-DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation (Result-based)
+DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=3 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 3 at 0x50f000000310)
+DEBUG: UnaryOpExpr - Lane 3 calling exception-based evaluate for PostIncrement
+DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 3 variable 'i' before increment = 0
+DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 3 variable 'i' after increment = 1, returning old value = 0
+DEBUG: UnaryOpExpr - Lane 3 PostIncrement succeeded, result=0
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WhileStmt - Lane 3 popped iteration merge point 0x5040000094d0 after iteration 0
 DEBUG: WhileStmt - Lane 3 body completed in block 5, moving to header block 2 for next iteration
@@ -945,9 +953,13 @@ DEBUG: AssignStmt - Lane 2 assigned value 4 to variable 'result'
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WhileStmt - Lane 2 executing statement 2 in block 7 (Result-based)
-DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation (Result-based)
+DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation op_=3 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 2 at 0x50f000000220)
+DEBUG: UnaryOpExpr - Lane 2 calling exception-based evaluate for PostIncrement
+DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 2 variable 'i' before increment = 1
+DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 2 variable 'i' after increment = 2, returning old value = 1
+DEBUG: UnaryOpExpr - Lane 2 PostIncrement succeeded, result=1
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WhileStmt - Lane 2 popped iteration merge point 0x5040000194d0 after iteration 1
 DEBUG: WhileStmt - Lane 2 body completed in block 7, moving to header block 2 for next iteration
@@ -978,9 +990,13 @@ DEBUG: AssignStmt - Lane 3 assigned value 4 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WhileStmt - Lane 3 executing statement 2 in block 7 (Result-based)
-DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation (Result-based)
+DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=3 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 3 at 0x50f000000310)
+DEBUG: UnaryOpExpr - Lane 3 calling exception-based evaluate for PostIncrement
+DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 3 variable 'i' before increment = 1
+DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 3 variable 'i' after increment = 2, returning old value = 1
+DEBUG: UnaryOpExpr - Lane 3 PostIncrement succeeded, result=1
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WhileStmt - Lane 3 popped iteration merge point 0x5040000194d0 after iteration 1
 DEBUG: WhileStmt - Lane 3 body completed in block 7, moving to header block 2 for next iteration
@@ -1264,9 +1280,13 @@ DEBUG: AssignStmt - Lane 3 assigned value 5 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: WhileStmt - Lane 3 executing statement 2 in block 9 (Result-based)
-DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation (Result-based)
+DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=3 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 3 at 0x50f000000310)
+DEBUG: UnaryOpExpr - Lane 3 calling exception-based evaluate for PostIncrement
+DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 3 variable 'i' before increment = 2
+DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 3 variable 'i' after increment = 3, returning old value = 2
+DEBUG: UnaryOpExpr - Lane 3 PostIncrement succeeded, result=2
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: WhileStmt - Lane 3 popped iteration merge point 0x5040000294d0 after iteration 2
 DEBUG: WhileStmt - Lane 3 body completed in block 9, moving to header block 2 for next iteration
@@ -2014,9 +2034,13 @@ DEBUG: AssignStmt - Lane 2 assigned value 2 to variable 'result'
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WhileStmt - Lane 2 executing statement 2 in block 5 (Result-based)
-DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation (Result-based)
+DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation op_=3 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 2 at 0x50f0000005e0)
+DEBUG: UnaryOpExpr - Lane 2 calling exception-based evaluate for PostIncrement
+DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 2 variable 'i' before increment = 0
+DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 2 variable 'i' after increment = 1, returning old value = 0
+DEBUG: UnaryOpExpr - Lane 2 PostIncrement succeeded, result=0
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WhileStmt - Lane 2 popped iteration merge point 0x5040000094d0 after iteration 0
 DEBUG: WhileStmt - Lane 2 body completed in block 5, moving to header block 2 for next iteration
@@ -2046,9 +2070,13 @@ DEBUG: AssignStmt - Lane 3 assigned value 2 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WhileStmt - Lane 3 executing statement 2 in block 5 (Result-based)
-DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation (Result-based)
+DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=3 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 3 at 0x50f0000006d0)
+DEBUG: UnaryOpExpr - Lane 3 calling exception-based evaluate for PostIncrement
+DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 3 variable 'i' before increment = 0
+DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 3 variable 'i' after increment = 1, returning old value = 0
+DEBUG: UnaryOpExpr - Lane 3 PostIncrement succeeded, result=0
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WhileStmt - Lane 3 popped iteration merge point 0x5040000094d0 after iteration 0
 DEBUG: WhileStmt - Lane 3 body completed in block 5, moving to header block 2 for next iteration
@@ -2334,9 +2362,13 @@ DEBUG: AssignStmt - Lane 2 assigned value 4 to variable 'result'
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WhileStmt - Lane 2 executing statement 2 in block 7 (Result-based)
-DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation (Result-based)
+DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation op_=3 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 2 at 0x50f0000005e0)
+DEBUG: UnaryOpExpr - Lane 2 calling exception-based evaluate for PostIncrement
+DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 2 variable 'i' before increment = 1
+DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 2 variable 'i' after increment = 2, returning old value = 1
+DEBUG: UnaryOpExpr - Lane 2 PostIncrement succeeded, result=1
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WhileStmt - Lane 2 popped iteration merge point 0x5040000194d0 after iteration 1
 DEBUG: WhileStmt - Lane 2 body completed in block 7, moving to header block 2 for next iteration
@@ -2367,9 +2399,13 @@ DEBUG: AssignStmt - Lane 3 assigned value 4 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WhileStmt - Lane 3 executing statement 2 in block 7 (Result-based)
-DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation (Result-based)
+DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=3 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 3 at 0x50f0000006d0)
+DEBUG: UnaryOpExpr - Lane 3 calling exception-based evaluate for PostIncrement
+DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 3 variable 'i' before increment = 1
+DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 3 variable 'i' after increment = 2, returning old value = 1
+DEBUG: UnaryOpExpr - Lane 3 PostIncrement succeeded, result=1
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WhileStmt - Lane 3 popped iteration merge point 0x5040000194d0 after iteration 1
 DEBUG: WhileStmt - Lane 3 body completed in block 7, moving to header block 2 for next iteration
@@ -2653,9 +2689,13 @@ DEBUG: AssignStmt - Lane 3 assigned value 5 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: WhileStmt - Lane 3 executing statement 2 in block 9 (Result-based)
-DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation (Result-based)
+DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=3 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 3 at 0x50f0000006d0)
+DEBUG: UnaryOpExpr - Lane 3 calling exception-based evaluate for PostIncrement
+DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 3 variable 'i' before increment = 2
+DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 3 variable 'i' after increment = 3, returning old value = 2
+DEBUG: UnaryOpExpr - Lane 3 PostIncrement succeeded, result=2
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: WhileStmt - Lane 3 popped iteration merge point 0x5040000294d0 after iteration 2
 DEBUG: WhileStmt - Lane 3 body completed in block 9, moving to header block 2 for next iteration

@@ -1048,7 +1048,12 @@ Value UnaryOpExpr::evaluate(LaneContext &lane, WaveContext &wave,
           varExpr->toString(); // Use toString() to get variable name
       Value &var = lane.variables[varName];
       Value oldValue = var;
+      std::cout << "DEBUG: UnaryOpExpr exception-based PostIncrement - Lane " << lane.laneId 
+                << " variable '" << varName << "' before increment = " << var.asInt() << std::endl;
       var = Value(var.asInt() + 1);
+      std::cout << "DEBUG: UnaryOpExpr exception-based PostIncrement - Lane " << lane.laneId 
+                << " variable '" << varName << "' after increment = " << var.asInt() 
+                << ", returning old value = " << oldValue.asInt() << std::endl;
       return oldValue;
     }
     throw std::runtime_error("Post-increment requires a variable");
@@ -1153,7 +1158,7 @@ Result<Value, ExecutionError> BinaryOpExpr::evaluate_result(LaneContext &lane, W
 
 Result<Value, ExecutionError> UnaryOpExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
                                                           ThreadgroupContext &tg) const {
-  std::cout << "DEBUG: UnaryOpExpr - Lane " << lane.laneId << " evaluating unary operation (Result-based)" << std::endl;
+  std::cout << "DEBUG: UnaryOpExpr - Lane " << lane.laneId << " evaluating unary operation op_=" << (int)op_ << " (Result-based)" << std::endl;
   
   auto exprResult = expr_->evaluate_result(lane, wave, tg);
   if (exprResult.is_err()) {
@@ -1174,12 +1179,25 @@ Result<Value, ExecutionError> UnaryOpExpr::evaluate_result(LaneContext &lane, Wa
     // Note: This modifies the variable, would need variable reference
     // For now, fall back to exception-based approach
     try {
+      std::cout << "DEBUG: UnaryOpExpr - Lane " << lane.laneId << " calling exception-based evaluate for PreIncrement" << std::endl;
       Value result = evaluate(lane, wave, tg);
+      std::cout << "DEBUG: UnaryOpExpr - Lane " << lane.laneId << " PreIncrement succeeded, result=" << result.asInt() << std::endl;
       return Ok<Value, ExecutionError>(result);
-    } catch (const std::exception &) {
+    } catch (const std::exception &e) {
+      std::cout << "DEBUG: UnaryOpExpr - Lane " << lane.laneId << " PreIncrement failed: " << e.what() << std::endl;
       return Err<Value, ExecutionError>(ExecutionError::InvalidState);
     }
   case PostIncrement:
+    // These modify variables, need special handling
+    try {
+      std::cout << "DEBUG: UnaryOpExpr - Lane " << lane.laneId << " calling exception-based evaluate for PostIncrement" << std::endl;
+      Value result = evaluate(lane, wave, tg);
+      std::cout << "DEBUG: UnaryOpExpr - Lane " << lane.laneId << " PostIncrement succeeded, result=" << result.asInt() << std::endl;
+      return Ok<Value, ExecutionError>(result);
+    } catch (const std::exception &e) {
+      std::cout << "DEBUG: UnaryOpExpr - Lane " << lane.laneId << " PostIncrement failed: " << e.what() << std::endl;
+      return Err<Value, ExecutionError>(ExecutionError::InvalidState);
+    }
   case PreDecrement:
   case PostDecrement:
     // These modify variables, need special handling
@@ -3068,7 +3086,8 @@ void ForStmt::handleLoopExit(LaneContext &lane, WaveContext &wave, ThreadgroupCo
                             int ourStackIndex, uint32_t mergeBlockId) {
   auto &ourEntry = lane.executionStack[ourStackIndex];
   std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
-            << " exiting loop after " << ourEntry.loopIteration << " iterations" << std::endl;
+            << " exiting loop after " << ourEntry.loopIteration << " iterations"
+            << " (state before=" << (int)lane.state << ")" << std::endl;
 
   // Clean up execution state
   lane.executionStack.pop_back();
@@ -3076,6 +3095,12 @@ void ForStmt::handleLoopExit(LaneContext &lane, WaveContext &wave, ThreadgroupCo
   // Pop merge point and move to merge block
   tg.popMergePoint(wave.waveId, lane.laneId);
   tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId, lane.laneId);
+  
+  // Loop has completed, restore active state and reset thread state
+  lane.isActive = lane.isActive && !lane.hasReturned;
+  if (!isProtectedState(lane.state)) {
+    lane.state = ThreadState::Ready;
+  }
 }
 
 // Helper method for break exception handling in ForStmt
@@ -3324,9 +3349,10 @@ Result<Unit, ExecutionError> ForStmt::evaluateIncrementPhase_result(LaneContext 
                              int ourStackIndex) {
   std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " evaluating increment (Result-based)" << std::endl;
 
-  // Evaluate increment expression using Result-based evaluation  
-  Value incrementVal = TRY_RESULT(increment_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
-  lane.variables[loopVar_] = incrementVal;
+  // Evaluate increment expression for side effects only - DO NOT assign result back to loop variable
+  // For b++, the result is the old value, but the side effect is incrementing b
+  // For ++b, the result is the new value, but we still don't want to assign it back
+  TRY_RESULT(increment_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
 
   // Move back to condition evaluation
   lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingCondition;
@@ -7677,8 +7703,8 @@ Result<Unit, ExecutionError> SwitchStmt::executeCaseStatements_result(LaneContex
                 << " (Result-based)" << std::endl;
 
       // Use Result-based execute_result instead of exception-based execute
-      // Use Result-based execute_with_error_handling for proper control flow handling
-      auto stmt_result = caseBlock.statements[i]->execute_with_error_handling(lane, wave, tg);
+      // Match exception-based semantics by calling execute_result directly
+      auto stmt_result = caseBlock.statements[i]->execute_result(lane, wave, tg);
       if (stmt_result.is_err()) {
         return stmt_result; // Propagate the error
       }
@@ -7697,6 +7723,9 @@ Result<Unit, ExecutionError> SwitchStmt::executeCaseStatements_result(LaneContex
 
       if (lane.state != ThreadState::Ready) {
         // Child statement needs to resume - don't continue
+        std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
+                  << " child statement not ready (state=" << (int)lane.state
+                  << "), not advancing statementIndex=" << i << std::endl;
         return Ok<Unit, ExecutionError>(Unit{});
       }
       lane.executionStack[ourStackIndex].statementIndex = i + 1;
