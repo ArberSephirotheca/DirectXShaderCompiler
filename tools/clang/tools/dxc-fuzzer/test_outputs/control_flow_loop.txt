@@ -37,12 +37,14 @@ Converting expression: DeclRefExpr
 Converting expression: UnaryOperator
 Converting expression: DeclRefExpr
 Converting statement: CompoundAssignOperator
-Converting compound assignment operator
+Converting compound assignment operator: +=
 Converting expression: DeclRefExpr
 Converting expression: ImplicitCastExpr
 Converting expression: CallExpr
 Converting function call to expression: WaveActiveSum
 Converting expression: IntegerLiteral
+DEBUG: Creating AssignStmt for compound assignment: result = (result + WaveActiveSum(1))
+DEBUG: Created statement type: AssignStmt with toString: result = (result + WaveActiveSum(1));
 Converting statement: DeclStmt
 Converting declaration statement
 Declaring variable: totalSum
@@ -147,9 +149,9 @@ DEBUG: ForStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=
 DEBUG: ForStmt - Lane 0 evaluating condition for iteration 0 (Result-based)
 DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 0
+DEBUG: VariableExpr - Variable 'i' = 0 (lane 0 at 0x50f000000040)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'laneId' (Result-based)
-DEBUG: VariableExpr - Variable 'laneId' = 0
+DEBUG: VariableExpr - Variable 'laneId' = 0 (lane 0 at 0x50f000000040)
 DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 2
 DEBUG: removeThreadFromAllSets - block 2 had 4 participating lanes before removal (participating: 0 1 2 3 )
 DEBUG: removeThreadFromAllSets - block 2 has 3 participating lanes after removal (participating: 1 2 3 )
@@ -160,27 +162,27 @@ DEBUG: ForStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=
 DEBUG: ForStmt - Lane 1 evaluating condition for iteration 0 (Result-based)
 DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 0
+DEBUG: VariableExpr - Variable 'i' = 0 (lane 1 at 0x50f000000130)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
-DEBUG: VariableExpr - Variable 'laneId' = 1
+DEBUG: VariableExpr - Variable 'laneId' = 1 (lane 1 at 0x50f000000130)
 DEBUG: ForStmt - Lane 2 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 2 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 2 evaluating condition for iteration 0 (Result-based)
 DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 0
+DEBUG: VariableExpr - Variable 'i' = 0 (lane 2 at 0x50f000000220)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
-DEBUG: VariableExpr - Variable 'laneId' = 2
+DEBUG: VariableExpr - Variable 'laneId' = 2 (lane 2 at 0x50f000000220)
 DEBUG: ForStmt - Lane 3 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 evaluating condition for iteration 0 (Result-based)
 DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 0
+DEBUG: VariableExpr - Variable 'i' = 0 (lane 3 at 0x50f000000310)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
-DEBUG: VariableExpr - Variable 'laneId' = 3
+DEBUG: VariableExpr - Variable 'laneId' = 3 (lane 3 at 0x50f000000310)
 DEBUG: ForStmt - Lane 0 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 in phase Reconverging (Result-based, stack depth=1, our index=0, this=0x5080000027a0)
@@ -214,9 +216,10 @@ DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 4
 DEBUG: ForStmt - Lane 1 moved to iteration starting block 4
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 4 (Result-based)
+DEBUG: AssignStmt - Lane 1 assigning to variable 'result' (Result-based)
 DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
-DEBUG: VariableExpr - Variable 'result' = 0
+DEBUG: VariableExpr - Variable 'result' = 0 (lane 1 at 0x50f000000130)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 4, instruction key=(0x5030000018a0,4)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
@@ -224,7 +227,6 @@ WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry retur
 DEBUG: markLaneWaitingForWave - Lane 1 wave 0 in block 4
 DEBUG: markLaneWaitingForWave - Successfully set lane 1 to WaitingForWave in block 4
 DEBUG: WAVE_OP: Lane 1 cannot execute, starting to wait in block 4
-DEBUG: WAVE_OP: Resolution status tracked by registry for block 4
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: Block 4 wave 0 unknown lanes: {2 3 }
 DEBUG: isAllParticipantsKnown - Block 4 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
@@ -251,9 +253,10 @@ DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 4
 DEBUG: ForStmt - Lane 2 moved to iteration starting block 4
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 4 (Result-based)
+DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
 DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
-DEBUG: VariableExpr - Variable 'result' = 0
+DEBUG: VariableExpr - Variable 'result' = 0 (lane 2 at 0x50f000000220)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 4, instruction key=(0x5030000018a0,4)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 4 (registry returned: 4)
@@ -261,7 +264,6 @@ WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 4 (registry retur
 DEBUG: markLaneWaitingForWave - Lane 2 wave 0 in block 4
 DEBUG: markLaneWaitingForWave - Successfully set lane 2 to WaitingForWave in block 4
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 4
-DEBUG: WAVE_OP: Resolution status tracked by registry for block 4
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: Block 4 wave 0 unknown lanes: {3 }
 DEBUG: isAllParticipantsKnown - Block 4 wave 0 has 1 unknown lanes: 3  - These lanes need to be resolved to Participating or Left
@@ -288,9 +290,10 @@ DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 4
 DEBUG: ForStmt - Lane 3 moved to iteration starting block 4
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 4 (Result-based)
+DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
 DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
-DEBUG: VariableExpr - Variable 'result' = 0
+DEBUG: VariableExpr - Variable 'result' = 0 (lane 3 at 0x50f000000310)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 4, instruction key=(0x5030000018a0,4)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 4 (registry returned: 4)
@@ -298,21 +301,18 @@ WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 4 (registry retur
 DEBUG: markLaneWaitingForWave - Lane 3 wave 0 in block 4
 DEBUG: markLaneWaitingForWave - Successfully set lane 3 to WaitingForWave in block 4
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 4
-DEBUG: WAVE_OP: Resolution status tracked by registry for block 4
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: Block 4 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 3 in block 4: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_1
 DEBUG: WAVE_OP: After lane 3 started waiting, wave operation can now execute!
-DEBUG: WAVE_OP: Updated sync point - allParticipantsKnown=1, allParticipantsArrived=1, readyToExecute=0
 DEBUG: ForStmt - Handling error in wrapper: 3
 DEBUG: WAVE_WAIT: Lane 3 received WaveOperationWait error, state=2
 DEBUG: WAVE_OP: Storing collective result for lanes: 1 2 3  (phase: 2)
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 3, instruction key=(0x503000001930,3)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 3, instruction key=(0x503000001990,3)
 DEBUG: markLaneWaitingForWave - Lane 0 wave 0 in block 3
 DEBUG: markLaneWaitingForWave - Successfully set lane 0 to WaitingForWave in block 3
 DEBUG: WAVE_OP: Lane 0 cannot execute, starting to wait in block 3
-DEBUG: WAVE_OP: Resolution status tracked by registry for block 3
 DEBUG: Block 3 wave 0 unknown lanes: {1 2 3 }
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 3 unknown lanes: 1 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 3 unknown lanes: 1 2 3  - These lanes need to be resolved to Participating or Left
@@ -339,13 +339,15 @@ DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control fl
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 4 (Result-based)
+DEBUG: AssignStmt - Lane 1 assigning to variable 'result' (Result-based)
 DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
-DEBUG: VariableExpr - Variable 'result' = 0
+DEBUG: VariableExpr - Variable 'result' = 0 (lane 1 at 0x50f000000130)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 4, instruction key=(0x5030000018a0,4)
 DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 3 (phase: Executed)
+DEBUG: AssignStmt - Lane 1 assigned value 3 to variable 'result'
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 1 body completed in block 4, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 2
@@ -365,13 +367,15 @@ DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control fl
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 4 (registry returned: 4)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 4 (Result-based)
+DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
 DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
-DEBUG: VariableExpr - Variable 'result' = 0
+DEBUG: VariableExpr - Variable 'result' = 0 (lane 2 at 0x50f000000220)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 4, instruction key=(0x5030000018a0,4)
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 3 (phase: Executed)
+DEBUG: AssignStmt - Lane 2 assigned value 3 to variable 'result'
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 2 body completed in block 4, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
@@ -391,13 +395,15 @@ DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control fl
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 4 (registry returned: 4)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 4 (Result-based)
+DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
 DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
-DEBUG: VariableExpr - Variable 'result' = 0
+DEBUG: VariableExpr - Variable 'result' = 0 (lane 3 at 0x50f000000310)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 4, instruction key=(0x5030000018a0,4)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 3 (phase: Consumed)
+DEBUG: AssignStmt - Lane 3 assigned value 3 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 3 body completed in block 4, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
@@ -415,7 +421,7 @@ DEBUG: ForStmt - Lane 1 in phase EvaluatingIncrement (Result-based, stack depth=
 DEBUG: ForStmt - Lane 1 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 1 evaluating unary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 0
+DEBUG: VariableExpr - Variable 'i' = 0 (lane 1 at 0x50f000000130)
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 3 unknown lanes: 1 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: ForStmt - Lane 2 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -423,7 +429,7 @@ DEBUG: ForStmt - Lane 2 in phase EvaluatingIncrement (Result-based, stack depth=
 DEBUG: ForStmt - Lane 2 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 0
+DEBUG: VariableExpr - Variable 'i' = 0 (lane 2 at 0x50f000000220)
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 3 unknown lanes: 1 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: ForStmt - Lane 3 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -431,7 +437,7 @@ DEBUG: ForStmt - Lane 3 in phase EvaluatingIncrement (Result-based, stack depth=
 DEBUG: ForStmt - Lane 3 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 0
+DEBUG: VariableExpr - Variable 'i' = 0 (lane 3 at 0x50f000000310)
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 3 unknown lanes: 1 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: ForStmt - Lane 1 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -439,9 +445,9 @@ DEBUG: ForStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=
 DEBUG: ForStmt - Lane 1 evaluating condition for iteration 1 (Result-based)
 DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 1
+DEBUG: VariableExpr - Variable 'i' = 1 (lane 1 at 0x50f000000130)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
-DEBUG: VariableExpr - Variable 'laneId' = 1
+DEBUG: VariableExpr - Variable 'laneId' = 1 (lane 1 at 0x50f000000130)
 DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 2
 DEBUG: removeThreadFromAllSets - block 2 had 3 participating lanes before removal (participating: 1 2 3 )
 DEBUG: removeThreadFromAllSets - block 2 has 2 participating lanes after removal (participating: 2 3 )
@@ -457,9 +463,9 @@ DEBUG: ForStmt - Lane 2 in phase EvaluatingCondition (Result-based, stack depth=
 DEBUG: ForStmt - Lane 2 evaluating condition for iteration 1 (Result-based)
 DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 1
+DEBUG: VariableExpr - Variable 'i' = 1 (lane 2 at 0x50f000000220)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
-DEBUG: VariableExpr - Variable 'laneId' = 2
+DEBUG: VariableExpr - Variable 'laneId' = 2 (lane 2 at 0x50f000000220)
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 3 unknown lanes: 1 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: ForStmt - Lane 3 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -467,9 +473,9 @@ DEBUG: ForStmt - Lane 3 in phase EvaluatingCondition (Result-based, stack depth=
 DEBUG: ForStmt - Lane 3 evaluating condition for iteration 1 (Result-based)
 DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 1
+DEBUG: VariableExpr - Variable 'i' = 1 (lane 3 at 0x50f000000310)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
-DEBUG: VariableExpr - Variable 'laneId' = 3
+DEBUG: VariableExpr - Variable 'laneId' = 3 (lane 3 at 0x50f000000310)
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 3 unknown lanes: 1 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: ForStmt - Lane 1 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -504,9 +510,10 @@ DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 5
 DEBUG: ForStmt - Lane 2 moved to iteration starting block 5
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 5 (Result-based)
+DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
 DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
-DEBUG: VariableExpr - Variable 'result' = 3
+DEBUG: VariableExpr - Variable 'result' = 3 (lane 2 at 0x50f000000220)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 5, instruction key=(0x5030000018a0,5)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
@@ -514,7 +521,6 @@ WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry retur
 DEBUG: markLaneWaitingForWave - Lane 2 wave 0 in block 5
 DEBUG: markLaneWaitingForWave - Successfully set lane 2 to WaitingForWave in block 5
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 5
-DEBUG: WAVE_OP: Resolution status tracked by registry for block 5
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: Block 5 wave 0 unknown lanes: {3 }
 DEBUG: isAllParticipantsKnown - Block 5 wave 0 has 1 unknown lanes: 3  - These lanes need to be resolved to Participating or Left
@@ -542,9 +548,10 @@ DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 5
 DEBUG: ForStmt - Lane 3 moved to iteration starting block 5
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 5 (Result-based)
+DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
 DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
-DEBUG: VariableExpr - Variable 'result' = 3
+DEBUG: VariableExpr - Variable 'result' = 3 (lane 3 at 0x50f000000310)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 5, instruction key=(0x5030000018a0,5)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
@@ -552,22 +559,19 @@ WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry retur
 DEBUG: markLaneWaitingForWave - Lane 3 wave 0 in block 5
 DEBUG: markLaneWaitingForWave - Successfully set lane 3 to WaitingForWave in block 5
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 5
-DEBUG: WAVE_OP: Resolution status tracked by registry for block 5
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: Block 5 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 3 in block 5: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_1
 DEBUG: WAVE_OP: After lane 3 started waiting, wave operation can now execute!
-DEBUG: WAVE_OP: Updated sync point - allParticipantsKnown=1, allParticipantsArrived=1, readyToExecute=0
 DEBUG: ForStmt - Handling error in wrapper: 3
 DEBUG: WAVE_WAIT: Lane 3 received WaveOperationWait error, state=2
 DEBUG: WAVE_OP: Storing collective result for lanes: 2 3  (phase: 2)
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
-DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 3, instruction key=(0x503000001930,3)
+DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 3, instruction key=(0x503000001990,3)
 DEBUG: markLaneWaitingForWave - Lane 1 wave 0 in block 3
 DEBUG: markLaneWaitingForWave - Successfully set lane 1 to WaitingForWave in block 3
 DEBUG: WAVE_OP: Lane 1 cannot execute, starting to wait in block 3
-DEBUG: WAVE_OP: Resolution status tracked by registry for block 3
 DEBUG: Block 3 wave 0 unknown lanes: {2 3 }
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
@@ -590,13 +594,15 @@ DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control fl
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 5 (Result-based)
+DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
 DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
-DEBUG: VariableExpr - Variable 'result' = 3
+DEBUG: VariableExpr - Variable 'result' = 3 (lane 2 at 0x50f000000220)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 5, instruction key=(0x5030000018a0,5)
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 2 (phase: Executed)
+DEBUG: AssignStmt - Lane 2 assigned value 5 to variable 'result'
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 body completed in block 5, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
@@ -616,13 +622,15 @@ DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control fl
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 5 (Result-based)
+DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
 DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
-DEBUG: VariableExpr - Variable 'result' = 3
+DEBUG: VariableExpr - Variable 'result' = 3 (lane 3 at 0x50f000000310)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 5, instruction key=(0x5030000018a0,5)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 2 (phase: Consumed)
+DEBUG: AssignStmt - Lane 3 assigned value 5 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 body completed in block 5, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
@@ -640,7 +648,7 @@ DEBUG: ForStmt - Lane 2 in phase EvaluatingIncrement (Result-based, stack depth=
 DEBUG: ForStmt - Lane 2 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 1
+DEBUG: VariableExpr - Variable 'i' = 1 (lane 2 at 0x50f000000220)
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: ForStmt - Lane 3 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -648,7 +656,7 @@ DEBUG: ForStmt - Lane 3 in phase EvaluatingIncrement (Result-based, stack depth=
 DEBUG: ForStmt - Lane 3 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 1
+DEBUG: VariableExpr - Variable 'i' = 1 (lane 3 at 0x50f000000310)
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: ForStmt - Lane 2 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -656,9 +664,9 @@ DEBUG: ForStmt - Lane 2 in phase EvaluatingCondition (Result-based, stack depth=
 DEBUG: ForStmt - Lane 2 evaluating condition for iteration 2 (Result-based)
 DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 2
+DEBUG: VariableExpr - Variable 'i' = 2 (lane 2 at 0x50f000000220)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
-DEBUG: VariableExpr - Variable 'laneId' = 2
+DEBUG: VariableExpr - Variable 'laneId' = 2 (lane 2 at 0x50f000000220)
 DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 2
 DEBUG: removeThreadFromAllSets - block 2 had 2 participating lanes before removal (participating: 2 3 )
 DEBUG: removeThreadFromAllSets - block 2 has 1 participating lanes after removal (participating: 3 )
@@ -678,9 +686,9 @@ DEBUG: ForStmt - Lane 3 in phase EvaluatingCondition (Result-based, stack depth=
 DEBUG: ForStmt - Lane 3 evaluating condition for iteration 2 (Result-based)
 DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 2
+DEBUG: VariableExpr - Variable 'i' = 2 (lane 3 at 0x50f000000310)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
-DEBUG: VariableExpr - Variable 'laneId' = 3
+DEBUG: VariableExpr - Variable 'laneId' = 3 (lane 3 at 0x50f000000310)
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: ForStmt - Lane 2 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -714,9 +722,10 @@ DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 6
 DEBUG: ForStmt - Lane 3 moved to iteration starting block 6
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 6 (Result-based)
+DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
 DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
-DEBUG: VariableExpr - Variable 'result' = 5
+DEBUG: VariableExpr - Variable 'result' = 5 (lane 3 at 0x50f000000310)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 6, instruction key=(0x5030000018a0,6)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
@@ -724,22 +733,19 @@ WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry retur
 DEBUG: markLaneWaitingForWave - Lane 3 wave 0 in block 6
 DEBUG: markLaneWaitingForWave - Successfully set lane 3 to WaitingForWave in block 6
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 6
-DEBUG: WAVE_OP: Resolution status tracked by registry for block 6
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
 DEBUG: Block 6 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 3 in block 6: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_1
 DEBUG: WAVE_OP: After lane 3 started waiting, wave operation can now execute!
-DEBUG: WAVE_OP: Updated sync point - allParticipantsKnown=1, allParticipantsArrived=1, readyToExecute=0
 DEBUG: ForStmt - Handling error in wrapper: 3
 DEBUG: WAVE_WAIT: Lane 3 received WaveOperationWait error, state=2
 DEBUG: WAVE_OP: Storing collective result for lanes: 3  (phase: 2)
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 1 unknown lanes: 3  - These lanes need to be resolved to Participating or Left
-DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 3, instruction key=(0x503000001930,3)
+DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 3, instruction key=(0x503000001990,3)
 DEBUG: markLaneWaitingForWave - Lane 2 wave 0 in block 3
 DEBUG: markLaneWaitingForWave - Successfully set lane 2 to WaitingForWave in block 3
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 3
-DEBUG: WAVE_OP: Resolution status tracked by registry for block 3
 DEBUG: Block 3 wave 0 unknown lanes: {3 }
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 1 unknown lanes: 3  - These lanes need to be resolved to Participating or Left
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 1 unknown lanes: 3  - These lanes need to be resolved to Participating or Left
@@ -758,13 +764,15 @@ DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control fl
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 6 (Result-based)
+DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
 DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
-DEBUG: VariableExpr - Variable 'result' = 5
+DEBUG: VariableExpr - Variable 'result' = 5 (lane 3 at 0x50f000000310)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 6, instruction key=(0x5030000018a0,6)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 1 (phase: Consumed)
+DEBUG: AssignStmt - Lane 3 assigned value 6 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
 DEBUG: ForStmt - Lane 3 body completed in block 6, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
@@ -782,7 +790,7 @@ DEBUG: ForStmt - Lane 3 in phase EvaluatingIncrement (Result-based, stack depth=
 DEBUG: ForStmt - Lane 3 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 2
+DEBUG: VariableExpr - Variable 'i' = 2 (lane 3 at 0x50f000000310)
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 1 unknown lanes: 3  - These lanes need to be resolved to Participating or Left
 DEBUG: ForStmt - Lane 3 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -790,9 +798,9 @@ DEBUG: ForStmt - Lane 3 in phase EvaluatingCondition (Result-based, stack depth=
 DEBUG: ForStmt - Lane 3 evaluating condition for iteration 3 (Result-based)
 DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 3
+DEBUG: VariableExpr - Variable 'i' = 3 (lane 3 at 0x50f000000310)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
-DEBUG: VariableExpr - Variable 'laneId' = 3
+DEBUG: VariableExpr - Variable 'laneId' = 3 (lane 3 at 0x50f000000310)
 DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 2
 DEBUG: removeThreadFromAllSets - block 2 had 1 participating lanes before removal (participating: 3 )
 DEBUG: removeThreadFromAllSets - block 2 has 0 participating lanes after removal
@@ -822,7 +830,7 @@ DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 3
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 3
 DEBUG: WAVE_OP: Updated participants before execution to include all current block lanes: 0 1 2 3 
 DEBUG: WAVE_OP: Storing collective result for lanes: 0 1 2 3  (phase: 2)
-DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 3, instruction key=(0x503000001930,3)
+DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 3, instruction key=(0x503000001990,3)
 DEBUG: onLaneFinishWaveOp - Lane 0 finishing wave op in block 3
 DEBUG: onLaneFinishWaveOp - Current status in block 3: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 0 to Participating in block 3
@@ -832,13 +840,13 @@ DEBUG: onLaneFinishWaveOp - Updated lane 1 to Participating in block 3
 DEBUG: onLaneFinishWaveOp - Lane 2 finishing wave op in block 3
 DEBUG: onLaneFinishWaveOp - Current status in block 3: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 2 to Participating in block 3
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 3, instruction key=(0x503000001930,3)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 3, instruction key=(0x503000001990,3)
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 14 (phase: Executed)
-DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 3, instruction key=(0x503000001930,3)
+DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 3, instruction key=(0x503000001990,3)
 DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 14 (phase: Executed)
-DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 3, instruction key=(0x503000001930,3)
+DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 3, instruction key=(0x503000001990,3)
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 14 (phase: Consumed)
 lane 3 have completed execution
@@ -947,9 +955,9 @@ DEBUG: ForStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=
 DEBUG: ForStmt - Lane 0 evaluating condition for iteration 0 (Result-based)
 DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 0
+DEBUG: VariableExpr - Variable 'i' = 0 (lane 0 at 0x50f000000400)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'laneId' (Result-based)
-DEBUG: VariableExpr - Variable 'laneId' = 0
+DEBUG: VariableExpr - Variable 'laneId' = 0 (lane 0 at 0x50f000000400)
 DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 2
 DEBUG: removeThreadFromAllSets - block 2 had 4 participating lanes before removal (participating: 0 1 2 3 )
 DEBUG: removeThreadFromAllSets - block 2 has 3 participating lanes after removal (participating: 1 2 3 )
@@ -960,27 +968,27 @@ DEBUG: ForStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=
 DEBUG: ForStmt - Lane 1 evaluating condition for iteration 0 (Result-based)
 DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 0
+DEBUG: VariableExpr - Variable 'i' = 0 (lane 1 at 0x50f0000004f0)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
-DEBUG: VariableExpr - Variable 'laneId' = 1
+DEBUG: VariableExpr - Variable 'laneId' = 1 (lane 1 at 0x50f0000004f0)
 DEBUG: ForStmt - Lane 2 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 2 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 2 evaluating condition for iteration 0 (Result-based)
 DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 0
+DEBUG: VariableExpr - Variable 'i' = 0 (lane 2 at 0x50f0000005e0)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
-DEBUG: VariableExpr - Variable 'laneId' = 2
+DEBUG: VariableExpr - Variable 'laneId' = 2 (lane 2 at 0x50f0000005e0)
 DEBUG: ForStmt - Lane 3 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 evaluating condition for iteration 0 (Result-based)
 DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 0
+DEBUG: VariableExpr - Variable 'i' = 0 (lane 3 at 0x50f0000006d0)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
-DEBUG: VariableExpr - Variable 'laneId' = 3
+DEBUG: VariableExpr - Variable 'laneId' = 3 (lane 3 at 0x50f0000006d0)
 DEBUG: ForStmt - Lane 0 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 in phase Reconverging (Result-based, stack depth=1, our index=0, this=0x5080000027a0)
@@ -1014,9 +1022,10 @@ DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 4
 DEBUG: ForStmt - Lane 1 moved to iteration starting block 4
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 4 (Result-based)
+DEBUG: AssignStmt - Lane 1 assigning to variable 'result' (Result-based)
 DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
-DEBUG: VariableExpr - Variable 'result' = 0
+DEBUG: VariableExpr - Variable 'result' = 0 (lane 1 at 0x50f0000004f0)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 4, instruction key=(0x5030000018a0,4)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
@@ -1024,7 +1033,6 @@ WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry retur
 DEBUG: markLaneWaitingForWave - Lane 1 wave 0 in block 4
 DEBUG: markLaneWaitingForWave - Successfully set lane 1 to WaitingForWave in block 4
 DEBUG: WAVE_OP: Lane 1 cannot execute, starting to wait in block 4
-DEBUG: WAVE_OP: Resolution status tracked by registry for block 4
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: Block 4 wave 0 unknown lanes: {2 3 }
 DEBUG: isAllParticipantsKnown - Block 4 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
@@ -1051,9 +1059,10 @@ DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 4
 DEBUG: ForStmt - Lane 2 moved to iteration starting block 4
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 4 (Result-based)
+DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
 DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
-DEBUG: VariableExpr - Variable 'result' = 0
+DEBUG: VariableExpr - Variable 'result' = 0 (lane 2 at 0x50f0000005e0)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 4, instruction key=(0x5030000018a0,4)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 4 (registry returned: 4)
@@ -1061,7 +1070,6 @@ WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 4 (registry retur
 DEBUG: markLaneWaitingForWave - Lane 2 wave 0 in block 4
 DEBUG: markLaneWaitingForWave - Successfully set lane 2 to WaitingForWave in block 4
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 4
-DEBUG: WAVE_OP: Resolution status tracked by registry for block 4
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: Block 4 wave 0 unknown lanes: {3 }
 DEBUG: isAllParticipantsKnown - Block 4 wave 0 has 1 unknown lanes: 3  - These lanes need to be resolved to Participating or Left
@@ -1088,9 +1096,10 @@ DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 4
 DEBUG: ForStmt - Lane 3 moved to iteration starting block 4
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 4 (Result-based)
+DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
 DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
-DEBUG: VariableExpr - Variable 'result' = 0
+DEBUG: VariableExpr - Variable 'result' = 0 (lane 3 at 0x50f0000006d0)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 4, instruction key=(0x5030000018a0,4)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 4 (registry returned: 4)
@@ -1098,21 +1107,18 @@ WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 4 (registry retur
 DEBUG: markLaneWaitingForWave - Lane 3 wave 0 in block 4
 DEBUG: markLaneWaitingForWave - Successfully set lane 3 to WaitingForWave in block 4
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 4
-DEBUG: WAVE_OP: Resolution status tracked by registry for block 4
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: Block 4 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 3 in block 4: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_1
 DEBUG: WAVE_OP: After lane 3 started waiting, wave operation can now execute!
-DEBUG: WAVE_OP: Updated sync point - allParticipantsKnown=1, allParticipantsArrived=1, readyToExecute=0
 DEBUG: ForStmt - Handling error in wrapper: 3
 DEBUG: WAVE_WAIT: Lane 3 received WaveOperationWait error, state=2
 DEBUG: WAVE_OP: Storing collective result for lanes: 1 2 3  (phase: 2)
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 3, instruction key=(0x503000001930,3)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 3, instruction key=(0x503000001990,3)
 DEBUG: markLaneWaitingForWave - Lane 0 wave 0 in block 3
 DEBUG: markLaneWaitingForWave - Successfully set lane 0 to WaitingForWave in block 3
 DEBUG: WAVE_OP: Lane 0 cannot execute, starting to wait in block 3
-DEBUG: WAVE_OP: Resolution status tracked by registry for block 3
 DEBUG: Block 3 wave 0 unknown lanes: {1 2 3 }
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 3 unknown lanes: 1 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 3 unknown lanes: 1 2 3  - These lanes need to be resolved to Participating or Left
@@ -1139,13 +1145,15 @@ DEBUG: ForStmt - Lane 1 needs iteration block (first statement is not control fl
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 4 (Result-based)
+DEBUG: AssignStmt - Lane 1 assigning to variable 'result' (Result-based)
 DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
-DEBUG: VariableExpr - Variable 'result' = 0
+DEBUG: VariableExpr - Variable 'result' = 0 (lane 1 at 0x50f0000004f0)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 4, instruction key=(0x5030000018a0,4)
 DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 3 (phase: Executed)
+DEBUG: AssignStmt - Lane 1 assigned value 3 to variable 'result'
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 1 body completed in block 4, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 2
@@ -1165,13 +1173,15 @@ DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control fl
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 4 (registry returned: 4)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 4 (Result-based)
+DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
 DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
-DEBUG: VariableExpr - Variable 'result' = 0
+DEBUG: VariableExpr - Variable 'result' = 0 (lane 2 at 0x50f0000005e0)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 4, instruction key=(0x5030000018a0,4)
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 3 (phase: Executed)
+DEBUG: AssignStmt - Lane 2 assigned value 3 to variable 'result'
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 2 body completed in block 4, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
@@ -1191,13 +1201,15 @@ DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control fl
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 4 (registry returned: 4)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 4 (Result-based)
+DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
 DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
-DEBUG: VariableExpr - Variable 'result' = 0
+DEBUG: VariableExpr - Variable 'result' = 0 (lane 3 at 0x50f0000006d0)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 4, instruction key=(0x5030000018a0,4)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 3 (phase: Consumed)
+DEBUG: AssignStmt - Lane 3 assigned value 3 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 3 body completed in block 4, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
@@ -1215,7 +1227,7 @@ DEBUG: ForStmt - Lane 1 in phase EvaluatingIncrement (Result-based, stack depth=
 DEBUG: ForStmt - Lane 1 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 1 evaluating unary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 0
+DEBUG: VariableExpr - Variable 'i' = 0 (lane 1 at 0x50f0000004f0)
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 3 unknown lanes: 1 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: ForStmt - Lane 2 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -1223,7 +1235,7 @@ DEBUG: ForStmt - Lane 2 in phase EvaluatingIncrement (Result-based, stack depth=
 DEBUG: ForStmt - Lane 2 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 0
+DEBUG: VariableExpr - Variable 'i' = 0 (lane 2 at 0x50f0000005e0)
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 3 unknown lanes: 1 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: ForStmt - Lane 3 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -1231,7 +1243,7 @@ DEBUG: ForStmt - Lane 3 in phase EvaluatingIncrement (Result-based, stack depth=
 DEBUG: ForStmt - Lane 3 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 0
+DEBUG: VariableExpr - Variable 'i' = 0 (lane 3 at 0x50f0000006d0)
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 3 unknown lanes: 1 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: ForStmt - Lane 1 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -1239,9 +1251,9 @@ DEBUG: ForStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=
 DEBUG: ForStmt - Lane 1 evaluating condition for iteration 1 (Result-based)
 DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 1
+DEBUG: VariableExpr - Variable 'i' = 1 (lane 1 at 0x50f0000004f0)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
-DEBUG: VariableExpr - Variable 'laneId' = 1
+DEBUG: VariableExpr - Variable 'laneId' = 1 (lane 1 at 0x50f0000004f0)
 DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 2
 DEBUG: removeThreadFromAllSets - block 2 had 3 participating lanes before removal (participating: 1 2 3 )
 DEBUG: removeThreadFromAllSets - block 2 has 2 participating lanes after removal (participating: 2 3 )
@@ -1257,9 +1269,9 @@ DEBUG: ForStmt - Lane 2 in phase EvaluatingCondition (Result-based, stack depth=
 DEBUG: ForStmt - Lane 2 evaluating condition for iteration 1 (Result-based)
 DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 1
+DEBUG: VariableExpr - Variable 'i' = 1 (lane 2 at 0x50f0000005e0)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
-DEBUG: VariableExpr - Variable 'laneId' = 2
+DEBUG: VariableExpr - Variable 'laneId' = 2 (lane 2 at 0x50f0000005e0)
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 3 unknown lanes: 1 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: ForStmt - Lane 3 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -1267,9 +1279,9 @@ DEBUG: ForStmt - Lane 3 in phase EvaluatingCondition (Result-based, stack depth=
 DEBUG: ForStmt - Lane 3 evaluating condition for iteration 1 (Result-based)
 DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 1
+DEBUG: VariableExpr - Variable 'i' = 1 (lane 3 at 0x50f0000006d0)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
-DEBUG: VariableExpr - Variable 'laneId' = 3
+DEBUG: VariableExpr - Variable 'laneId' = 3 (lane 3 at 0x50f0000006d0)
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 3 unknown lanes: 1 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: ForStmt - Lane 1 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -1304,9 +1316,10 @@ DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 5
 DEBUG: ForStmt - Lane 2 moved to iteration starting block 5
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 5 (Result-based)
+DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
 DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
-DEBUG: VariableExpr - Variable 'result' = 3
+DEBUG: VariableExpr - Variable 'result' = 3 (lane 2 at 0x50f0000005e0)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 5, instruction key=(0x5030000018a0,5)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
@@ -1314,7 +1327,6 @@ WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry retur
 DEBUG: markLaneWaitingForWave - Lane 2 wave 0 in block 5
 DEBUG: markLaneWaitingForWave - Successfully set lane 2 to WaitingForWave in block 5
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 5
-DEBUG: WAVE_OP: Resolution status tracked by registry for block 5
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: Block 5 wave 0 unknown lanes: {3 }
 DEBUG: isAllParticipantsKnown - Block 5 wave 0 has 1 unknown lanes: 3  - These lanes need to be resolved to Participating or Left
@@ -1342,9 +1354,10 @@ DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 5
 DEBUG: ForStmt - Lane 3 moved to iteration starting block 5
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 5 (Result-based)
+DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
 DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
-DEBUG: VariableExpr - Variable 'result' = 3
+DEBUG: VariableExpr - Variable 'result' = 3 (lane 3 at 0x50f0000006d0)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 5, instruction key=(0x5030000018a0,5)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
@@ -1352,22 +1365,19 @@ WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry retur
 DEBUG: markLaneWaitingForWave - Lane 3 wave 0 in block 5
 DEBUG: markLaneWaitingForWave - Successfully set lane 3 to WaitingForWave in block 5
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 5
-DEBUG: WAVE_OP: Resolution status tracked by registry for block 5
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: Block 5 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 3 in block 5: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_1
 DEBUG: WAVE_OP: After lane 3 started waiting, wave operation can now execute!
-DEBUG: WAVE_OP: Updated sync point - allParticipantsKnown=1, allParticipantsArrived=1, readyToExecute=0
 DEBUG: ForStmt - Handling error in wrapper: 3
 DEBUG: WAVE_WAIT: Lane 3 received WaveOperationWait error, state=2
 DEBUG: WAVE_OP: Storing collective result for lanes: 2 3  (phase: 2)
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
-DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 3, instruction key=(0x503000001930,3)
+DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 3, instruction key=(0x503000001990,3)
 DEBUG: markLaneWaitingForWave - Lane 1 wave 0 in block 3
 DEBUG: markLaneWaitingForWave - Successfully set lane 1 to WaitingForWave in block 3
 DEBUG: WAVE_OP: Lane 1 cannot execute, starting to wait in block 3
-DEBUG: WAVE_OP: Resolution status tracked by registry for block 3
 DEBUG: Block 3 wave 0 unknown lanes: {2 3 }
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
@@ -1390,13 +1400,15 @@ DEBUG: ForStmt - Lane 2 needs iteration block (first statement is not control fl
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 5 (Result-based)
+DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
 DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
-DEBUG: VariableExpr - Variable 'result' = 3
+DEBUG: VariableExpr - Variable 'result' = 3 (lane 2 at 0x50f0000005e0)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 5, instruction key=(0x5030000018a0,5)
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 2 (phase: Executed)
+DEBUG: AssignStmt - Lane 2 assigned value 5 to variable 'result'
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 body completed in block 5, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
@@ -1416,13 +1428,15 @@ DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control fl
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 5 (Result-based)
+DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
 DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
-DEBUG: VariableExpr - Variable 'result' = 3
+DEBUG: VariableExpr - Variable 'result' = 3 (lane 3 at 0x50f0000006d0)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 5, instruction key=(0x5030000018a0,5)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 2 (phase: Consumed)
+DEBUG: AssignStmt - Lane 3 assigned value 5 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 body completed in block 5, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
@@ -1440,7 +1454,7 @@ DEBUG: ForStmt - Lane 2 in phase EvaluatingIncrement (Result-based, stack depth=
 DEBUG: ForStmt - Lane 2 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 1
+DEBUG: VariableExpr - Variable 'i' = 1 (lane 2 at 0x50f0000005e0)
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: ForStmt - Lane 3 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -1448,7 +1462,7 @@ DEBUG: ForStmt - Lane 3 in phase EvaluatingIncrement (Result-based, stack depth=
 DEBUG: ForStmt - Lane 3 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 1
+DEBUG: VariableExpr - Variable 'i' = 1 (lane 3 at 0x50f0000006d0)
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: ForStmt - Lane 2 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -1456,9 +1470,9 @@ DEBUG: ForStmt - Lane 2 in phase EvaluatingCondition (Result-based, stack depth=
 DEBUG: ForStmt - Lane 2 evaluating condition for iteration 2 (Result-based)
 DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 2
+DEBUG: VariableExpr - Variable 'i' = 2 (lane 2 at 0x50f0000005e0)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
-DEBUG: VariableExpr - Variable 'laneId' = 2
+DEBUG: VariableExpr - Variable 'laneId' = 2 (lane 2 at 0x50f0000005e0)
 DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 2
 DEBUG: removeThreadFromAllSets - block 2 had 2 participating lanes before removal (participating: 2 3 )
 DEBUG: removeThreadFromAllSets - block 2 has 1 participating lanes after removal (participating: 3 )
@@ -1478,9 +1492,9 @@ DEBUG: ForStmt - Lane 3 in phase EvaluatingCondition (Result-based, stack depth=
 DEBUG: ForStmt - Lane 3 evaluating condition for iteration 2 (Result-based)
 DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 2
+DEBUG: VariableExpr - Variable 'i' = 2 (lane 3 at 0x50f0000006d0)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
-DEBUG: VariableExpr - Variable 'laneId' = 3
+DEBUG: VariableExpr - Variable 'laneId' = 3 (lane 3 at 0x50f0000006d0)
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: ForStmt - Lane 2 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -1514,9 +1528,10 @@ DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 6
 DEBUG: ForStmt - Lane 3 moved to iteration starting block 6
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 6 (Result-based)
+DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
 DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
-DEBUG: VariableExpr - Variable 'result' = 5
+DEBUG: VariableExpr - Variable 'result' = 5 (lane 3 at 0x50f0000006d0)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 6, instruction key=(0x5030000018a0,6)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
@@ -1524,22 +1539,19 @@ WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry retur
 DEBUG: markLaneWaitingForWave - Lane 3 wave 0 in block 6
 DEBUG: markLaneWaitingForWave - Successfully set lane 3 to WaitingForWave in block 6
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 6
-DEBUG: WAVE_OP: Resolution status tracked by registry for block 6
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
 DEBUG: Block 6 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 3 in block 6: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_1
 DEBUG: WAVE_OP: After lane 3 started waiting, wave operation can now execute!
-DEBUG: WAVE_OP: Updated sync point - allParticipantsKnown=1, allParticipantsArrived=1, readyToExecute=0
 DEBUG: ForStmt - Handling error in wrapper: 3
 DEBUG: WAVE_WAIT: Lane 3 received WaveOperationWait error, state=2
 DEBUG: WAVE_OP: Storing collective result for lanes: 3  (phase: 2)
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 1 unknown lanes: 3  - These lanes need to be resolved to Participating or Left
-DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 3, instruction key=(0x503000001930,3)
+DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 3, instruction key=(0x503000001990,3)
 DEBUG: markLaneWaitingForWave - Lane 2 wave 0 in block 3
 DEBUG: markLaneWaitingForWave - Successfully set lane 2 to WaitingForWave in block 3
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 3
-DEBUG: WAVE_OP: Resolution status tracked by registry for block 3
 DEBUG: Block 3 wave 0 unknown lanes: {3 }
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 1 unknown lanes: 3  - These lanes need to be resolved to Participating or Left
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 1 unknown lanes: 3  - These lanes need to be resolved to Participating or Left
@@ -1558,13 +1570,15 @@ DEBUG: ForStmt - Lane 3 needs iteration block (first statement is not control fl
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 6 (Result-based)
+DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
 DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
-DEBUG: VariableExpr - Variable 'result' = 5
+DEBUG: VariableExpr - Variable 'result' = 5 (lane 3 at 0x50f0000006d0)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 6, instruction key=(0x5030000018a0,6)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 1 (phase: Consumed)
+DEBUG: AssignStmt - Lane 3 assigned value 6 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
 DEBUG: ForStmt - Lane 3 body completed in block 6, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
@@ -1582,7 +1596,7 @@ DEBUG: ForStmt - Lane 3 in phase EvaluatingIncrement (Result-based, stack depth=
 DEBUG: ForStmt - Lane 3 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 2
+DEBUG: VariableExpr - Variable 'i' = 2 (lane 3 at 0x50f0000006d0)
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 1 unknown lanes: 3  - These lanes need to be resolved to Participating or Left
 DEBUG: ForStmt - Lane 3 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -1590,9 +1604,9 @@ DEBUG: ForStmt - Lane 3 in phase EvaluatingCondition (Result-based, stack depth=
 DEBUG: ForStmt - Lane 3 evaluating condition for iteration 3 (Result-based)
 DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
-DEBUG: VariableExpr - Variable 'i' = 3
+DEBUG: VariableExpr - Variable 'i' = 3 (lane 3 at 0x50f0000006d0)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
-DEBUG: VariableExpr - Variable 'laneId' = 3
+DEBUG: VariableExpr - Variable 'laneId' = 3 (lane 3 at 0x50f0000006d0)
 DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 2
 DEBUG: removeThreadFromAllSets - block 2 had 1 participating lanes before removal (participating: 3 )
 DEBUG: removeThreadFromAllSets - block 2 has 0 participating lanes after removal
@@ -1622,7 +1636,7 @@ DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 3
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 3
 DEBUG: WAVE_OP: Updated participants before execution to include all current block lanes: 0 1 2 3 
 DEBUG: WAVE_OP: Storing collective result for lanes: 0 1 2 3  (phase: 2)
-DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 3, instruction key=(0x503000001930,3)
+DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 3, instruction key=(0x503000001990,3)
 DEBUG: onLaneFinishWaveOp - Lane 0 finishing wave op in block 3
 DEBUG: onLaneFinishWaveOp - Current status in block 3: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 0 to Participating in block 3
@@ -1632,13 +1646,13 @@ DEBUG: onLaneFinishWaveOp - Updated lane 1 to Participating in block 3
 DEBUG: onLaneFinishWaveOp - Lane 2 finishing wave op in block 3
 DEBUG: onLaneFinishWaveOp - Current status in block 3: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 2 to Participating in block 3
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 3, instruction key=(0x503000001930,3)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 3, instruction key=(0x503000001990,3)
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 14 (phase: Executed)
-DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 3, instruction key=(0x503000001930,3)
+DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 3, instruction key=(0x503000001990,3)
 DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 14 (phase: Executed)
-DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 3, instruction key=(0x503000001930,3)
+DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 3, instruction key=(0x503000001990,3)
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 14 (phase: Consumed)
 lane 3 have completed execution
@@ -1918,7 +1932,7 @@ Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 3 from WaitingForResume to Ready
   Waking up lane 3 from WaitingForResume to Ready
   Waking up lane 3 from WaitingForResume to Ready
-Executing collective wave operation for wave 0 at instruction 0x503000001930 block 3
+Executing collective wave operation for wave 0 at instruction 0x503000001990 block 3
 Collective wave operation result: 14
 Lane 3 retrieving stored wave result: 14 (phase: 2)
 Waking up lanes to retrieve wave operation results for wave 0
@@ -1972,7 +1986,7 @@ Dynamic Block 3:
   Arrived Lanes by Wave:
     Wave 0: {0, 1, 2, 3} (4 lanes)
   Instructions (1):
-    0: WaveActiveOp (ptr: 0x503000001930)
+    0: WaveActiveOp (ptr: 0x503000001990)
 
 Dynamic Block 4:
   Block ID: 4
@@ -2040,7 +2054,7 @@ Wave 0:
       Expected: 1 lanes
       Arrived: 1 lanes
       Ready to execute: No
-    Instruction 0x503000001930 block 3 (WaveActiveOp):
+    Instruction 0x503000001990 block 3 (WaveActiveOp):
       Expected: 4 lanes
       Arrived: 4 lanes
       Ready to execute: No
@@ -2120,7 +2134,7 @@ Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 3 from WaitingForResume to Ready
   Waking up lane 3 from WaitingForResume to Ready
   Waking up lane 3 from WaitingForResume to Ready
-Executing collective wave operation for wave 0 at instruction 0x503000001930 block 3
+Executing collective wave operation for wave 0 at instruction 0x503000001990 block 3
 Collective wave operation result: 14
 Lane 3 retrieving stored wave result: 14 (phase: 2)
 Waking up lanes to retrieve wave operation results for wave 0
@@ -2174,7 +2188,7 @@ Dynamic Block 3:
   Arrived Lanes by Wave:
     Wave 0: {0, 1, 2, 3} (4 lanes)
   Instructions (1):
-    0: WaveActiveOp (ptr: 0x503000001930)
+    0: WaveActiveOp (ptr: 0x503000001990)
 
 Dynamic Block 4:
   Block ID: 4
@@ -2242,7 +2256,7 @@ Wave 0:
       Expected: 1 lanes
       Arrived: 1 lanes
       Ready to execute: No
-    Instruction 0x503000001930 block 3 (WaveActiveOp):
+    Instruction 0x503000001990 block 3 (WaveActiveOp):
       Expected: 4 lanes
       Arrived: 4 lanes
       Ready to execute: No

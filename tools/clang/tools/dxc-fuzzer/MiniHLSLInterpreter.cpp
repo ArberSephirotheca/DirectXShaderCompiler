@@ -1094,7 +1094,8 @@ Result<Value, ExecutionError> VariableExpr::evaluate_result(LaneContext &lane, W
     return Err<Value, ExecutionError>(ExecutionError::InvalidState);
   }
   
-  std::cout << "DEBUG: VariableExpr - Variable '" << name_ << "' = " << it->second.toString() << std::endl;
+  std::cout << "DEBUG: VariableExpr - Variable '" << name_ << "' = " << it->second.toString() 
+            << " (lane " << lane.laneId << " at " << &lane << ")" << std::endl;
   return Ok<Value, ExecutionError>(it->second);
 }
 
@@ -1482,6 +1483,117 @@ Value WaveActiveOp::evaluate(LaneContext &lane, WaveContext &wave,
       "Wave operation fallback path - should not reach here");
 }
 
+Result<Value, ExecutionError> WaveActiveOp::evaluate_result(LaneContext &lane, WaveContext &wave,
+                                                           ThreadgroupContext &tg) const {
+  // Wave operations require all active lanes to participate
+  if (!lane.isActive) {
+    return Err<Value, ExecutionError>(ExecutionError::InvalidState);
+  }
+
+  // Create block-scoped instruction identity using compound key
+  uint32_t currentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
+  std::pair<const void *, uint32_t> instructionKey = {
+      static_cast<const void *>(this), currentBlockId};
+
+  std::cout << "DEBUG: WAVE_OP: Lane " << lane.laneId
+            << " executing WaveActiveSum in block " << currentBlockId
+            << ", instruction key=(" << static_cast<const void *>(this) << ","
+            << currentBlockId << ")" << std::endl;
+
+  // CRITICAL: If lane is resuming from wave operation, check for stored results first
+  if (lane.isResumingFromWaveOp) {
+    std::cout << "DEBUG: WAVE_OP: Lane " << lane.laneId
+              << " is resuming from wave operation, checking for stored result"
+              << std::endl;
+
+    auto syncPointIt = wave.activeSyncPoints.find(instructionKey);
+    if (syncPointIt != wave.activeSyncPoints.end()) {
+      auto &syncPoint = syncPointIt->second;
+      if (syncPoint.getPhase() == SyncPointState::Executed) {
+        try {
+          // Use state machine method to retrieve result
+          Value result = syncPoint.retrieveResult(lane.laneId);
+          std::cout << "DEBUG: WAVE_OP: Lane " << lane.laneId
+                    << " retrieving stored wave result: " << result.toString()
+                    << " (phase: "
+                    << syncPointStateToString(syncPoint.getPhase()) << ")"
+                    << std::endl;
+
+          // Clear the resuming flag - we successfully retrieved the result
+          const_cast<LaneContext &>(lane).isResumingFromWaveOp = false;
+          return Ok<Value, ExecutionError>(std::move(result));
+        } catch (const std::runtime_error &e) {
+          std::cout << "DEBUG: WAVE_OP: Lane " << lane.laneId
+                    << " failed to retrieve result: " << e.what() << std::endl;
+        }
+      }
+    }
+
+    // No stored result found - clear flag and continue with normal execution
+    std::cout << "DEBUG: WAVE_OP: Lane " << lane.laneId
+              << " no stored result found for key (" << instructionKey.first
+              << "," << instructionKey.second
+              << "), continuing with normal execution" << std::endl;
+
+    const_cast<LaneContext &>(lane).isResumingFromWaveOp = false;
+  }
+
+  // Check if there's already a computed result for this lane (normal path)
+  auto syncPointIt = wave.activeSyncPoints.find(instructionKey);
+  if (syncPointIt != wave.activeSyncPoints.end()) {
+    auto &syncPoint = syncPointIt->second;
+    if (syncPoint.getPhase() == SyncPointState::Executed) {
+      try {
+        // Use state machine method to retrieve result
+        Value result = syncPoint.retrieveResult(lane.laneId);
+        INTERPRETER_DEBUG_LOG(
+            "Lane " << lane.laneId
+                    << " retrieving stored wave result: " << result.toString()
+                    << " (phase: " << (int)syncPoint.getPhase() << ")\n");
+
+        return Ok<Value, ExecutionError>(std::move(result));
+      } catch (const std::runtime_error &e) {
+        INTERPRETER_DEBUG_LOG("Lane " << lane.laneId
+                                      << " failed to retrieve result: "
+                                      << e.what() << "\n");
+      }
+    }
+  }
+
+  // Mark this lane as waiting at this specific instruction
+  tg.markLaneWaitingAtWaveInstruction(wave.waveId, lane.laneId,
+                                      static_cast<const void *>(this),
+                                      "WaveActiveOp");
+  
+  // No stored result - need to wait
+  if (!lane.isResumingFromWaveOp) {
+    // Store the compound key in the sync point for proper tracking
+    auto &syncPoint = wave.activeSyncPoints[instructionKey];
+    syncPoint.instruction = static_cast<const void *>(this);
+
+    // Get current block and mark lane as waiting
+    tg.markLaneWaitingForWave(wave.waveId, lane.laneId, currentBlockId);
+
+    std::cout << "DEBUG: WAVE_OP: Lane " << lane.laneId
+              << " cannot execute, starting to wait in block " << currentBlockId
+              << std::endl;
+
+    // Check if this newly waiting lane completes the participant set
+    if (tg.canExecuteWaveInstruction(wave.waveId, lane.laneId,
+                                     static_cast<const void *>(this))) {
+      std::cout << "DEBUG: WAVE_OP: After lane " << lane.laneId
+                << " started waiting, wave operation can now execute!"
+                << std::endl;
+    }
+
+    // Return error to indicate we need to wait
+    return Err<Value, ExecutionError>(ExecutionError::WaveOperationWait);
+  }
+
+  // This shouldn't happen in the new collective model
+  return Err<Value, ExecutionError>(ExecutionError::InvalidState);
+}
+
 Value WaveActiveOp::computeWaveOperation(
     const std::vector<Value> &values) const {
   if (values.empty()) {
@@ -1679,8 +1791,15 @@ Result<Unit, ExecutionError> AssignStmt::execute_result(LaneContext &lane, WaveC
   if (!lane.isActive)
     return Ok<Unit, ExecutionError>(Unit{});
   
+  std::cout << "DEBUG: AssignStmt - Lane " << lane.laneId 
+            << " assigning to variable '" << name_ << "' (Result-based)" << std::endl;
+  
   // Pure Result-based implementation - no exceptions!
   Value val = TRY_RESULT(expr_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+  
+  std::cout << "DEBUG: AssignStmt - Lane " << lane.laneId 
+            << " assigned value " << val.toString() << " to variable '" << name_ << "'" << std::endl;
+  
   lane.variables[name_] = val;
   return Ok<Unit, ExecutionError>(Unit{});
 }
@@ -2212,8 +2331,33 @@ Result<Unit, ExecutionError> IfStmt::execute_with_error_handling(LaneContext &la
         {
           int ourStackIndex = findStackIndex(lane);
           if (ourStackIndex >= 0) {
+            // Get block IDs before popping the stack
+            uint32_t ifThenBlockId = lane.executionStack[ourStackIndex].ifThenBlockId;
+            uint32_t ifElseBlockId = lane.executionStack[ourStackIndex].ifElseBlockId;
+            uint32_t ifMergeBlockId = lane.executionStack[ourStackIndex].ifMergeBlockId;
+            
+            std::cout << "DEBUG: IfStmt - Lane " << lane.laneId 
+                      << " cleaning up for continue (popping stack from depth " 
+                      << lane.executionStack.size() << " to " 
+                      << (lane.executionStack.size() - 1) << ", this=" << this << ")" << std::endl;
+            
             lane.executionStack.pop_back();
             tg.popMergePoint(wave.waveId, lane.laneId);
+            
+            // Clean up then/else blocks - lane will never return to them
+            tg.removeThreadFromAllSets(ifThenBlockId, wave.waveId, lane.laneId);
+            tg.removeThreadFromNestedBlocks(ifThenBlockId, wave.waveId, lane.laneId);
+            if (ifElseBlockId != 0) {
+              tg.removeThreadFromAllSets(ifElseBlockId, wave.waveId, lane.laneId);
+              tg.removeThreadFromNestedBlocks(ifElseBlockId, wave.waveId, lane.laneId);
+            }
+            
+            // Also clean up merge block since we're not going there
+            tg.removeThreadFromAllSets(ifMergeBlockId, wave.waveId, lane.laneId);
+            tg.removeThreadFromNestedBlocks(ifMergeBlockId, wave.waveId, lane.laneId);
+            
+            // Restore active state (reconvergence)
+            lane.isActive = lane.isActive && !lane.hasReturned;
           }
         }
         return result; // Propagate to parent loop
@@ -2297,14 +2441,36 @@ Result<Unit, ExecutionError> IfStmt::executeThenBranch_result(LaneContext &lane,
   
   std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
             << " executing then block from statement "
-            << ourEntry.statementIndex << " (Result-based)" << std::endl;
+            << ourEntry.statementIndex 
+            << " of " << thenBlock_.size() << " total statements (Result-based)" << std::endl;
   
   // Execute statements in then block from saved position
   for (size_t i = ourEntry.statementIndex; i < thenBlock_.size(); i++) {
     lane.executionStack[ourStackIndex].statementIndex = i;
     
-    // Use Result-based execute_result instead of exception-based execute
-    TRY_RESULT(thenBlock_[i]->execute_result(lane, wave, tg), Unit, ExecutionError);
+    std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
+              << " executing then block statement " << i 
+              << ": " << thenBlock_[i]->toString() << std::endl;
+    
+    // Debug: Print variables before statement
+    std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " variables BEFORE statement: ";
+    for (const auto& var : lane.variables) {
+      std::cout << var.first << "=" << var.second.toString() << " ";
+    }
+    std::cout << std::endl;
+    
+    // Use Result-based execute_with_error_handling for proper control flow handling
+    auto stmt_result = thenBlock_[i]->execute_with_error_handling(lane, wave, tg);
+    if (stmt_result.is_err()) {
+      return stmt_result; // Propagate the error
+    }
+    
+    // Debug: Print variables after statement
+    std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " variables AFTER statement: ";
+    for (const auto& var : lane.variables) {
+      std::cout << var.first << "=" << var.second.toString() << " ";
+    }
+    std::cout << std::endl;
     
     if (lane.state != ThreadState::Ready) {
       // Child statement needs to resume - don't continue
@@ -2340,8 +2506,11 @@ Result<Unit, ExecutionError> IfStmt::executeElseBranch_result(LaneContext &lane,
   for (size_t i = ourEntry.statementIndex; i < elseBlock_.size(); i++) {
     lane.executionStack[ourStackIndex].statementIndex = i;
     
-    // Use Result-based execute_result instead of exception-based execute
-    TRY_RESULT(elseBlock_[i]->execute_result(lane, wave, tg), Unit, ExecutionError);
+    // Use Result-based execute_with_error_handling for proper control flow handling
+    auto stmt_result = elseBlock_[i]->execute_with_error_handling(lane, wave, tg);
+    if (stmt_result.is_err()) {
+      return stmt_result; // Propagate the error
+    }
     
     if (lane.hasReturned) {
       std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
@@ -3024,8 +3193,11 @@ Result<Unit, ExecutionError> ForStmt::executeBodyStatements_result(LaneContext &
     std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " executing statement " << i 
               << " in block " << blockBeforeStatement << " (Result-based)" << std::endl;
 
-    // Use Result-based execute_result instead of exception-based execute
-    TRY_RESULT(body_[i]->execute_result(lane, wave, tg), Unit, ExecutionError);
+    // Use Result-based execute_with_error_handling for proper control flow handling
+    auto stmt_result = body_[i]->execute_with_error_handling(lane, wave, tg);
+    if (stmt_result.is_err()) {
+      return stmt_result; // Propagate the error
+    }
 
     if (lane.hasReturned) {
       // Clean up iteration-specific merge point if it exists
@@ -4457,6 +4629,18 @@ MiniHLSLInterpreter::convertStatement(const clang::Stmt *stmt,
       return std::make_unique<ExprStmt>(std::move(expr));
     }
     return nullptr;
+  } else if (auto expr = clang::dyn_cast<clang::Expr>(stmt)) {
+    // Handle other expressions as statements
+    std::cout << "Converting expression as statement: " << expr->getStmtClassName() << std::endl;
+    if (auto compoundOp = clang::dyn_cast<clang::CompoundAssignOperator>(expr)) {
+      return convertCompoundAssignOperator(compoundOp, context);
+    }
+    // For other expressions, wrap in ExprStmt
+    auto convertedExpr = convertExpression(expr, context);
+    if (convertedExpr) {
+      return std::make_unique<ExprStmt>(std::move(convertedExpr));
+    }
+    return nullptr;
   } else if (auto compound = clang::dyn_cast<clang::CompoundStmt>(stmt)) {
     // Nested compound statement - this should not happen in our current design
     std::cout << "Warning: nested compound statement found, skipping"
@@ -4500,7 +4684,8 @@ MiniHLSLInterpreter::convertBinaryOperator(const clang::BinaryOperator *binOp,
 std::unique_ptr<Statement> MiniHLSLInterpreter::convertCompoundAssignOperator(
     const clang::CompoundAssignOperator *compoundOp,
     clang::ASTContext &context) {
-  std::cout << "Converting compound assignment operator" << std::endl;
+  std::cout << "Converting compound assignment operator: " 
+            << compoundOp->getOpcodeStr().str() << std::endl;
 
   // Get the target variable name
   std::string targetVar = "unknown";
@@ -4543,7 +4728,14 @@ std::unique_ptr<Statement> MiniHLSLInterpreter::convertCompoundAssignOperator(
   auto binaryExpr =
       std::make_unique<BinaryOpExpr>(std::move(lhs), std::move(rhs), opType);
 
-  return makeAssign(targetVar, std::move(binaryExpr));
+  std::cout << "DEBUG: Creating AssignStmt for compound assignment: " 
+            << targetVar << " = " << binaryExpr->toString() << std::endl;
+
+  auto assignStmt = makeAssign(targetVar, std::move(binaryExpr));
+  std::cout << "DEBUG: Created statement type: AssignStmt with toString: " 
+            << assignStmt->toString() << std::endl;
+  
+  return assignStmt;
 }
 
 std::unique_ptr<Statement>
@@ -5569,6 +5761,13 @@ Result<Unit, ExecutionError> WhileStmt::execute_result(LaneContext &lane, WaveCo
               << " executing body for iteration " << ourEntry.loopIteration
               << " from statement " << ourEntry.statementIndex 
               << " (Result-based)" << std::endl;
+    
+    // Debug: Print current variable state
+    std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " variables at body start: ";
+    for (const auto& var : lane.variables) {
+      std::cout << var.first << "=" << var.second.toString() << " ";
+    }
+    std::cout << std::endl;
 
     // Set up iteration-specific blocks using non-throwing helper method
     setupIterationBlocks(lane, wave, tg, ourStackIndex, headerBlockId);
@@ -5703,6 +5902,8 @@ void WhileStmt::evaluateConditionPhase(LaneContext &lane, WaveContext &wave, Thr
 
   // Check loop condition
   bool shouldContinue = condition_->evaluate(lane, wave, tg).asBool();
+  std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId 
+            << " condition result: " << shouldContinue << std::endl;
   if (!shouldContinue) {
     // Lane is exiting loop - comprehensive cleanup from header and all iteration blocks
     tg.removeThreadFromAllSets(headerBlockId, wave.waveId, lane.laneId); // Remove from header
@@ -6003,6 +6204,13 @@ Result<Unit, ExecutionError> WhileStmt::evaluateConditionPhase_result(LaneContex
   auto &ourEntry = lane.executionStack[ourStackIndex];
   std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
             << " evaluating condition for iteration " << ourEntry.loopIteration << " (Result-based)" << std::endl;
+  
+  // Debug: Print all variables
+  std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " variables: ";
+  for (const auto& var : lane.variables) {
+    std::cout << var.first << "=" << var.second.toString() << " ";
+  }
+  std::cout << std::endl;
 
   // Check loop condition using Result-based evaluation
   Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
@@ -6043,8 +6251,11 @@ Result<Unit, ExecutionError> WhileStmt::executeBodyStatements_result(LaneContext
     std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " executing statement " << i
               << " in block " << blockBeforeStatement << " (Result-based)" << std::endl;
 
-    // Use Result-based execute_result instead of exception-based execute
-    TRY_RESULT(body_[i]->execute_result(lane, wave, tg), Unit, ExecutionError);
+    // Use Result-based execute_with_error_handling for proper control flow handling
+    auto stmt_result = body_[i]->execute_with_error_handling(lane, wave, tg);
+    if (stmt_result.is_err()) {
+      return stmt_result; // Propagate the error
+    }
     
     if (lane.hasReturned) {
       // Clean up iteration-specific merge point if it exists
@@ -6722,8 +6933,11 @@ Result<Unit, ExecutionError> DoWhileStmt::executeBodyStatements_result(LaneConte
   for (size_t i = ourEntry.statementIndex; i < body_.size(); i++) {
     lane.executionStack[ourStackIndex].statementIndex = i;
     
-    // Use Result-based execute_result instead of exception-based execute
-    TRY_RESULT(body_[i]->execute_result(lane, wave, tg), Unit, ExecutionError);
+    // Use Result-based execute_with_error_handling for proper control flow handling
+    auto stmt_result = body_[i]->execute_with_error_handling(lane, wave, tg);
+    if (stmt_result.is_err()) {
+      return stmt_result; // Propagate the error
+    }
     
     if (lane.hasReturned) {
       // Clean up iteration-specific merge point if it exists
@@ -7418,7 +7632,11 @@ Result<Unit, ExecutionError> SwitchStmt::executeCaseStatements_result(LaneContex
                 << " (Result-based)" << std::endl;
 
       // Use Result-based execute_result instead of exception-based execute
-      TRY_RESULT(caseBlock.statements[i]->execute_result(lane, wave, tg), Unit, ExecutionError);
+      // Use Result-based execute_with_error_handling for proper control flow handling
+      auto stmt_result = caseBlock.statements[i]->execute_with_error_handling(lane, wave, tg);
+      if (stmt_result.is_err()) {
+        return stmt_result; // Propagate the error
+      }
 
       if (lane.hasReturned) {
         std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId

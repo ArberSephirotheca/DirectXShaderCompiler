@@ -1239,6 +1239,8 @@ public:
   WaveActiveOp(std::unique_ptr<Expression> expr, OpType op);
   Value evaluate(LaneContext &lane, WaveContext &wave,
                  ThreadgroupContext &tg) const override;
+  Result<Value, ExecutionError> evaluate_result(LaneContext &lane, WaveContext &wave,
+                                              ThreadgroupContext &tg) const override;
   bool isDeterministic() const override { return false; }
   std::string toString() const override;
 
