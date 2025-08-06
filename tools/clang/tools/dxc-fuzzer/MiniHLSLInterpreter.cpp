@@ -2417,17 +2417,34 @@ Result<Unit, ExecutionError> IfStmt::evaluateConditionAndSetup_result(LaneContex
             << ", mergeBlockId=" << ourEntry.ifMergeBlockId
             << " (Result-based)" << std::endl;
 
-  // Choose which branch to execute based on condition
+  // Update blocks based on condition result
   if (ourEntry.conditionResult) {
+    tg.moveThreadFromUnknownToParticipating(ourEntry.ifThenBlockId,
+                                            wave.waveId, lane.laneId);
+    if (hasElse) {
+      tg.removeThreadFromUnknown(ourEntry.ifElseBlockId, wave.waveId,
+                                 lane.laneId);
+      tg.removeThreadFromNestedBlocks(ourEntry.ifElseBlockId, wave.waveId,
+                                      lane.laneId);
+    }
+    // Don't remove from merge block yet - lane will reconverge there later
     ourEntry.phase = LaneContext::ControlFlowPhase::ExecutingBody;
     ourEntry.inThenBranch = true;
     ourEntry.statementIndex = 0;
   } else {
+    tg.removeThreadFromUnknown(ourEntry.ifThenBlockId, wave.waveId,
+                               lane.laneId);
+    tg.removeThreadFromNestedBlocks(ourEntry.ifThenBlockId, wave.waveId,
+                                    lane.laneId);
     if (hasElse) {
+      tg.moveThreadFromUnknownToParticipating(ourEntry.ifElseBlockId,
+                                              wave.waveId, lane.laneId);
+      // Don't remove from merge block yet - lane will reconverge there later
       ourEntry.phase = LaneContext::ControlFlowPhase::ExecutingBody;
       ourEntry.inThenBranch = false;
       ourEntry.statementIndex = 0;
     } else {
+      // No else block - go directly to merge
       ourEntry.phase = LaneContext::ControlFlowPhase::Reconverging;
     }
   }
