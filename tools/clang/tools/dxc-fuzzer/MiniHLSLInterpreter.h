@@ -1275,6 +1275,12 @@ public:
   }
   virtual bool requiresAllLanesActive() const { return false; }
   virtual std::string toString() const = 0;
+
+  // Trace capture hooks - override in TraceCaptureInterpreter
+  virtual void onStatementExecute(LaneContext &lane, WaveContext &wave,
+                                  ThreadgroupContext &tg) {}
+  virtual void onStatementComplete(LaneContext &lane, WaveContext &wave,
+                                   ThreadgroupContext &tg) {}
 };
 
 class VarDeclStmt : public Statement {
@@ -1445,6 +1451,9 @@ public:
                                               WaveContext &wave,
                                               ThreadgroupContext &tg) override;
   std::string toString() const override;
+  
+  // Getter methods for fuzzer access
+  const std::vector<std::unique_ptr<Statement>>& getBody() const { return body_; }
 };
 
 class WhileStmt : public Statement {
@@ -1506,6 +1515,9 @@ public:
                                               WaveContext &wave,
                                               ThreadgroupContext &tg) override;
   std::string toString() const override;
+  
+  // Getter methods for fuzzer access
+  const std::vector<std::unique_ptr<Statement>>& getBody() const { return body_; }
 };
 
 class DoWhileStmt : public Statement {
@@ -1567,6 +1579,9 @@ public:
                                               WaveContext &wave,
                                               ThreadgroupContext &tg) override;
   std::string toString() const override;
+  
+  // Getter methods for fuzzer access
+  const std::vector<std::unique_ptr<Statement>>& getBody() const { return body_; }
 };
 
 class SwitchStmt : public Statement {
@@ -1733,9 +1748,24 @@ struct Program {
 
 // Main interpreter class
 class MiniHLSLInterpreter {
-private:
+protected:
   static constexpr uint32_t DEFAULT_NUM_ORDERINGS = 10;
   std::mt19937 rng_;
+
+  // Virtual methods for trace capture hooks
+  virtual void onLaneEnterBlock(LaneContext &lane, WaveContext &wave,
+                                ThreadgroupContext &tg, uint32_t blockId) {}
+  virtual void onControlFlowDecision(LaneContext &lane, WaveContext &wave,
+                                     ThreadgroupContext &tg, bool condition) {}
+  virtual void onWaveOpSyncPointCreated(WaveContext &wave, ThreadgroupContext &tg,
+                                        uint32_t blockId, size_t participantCount) {}
+  virtual void onWaveOpExecuted(WaveContext &wave, ThreadgroupContext &tg,
+                                const std::string &opName, const Value &result) {}
+  virtual void onVariableWrite(LaneContext &lane, const std::string &name,
+                               const Value &value) {}
+  virtual void onBarrierSync(ThreadgroupContext &tg, uint32_t barrierId) {}
+  virtual void onThreadStateChange(LaneContext &lane, ThreadState oldState,
+                                   ThreadState newState) {}
 
   ExecutionResult executeWithOrdering(const Program &program,
                                       const ThreadOrdering &ordering,

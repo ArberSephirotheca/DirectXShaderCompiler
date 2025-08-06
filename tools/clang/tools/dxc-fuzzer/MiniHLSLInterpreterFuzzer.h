@@ -9,11 +9,30 @@
 #include <queue>
 #include <set>
 
+// Forward declarations for interpreter types
 namespace minihlsl {
+namespace interpreter {
+class Statement;
+class Expression;
+class IfStmt;
+class ForStmt;
+class WhileStmt;
+class DoWhileStmt;
+struct Program;
+class LaneIndexExpr;
+class WaveIndexExpr;
+class BinaryOpExpr;
+class UnaryOpExpr;
+class LiteralExpr;
+class AssignStmt;
+class WaveActiveOp;
+class Interpreter;
+} // namespace interpreter
+
 namespace fuzzer {
 
 // Forward declarations
-class ExecutionTrace;
+struct ExecutionTrace;
 class MutationStrategy;
 class SemanticValidator;
 
@@ -22,17 +41,15 @@ class SemanticValidator;
 struct ExecutionTrace {
   // Thread hierarchy information
   struct ThreadHierarchy {
-    uint32_t threadgroupSize;
+    uint32_t totalThreads;
     uint32_t waveSize;
-    uint32_t waveCount;
+    uint32_t numWaves;
     
-    // Global thread ID to wave/lane mapping
-    std::map<interpreter::ThreadId, std::pair<interpreter::WaveId, interpreter::LaneId>> threadToWaveLane;
-    
-    // Reverse mapping for convenience
-    std::map<std::pair<interpreter::WaveId, interpreter::LaneId>, interpreter::ThreadId> waveLaneToThread;
+    std::map<interpreter::ThreadId, interpreter::WaveId> threadToWave;
+    std::map<interpreter::ThreadId, interpreter::LaneId> threadToLane;
+    std::map<interpreter::WaveId, std::vector<interpreter::ThreadId>> waveToThreads;
   };
-  ThreadHierarchy hierarchy;
+  ThreadHierarchy threadHierarchy;
   
   // Dynamic block execution graph
   struct BlockExecutionRecord {
@@ -227,80 +244,16 @@ struct ExecutionTrace {
     uint64_t totalSyncWaitTime;
   };
   Statistics stats;
+  
+  // Store final execution result data
+  std::map<interpreter::MemoryAddress, interpreter::Value> finalMemoryState;
+  std::map<std::string, interpreter::Value> finalVariableStates;
 };
 
 // ===== Trace Capture Interpreter =====
 
-class TraceCaptureInterpreter : public interpreter::Interpreter {
-private:
-  ExecutionTrace* trace;
-  uint64_t globalTimestamp = 0;
-  
-public:
-  TraceCaptureInterpreter(ExecutionTrace* t) : trace(t) {}
-  
-  void captureFinalState(const interpreter::ThreadgroupContext& tg);
-  
-protected:
-  // Override key interpreter methods to capture trace
-  
-  // Block management hooks
-  uint32_t getOrCreateBlock(const interpreter::BlockIdentity& identity, 
-                           interpreter::WaveId waveId,
-                           const std::set<interpreter::LaneId>& lanes,
-                           uint32_t parentBlockId) override;
-  
-  void onLaneEnterBlock(interpreter::WaveId waveId, 
-                       interpreter::LaneId laneId, 
-                       uint32_t blockId) override;
-  
-  void onLaneExitBlock(interpreter::WaveId waveId, 
-                      interpreter::LaneId laneId, 
-                      uint32_t blockId) override;
-  
-  // Control flow hooks
-  void onControlFlowDecision(const interpreter::Statement* stmt,
-                            interpreter::WaveId waveId,
-                            interpreter::LaneId laneId,
-                            const interpreter::Value& condition,
-                            bool taken,
-                            interpreter::LaneContext::ControlFlowPhase phase) override;
-  
-  // Wave operation hooks
-  void onWaveOpSyncPointCreated(interpreter::WaveId waveId,
-                               const interpreter::WaveOperationSyncPoint& syncPoint) override;
-  
-  void onLaneArriveAtWaveOp(interpreter::WaveId waveId,
-                           interpreter::LaneId laneId,
-                           const interpreter::WaveOperationSyncPoint& syncPoint,
-                           const interpreter::Value& input) override;
-  
-  void onWaveOpExecuted(const interpreter::WaveOperationSyncPoint& syncPoint,
-                       const std::map<interpreter::LaneId, interpreter::Value>& results) override;
-  
-  // Variable access hooks
-  void onVariableAccess(interpreter::WaveId waveId,
-                       interpreter::LaneId laneId,
-                       const std::string& varName,
-                       const interpreter::Value& value,
-                       bool isWrite) override;
-  
-  // Memory access hooks
-  void onMemoryAccess(interpreter::ThreadId tid,
-                     ExecutionTrace::MemoryAccess::MemoryType type,
-                     uint32_t address,
-                     const interpreter::Value& value,
-                     bool isWrite,
-                     const std::string& atomicOp = "") override;
-  
-  // Barrier hooks
-  void onBarrierArrive(uint32_t barrierId, interpreter::ThreadId tid) override;
-  void onBarrierRelease(uint32_t barrierId, interpreter::ThreadId tid) override;
-  
-private:
-  uint32_t getCurrentBlockId(interpreter::WaveId waveId, 
-                            interpreter::LaneId laneId);
-};
+// TraceCaptureInterpreter - defined in separate files
+class TraceCaptureInterpreter;
 
 // ===== Mutation Strategies =====
 
@@ -347,7 +300,7 @@ private:
   std::unique_ptr<interpreter::Expression> createComplexCondition(
     interpreter::WaveId waveId,
     const std::set<interpreter::LaneId>& lanes,
-    const std::unique_ptr<interpreter::Expression>& originalCond) const;
+    const interpreter::Expression* originalCond) const;
 };
 
 class LoopUnrollingMutation : public MutationStrategy {
@@ -542,14 +495,14 @@ public:
     std::string minimalReproducer;
   };
   
-  void reportBug(const interpreter::CompoundStmt* original,
-                const interpreter::CompoundStmt* mutant,
+  void reportBug(const interpreter::Program& original,
+                const interpreter::Program& mutant,
                 const ExecutionTrace& originalTrace,
                 const ExecutionTrace& mutantTrace,
                 const SemanticValidator::ValidationResult& validation);
   
-  void reportCrash(const interpreter::CompoundStmt* original,
-                  const interpreter::CompoundStmt* mutant,
+  void reportCrash(const interpreter::Program& original,
+                  const interpreter::Program& mutant,
                   const std::exception& e);
   
 private:
@@ -596,17 +549,17 @@ private:
 public:
   TraceGuidedFuzzer();
   
-  void fuzzProgram(interpreter::CompoundStmt* seedProgram, 
+  void fuzzProgram(const interpreter::Program& seedProgram, 
                   const FuzzingConfig& config);
   
   // For libFuzzer integration
-  std::unique_ptr<interpreter::CompoundStmt> mutateAST(
-    interpreter::CompoundStmt* program, 
+  std::unique_ptr<interpreter::Program> mutateAST(
+    const interpreter::Program& program, 
     unsigned int seed);
   
 private:
-  std::vector<std::unique_ptr<interpreter::CompoundStmt>> generateMutants(
-    interpreter::CompoundStmt* program,
+  std::vector<interpreter::Program> generateMutants(
+    const interpreter::Program& program,
     MutationStrategy* strategy,
     const ExecutionTrace& trace);
   
@@ -631,12 +584,12 @@ void loadSeedCorpus(TraceGuidedFuzzer* fuzzer);
 
 // AST serialization for libFuzzer
 bool deserializeAST(const uint8_t* data, size_t size, 
-                   std::unique_ptr<interpreter::CompoundStmt>& program);
+                   interpreter::Program& program);
 
-size_t serializeAST(const interpreter::CompoundStmt* program, 
+size_t serializeAST(const interpreter::Program& program, 
                    uint8_t* data, size_t maxSize);
 
-size_t hashAST(const interpreter::CompoundStmt* program);
+size_t hashAST(const interpreter::Program& program);
 
 } // namespace fuzzer
 } // namespace minihlsl

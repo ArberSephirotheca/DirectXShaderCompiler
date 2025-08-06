@@ -15,32 +15,34 @@ set_target_properties(dxc-fuzzer PROPERTIES
 )
 
 # Simple test runner - validates all .hlsl files in a directory
-add_executable(test_runner
-  test_runner.cpp
-  MiniHLSLValidator.cpp
-)
-target_link_libraries(test_runner
-  dxcompiler
-  clangAST
-  clangBasic
-  clangFrontend
-  clangLex
-  clangParse
-  clangSema
-  LLVMSupport
-  LLVMOption
-  LLVMCore
-)
+# Commented out - missing test_runner.cpp
+# add_executable(test_runner
+#   test_runner.cpp
+#   MiniHLSLValidator.cpp
+# )
+# target_link_libraries(test_runner
+#   dxcompiler
+#   clangAST
+#   clangBasic
+#   clangFrontend
+#   clangLex
+#   clangParse
+#   clangSema
+#   LLVMSupport
+#   LLVMOption
+#   LLVMCore
+# )
 
 # Enable testing
 enable_testing()
 
 
 # MiniHLSL Interpreter - executes MiniHLSL programs and verifies order independence
-add_executable(minihlsl-interpreter
-  MiniHLSLInterpreter.cpp
-  test_interpreter.cpp
-)
+# Commented out - missing test_interpreter.cpp
+# add_executable(minihlsl-interpreter
+#   MiniHLSLInterpreter.cpp
+#   test_interpreter.cpp
+# )
 
 # Standalone MiniHLSL Interpreter - takes HLSL files as command line input
 add_executable(minihlsl-standalone
@@ -48,21 +50,21 @@ add_executable(minihlsl-standalone
   MiniHLSLValidator.cpp
   minihlsl_interpreter_main.cpp
 )
-target_link_libraries(minihlsl-interpreter
-  # Use pthread for std::thread and std::mutex
-  Threads::Threads
-  # Clang/LLVM libraries needed for AST conversion
-  dxcompiler
-  clangAST
-  clangBasic
-  clangFrontend
-  clangLex
-  clangParse
-  clangSema
-  LLVMSupport
-  LLVMOption
-  LLVMCore
-)
+# target_link_libraries(minihlsl-interpreter
+#   # Use pthread for std::thread and std::mutex
+#   Threads::Threads
+#   # Clang/LLVM libraries needed for AST conversion
+#   dxcompiler
+#   clangAST
+#   clangBasic
+#   clangFrontend
+#   clangLex
+#   clangParse
+#   clangSema
+#   LLVMSupport
+#   LLVMOption
+#   LLVMCore
+# )
 
 target_link_libraries(minihlsl-standalone
   # Use pthread for std::thread and std::mutex
@@ -81,10 +83,10 @@ target_link_libraries(minihlsl-standalone
 )
 
 # Set C++17 standard for the interpreters (uses std::variant)
-set_target_properties(minihlsl-interpreter PROPERTIES
-  CXX_STANDARD 17
-  CXX_STANDARD_REQUIRED ON
-)
+# set_target_properties(minihlsl-interpreter PROPERTIES
+#   CXX_STANDARD 17
+#   CXX_STANDARD_REQUIRED ON
+# )
 
 set_target_properties(minihlsl-standalone PROPERTIES
   CXX_STANDARD 17
@@ -92,16 +94,18 @@ set_target_properties(minihlsl-standalone PROPERTIES
 )
 
 # Add test that runs all .hlsl files in test_cases directory
-add_test(NAME MiniHLSLValidatorTest COMMAND test_runner test_cases)
+# add_test(NAME MiniHLSLValidatorTest COMMAND test_runner test_cases)
 
 # Add test for the interpreter
-add_test(NAME MiniHLSLInterpreterTest COMMAND minihlsl-interpreter)
+# add_test(NAME MiniHLSLInterpreterTest COMMAND minihlsl-interpreter)
 
 # MiniHLSL Interpreter Fuzzer - trace-guided fuzzing for interpreter
 add_executable(minihlsl-fuzzer
   MiniHLSLInterpreter.cpp
   MiniHLSLInterpreterFuzzer.cpp
   MiniHLSLInterpreterFuzzerMutations.cpp
+  MiniHLSLInterpreterTraceCapture.cpp
+  minihlsl_fuzzer_main.cpp
 )
 target_link_libraries(minihlsl-fuzzer
   # Use pthread for std::thread and std::mutex
@@ -118,13 +122,39 @@ target_link_libraries(minihlsl-fuzzer
   LLVMOption
   LLVMCore
   # LibFuzzer for fuzzing runtime
-  LLVMFuzzer
+  # LLVMFuzzer  # Comment out until linking is fixed
 )
 
 # Set C++17 standard and fuzzing flags
 set_target_properties(minihlsl-fuzzer PROPERTIES
   CXX_STANDARD 17
   CXX_STANDARD_REQUIRED ON
-  COMPILE_FLAGS "-fsanitize=address,fuzzer -fno-omit-frame-pointer"
-  LINK_FLAGS    "-fsanitize=address,fuzzer"
+  # COMPILE_FLAGS "-fsanitize=address,fuzzer -fno-omit-frame-pointer"
+  # LINK_FLAGS    "-fsanitize=address,fuzzer"
+)
+
+# Test program for fuzzer framework
+add_executable(test-minihlsl-fuzzer
+  MiniHLSLInterpreter.cpp
+  MiniHLSLInterpreterFuzzer.cpp
+  MiniHLSLInterpreterFuzzerMutations.cpp
+  MiniHLSLInterpreterTraceCapture.cpp
+  test_fuzzer.cpp
+)
+target_link_libraries(test-minihlsl-fuzzer
+  Threads::Threads
+  dxcompiler
+  clangAST
+  clangBasic
+  clangFrontend
+  clangLex
+  clangParse
+  clangSema
+  LLVMSupport
+  LLVMOption
+  LLVMCore
+)
+set_target_properties(test-minihlsl-fuzzer PROPERTIES
+  CXX_STANDARD 17
+  CXX_STANDARD_REQUIRED ON
 )

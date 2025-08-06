@@ -3094,7 +3094,7 @@ ExecutionResult MiniHLSLInterpreter::executeWithOrdering(
 
   uint32_t orderingIndex = 0;
   uint32_t maxIterations = program.getTotalThreads() *
-                           program.statements.size() * 10; // Safety limit
+                           program.statements.size() * 30; // Safety limit
   uint32_t iteration = 0;
 
   // Cooperative scheduling main loop

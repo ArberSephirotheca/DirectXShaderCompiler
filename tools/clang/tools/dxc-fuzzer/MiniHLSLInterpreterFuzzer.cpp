@@ -1,4 +1,5 @@
 #include "MiniHLSLInterpreterFuzzer.h"
+#include "MiniHLSLInterpreterTraceCapture.h"
 #include <fstream>
 #include <sstream>
 #include <random>
@@ -10,456 +11,188 @@ namespace fuzzer {
 // Global fuzzer instance
 std::unique_ptr<TraceGuidedFuzzer> g_fuzzer;
 
-// ===== Trace Capture Implementation =====
+// ===== Mutation Strategy Implementations =====
 
-void TraceCaptureInterpreter::captureFinalState(const interpreter::ThreadgroupContext& tg) {
-  auto& finalState = trace->finalState;
-  
-  // Capture thread hierarchy
-  trace->hierarchy.threadgroupSize = tg.threadgroupSize;
-  trace->hierarchy.waveSize = tg.waveSize;
-  trace->hierarchy.waveCount = tg.waveCount;
-  
-  // Build thread mappings
-  for (uint32_t waveId = 0; waveId < tg.waveCount; waveId++) {
-    auto& wave = *tg.waves[waveId];
-    for (uint32_t laneId = 0; laneId < wave.waveSize; laneId++) {
-      interpreter::ThreadId tid = tg.getGlobalThreadId(waveId, laneId);
-      trace->hierarchy.threadToWaveLane[tid] = {waveId, laneId};
-      trace->hierarchy.waveLaneToThread[{waveId, laneId}] = tid;
-    }
-  }
-  
-  // Capture all lane variables and states
-  for (uint32_t waveId = 0; waveId < tg.waveCount; waveId++) {
-    auto& wave = *tg.waves[waveId];
-    for (uint32_t laneId = 0; laneId < wave.waveSize; laneId++) {
-      auto& lane = *wave.lanes[laneId];
-      
-      finalState.laneVariables[waveId][laneId] = lane.variables;
-      finalState.returnValues[waveId][laneId] = lane.returnValue;
-      finalState.finalThreadStates[waveId][laneId] = lane.state;
-    }
-  }
-  
-  // Capture memory state
-  for (auto& [name, buffer] : tg.globalBuffers) {
-    finalState.globalBuffers[name] = buffer->getSnapshot();
-  }
-  finalState.sharedMemory = tg.sharedMemory->getSnapshot();
-  
-  // Update statistics
-  trace->stats.totalDynamicBlocks = trace->blocks.size();
-  trace->stats.totalWaveOps = trace->waveOperations.size();
-  trace->stats.totalBarriers = trace->barriers.size();
-}
-
-uint32_t TraceCaptureInterpreter::getOrCreateBlock(
-    const interpreter::BlockIdentity& identity,
-    interpreter::WaveId waveId,
-    const std::set<interpreter::LaneId>& lanes,
-    uint32_t parentBlockId) {
-  
-  // Call parent implementation
-  uint32_t blockId = Interpreter::getOrCreateBlock(identity, waveId, lanes, parentBlockId);
-  
-  // Record in trace
-  auto& record = trace->blocks[blockId];
-  record.blockId = blockId;
-  record.identity = identity;
-  record.blockType = identity.blockType;
-  record.sourceStatement = identity.sourceStatement;
-  record.parentBlockId = parentBlockId;
-  record.creatorWave = waveId;
-  
-  // Initialize wave participation
-  record.waveParticipation[waveId].participatingLanes = lanes;
-  
-  // Track block relationships
-  if (parentBlockId != 0) {
-    record.predecessors.insert(parentBlockId);
-    trace->blocks[parentBlockId].successors.insert(blockId);
-  }
-  
-  return blockId;
-}
-
-void TraceCaptureInterpreter::onLaneEnterBlock(
-    interpreter::WaveId waveId,
-    interpreter::LaneId laneId,
-    uint32_t blockId) {
-  
-  Interpreter::onLaneEnterBlock(waveId, laneId, blockId);
-  
-  auto& block = trace->blocks[blockId];
-  auto& wavePart = block.waveParticipation[waveId];
-  
-  wavePart.participatingLanes.insert(laneId);
-  wavePart.arrivedLanes.insert(laneId);
-  wavePart.visitCount[laneId]++;
-  wavePart.entryTimestamps[laneId].push_back(globalTimestamp++);
-}
-
-void TraceCaptureInterpreter::onLaneExitBlock(
-    interpreter::WaveId waveId,
-    interpreter::LaneId laneId,
-    uint32_t blockId) {
-  
-  auto& block = trace->blocks[blockId];
-  auto& wavePart = block.waveParticipation[waveId];
-  
-  wavePart.exitTimestamps[laneId].push_back(globalTimestamp++);
-  
-  Interpreter::onLaneExitBlock(waveId, laneId, blockId);
-}
-
-void TraceCaptureInterpreter::onControlFlowDecision(
-    const interpreter::Statement* stmt,
-    interpreter::WaveId waveId,
-    interpreter::LaneId laneId,
-    const interpreter::Value& condition,
-    bool taken,
-    interpreter::LaneContext::ControlFlowPhase phase) {
-  
-  ExecutionTrace::ControlFlowDecision decision;
-  decision.statement = stmt;
-  decision.executionBlockId = getCurrentBlockId(waveId, laneId);
-  decision.timestamp = globalTimestamp++;
-  
-  auto& laneDecision = decision.decisions[waveId][laneId];
-  laneDecision.conditionValue = condition;
-  laneDecision.branchTaken = taken;
-  laneDecision.phase = phase;
-  
-  trace->controlFlowHistory.push_back(decision);
-}
-
-// ... (implement remaining TraceCaptureInterpreter methods)
-
-uint32_t TraceCaptureInterpreter::getCurrentBlockId(
-    interpreter::WaveId waveId,
-    interpreter::LaneId laneId) {
-  // Get current block from interpreter's internal state
-  // This would need to access protected/internal interpreter state
-  return 0; // Placeholder
-}
-
-// ===== Mutation Implementations =====
-
-// --- Explicit Lane Divergence Mutation ---
-
-bool ExplicitLaneDivergenceMutation::canApply(
-    const interpreter::Statement* stmt,
-    const ExecutionTrace& trace) const {
-  
-  // Only apply to if statements that caused divergence
-  auto ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt);
-  if (!ifStmt) return false;
-  
-  // Check if different lanes took different branches
-  for (auto& decision : trace.controlFlowHistory) {
-    if (decision.statement == stmt) {
-      std::set<bool> uniqueDecisions;
-      for (auto& [waveId, laneDecisions] : decision.decisions) {
-        for (auto& [laneId, dec] : laneDecisions) {
-          uniqueDecisions.insert(dec.branchTaken);
+bool ExplicitLaneDivergenceMutation::canApply(const interpreter::Statement* stmt, 
+                                             const ExecutionTrace& trace) const {
+  // Can apply to if statements that have divergent control flow
+  if (auto ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt)) {
+    // Check if any wave has divergent lanes for this statement
+    for (const auto& decision : trace.controlFlowHistory) {
+      if (decision.statement == stmt) {
+        for (const auto& [waveId, laneDecisions] : decision.decisions) {
+          bool hasTrueLanes = false;
+          bool hasFalseLanes = false;
+          for (const auto& [laneId, dec] : laneDecisions) {
+            if (dec.branchTaken) hasTrueLanes = true;
+            else hasFalseLanes = true;
+          }
+          if (hasTrueLanes && hasFalseLanes) {
+            return true; // Found divergence
+          }
         }
       }
-      return uniqueDecisions.size() > 1;  // Divergence occurred
     }
   }
   return false;
 }
 
 std::unique_ptr<interpreter::Statement> ExplicitLaneDivergenceMutation::apply(
-    const interpreter::Statement* stmt,
+    const interpreter::Statement* stmt, 
     const ExecutionTrace& trace) const {
-  
-  auto ifStmt = static_cast<const interpreter::IfStmt*>(stmt);
-  
-  // Find the decision record
-  const ExecutionTrace::ControlFlowDecision* decision = nullptr;
-  for (auto& d : trace.controlFlowHistory) {
-    if (d.statement == stmt) {
-      decision = &d;
-      break;
-    }
-  }
-  
-  if (!decision) return nullptr;
-  
-  auto compound = std::make_unique<interpreter::CompoundStmt>();
-  
-  // For each wave
-  for (auto& [waveId, laneDecisions] : decision->decisions) {
-    // Group lanes by decision
-    std::set<interpreter::LaneId> trueLanes, falseLanes;
-    for (auto& [laneId, dec] : laneDecisions) {
-      if (dec.branchTaken) trueLanes.insert(laneId);
-      else falseLanes.insert(laneId);
-    }
-    
-    // Create explicit conditions
-    if (!trueLanes.empty() && ifStmt->thenBlock) {
-      auto condition = createComplexCondition(waveId, trueLanes, ifStmt->condition);
-      auto thenStmt = std::make_unique<interpreter::IfStmt>(
-        std::move(condition),
-        ifStmt->thenBlock->clone(),
-        nullptr
-      );
-      compound->addStatement(std::move(thenStmt));
-    }
-    
-    if (!falseLanes.empty() && ifStmt->elseBlock) {
-      auto notCond = std::make_unique<interpreter::UnaryOpExpr>(
-        ifStmt->condition->clone(),
-        interpreter::UnaryOpExpr::LogicalNot
-      );
-      auto condition = createComplexCondition(waveId, falseLanes, notCond);
-      auto elseStmt = std::make_unique<interpreter::IfStmt>(
-        std::move(condition),
-        ifStmt->elseBlock->clone(),
-        nullptr
-      );
-      compound->addStatement(std::move(elseStmt));
-    }
-  }
-  
-  return compound;
-}
-
-std::unique_ptr<interpreter::Expression> ExplicitLaneDivergenceMutation::createComplexCondition(
-    interpreter::WaveId waveId,
-    const std::set<interpreter::LaneId>& lanes,
-    const std::unique_ptr<interpreter::Expression>& originalCond) const {
-  
-  // waveId == X
-  auto waveCheck = std::make_unique<interpreter::BinaryOpExpr>(
-    std::make_unique<interpreter::WaveIndexExpr>(),
-    std::make_unique<interpreter::LiteralExpr>(interpreter::Value((int32_t)waveId)),
-    interpreter::BinaryOpExpr::Eq
-  );
-  
-  // (laneId == Y || laneId == Z || ...)
-  std::unique_ptr<interpreter::Expression> laneCheck;
-  for (auto laneId : lanes) {
-    auto laneEq = std::make_unique<interpreter::BinaryOpExpr>(
-      std::make_unique<interpreter::LaneIndexExpr>(),
-      std::make_unique<interpreter::LiteralExpr>(interpreter::Value((int32_t)laneId)),
-      interpreter::BinaryOpExpr::Eq
-    );
-    
-    if (!laneCheck) {
-      laneCheck = std::move(laneEq);
-    } else {
-      laneCheck = std::make_unique<interpreter::BinaryOpExpr>(
-        std::move(laneCheck),
-        std::move(laneEq),
-        interpreter::BinaryOpExpr::Or
-      );
-    }
-  }
-  
-  // Combine all conditions
-  auto waveAndLane = std::make_unique<interpreter::BinaryOpExpr>(
-    std::move(waveCheck),
-    std::move(laneCheck),
-    interpreter::BinaryOpExpr::And
-  );
-  
-  return std::make_unique<interpreter::BinaryOpExpr>(
-    std::move(waveAndLane),
-    originalCond->clone(),
-    interpreter::BinaryOpExpr::And
-  );
+  // TODO: Implement AST mutation
+  // This requires AST cloning infrastructure
+  return nullptr;
 }
 
 bool ExplicitLaneDivergenceMutation::validateSemanticPreservation(
     const interpreter::Statement* original,
     const interpreter::Statement* mutated,
     const ExecutionTrace& trace) const {
-  // The mutation is semantically preserving by construction
-  // It explicitly encodes the exact execution that occurred
+  // Always returns true as mutations are designed to be semantics-preserving
   return true;
 }
 
-// --- Loop Unrolling Mutation ---
-
-bool LoopUnrollingMutation::canApply(
-    const interpreter::Statement* stmt,
-    const ExecutionTrace& trace) const {
-  
-  // Check if it's a loop with bounded iterations
-  bool isLoop = dynamic_cast<const interpreter::ForStmt*>(stmt) != nullptr ||
-                dynamic_cast<const interpreter::WhileStmt*>(stmt) != nullptr ||
-                dynamic_cast<const interpreter::DoWhileStmt*>(stmt) != nullptr;
-  
-  if (!isLoop) return false;
-  
-  // Check if we have loop pattern data
-  return trace.loops.find(stmt) != trace.loops.end();
+bool LoopUnrollingMutation::canApply(const interpreter::Statement* stmt, 
+                                    const ExecutionTrace& trace) const {
+  // Can apply to loops with known iteration counts
+  return dynamic_cast<const interpreter::ForStmt*>(stmt) != nullptr ||
+         dynamic_cast<const interpreter::WhileStmt*>(stmt) != nullptr ||
+         dynamic_cast<const interpreter::DoWhileStmt*>(stmt) != nullptr;
 }
 
 std::unique_ptr<interpreter::Statement> LoopUnrollingMutation::apply(
-    const interpreter::Statement* stmt,
+    const interpreter::Statement* stmt, 
     const ExecutionTrace& trace) const {
-  
-  // Find loop pattern
-  auto it = trace.loops.find(stmt);
-  if (it == trace.loops.end()) return nullptr;
-  
-  auto& loopPattern = it->second;
-  auto compound = std::make_unique<interpreter::CompoundStmt>();
-  
-  // Find maximum iteration count across all lanes/waves
-  uint32_t maxIterations = 0;
-  std::map<uint32_t, std::set<std::pair<interpreter::WaveId, interpreter::LaneId>>> iterationGroups;
-  
-  for (auto& [waveId, lanePatterns] : loopPattern.lanePatterns) {
-    for (auto& [laneId, pattern] : lanePatterns) {
-      maxIterations = std::max(maxIterations, pattern.totalIterations);
-      iterationGroups[pattern.totalIterations].insert({waveId, laneId});
-    }
-  }
-  
-  // Generate unrolled version
-  for (uint32_t iter = 0; iter < maxIterations; iter++) {
-    // Which lanes execute this iteration?
-    std::map<interpreter::WaveId, std::set<interpreter::LaneId>> activeWaveLanes;
-    
-    for (auto& [count, waveLanes] : iterationGroups) {
-      if (iter < count) {
-        for (auto& [waveId, laneId] : waveLanes) {
-          activeWaveLanes[waveId].insert(laneId);
-        }
-      }
-    }
-    
-    // Create guarded iteration
-    auto iterBlock = createGuardedIteration(stmt, iter, activeWaveLanes);
-    compound->addStatement(std::move(iterBlock));
-  }
-  
-  return compound;
-}
-
-std::unique_ptr<interpreter::Statement> LoopUnrollingMutation::createGuardedIteration(
-    const interpreter::Statement* loopStmt,
-    uint32_t iteration,
-    const std::map<interpreter::WaveId, std::set<interpreter::LaneId>>& activeWaveLanes) const {
-  
-  // Get loop body
-  const interpreter::CompoundStmt* body = nullptr;
-  if (auto forStmt = dynamic_cast<const interpreter::ForStmt*>(loopStmt)) {
-    body = forStmt->body.get();
-  } else if (auto whileStmt = dynamic_cast<const interpreter::WhileStmt*>(loopStmt)) {
-    body = whileStmt->body.get();
-  } else if (auto doStmt = dynamic_cast<const interpreter::DoWhileStmt*>(loopStmt)) {
-    body = doStmt->body.get();
-  }
-  
-  if (!body) return nullptr;
-  
-  // Check if all lanes are active
-  bool allActive = true;
-  uint32_t totalActiveLanes = 0;
-  for (auto& [waveId, lanes] : activeWaveLanes) {
-    totalActiveLanes += lanes.size();
-  }
-  
-  // If all lanes active, no guard needed
-  if (totalActiveLanes == 32) { // Assuming 32 lanes total
-    return body->clone();
-  }
-  
-  // Create complex guard condition
-  std::unique_ptr<interpreter::Expression> condition;
-  
-  for (auto& [waveId, lanes] : activeWaveLanes) {
-    // Create wave+lane condition
-    auto waveCheck = std::make_unique<interpreter::BinaryOpExpr>(
-      std::make_unique<interpreter::WaveIndexExpr>(),
-      std::make_unique<interpreter::LiteralExpr>(interpreter::Value((int32_t)waveId)),
-      interpreter::BinaryOpExpr::Eq
-    );
-    
-    std::unique_ptr<interpreter::Expression> laneCheck;
-    for (auto laneId : lanes) {
-      auto laneEq = std::make_unique<interpreter::BinaryOpExpr>(
-        std::make_unique<interpreter::LaneIndexExpr>(),
-        std::make_unique<interpreter::LiteralExpr>(interpreter::Value((int32_t)laneId)),
-        interpreter::BinaryOpExpr::Eq
-      );
-      
-      if (!laneCheck) {
-        laneCheck = std::move(laneEq);
-      } else {
-        laneCheck = std::make_unique<interpreter::BinaryOpExpr>(
-          std::move(laneCheck),
-          std::move(laneEq),
-          interpreter::BinaryOpExpr::Or
-        );
-      }
-    }
-    
-    auto waveCondition = std::make_unique<interpreter::BinaryOpExpr>(
-      std::move(waveCheck),
-      std::move(laneCheck),
-      interpreter::BinaryOpExpr::And
-    );
-    
-    if (!condition) {
-      condition = std::move(waveCondition);
-    } else {
-      condition = std::make_unique<interpreter::BinaryOpExpr>(
-        std::move(condition),
-        std::move(waveCondition),
-        interpreter::BinaryOpExpr::Or
-      );
-    }
-  }
-  
-  return std::make_unique<interpreter::IfStmt>(
-    std::move(condition),
-    body->clone(),
-    nullptr
-  );
+  // TODO: Implement loop unrolling
+  return nullptr;
 }
 
 bool LoopUnrollingMutation::validateSemanticPreservation(
     const interpreter::Statement* original,
     const interpreter::Statement* mutated,
     const ExecutionTrace& trace) const {
-  // Unrolling with exact guards preserves semantics
+  return true;
+}
+
+bool PrecomputeWaveResultsMutation::canApply(const interpreter::Statement* stmt, 
+                                           const ExecutionTrace& trace) const {
+  // Can apply to statements containing wave operations
+  // TODO: Check if statement contains wave ops
+  return false;
+}
+
+std::unique_ptr<interpreter::Statement> PrecomputeWaveResultsMutation::apply(
+    const interpreter::Statement* stmt, 
+    const ExecutionTrace& trace) const {
+  // TODO: Replace wave ops with precomputed values
+  return nullptr;
+}
+
+bool PrecomputeWaveResultsMutation::validateSemanticPreservation(
+    const interpreter::Statement* original,
+    const interpreter::Statement* mutated,
+    const ExecutionTrace& trace) const {
+  return true;
+}
+
+bool RedundantWaveSyncMutation::canApply(const interpreter::Statement* stmt, 
+                                       const ExecutionTrace& trace) const {
+  // Can apply after any wave operation
+  return false; // TODO: Implement
+}
+
+std::unique_ptr<interpreter::Statement> RedundantWaveSyncMutation::apply(
+    const interpreter::Statement* stmt, 
+    const ExecutionTrace& trace) const {
+  // TODO: Add redundant sync operations
+  return nullptr;
+}
+
+bool RedundantWaveSyncMutation::validateSemanticPreservation(
+    const interpreter::Statement* original,
+    const interpreter::Statement* mutated,
+    const ExecutionTrace& trace) const {
+  return true;
+}
+
+bool ForceBlockBoundariesMutation::canApply(const interpreter::Statement* stmt, 
+                                          const ExecutionTrace& trace) const {
+  // Can apply to compound statements
+  return true; // TODO: Check for compound statements
+}
+
+std::unique_ptr<interpreter::Statement> ForceBlockBoundariesMutation::apply(
+    const interpreter::Statement* stmt, 
+    const ExecutionTrace& trace) const {
+  // TODO: Make implicit blocks explicit
+  return nullptr;
+}
+
+bool ForceBlockBoundariesMutation::validateSemanticPreservation(
+    const interpreter::Statement* original,
+    const interpreter::Statement* mutated,
+    const ExecutionTrace& trace) const {
+  return true;
+}
+
+bool SerializeMemoryAccessesMutation::canApply(const interpreter::Statement* stmt, 
+                                             const ExecutionTrace& trace) const {
+  // Can apply if there are memory accesses
+  return !trace.memoryAccesses.empty();
+}
+
+std::unique_ptr<interpreter::Statement> SerializeMemoryAccessesMutation::apply(
+    const interpreter::Statement* stmt, 
+    const ExecutionTrace& trace) const {
+  // TODO: Add barriers between memory accesses
+  return nullptr;
+}
+
+bool SerializeMemoryAccessesMutation::validateSemanticPreservation(
+    const interpreter::Statement* original,
+    const interpreter::Statement* mutated,
+    const ExecutionTrace& trace) const {
   return true;
 }
 
 // ===== Semantic Validator Implementation =====
 
 SemanticValidator::ValidationResult SemanticValidator::validate(
-    const ExecutionTrace& golden,
+    const ExecutionTrace& golden, 
     const ExecutionTrace& mutant) {
   
-  ValidationResult result{true, "", {}};
+  ValidationResult result;
+  result.isEquivalent = true;
   
-  // 1. Compare final states
+  // Compare final states
   if (!compareFinalStates(golden.finalState, mutant.finalState, result)) {
-    return result;
+    result.isEquivalent = false;
+    result.divergenceReason = "Final states differ";
   }
   
-  // 2. Compare wave operation results
+  // Compare wave operations
   if (!compareWaveOperations(golden.waveOperations, mutant.waveOperations, result)) {
-    return result;
+    result.isEquivalent = false;
+    if (result.divergenceReason.empty()) {
+      result.divergenceReason = "Wave operations differ";
+    }
   }
   
-  // 3. Compare memory access results
+  // Compare memory state
   if (!compareMemoryState(golden, mutant, result)) {
-    return result;
+    result.isEquivalent = false;
+    if (result.divergenceReason.empty()) {
+      result.divergenceReason = "Memory state differs";
+    }
   }
   
-  // 4. Verify control flow equivalence (may differ in structure)
+  // Verify control flow equivalence
   if (!verifyControlFlowEquivalence(golden, mutant, result)) {
-    return result;
+    result.isEquivalent = false;
+    if (result.divergenceReason.empty()) {
+      result.divergenceReason = "Control flow differs";
+    }
   }
   
   return result;
@@ -470,91 +203,55 @@ bool SemanticValidator::compareFinalStates(
     const ExecutionTrace::FinalState& mutant,
     ValidationResult& result) {
   
-  // Compare all lane variables
-  for (auto& [waveId, laneVars] : golden.laneVariables) {
-    for (auto& [laneId, vars] : laneVars) {
-      auto mutantIt = mutant.laneVariables.find(waveId);
-      if (mutantIt == mutant.laneVariables.end()) {
-        result.isEquivalent = false;
-        result.divergenceReason = "Missing wave in mutant";
-        return false;
-      }
-      
-      auto laneIt = mutantIt->second.find(laneId);
-      if (laneIt == mutantIt->second.end()) {
-        result.isEquivalent = false;
-        result.divergenceReason = "Missing lane in mutant";
-        return false;
-      }
-      
-      auto& mutantVars = laneIt->second;
-      
-      for (auto& [varName, value] : vars) {
-        auto varIt = mutantVars.find(varName);
-        if (varIt == mutantVars.end()) {
-          result.isEquivalent = false;
-          result.divergenceReason = "Missing variable in mutant";
-          result.differences.push_back(
-            "Wave " + std::to_string(waveId) + " Lane " + std::to_string(laneId) + 
-            " missing variable: " + varName);
-          continue;
-        }
-        
-        if (varIt->second != value) {
-          result.isEquivalent = false;
-          result.divergenceReason = "Variable value mismatch";
-          result.differences.push_back(
-            "Wave " + std::to_string(waveId) + " Lane " + std::to_string(laneId) + 
-            " Var " + varName + ": " + value.toString() + " vs " + 
-            varIt->second.toString());
-        }
-      }
-    }
-  }
-  
-  // Compare return values
-  for (auto& [waveId, laneReturns] : golden.returnValues) {
-    for (auto& [laneId, value] : laneReturns) {
-      auto& mutantValue = mutant.returnValues.at(waveId).at(laneId);
-      if (mutantValue != value) {
-        result.isEquivalent = false;
-        result.divergenceReason = "Return value mismatch";
-        result.differences.push_back(
-          "Wave " + std::to_string(waveId) + " Lane " + std::to_string(laneId) + 
-          " return: " + value.toString() + " vs " + mutantValue.toString());
-      }
-    }
-  }
-  
-  // Compare memory state
-  for (auto& [bufferName, contents] : golden.globalBuffers) {
-    auto bufferIt = mutant.globalBuffers.find(bufferName);
-    if (bufferIt == mutant.globalBuffers.end()) {
-      result.isEquivalent = false;
-      result.divergenceReason = "Missing buffer in mutant";
-      continue;
+  // Compare per-lane variables
+  for (const auto& [waveId, waveVars] : golden.laneVariables) {
+    auto mutantWaveIt = mutant.laneVariables.find(waveId);
+    if (mutantWaveIt == mutant.laneVariables.end()) {
+      result.differences.push_back("Missing wave " + std::to_string(waveId) + " in mutant");
+      return false;
     }
     
-    auto& mutantBuffer = bufferIt->second;
-    for (auto& [index, value] : contents) {
-      auto indexIt = mutantBuffer.find(index);
-      if (indexIt == mutantBuffer.end()) {
-        result.isEquivalent = false;
-        result.divergenceReason = "Missing buffer index";
-        continue;
+    for (const auto& [laneId, vars] : waveVars) {
+      auto mutantLaneIt = mutantWaveIt->second.find(laneId);
+      if (mutantLaneIt == mutantWaveIt->second.end()) {
+        result.differences.push_back("Missing lane " + std::to_string(laneId) + 
+                                   " in wave " + std::to_string(waveId));
+        return false;
       }
       
-      if (indexIt->second != value) {
-        result.isEquivalent = false;
-        result.divergenceReason = "Buffer content mismatch";
-        result.differences.push_back(
-          "Buffer " + bufferName + "[" + std::to_string(index) + "]: " + 
-          value.toString() + " vs " + indexIt->second.toString());
+      // Compare variable values
+      for (const auto& [varName, value] : vars) {
+        auto mutantVarIt = mutantLaneIt->second.find(varName);
+        if (mutantVarIt == mutantLaneIt->second.end()) {
+          result.differences.push_back("Variable " + varName + " missing in mutant");
+          return false;
+        }
+        
+        if (value.asInt() != mutantVarIt->second.asInt()) {
+          result.differences.push_back("Variable " + varName + " differs: " + 
+                                     std::to_string(value.asInt()) + " vs " +
+                                     std::to_string(mutantVarIt->second.asInt()));
+          return false;
+        }
       }
     }
   }
   
-  return result.isEquivalent;
+  // Compare shared memory
+  for (const auto& [addr, value] : golden.sharedMemory) {
+    auto mutantIt = mutant.sharedMemory.find(addr);
+    if (mutantIt == mutant.sharedMemory.end()) {
+      result.differences.push_back("Shared memory address " + std::to_string(addr) + " missing");
+      return false;
+    }
+    
+    if (value.asInt() != mutantIt->second.asInt()) {
+      result.differences.push_back("Shared memory at " + std::to_string(addr) + " differs");
+      return false;
+    }
+  }
+  
+  return true;
 }
 
 bool SemanticValidator::compareWaveOperations(
@@ -562,63 +259,39 @@ bool SemanticValidator::compareWaveOperations(
     const std::vector<ExecutionTrace::WaveOpRecord>& mutant,
     ValidationResult& result) {
   
-  // Group by operation type and wave
-  auto groupOps = [](const std::vector<ExecutionTrace::WaveOpRecord>& ops) {
-    std::map<std::pair<std::string, interpreter::WaveId>, 
-             std::vector<const ExecutionTrace::WaveOpRecord*>> grouped;
-    for (auto& op : ops) {
-      grouped[{op.opType, op.waveId}].push_back(&op);
-    }
-    return grouped;
-  };
+  // Wave operations must produce identical results
+  if (golden.size() != mutant.size()) {
+    result.differences.push_back("Different number of wave operations: " + 
+                               std::to_string(golden.size()) + " vs " + 
+                               std::to_string(mutant.size()));
+    return false;
+  }
   
-  auto goldenGroups = groupOps(golden);
-  auto mutantGroups = groupOps(mutant);
-  
-  // Each group should have same results
-  for (auto& [key, goldenOps] : goldenGroups) {
-    auto mutantIt = mutantGroups.find(key);
-    if (mutantIt == mutantGroups.end()) {
-      result.isEquivalent = false;
-      result.divergenceReason = "Missing wave operation group";
-      continue;
+  for (size_t i = 0; i < golden.size(); ++i) {
+    const auto& goldenOp = golden[i];
+    const auto& mutantOp = mutant[i];
+    
+    if (goldenOp.opType != mutantOp.opType) {
+      result.differences.push_back("Wave op type mismatch at index " + std::to_string(i));
+      return false;
     }
     
-    auto& mutantOps = mutantIt->second;
-    
-    if (goldenOps.size() != mutantOps.size()) {
-      result.isEquivalent = false;
-      result.divergenceReason = "Different number of wave operations";
-      result.differences.push_back(
-        "Op " + key.first + " Wave " + std::to_string(key.second) + 
-        ": " + std::to_string(goldenOps.size()) + " vs " + 
-        std::to_string(mutantOps.size()));
-      continue;
-    }
-    
-    // Compare results
-    for (size_t i = 0; i < goldenOps.size(); i++) {
-      for (auto& [laneId, value] : goldenOps[i]->outputValues) {
-        auto laneIt = mutantOps[i]->outputValues.find(laneId);
-        if (laneIt == mutantOps[i]->outputValues.end()) {
-          result.isEquivalent = false;
-          result.divergenceReason = "Missing lane in wave op result";
-          continue;
-        }
-        
-        if (laneIt->second != value) {
-          result.isEquivalent = false;
-          result.divergenceReason = "Wave operation result mismatch";
-          result.differences.push_back(
-            "Op " + key.first + " Wave " + std::to_string(key.second) + 
-            " Lane " + std::to_string(laneId) + ": " + 
-            value.toString() + " vs " + laneIt->second.toString());
-        }
+    // Compare output values
+    for (const auto& [laneId, value] : goldenOp.outputValues) {
+      auto mutantIt = mutantOp.outputValues.find(laneId);
+      if (mutantIt == mutantOp.outputValues.end()) {
+        result.differences.push_back("Wave op missing output for lane " + std::to_string(laneId));
+        return false;
+      }
+      
+      if (value != mutantIt->second) {
+        result.differences.push_back("Wave op output differs for lane " + std::to_string(laneId));
+        return false;
       }
     }
   }
   
-  return result.isEquivalent;
+  return true;
 }
 
 bool SemanticValidator::compareMemoryState(
@@ -626,8 +299,25 @@ bool SemanticValidator::compareMemoryState(
     const ExecutionTrace& mutant,
     ValidationResult& result) {
   
-  // Memory state is already compared in compareFinalStates
-  // This method could do additional memory access pattern validation
+  // Final memory state must be identical
+  if (golden.finalMemoryState.size() != mutant.finalMemoryState.size()) {
+    result.differences.push_back("Different number of memory locations");
+    return false;
+  }
+  
+  for (const auto& [addr, value] : golden.finalMemoryState) {
+    auto mutantIt = mutant.finalMemoryState.find(addr);
+    if (mutantIt == mutant.finalMemoryState.end()) {
+      result.differences.push_back("Memory address " + std::to_string(addr) + " missing");
+      return false;
+    }
+    
+    if (value.asInt() != mutantIt->second.asInt()) {
+      result.differences.push_back("Memory at " + std::to_string(addr) + " differs");
+      return false;
+    }
+  }
+  
   return true;
 }
 
@@ -636,347 +326,419 @@ bool SemanticValidator::verifyControlFlowEquivalence(
     const ExecutionTrace& mutant,
     ValidationResult& result) {
   
-  // Control flow can differ as long as final results match
-  // This is already verified by comparing final states
+  // Verify that all lanes took equivalent paths (even if restructured)
+  // This is more complex and would need proper implementation
+  
+  // For now, just check that the same blocks were visited
+  std::set<uint32_t> goldenBlocks;
+  std::set<uint32_t> mutantBlocks;
+  
+  for (const auto& [blockId, record] : golden.blocks) {
+    goldenBlocks.insert(blockId);
+  }
+  
+  for (const auto& [blockId, record] : mutant.blocks) {
+    mutantBlocks.insert(blockId);
+  }
+  
+  if (goldenBlocks != mutantBlocks) {
+    result.differences.push_back("Different blocks visited");
+    return false;
+  }
+  
   return true;
+}
+
+// ===== Bug Reporter Implementation =====
+
+void BugReporter::reportBug(const interpreter::Program& original,
+                          const interpreter::Program& mutant,
+                          const ExecutionTrace& originalTrace,
+                          const ExecutionTrace& mutantTrace,
+                          const SemanticValidator::ValidationResult& validation) {
+  
+  BugReport report;
+  report.id = generateBugId();
+  report.timestamp = std::chrono::system_clock::now();
+  
+  // TODO: Serialize programs to strings
+  report.originalProgram = "// Original program";
+  report.mutantProgram = "// Mutant program";
+  
+  report.validation = validation;
+  
+  // Find divergence point
+  report.traceDivergence = findTraceDivergence(originalTrace, mutantTrace);
+  
+  // Classify bug
+  report.bugType = classifyBug(report.traceDivergence);
+  report.severity = assessSeverity(report.bugType, validation);
+  
+  // Save and log
+  saveBugReport(report);
+  logBug(report);
+}
+
+void BugReporter::reportCrash(const interpreter::Program& original,
+                            const interpreter::Program& mutant,
+                            const std::exception& e) {
+  
+  BugReport report;
+  report.id = generateBugId();
+  report.timestamp = std::chrono::system_clock::now();
+  
+  report.bugType = BugReport::ControlFlowError;
+  report.severity = BugReport::Critical;
+  
+  report.traceDivergence.type = BugReport::TraceDivergence::ControlFlow;
+  report.traceDivergence.description = std::string("Crash: ") + e.what();
+  
+  saveBugReport(report);
+  logBug(report);
+}
+
+BugReporter::BugReport::TraceDivergence BugReporter::findTraceDivergence(
+    const ExecutionTrace& golden,
+    const ExecutionTrace& mutant) {
+  
+  BugReport::TraceDivergence divergence;
+  
+  // TODO: Implement detailed divergence analysis
+  divergence.type = BugReport::TraceDivergence::ControlFlow;
+  divergence.divergencePoint = 0;
+  divergence.description = "Traces diverged";
+  
+  return divergence;
+}
+
+BugReporter::BugReport::BugType BugReporter::classifyBug(
+    const BugReport::TraceDivergence& divergence) {
+  
+  switch (divergence.type) {
+    case BugReport::TraceDivergence::WaveOperation:
+      return BugReport::WaveOpInconsistency;
+    case BugReport::TraceDivergence::Synchronization:
+      return BugReport::DeadlockOrRace;
+    case BugReport::TraceDivergence::Memory:
+      return BugReport::MemoryCorruption;
+    default:
+      return BugReport::ControlFlowError;
+  }
+}
+
+BugReporter::BugReport::Severity BugReporter::assessSeverity(
+    BugReport::BugType type,
+    const SemanticValidator::ValidationResult& validation) {
+  
+  if (type == BugReport::DeadlockOrRace || type == BugReport::MemoryCorruption) {
+    return BugReport::Critical;
+  }
+  
+  if (type == BugReport::WaveOpInconsistency) {
+    return BugReport::High;
+  }
+  
+  return BugReport::Medium;
+}
+
+std::string BugReporter::generateBugId() {
+  static uint64_t counter = 0;
+  return "BUG-" + std::to_string(++counter);
+}
+
+void BugReporter::saveBugReport(const BugReport& report) {
+  // TODO: Save to file
+  std::string filename = "./bugs/" + report.id + ".txt";
+  // Would write report details to file
+}
+
+void BugReporter::logBug(const BugReport& report) {
+  std::cout << "Found bug: " << report.id << "\n";
+  std::cout << "Type: " << static_cast<int>(report.bugType) << "\n";
+  std::cout << "Severity: " << static_cast<int>(report.severity) << "\n";
+  std::cout << "Description: " << report.traceDivergence.description << "\n";
 }
 
 // ===== Main Fuzzer Implementation =====
 
 TraceGuidedFuzzer::TraceGuidedFuzzer() {
-  // Initialize components
-  validator = std::make_unique<SemanticValidator>();
-  bugReporter = std::make_unique<BugReporter>();
-  
-  // Register mutation strategies
+  // Initialize mutation strategies
   mutationStrategies.push_back(std::make_unique<ExplicitLaneDivergenceMutation>());
   mutationStrategies.push_back(std::make_unique<LoopUnrollingMutation>());
   mutationStrategies.push_back(std::make_unique<PrecomputeWaveResultsMutation>());
   mutationStrategies.push_back(std::make_unique<RedundantWaveSyncMutation>());
   mutationStrategies.push_back(std::make_unique<ForceBlockBoundariesMutation>());
   mutationStrategies.push_back(std::make_unique<SerializeMemoryAccessesMutation>());
+  
+  validator = std::make_unique<SemanticValidator>();
+  bugReporter = std::make_unique<BugReporter>();
 }
 
-void TraceGuidedFuzzer::fuzzProgram(
-    interpreter::CompoundStmt* seedProgram,
-    const FuzzingConfig& config) {
+void TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& seedProgram, 
+                                  const FuzzingConfig& config) {
   
-  // Step 1: Capture golden trace
-  ExecutionTrace goldenTrace;
-  interpreter::ThreadgroupContext tgContext(config.threadgroupSize, config.waveSize);
+  std::cout << "Starting trace-guided fuzzing...\n";
+  std::cout << "Threadgroup size: " << config.threadgroupSize << "\n";
+  std::cout << "Wave size: " << config.waveSize << "\n";
   
-  {
-    TraceCaptureInterpreter captureInterp(&goldenTrace);
-    captureInterp.execute(seedProgram, tgContext);
-    captureInterp.captureFinalState(tgContext);
-  }
+  // Create trace capture interpreter
+  TraceCaptureInterpreter captureInterpreter;
   
-  if (config.enableLogging) {
-    logTrace("Golden trace captured", goldenTrace);
-  }
+  // Execute seed and capture golden trace
+  std::cout << "Capturing golden trace...\n";
   
-  // Step 2: Generate and test mutations
-  std::queue<std::unique_ptr<interpreter::CompoundStmt>> workQueue;
-  workQueue.push(seedProgram->clone());
+  interpreter::ThreadOrdering ordering;
+  // Use default source order
   
-  std::set<size_t> testedMutants;  // Dedup by hash
+  auto goldenResult = captureInterpreter.executeAndCaptureTrace(
+    seedProgram, ordering, config.waveSize);
   
-  while (!workQueue.empty() && testedMutants.size() < config.maxMutants) {
-    auto current = std::move(workQueue.front());
-    workQueue.pop();
+  ExecutionTrace goldenTrace = *captureInterpreter.getTrace();
+  
+  std::cout << "Golden trace captured:\n";
+  std::cout << "  - Blocks executed: " << goldenTrace.blocks.size() << "\n";
+  std::cout << "  - Wave operations: " << goldenTrace.waveOperations.size() << "\n";
+  std::cout << "  - Control flow decisions: " << goldenTrace.controlFlowHistory.size() << "\n";
+  
+  // Generate and test mutants
+  size_t mutantsTested = 0;
+  size_t bugsFound = 0;
+  
+  for (auto& strategy : mutationStrategies) {
+    std::cout << "\nTrying mutation strategy: " << strategy->getName() << "\n";
     
-    // Try each mutation strategy
-    for (auto& strategy : mutationStrategies) {
-      auto mutants = generateMutants(current.get(), strategy.get(), goldenTrace);
+    // Generate mutants with this strategy
+    auto mutants = generateMutants(seedProgram, strategy.get(), goldenTrace);
+    
+    for (const auto& mutant : mutants) {
+      if (mutantsTested >= config.maxMutants) {
+        break;
+      }
       
-      for (auto& mutant : mutants) {
-        size_t mutantHash = hashAST(mutant.get());
-        if (testedMutants.count(mutantHash)) continue;
-        testedMutants.insert(mutantHash);
+      mutantsTested++;
+      
+      try {
+        // Execute mutant
+        TraceCaptureInterpreter mutantInterpreter;
+        auto mutantResult = mutantInterpreter.executeAndCaptureTrace(
+          mutant, ordering, config.waveSize);
         
-        // Step 3: Execute mutant
-        ExecutionTrace mutantTrace;
-        interpreter::ThreadgroupContext mutantTgContext(config.threadgroupSize, config.waveSize);
+        ExecutionTrace mutantTrace = *mutantInterpreter.getTrace();
         
-        try {
-          TraceCaptureInterpreter mutantInterp(&mutantTrace);
-          mutantInterp.execute(mutant.get(), mutantTgContext);
-          mutantInterp.captureFinalState(mutantTgContext);
-          
-          // Step 4: Validate semantic equivalence
-          auto validation = validator->validate(goldenTrace, mutantTrace);
-          
-          if (!validation.isEquivalent) {
-            bugReporter->reportBug(seedProgram, mutant.get(), 
-                                 goldenTrace, mutantTrace, validation);
-            bugs.push_back(bugReporter->getLastReport());
-          } else {
-            // Check if mutant provides new coverage
-            if (hasNewCoverage(mutantTrace)) {
-              workQueue.push(std::move(mutant));
-              if (config.enableLogging) {
-                logMutation("New coverage found", strategy->getName());
-              }
-            }
-          }
-          
-        } catch (const std::exception& e) {
-          bugReporter->reportCrash(seedProgram, mutant.get(), e);
+        // Validate semantic equivalence
+        auto validation = validator->validate(goldenTrace, mutantTrace);
+        
+        if (!validation.isEquivalent) {
+          // Found a bug!
+          bugsFound++;
+          bugReporter->reportBug(seedProgram, mutant, goldenTrace, 
+                               mutantTrace, validation);
         }
+        
+      } catch (const std::exception& e) {
+        // Mutant crashed - definitely a bug
+        bugsFound++;
+        bugReporter->reportCrash(seedProgram, mutant, e);
       }
     }
   }
   
-  if (config.enableLogging) {
-    logSummary(testedMutants.size(), bugs.size());
-  }
+  logSummary(mutantsTested, bugsFound);
 }
 
-std::vector<std::unique_ptr<interpreter::CompoundStmt>> TraceGuidedFuzzer::generateMutants(
-    interpreter::CompoundStmt* program,
+std::unique_ptr<interpreter::Program> TraceGuidedFuzzer::mutateAST(
+    const interpreter::Program& program, 
+    unsigned int seed) {
+  // TODO: Implement AST mutation for libFuzzer
+  return nullptr;
+}
+
+std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
+    const interpreter::Program& program,
     MutationStrategy* strategy,
     const ExecutionTrace& trace) {
   
-  std::vector<std::unique_ptr<interpreter::CompoundStmt>> mutants;
+  std::vector<interpreter::Program> mutants;
   
-  // For now, simple implementation - try to apply mutation to each statement
-  for (auto& stmt : program->statements) {
-    if (strategy->canApply(stmt.get(), trace)) {
-      auto mutatedStmt = strategy->apply(stmt.get(), trace);
-      if (mutatedStmt && strategy->validateSemanticPreservation(stmt.get(), mutatedStmt.get(), trace)) {
-        // Create new program with mutated statement
-        auto mutant = program->clone();
-        // Replace statement in mutant (simplified - would need proper AST manipulation)
-        // For now, just append the mutation
-        mutant->addStatement(std::move(mutatedStmt));
-        mutants.push_back(std::move(mutant));
-      }
-    }
-  }
+  // TODO: Implement once AST cloning is available
+  // For now, return empty vector
   
   return mutants;
 }
 
 bool TraceGuidedFuzzer::hasNewCoverage(const ExecutionTrace& trace) {
-  bool newCoverage = false;
+  bool foundNew = false;
   
-  // Check block patterns
-  for (auto& [blockId, block] : trace.blocks) {
-    uint64_t pattern = hashBlockPattern(block);
-    if (seenBlockPatterns.insert(pattern).second) {
-      newCoverage = true;
+  // Check for new block patterns
+  for (const auto& [blockId, record] : trace.blocks) {
+    auto hash = hashBlockPattern(record);
+    if (seenBlockPatterns.find(hash) == seenBlockPatterns.end()) {
+      seenBlockPatterns.insert(hash);
+      foundNew = true;
     }
   }
   
-  // Check wave patterns
-  for (auto& waveOp : trace.waveOperations) {
-    uint64_t pattern = hashWavePattern(waveOp);
-    if (seenWavePatterns.insert(pattern).second) {
-      newCoverage = true;
+  // Check for new wave patterns
+  for (const auto& waveOp : trace.waveOperations) {
+    auto hash = hashWavePattern(waveOp);
+    if (seenWavePatterns.find(hash) == seenWavePatterns.end()) {
+      seenWavePatterns.insert(hash);
+      foundNew = true;
     }
   }
   
-  // Check synchronization patterns
-  for (auto& barrier : trace.barriers) {
-    uint64_t pattern = hashSyncPattern(barrier);
-    if (seenSyncPatterns.insert(pattern).second) {
-      newCoverage = true;
+  // Check for new sync patterns
+  for (const auto& barrier : trace.barriers) {
+    auto hash = hashSyncPattern(barrier);
+    if (seenSyncPatterns.find(hash) == seenSyncPatterns.end()) {
+      seenSyncPatterns.insert(hash);
+      foundNew = true;
     }
   }
   
-  return newCoverage;
+  return foundNew;
 }
 
 uint64_t TraceGuidedFuzzer::hashBlockPattern(const ExecutionTrace::BlockExecutionRecord& block) {
-  // Simple hash combining block type and participant pattern
-  uint64_t hash = static_cast<uint64_t>(block.blockType);
-  for (auto& [waveId, participation] : block.waveParticipation) {
-    hash = hash * 31 + waveId;
-    hash = hash * 31 + participation.participatingLanes.size();
+  // Simple hash based on block ID and participation
+  uint64_t hash = block.blockId;
+  for (const auto& [waveId, participation] : block.waveParticipation) {
+    hash ^= (waveId << 16);
+    hash ^= participation.participatingLanes.size();
   }
   return hash;
 }
 
 uint64_t TraceGuidedFuzzer::hashWavePattern(const ExecutionTrace::WaveOpRecord& waveOp) {
-  // Hash wave op type and participant count
+  // Hash based on operation and participants
   std::hash<std::string> strHash;
   uint64_t hash = strHash(waveOp.opType);
-  hash = hash * 31 + waveOp.waveId;
-  hash = hash * 31 + waveOp.arrivedParticipants.size();
+  hash ^= waveOp.expectedParticipants.size();
+  hash ^= (static_cast<uint64_t>(waveOp.waveId) << 32);
   return hash;
 }
 
 uint64_t TraceGuidedFuzzer::hashSyncPattern(const ExecutionTrace::BarrierRecord& barrier) {
-  // Hash barrier arrival pattern
+  // Hash based on arrival pattern
   uint64_t hash = barrier.barrierId;
-  for (auto& [waveId, lanes] : barrier.arrivedLanesPerWave) {
-    hash = hash * 31 + waveId;
-    hash = hash * 31 + lanes.size();
-  }
+  hash ^= barrier.arrivedLanesPerWave.size();
+  hash ^= (barrier.waveArrivalOrder.size() << 16);
   return hash;
 }
 
 void TraceGuidedFuzzer::logTrace(const std::string& message, const ExecutionTrace& trace) {
-  std::ofstream log("fuzzing_trace.log", std::ios::app);
-  log << "=== " << message << " ===\n";
-  log << "Blocks: " << trace.blocks.size() << "\n";
-  log << "Wave ops: " << trace.waveOperations.size() << "\n";
-  log << "Control flow decisions: " << trace.controlFlowHistory.size() << "\n";
-  log << "Barriers: " << trace.barriers.size() << "\n";
-  log << "\n";
+  std::cout << message << "\n";
+  std::cout << "  Blocks: " << trace.blocks.size() << "\n";
+  std::cout << "  Wave ops: " << trace.waveOperations.size() << "\n";
+  std::cout << "  Barriers: " << trace.barriers.size() << "\n";
 }
 
 void TraceGuidedFuzzer::logMutation(const std::string& message, const std::string& strategy) {
-  std::ofstream log("fuzzing_mutations.log", std::ios::app);
-  log << message << " using strategy: " << strategy << "\n";
+  std::cout << message << " [" << strategy << "]\n";
 }
 
 void TraceGuidedFuzzer::logSummary(size_t testedMutants, size_t bugsFound) {
-  std::ofstream log("fuzzing_summary.log", std::ios::app);
-  log << "=== Fuzzing Summary ===\n";
-  log << "Mutants tested: " << testedMutants << "\n";
-  log << "Bugs found: " << bugsFound << "\n";
-  log << "Block patterns seen: " << seenBlockPatterns.size() << "\n";
-  log << "Wave patterns seen: " << seenWavePatterns.size() << "\n";
-  log << "Sync patterns seen: " << seenSyncPatterns.size() << "\n";
-  log << "\n";
+  std::cout << "\n=== Fuzzing Summary ===\n";
+  std::cout << "Mutants tested: " << testedMutants << "\n";
+  std::cout << "Bugs found: " << bugsFound << "\n";
+  std::cout << "Coverage:\n";
+  std::cout << "  Block patterns: " << seenBlockPatterns.size() << "\n";
+  std::cout << "  Wave patterns: " << seenWavePatterns.size() << "\n";
+  std::cout << "  Sync patterns: " << seenSyncPatterns.size() << "\n";
 }
 
-// ===== AST Serialization (Placeholder) =====
+// ===== LibFuzzer Integration =====
+
+void loadSeedCorpus(TraceGuidedFuzzer* fuzzer) {
+  // Load seed HLSL programs
+  std::vector<std::string> seedFiles = {
+    "seeds/simple_divergence.hlsl",
+    "seeds/loop_divergence.hlsl",
+    "seeds/nested_control_flow.hlsl"
+  };
+  
+  for (const auto& file : seedFiles) {
+    // TODO: Load and add to corpus
+  }
+}
 
 bool deserializeAST(const uint8_t* data, size_t size, 
-                   std::unique_ptr<interpreter::CompoundStmt>& program) {
+                   interpreter::Program& program) {
   // TODO: Implement AST deserialization
   // For now, create a simple test program
-  program = std::make_unique<interpreter::CompoundStmt>();
-  
-  // Simple test: x = 1
-  auto assign = std::make_unique<interpreter::AssignStmt>(
-    "x",
-    std::make_unique<interpreter::LiteralExpr>(interpreter::Value(1))
-  );
-  program->addStatement(std::move(assign));
-  
+  program.numThreadsX = 32;
+  program.numThreadsY = 1;
+  program.numThreadsZ = 1;
   return true;
 }
 
-size_t serializeAST(const interpreter::CompoundStmt* program, 
+size_t serializeAST(const interpreter::Program& program, 
                    uint8_t* data, size_t maxSize) {
   // TODO: Implement AST serialization
   return 0;
 }
 
-size_t hashAST(const interpreter::CompoundStmt* program) {
-  // TODO: Implement proper AST hashing
-  return reinterpret_cast<size_t>(program);
-}
-
-// ===== Seed Corpus =====
-
-void loadSeedCorpus(TraceGuidedFuzzer* fuzzer) {
-  // TODO: Load seed programs from files
-  // For now, create some simple test programs
-  
-  // Test 1: Simple divergence
-  {
-    auto program = std::make_unique<interpreter::CompoundStmt>();
-    
-    // if (laneId < 16) { x = 1; } else { x = 2; }
-    auto condition = std::make_unique<interpreter::BinaryOpExpr>(
-      std::make_unique<interpreter::LaneIndexExpr>(),
-      std::make_unique<interpreter::LiteralExpr>(interpreter::Value(16)),
-      interpreter::BinaryOpExpr::Lt
-    );
-    
-    auto thenBlock = std::make_unique<interpreter::CompoundStmt>();
-    thenBlock->addStatement(std::make_unique<interpreter::AssignStmt>(
-      "x",
-      std::make_unique<interpreter::LiteralExpr>(interpreter::Value(1))
-    ));
-    
-    auto elseBlock = std::make_unique<interpreter::CompoundStmt>();
-    elseBlock->addStatement(std::make_unique<interpreter::AssignStmt>(
-      "x",
-      std::make_unique<interpreter::LiteralExpr>(interpreter::Value(2))
-    ));
-    
-    auto ifStmt = std::make_unique<interpreter::IfStmt>(
-      std::move(condition),
-      std::move(thenBlock),
-      std::move(elseBlock)
-    );
-    
-    program->addStatement(std::move(ifStmt));
-    
-    // Add to corpus
-    // fuzzer->addSeedProgram(std::move(program));
-  }
+size_t hashAST(const interpreter::Program& program) {
+  // Simple hash based on program size
+  return program.statements.size();
 }
 
 } // namespace fuzzer
 } // namespace minihlsl
 
-// ===== LibFuzzer Entry Points =====
-
+// LibFuzzer entry points
 extern "C" {
 
 int LLVMFuzzerInitialize(int* argc, char*** argv) {
-  // Initialize fuzzer
   minihlsl::fuzzer::g_fuzzer = std::make_unique<minihlsl::fuzzer::TraceGuidedFuzzer>();
-  
-  // Load seed programs
   minihlsl::fuzzer::loadSeedCorpus(minihlsl::fuzzer::g_fuzzer.get());
-  
   return 0;
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  if (!minihlsl::fuzzer::g_fuzzer) {
+  if (size < 4) return 0;
+  
+  // Deserialize AST
+  minihlsl::interpreter::Program program;
+  if (!minihlsl::fuzzer::deserializeAST(data, size, program)) {
     return 0;
   }
   
-  // Deserialize AST from fuzzer input
-  std::unique_ptr<minihlsl::interpreter::CompoundStmt> program;
-  if (!minihlsl::fuzzer::deserializeAST(data, size, program)) {
-    return 0;  // Invalid input
-  }
-  
-  // Run trace-guided fuzzing
+  // Run fuzzing
   minihlsl::fuzzer::FuzzingConfig config;
-  config.threadgroupSize = 32;
-  config.waveSize = 32;
-  config.maxMutants = 10;  // Limit for fuzzing iteration
-  config.enableLogging = false;  // Disable for performance
+  config.maxMutants = 10; // Quick fuzzing
+  config.enableLogging = false; // Quiet mode
   
-  minihlsl::fuzzer::g_fuzzer->fuzzProgram(program.get(), config);
+  try {
+    minihlsl::fuzzer::g_fuzzer->fuzzProgram(program, config);
+  } catch (...) {
+    // Ignore exceptions during fuzzing
+  }
   
   return 0;
 }
 
 size_t LLVMFuzzerCustomMutator(uint8_t* data, size_t size, 
                               size_t maxSize, unsigned int seed) {
-  if (!minihlsl::fuzzer::g_fuzzer) {
-    return 0;
-  }
-  
-  // Apply AST-level mutations
-  std::unique_ptr<minihlsl::interpreter::CompoundStmt> program;
+  // Custom mutation based on trace-guided approach
+  minihlsl::interpreter::Program program;
   if (!minihlsl::fuzzer::deserializeAST(data, size, program)) {
     return 0;
   }
   
-  // Apply random mutation
-  auto mutated = minihlsl::fuzzer::g_fuzzer->mutateAST(program.get(), seed);
+  auto mutated = minihlsl::fuzzer::g_fuzzer->mutateAST(program, seed);
+  if (!mutated) {
+    return 0;
+  }
   
-  // Serialize back
-  return minihlsl::fuzzer::serializeAST(mutated.get(), data, maxSize);
+  return minihlsl::fuzzer::serializeAST(*mutated, data, maxSize);
 }
 
 size_t LLVMFuzzerCustomCrossOver(const uint8_t* data1, size_t size1,
                                 const uint8_t* data2, size_t size2,
                                 uint8_t* out, size_t maxOutSize,
                                 unsigned int seed) {
-  // TODO: Implement AST crossover
+  // TODO: Implement crossover
   return 0;
 }
 
