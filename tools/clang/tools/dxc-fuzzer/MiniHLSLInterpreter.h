@@ -1393,6 +1393,14 @@ public:
                          int ourStackIndex);
   void performReconvergence(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
                             int ourStackIndex, bool hasElse);
+  
+  // Result-based versions of helper methods
+  Result<Unit, ExecutionError> evaluateConditionAndSetup_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                                int ourStackIndex, uint32_t parentBlockId, bool hasElse);
+  Result<Unit, ExecutionError> executeThenBranch_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                         int ourStackIndex);
+  Result<Unit, ExecutionError> executeElseBranch_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                         int ourStackIndex);
 };
 
 class ForStmt : public Statement {
@@ -1592,6 +1600,12 @@ public:
                            int ourStackIndex);
   void handleBreakException(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
                             int ourStackIndex);
+  
+  // Result-based versions of helper methods
+  Result<Unit, ExecutionError> executeCaseStatements_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                             int ourStackIndex);
+  Result<Unit, ExecutionError> evaluateSwitchValue_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                           int ourStackIndex);
 };
 
 // Control flow exceptions for break/continue

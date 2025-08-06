@@ -2144,6 +2144,144 @@ std::string IfStmt::toString() const {
   return result;
 }
 
+// Result-based versions of IfStmt helper methods
+Result<Unit, ExecutionError> IfStmt::evaluateConditionAndSetup_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                                int ourStackIndex, uint32_t parentBlockId, bool hasElse) {
+  auto &ourEntry = lane.executionStack[ourStackIndex];
+  
+  std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
+            << " evaluating condition (Result-based)" << std::endl;
+
+  // Only evaluate condition if not already evaluated (avoid re-evaluation on resume)
+  if (!ourEntry.conditionEvaluated) {
+    std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
+              << " evaluating condition for first time (Result-based)" << std::endl;
+    
+    // Evaluate condition using Result-based evaluation
+    Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+    bool conditionResult = condVal.asBool();
+    
+    lane.executionStack[ourStackIndex].conditionResult = conditionResult;
+    lane.executionStack[ourStackIndex].conditionEvaluated = true;
+    std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
+              << " condition result=" << ourEntry.conditionResult
+              << " (Result-based)" << std::endl;
+  } else {
+    std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
+              << " using cached condition result="
+              << ourEntry.conditionResult << " (Result-based)" << std::endl;
+  }
+
+  // Condition evaluated successfully - set up blocks
+  std::set<uint32_t> divergentBlocks;
+  tg.pushMergePoint(wave.waveId, lane.laneId,
+                    static_cast<const void *>(this), parentBlockId,
+                    divergentBlocks);
+
+  std::vector<MergeStackEntry> currentMergeStack =
+      tg.getCurrentMergeStack(wave.waveId, lane.laneId);
+  auto blockIds =
+      tg.createIfBlocks(static_cast<const void *>(this), parentBlockId,
+                        currentMergeStack, hasElse, lane.executionPath);
+  ourEntry.ifThenBlockId = std::get<0>(blockIds);
+  ourEntry.ifElseBlockId = std::get<1>(blockIds);
+  ourEntry.ifMergeBlockId = std::get<2>(blockIds);
+  std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
+            << " setup complete: thenBlockId=" << ourEntry.ifThenBlockId
+            << ", elseBlockId=" << ourEntry.ifElseBlockId 
+            << ", mergeBlockId=" << ourEntry.ifMergeBlockId
+            << " (Result-based)" << std::endl;
+
+  // Choose which branch to execute based on condition
+  if (ourEntry.conditionResult) {
+    ourEntry.phase = LaneContext::ControlFlowPhase::ExecutingThenBlock;
+    ourEntry.statementIndex = 0;
+  } else {
+    if (hasElse) {
+      ourEntry.phase = LaneContext::ControlFlowPhase::ExecutingElseBlock;
+      ourEntry.statementIndex = 0;
+    } else {
+      ourEntry.phase = LaneContext::ControlFlowPhase::Reconverging;
+    }
+  }
+
+  return Ok<Unit, ExecutionError>(Unit{});
+}
+
+Result<Unit, ExecutionError> IfStmt::executeThenBranch_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                       int ourStackIndex) {
+  auto &ourEntry = lane.executionStack[ourStackIndex];
+  
+  std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
+            << " executing then block from statement "
+            << ourEntry.statementIndex << " (Result-based)" << std::endl;
+  
+  // Execute statements in then block from saved position
+  for (size_t i = ourEntry.statementIndex; i < thenBlock_.size(); i++) {
+    lane.executionStack[ourStackIndex].statementIndex = i;
+    
+    // Use Result-based execute_result instead of exception-based execute
+    TRY_RESULT(thenBlock_[i]->execute_result(lane, wave, tg), Unit, ExecutionError);
+    
+    if (lane.state != ThreadState::Ready) {
+      // Child statement needs to resume - don't continue
+      return Ok<Unit, ExecutionError>(Unit{});
+    }
+    
+    if (lane.hasReturned) {
+      std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
+                << " popping stack due to return (depth "
+                << lane.executionStack.size() << "->"
+                << (lane.executionStack.size() - 1) << ", this=" << this
+                << ") (Result-based)" << std::endl;
+      lane.executionStack.pop_back();
+      tg.popMergePoint(wave.waveId, lane.laneId);
+      return Ok<Unit, ExecutionError>(Unit{});
+    }
+
+    lane.executionStack[ourStackIndex].statementIndex = i + 1;
+  }
+  
+  return Ok<Unit, ExecutionError>(Unit{});
+}
+
+Result<Unit, ExecutionError> IfStmt::executeElseBranch_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                       int ourStackIndex) {
+  auto &ourEntry = lane.executionStack[ourStackIndex];
+  
+  std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
+            << " executing else block from statement "
+            << ourEntry.statementIndex << " (Result-based)" << std::endl;
+
+  // Execute statements in else block from saved position
+  for (size_t i = ourEntry.statementIndex; i < elseBlock_.size(); i++) {
+    lane.executionStack[ourStackIndex].statementIndex = i;
+    
+    // Use Result-based execute_result instead of exception-based execute
+    TRY_RESULT(elseBlock_[i]->execute_result(lane, wave, tg), Unit, ExecutionError);
+    
+    if (lane.hasReturned) {
+      std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
+                << " popping stack due to return (depth "
+                << lane.executionStack.size() << "->"
+                << (lane.executionStack.size() - 1) << ", this=" << this
+                << ") (Result-based)" << std::endl;
+      lane.executionStack.pop_back();
+      tg.popMergePoint(wave.waveId, lane.laneId);
+      return Ok<Unit, ExecutionError>(Unit{});
+    }
+
+    if (lane.state != ThreadState::Ready) {
+      // Child statement needs to resume - don't continue
+      return Ok<Unit, ExecutionError>(Unit{});
+    }
+
+    lane.executionStack[ourStackIndex].statementIndex = i + 1;
+  }
+  
+  return Ok<Unit, ExecutionError>(Unit{});
+}
+
 ForStmt::ForStmt(const std::string &var, std::unique_ptr<Expression> init,
                  std::unique_ptr<Expression> cond,
                  std::unique_ptr<Expression> inc,
@@ -6794,6 +6932,130 @@ Result<Unit, ExecutionError> SwitchStmt::execute_result(LaneContext &lane, WaveC
   }
   
   std::cout << "DEBUG: SwitchStmt - Switch completed successfully" << std::endl;
+  return Ok<Unit, ExecutionError>(Unit{});
+}
+
+// Result-based helper functions for SwitchStmt
+Result<Unit, ExecutionError> SwitchStmt::evaluateSwitchValue_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                         int ourStackIndex) {
+  auto &ourEntry = lane.executionStack[ourStackIndex];
+  
+  std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
+            << " evaluating switch condition (Result-based)" << std::endl;
+
+  // Only evaluate condition if not already evaluated
+  if (!ourEntry.conditionEvaluated) {
+    std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
+              << " evaluating condition for first time" << std::endl;
+    
+    auto condValue = condition_->evaluate_result(lane, wave, tg);
+    if (condValue.is_err()) {
+      return Err<Unit, ExecutionError>(condValue.unwrap_err());
+    }
+    
+    lane.executionStack[ourStackIndex].switchValue = condValue.unwrap();
+    lane.executionStack[ourStackIndex].conditionEvaluated = true;
+    std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
+              << " switch condition evaluated to: " << condValue.unwrap().asInt()
+              << std::endl;
+  } else {
+    std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
+              << " using cached condition result="
+              << ourEntry.switchValue.asInt() << std::endl;
+  }
+  
+  return Ok<Unit, ExecutionError>(Unit{});
+}
+
+Result<Unit, ExecutionError> SwitchStmt::executeCaseStatements_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                           int ourStackIndex) {
+  auto &ourEntry = lane.executionStack[ourStackIndex];
+  
+  // Execute all statements from current position until case/switch completion
+  while (ourEntry.caseIndex < cases_.size()) {
+    const auto &caseBlock = cases_[ourEntry.caseIndex];
+    std::string caseLabel = caseBlock.value.has_value()
+                                ? std::to_string(caseBlock.value.value())
+                                : "default";
+
+    // Execute all statements in current case from saved position
+    for (size_t i = ourEntry.statementIndex;
+         i < caseBlock.statements.size(); i++) {
+      lane.executionStack[ourStackIndex].statementIndex = i;
+
+      std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
+                << " executing statement " << i << " in case " << caseLabel
+                << " (Result-based)" << std::endl;
+
+      // Use Result-based execute_result instead of exception-based execute
+      TRY_RESULT(caseBlock.statements[i]->execute_result(lane, wave, tg), Unit, ExecutionError);
+
+      if (lane.hasReturned) {
+        std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
+                  << " popping stack due to return (depth "
+                  << lane.executionStack.size() << "->"
+                  << (lane.executionStack.size() - 1) << ", this=" << this
+                  << ")" << std::endl;
+        // Clean up and return
+        lane.executionStack.pop_back();
+        tg.popMergePoint(wave.waveId, lane.laneId);
+        return Ok<Unit, ExecutionError>(Unit{});
+      }
+
+      if (lane.state != ThreadState::Ready) {
+        // Child statement needs to resume - don't continue
+        return Ok<Unit, ExecutionError>(Unit{});
+      }
+      lane.executionStack[ourStackIndex].statementIndex = i + 1;
+    }
+
+    // Check if lane is ready before fallthrough - if waiting for wave
+    // operations, don't move to next case
+    if (lane.state != ThreadState::Ready) {
+      std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
+                << " completed case " << caseLabel
+                << " but is not Ready (state=" << (int)lane.state
+                << "), pausing before fallthrough" << std::endl;
+      return Ok<Unit, ExecutionError>(Unit{});
+    }
+
+    // Current case completed - move to next case (fallthrough)
+    std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
+              << " completed case " << caseLabel
+              << ", falling through to next" << std::endl;
+
+    size_t nextCaseIndex = ourEntry.caseIndex + 1;
+
+    // Move lane to next case block if it exists
+    if (nextCaseIndex < ourEntry.switchCaseBlockIds.size()) {
+      uint32_t currentCaseBlockId =
+          ourEntry.switchCaseBlockIds[ourEntry.caseIndex];
+      uint32_t nextCaseBlockId = ourEntry.switchCaseBlockIds[nextCaseIndex];
+
+      std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
+                << " moving from case block " << currentCaseBlockId
+                << " to case block " << nextCaseBlockId << " (fallthrough)"
+                << std::endl;
+
+      // Move to next case block (fallthrough)
+      tg.moveThreadFromUnknownToParticipating(nextCaseBlockId, wave.waveId,
+                                              lane.laneId);
+
+      // Remove from current case block
+      tg.removeThreadFromAllSets(currentCaseBlockId, wave.waveId,
+                                 lane.laneId);
+    }
+
+    // Move to next case
+    lane.executionStack[ourStackIndex].caseIndex++;
+    lane.executionStack[ourStackIndex].statementIndex = 0;
+  }
+
+  // All cases completed - enter reconvergence
+  std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
+            << " completed all cases, entering reconvergence" << std::endl;
+  ourEntry.phase = LaneContext::ControlFlowPhase::Reconverging;
+  
   return Ok<Unit, ExecutionError>(Unit{});
 }
 
