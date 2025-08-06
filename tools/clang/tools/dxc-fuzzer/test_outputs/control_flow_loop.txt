@@ -349,6 +349,7 @@ DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 3 (phase: Executed)
 DEBUG: AssignStmt - Lane 1 assigned value 3 to variable 'result'
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
+DEBUG: ForStmt - Lane 1 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 1 body completed in block 4, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 2
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 2
@@ -377,6 +378,7 @@ DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 3 (phase: Executed)
 DEBUG: AssignStmt - Lane 2 assigned value 3 to variable 'result'
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 4 (registry returned: 4)
+DEBUG: ForStmt - Lane 2 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 2 body completed in block 4, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 2
@@ -405,6 +407,7 @@ DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 3 (phase: Consumed)
 DEBUG: AssignStmt - Lane 3 assigned value 3 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 4 (registry returned: 4)
+DEBUG: ForStmt - Lane 3 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 3 body completed in block 4, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 2
@@ -604,6 +607,7 @@ DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 2 (phase: Executed)
 DEBUG: AssignStmt - Lane 2 assigned value 5 to variable 'result'
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
+DEBUG: ForStmt - Lane 2 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 2 body completed in block 5, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 2
@@ -632,6 +636,7 @@ DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 2 (phase: Consumed)
 DEBUG: AssignStmt - Lane 3 assigned value 5 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
+DEBUG: ForStmt - Lane 3 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 3 body completed in block 5, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 2
@@ -774,6 +779,7 @@ DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 1 (phase: Consumed)
 DEBUG: AssignStmt - Lane 3 assigned value 6 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
+DEBUG: ForStmt - Lane 3 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 3 body completed in block 6, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 2
@@ -1155,6 +1161,7 @@ DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 3 (phase: Executed)
 DEBUG: AssignStmt - Lane 1 assigned value 3 to variable 'result'
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
+DEBUG: ForStmt - Lane 1 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 1 body completed in block 4, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 2
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 2
@@ -1183,6 +1190,7 @@ DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 3 (phase: Executed)
 DEBUG: AssignStmt - Lane 2 assigned value 3 to variable 'result'
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 4 (registry returned: 4)
+DEBUG: ForStmt - Lane 2 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 2 body completed in block 4, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 2
@@ -1211,6 +1219,7 @@ DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 3 (phase: Consumed)
 DEBUG: AssignStmt - Lane 3 assigned value 3 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 4 (registry returned: 4)
+DEBUG: ForStmt - Lane 3 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 3 body completed in block 4, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 2
@@ -1410,6 +1419,7 @@ DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 2 (phase: Executed)
 DEBUG: AssignStmt - Lane 2 assigned value 5 to variable 'result'
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
+DEBUG: ForStmt - Lane 2 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 2 body completed in block 5, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 2
@@ -1438,6 +1448,7 @@ DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 2 (phase: Consumed)
 DEBUG: AssignStmt - Lane 3 assigned value 5 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
+DEBUG: ForStmt - Lane 3 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 3 body completed in block 5, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 2
@@ -1580,6 +1591,7 @@ DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 1 (phase: Consumed)
 DEBUG: AssignStmt - Lane 3 assigned value 6 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
+DEBUG: ForStmt - Lane 3 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 3 body completed in block 6, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 2

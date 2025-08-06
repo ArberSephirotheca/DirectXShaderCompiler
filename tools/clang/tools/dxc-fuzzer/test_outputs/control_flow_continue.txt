@@ -242,7 +242,7 @@ WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4 (registry retur
 DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 4
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 0 child statement needs resume (Result-based)
-  Block before: 2, Block after: 4
+  Block before: 2, Block after: 4, statementIndex stays at: 0
 DEBUG: ForStmt - Lane 1 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=1, our index=0, this=0x5080000027a0)
@@ -293,7 +293,7 @@ WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry retur
 DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 4
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 1 child statement needs resume (Result-based)
-  Block before: 2, Block after: 4
+  Block before: 2, Block after: 4, statementIndex stays at: 0
 DEBUG: ForStmt - Lane 2 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (Result-based, stack depth=1, our index=0, this=0x5080000027a0)
@@ -338,7 +338,7 @@ DEBUG: Block 4 unknown lanes before removal: {2 3}
 DEBUG: Block 4 unknown lanes after removal: {3}
 DEBUG: Block 4 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: ForStmt - Lane 2 child statement needs resume (Result-based)
-  Block before: 2, Block after: 2
+  Block before: 2, Block after: 2, statementIndex stays at: 0
 DEBUG: ForStmt - Lane 3 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (Result-based, stack depth=1, our index=0, this=0x5080000027a0)
@@ -384,7 +384,7 @@ DEBUG: Block 4 unknown lanes after removal: {}
 DEBUG: Block 4 areAllUnknownLanesResolvedForWave(0) = 1 (tracked by registry)
 DEBUG: Block 4 now has all unknowns resolved for wave 0 - checking for ready wave operations
 DEBUG: ForStmt - Lane 3 child statement needs resume (Result-based)
-  Block before: 2, Block after: 2
+  Block before: 2, Block after: 2, statementIndex stays at: 0
 DEBUG: ForStmt - Lane 0 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=2, our index=0, this=0x5080000027a0)
@@ -495,6 +495,7 @@ DEBUG: removeThreadFromAllSets - block 4 has 0 participating lanes after removal
 DEBUG: IfStmt - Lane 2 reconvergence complete
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 natural flow from block 2 to block 5 during statement 0 (likely merge block, Result-based)
+DEBUG: ForStmt - Lane 2 completed statement 0, incrementing statementIndex to 1
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 executing statement 1 in block 5 (Result-based)
 DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
@@ -554,6 +555,7 @@ DEBUG: removeThreadFromAllSets - block 4 has 0 participating lanes after removal
 DEBUG: IfStmt - Lane 3 reconvergence complete
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 natural flow from block 2 to block 5 during statement 0 (likely merge block, Result-based)
+DEBUG: ForStmt - Lane 3 completed statement 0, incrementing statementIndex to 1
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 executing statement 1 in block 5 (Result-based)
 DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
@@ -614,6 +616,7 @@ DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 2 (phase: Executed)
 DEBUG: AssignStmt - Lane 2 assigned value 2 to variable 'result'
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
+DEBUG: ForStmt - Lane 2 completed statement 1, incrementing statementIndex to 2
 DEBUG: ForStmt - Lane 2 popped iteration merge point 0x5080000077a0 after iteration 0
 DEBUG: ForStmt - Lane 2 body completed in block 5, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
@@ -641,6 +644,7 @@ DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 2 (phase: Consumed)
 DEBUG: AssignStmt - Lane 3 assigned value 2 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
+DEBUG: ForStmt - Lane 3 completed statement 1, incrementing statementIndex to 2
 DEBUG: ForStmt - Lane 3 popped iteration merge point 0x5080000077a0 after iteration 0
 DEBUG: ForStmt - Lane 3 body completed in block 5, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
@@ -729,7 +733,7 @@ DEBUG: Block 6 unknown lanes before removal: {0 1 2 3}
 DEBUG: Block 6 unknown lanes after removal: {1 2 3}
 DEBUG: Block 6 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: ForStmt - Lane 0 child statement needs resume (Result-based)
-  Block before: 2, Block after: 2
+  Block before: 2, Block after: 2, statementIndex stays at: 0
 DEBUG: ForStmt - Lane 1 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=1, our index=0, this=0x5080000027a0)
@@ -780,7 +784,7 @@ WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 6 (registry retur
 DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 6
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 6 (registry returned: 6)
 DEBUG: ForStmt - Lane 1 child statement needs resume (Result-based)
-  Block before: 2, Block after: 6
+  Block before: 2, Block after: 6, statementIndex stays at: 0
 DEBUG: ForStmt - Lane 2 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 2 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x5080000027a0)
@@ -833,6 +837,7 @@ DEBUG: removeThreadFromAllSets - block 6 has 1 participating lanes after removal
 DEBUG: IfStmt - Lane 0 reconvergence complete
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 0 natural flow from block 2 to block 7 during statement 0 (likely merge block, Result-based)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 0 executing statement 1 in block 7 (Result-based)
 DEBUG: AssignStmt - Lane 0 assigning to variable 'result' (Result-based)
@@ -935,7 +940,7 @@ DEBUG: Block 6 unknown lanes before removal: {2 3}
 DEBUG: Block 6 unknown lanes after removal: {3}
 DEBUG: Block 6 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: ForStmt - Lane 2 child statement needs resume (Result-based)
-  Block before: 2, Block after: 2
+  Block before: 2, Block after: 2, statementIndex stays at: 0
 DEBUG: isAllParticipantsKnown - Block 7 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: ForStmt - Lane 3 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -982,7 +987,7 @@ DEBUG: Block 6 unknown lanes after removal: {}
 DEBUG: Block 6 areAllUnknownLanesResolvedForWave(0) = 1 (tracked by registry)
 DEBUG: Block 6 now has all unknowns resolved for wave 0 - checking for ready wave operations
 DEBUG: ForStmt - Lane 3 child statement needs resume (Result-based)
-  Block before: 2, Block after: 2
+  Block before: 2, Block after: 2, statementIndex stays at: 0
 DEBUG: isAllParticipantsKnown - Block 7 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: ForStmt - Lane 1 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -1030,6 +1035,7 @@ DEBUG: removeThreadFromAllSets - block 6 has 0 participating lanes after removal
 DEBUG: IfStmt - Lane 2 reconvergence complete
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 2 natural flow from block 2 to block 7 during statement 0 (likely merge block, Result-based)
+DEBUG: ForStmt - Lane 2 completed statement 0, incrementing statementIndex to 1
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 2 executing statement 1 in block 7 (Result-based)
 DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
@@ -1089,6 +1095,7 @@ DEBUG: removeThreadFromAllSets - block 6 has 0 participating lanes after removal
 DEBUG: IfStmt - Lane 3 reconvergence complete
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 3 natural flow from block 2 to block 7 during statement 0 (likely merge block, Result-based)
+DEBUG: ForStmt - Lane 3 completed statement 0, incrementing statementIndex to 1
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 3 executing statement 1 in block 7 (Result-based)
 DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
@@ -1146,6 +1153,7 @@ DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 3 (phase: Executed)
 DEBUG: AssignStmt - Lane 2 assigned value 5 to variable 'result'
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
+DEBUG: ForStmt - Lane 2 completed statement 1, incrementing statementIndex to 2
 DEBUG: ForStmt - Lane 2 popped iteration merge point 0x5080000177a0 after iteration 1
 DEBUG: ForStmt - Lane 2 body completed in block 7, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
@@ -1173,6 +1181,7 @@ DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 3 (phase: Executed)
 DEBUG: AssignStmt - Lane 3 assigned value 5 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
+DEBUG: ForStmt - Lane 3 completed statement 1, incrementing statementIndex to 2
 DEBUG: ForStmt - Lane 3 popped iteration merge point 0x5080000177a0 after iteration 1
 DEBUG: ForStmt - Lane 3 body completed in block 7, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
@@ -1200,6 +1209,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 3 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 3 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
+DEBUG: ForStmt - Lane 0 completed statement 1, incrementing statementIndex to 2
 DEBUG: ForStmt - Lane 0 popped iteration merge point 0x5080000177a0 after iteration 1
 DEBUG: ForStmt - Lane 0 body completed in block 7, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 2
@@ -1266,7 +1276,7 @@ WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 8 (registry retur
 DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 8
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 8 (registry returned: 8)
 DEBUG: ForStmt - Lane 1 child statement needs resume (Result-based)
-  Block before: 2, Block after: 8
+  Block before: 2, Block after: 8, statementIndex stays at: 0
 DEBUG: ForStmt - Lane 2 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 2 in phase EvaluatingIncrement (Result-based, stack depth=1, our index=0, this=0x5080000027a0)
@@ -1402,7 +1412,7 @@ WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 8 (registry retur
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 8
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 8 (registry returned: 8)
 DEBUG: ForStmt - Lane 2 child statement needs resume (Result-based)
-  Block before: 2, Block after: 8
+  Block before: 2, Block after: 8, statementIndex stays at: 0
 DEBUG: ForStmt - Lane 3 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (Result-based, stack depth=1, our index=0, this=0x5080000027a0)
@@ -1447,7 +1457,7 @@ DEBUG: Block 8 unknown lanes before removal: {0 3}
 DEBUG: Block 8 unknown lanes after removal: {0}
 DEBUG: Block 8 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: ForStmt - Lane 3 child statement needs resume (Result-based)
-  Block before: 2, Block after: 2
+  Block before: 2, Block after: 2, statementIndex stays at: 0
 DEBUG: ForStmt - Lane 0 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=1, our index=0, this=0x5080000027a0)
@@ -1493,7 +1503,7 @@ DEBUG: Block 8 unknown lanes after removal: {}
 DEBUG: Block 8 areAllUnknownLanesResolvedForWave(0) = 1 (tracked by registry)
 DEBUG: Block 8 now has all unknowns resolved for wave 0 - checking for ready wave operations
 DEBUG: ForStmt - Lane 0 child statement needs resume (Result-based)
-  Block before: 2, Block after: 2
+  Block before: 2, Block after: 2, statementIndex stays at: 0
 DEBUG: ForStmt - Lane 1 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x5080000027a0)
@@ -1575,6 +1585,7 @@ DEBUG: removeThreadFromAllSets - block 8 has 0 participating lanes after removal
 DEBUG: IfStmt - Lane 3 reconvergence complete
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: ForStmt - Lane 3 natural flow from block 2 to block 9 during statement 0 (likely merge block, Result-based)
+DEBUG: ForStmt - Lane 3 completed statement 0, incrementing statementIndex to 1
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: ForStmt - Lane 3 executing statement 1 in block 9 (Result-based)
 DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
@@ -1634,6 +1645,7 @@ DEBUG: removeThreadFromAllSets - block 8 has 0 participating lanes after removal
 DEBUG: IfStmt - Lane 0 reconvergence complete
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: ForStmt - Lane 0 natural flow from block 2 to block 9 during statement 0 (likely merge block, Result-based)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: ForStmt - Lane 0 executing statement 1 in block 9 (Result-based)
 DEBUG: AssignStmt - Lane 0 assigning to variable 'result' (Result-based)
@@ -1711,7 +1723,7 @@ WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 10 (registry retu
 DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 10
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 1 child statement needs resume (Result-based)
-  Block before: 2, Block after: 10
+  Block before: 2, Block after: 10, statementIndex stays at: 0
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: onLaneFinishWaveOp - Lane 0 finishing wave op in block 9
 DEBUG: onLaneFinishWaveOp - Current status in block 9: 2
@@ -1744,6 +1756,7 @@ DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 2 (phase: Executed)
 DEBUG: AssignStmt - Lane 3 assigned value 7 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
+DEBUG: ForStmt - Lane 3 completed statement 1, incrementing statementIndex to 2
 DEBUG: ForStmt - Lane 3 popped iteration merge point 0x5080000277a0 after iteration 2
 DEBUG: ForStmt - Lane 3 body completed in block 9, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
@@ -1771,6 +1784,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 2 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 5 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry returned: 9)
+DEBUG: ForStmt - Lane 0 completed statement 1, incrementing statementIndex to 2
 DEBUG: ForStmt - Lane 0 popped iteration merge point 0x5080000277a0 after iteration 2
 DEBUG: ForStmt - Lane 0 body completed in block 9, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 2
@@ -1889,7 +1903,7 @@ DEBUG: Block 10 unknown lanes before removal: {0 2 3}
 DEBUG: Block 10 unknown lanes after removal: {0 3}
 DEBUG: Block 10 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: ForStmt - Lane 2 child statement needs resume (Result-based)
-  Block before: 2, Block after: 2
+  Block before: 2, Block after: 2, statementIndex stays at: 0
 DEBUG: ForStmt - Lane 3 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x5080000027a0)
@@ -1985,6 +1999,7 @@ DEBUG: removeThreadFromAllSets - block 10 has 0 participating lanes after remova
 DEBUG: IfStmt - Lane 2 reconvergence complete
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: ForStmt - Lane 2 natural flow from block 2 to block 11 during statement 0 (likely merge block, Result-based)
+DEBUG: ForStmt - Lane 2 completed statement 0, incrementing statementIndex to 1
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: ForStmt - Lane 2 executing statement 1 in block 11 (Result-based)
 DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
@@ -2056,7 +2071,7 @@ WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 10 (registry retu
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 10
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 3 child statement needs resume (Result-based)
-  Block before: 2, Block after: 10
+  Block before: 2, Block after: 10, statementIndex stays at: 0
 DEBUG: isAllParticipantsKnown - Block 11 wave 0 has 2 unknown lanes: 0 3  - These lanes need to be resolved to Participating or Left
 DEBUG: ForStmt - Lane 0 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -2103,7 +2118,7 @@ DEBUG: Block 10 unknown lanes after removal: {}
 DEBUG: Block 10 areAllUnknownLanesResolvedForWave(0) = 1 (tracked by registry)
 DEBUG: Block 10 now has all unknowns resolved for wave 0 - checking for ready wave operations
 DEBUG: ForStmt - Lane 0 child statement needs resume (Result-based)
-  Block before: 2, Block after: 2
+  Block before: 2, Block after: 2, statementIndex stays at: 0
 DEBUG: isAllParticipantsKnown - Block 11 wave 0 has 2 unknown lanes: 0 3  - These lanes need to be resolved to Participating or Left
 DEBUG: ForStmt - Lane 1 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -2191,6 +2206,7 @@ DEBUG: removeThreadFromAllSets - block 10 has 0 participating lanes after remova
 DEBUG: IfStmt - Lane 0 reconvergence complete
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: ForStmt - Lane 0 natural flow from block 2 to block 11 during statement 0 (likely merge block, Result-based)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: ForStmt - Lane 0 executing statement 1 in block 11 (Result-based)
 DEBUG: AssignStmt - Lane 0 assigning to variable 'result' (Result-based)
@@ -2247,6 +2263,7 @@ DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 2 (phase: Executed)
 DEBUG: AssignStmt - Lane 2 assigned value 7 to variable 'result'
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
+DEBUG: ForStmt - Lane 2 completed statement 1, incrementing statementIndex to 2
 DEBUG: ForStmt - Lane 2 popped iteration merge point 0x5080000377a0 after iteration 3
 DEBUG: ForStmt - Lane 2 body completed in block 11, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
@@ -2283,6 +2300,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 2 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 7 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 11 (registry returned: 11)
+DEBUG: ForStmt - Lane 0 completed statement 1, incrementing statementIndex to 2
 DEBUG: ForStmt - Lane 0 popped iteration merge point 0x5080000377a0 after iteration 3
 DEBUG: ForStmt - Lane 0 body completed in block 11, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 2
@@ -2710,7 +2728,7 @@ WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4 (registry retur
 DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 4
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 0 child statement needs resume (Result-based)
-  Block before: 2, Block after: 4
+  Block before: 2, Block after: 4, statementIndex stays at: 0
 DEBUG: ForStmt - Lane 1 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=1, our index=0, this=0x5080000027a0)
@@ -2761,7 +2779,7 @@ WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry retur
 DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 4
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 1 child statement needs resume (Result-based)
-  Block before: 2, Block after: 4
+  Block before: 2, Block after: 4, statementIndex stays at: 0
 DEBUG: ForStmt - Lane 2 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (Result-based, stack depth=1, our index=0, this=0x5080000027a0)
@@ -2806,7 +2824,7 @@ DEBUG: Block 4 unknown lanes before removal: {2 3}
 DEBUG: Block 4 unknown lanes after removal: {3}
 DEBUG: Block 4 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: ForStmt - Lane 2 child statement needs resume (Result-based)
-  Block before: 2, Block after: 2
+  Block before: 2, Block after: 2, statementIndex stays at: 0
 DEBUG: ForStmt - Lane 3 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (Result-based, stack depth=1, our index=0, this=0x5080000027a0)
@@ -2852,7 +2870,7 @@ DEBUG: Block 4 unknown lanes after removal: {}
 DEBUG: Block 4 areAllUnknownLanesResolvedForWave(0) = 1 (tracked by registry)
 DEBUG: Block 4 now has all unknowns resolved for wave 0 - checking for ready wave operations
 DEBUG: ForStmt - Lane 3 child statement needs resume (Result-based)
-  Block before: 2, Block after: 2
+  Block before: 2, Block after: 2, statementIndex stays at: 0
 DEBUG: ForStmt - Lane 0 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=2, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=2, our index=0, this=0x5080000027a0)
@@ -2963,6 +2981,7 @@ DEBUG: removeThreadFromAllSets - block 4 has 0 participating lanes after removal
 DEBUG: IfStmt - Lane 2 reconvergence complete
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 natural flow from block 2 to block 5 during statement 0 (likely merge block, Result-based)
+DEBUG: ForStmt - Lane 2 completed statement 0, incrementing statementIndex to 1
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 executing statement 1 in block 5 (Result-based)
 DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
@@ -3022,6 +3041,7 @@ DEBUG: removeThreadFromAllSets - block 4 has 0 participating lanes after removal
 DEBUG: IfStmt - Lane 3 reconvergence complete
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 natural flow from block 2 to block 5 during statement 0 (likely merge block, Result-based)
+DEBUG: ForStmt - Lane 3 completed statement 0, incrementing statementIndex to 1
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 executing statement 1 in block 5 (Result-based)
 DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
@@ -3082,6 +3102,7 @@ DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 2 (phase: Executed)
 DEBUG: AssignStmt - Lane 2 assigned value 2 to variable 'result'
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
+DEBUG: ForStmt - Lane 2 completed statement 1, incrementing statementIndex to 2
 DEBUG: ForStmt - Lane 2 popped iteration merge point 0x5080000077a0 after iteration 0
 DEBUG: ForStmt - Lane 2 body completed in block 5, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
@@ -3109,6 +3130,7 @@ DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 2 (phase: Consumed)
 DEBUG: AssignStmt - Lane 3 assigned value 2 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
+DEBUG: ForStmt - Lane 3 completed statement 1, incrementing statementIndex to 2
 DEBUG: ForStmt - Lane 3 popped iteration merge point 0x5080000077a0 after iteration 0
 DEBUG: ForStmt - Lane 3 body completed in block 5, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
@@ -3197,7 +3219,7 @@ DEBUG: Block 6 unknown lanes before removal: {0 1 2 3}
 DEBUG: Block 6 unknown lanes after removal: {1 2 3}
 DEBUG: Block 6 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: ForStmt - Lane 0 child statement needs resume (Result-based)
-  Block before: 2, Block after: 2
+  Block before: 2, Block after: 2, statementIndex stays at: 0
 DEBUG: ForStmt - Lane 1 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=1, our index=0, this=0x5080000027a0)
@@ -3248,7 +3270,7 @@ WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 6 (registry retur
 DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 6
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 6 (registry returned: 6)
 DEBUG: ForStmt - Lane 1 child statement needs resume (Result-based)
-  Block before: 2, Block after: 6
+  Block before: 2, Block after: 6, statementIndex stays at: 0
 DEBUG: ForStmt - Lane 2 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 2 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x5080000027a0)
@@ -3301,6 +3323,7 @@ DEBUG: removeThreadFromAllSets - block 6 has 1 participating lanes after removal
 DEBUG: IfStmt - Lane 0 reconvergence complete
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 0 natural flow from block 2 to block 7 during statement 0 (likely merge block, Result-based)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 0 executing statement 1 in block 7 (Result-based)
 DEBUG: AssignStmt - Lane 0 assigning to variable 'result' (Result-based)
@@ -3403,7 +3426,7 @@ DEBUG: Block 6 unknown lanes before removal: {2 3}
 DEBUG: Block 6 unknown lanes after removal: {3}
 DEBUG: Block 6 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: ForStmt - Lane 2 child statement needs resume (Result-based)
-  Block before: 2, Block after: 2
+  Block before: 2, Block after: 2, statementIndex stays at: 0
 DEBUG: isAllParticipantsKnown - Block 7 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: ForStmt - Lane 3 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -3450,7 +3473,7 @@ DEBUG: Block 6 unknown lanes after removal: {}
 DEBUG: Block 6 areAllUnknownLanesResolvedForWave(0) = 1 (tracked by registry)
 DEBUG: Block 6 now has all unknowns resolved for wave 0 - checking for ready wave operations
 DEBUG: ForStmt - Lane 3 child statement needs resume (Result-based)
-  Block before: 2, Block after: 2
+  Block before: 2, Block after: 2, statementIndex stays at: 0
 DEBUG: isAllParticipantsKnown - Block 7 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: ForStmt - Lane 1 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -3498,6 +3521,7 @@ DEBUG: removeThreadFromAllSets - block 6 has 0 participating lanes after removal
 DEBUG: IfStmt - Lane 2 reconvergence complete
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 2 natural flow from block 2 to block 7 during statement 0 (likely merge block, Result-based)
+DEBUG: ForStmt - Lane 2 completed statement 0, incrementing statementIndex to 1
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 2 executing statement 1 in block 7 (Result-based)
 DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
@@ -3557,6 +3581,7 @@ DEBUG: removeThreadFromAllSets - block 6 has 0 participating lanes after removal
 DEBUG: IfStmt - Lane 3 reconvergence complete
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 3 natural flow from block 2 to block 7 during statement 0 (likely merge block, Result-based)
+DEBUG: ForStmt - Lane 3 completed statement 0, incrementing statementIndex to 1
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 3 executing statement 1 in block 7 (Result-based)
 DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
@@ -3614,6 +3639,7 @@ DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 3 (phase: Executed)
 DEBUG: AssignStmt - Lane 2 assigned value 5 to variable 'result'
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
+DEBUG: ForStmt - Lane 2 completed statement 1, incrementing statementIndex to 2
 DEBUG: ForStmt - Lane 2 popped iteration merge point 0x5080000177a0 after iteration 1
 DEBUG: ForStmt - Lane 2 body completed in block 7, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
@@ -3641,6 +3667,7 @@ DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 3 (phase: Executed)
 DEBUG: AssignStmt - Lane 3 assigned value 5 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
+DEBUG: ForStmt - Lane 3 completed statement 1, incrementing statementIndex to 2
 DEBUG: ForStmt - Lane 3 popped iteration merge point 0x5080000177a0 after iteration 1
 DEBUG: ForStmt - Lane 3 body completed in block 7, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
@@ -3668,6 +3695,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 3 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 3 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
+DEBUG: ForStmt - Lane 0 completed statement 1, incrementing statementIndex to 2
 DEBUG: ForStmt - Lane 0 popped iteration merge point 0x5080000177a0 after iteration 1
 DEBUG: ForStmt - Lane 0 body completed in block 7, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 2
@@ -3734,7 +3762,7 @@ WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 8 (registry retur
 DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 8
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 8 (registry returned: 8)
 DEBUG: ForStmt - Lane 1 child statement needs resume (Result-based)
-  Block before: 2, Block after: 8
+  Block before: 2, Block after: 8, statementIndex stays at: 0
 DEBUG: ForStmt - Lane 2 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 2 in phase EvaluatingIncrement (Result-based, stack depth=1, our index=0, this=0x5080000027a0)
@@ -3870,7 +3898,7 @@ WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 8 (registry retur
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 8
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 8 (registry returned: 8)
 DEBUG: ForStmt - Lane 2 child statement needs resume (Result-based)
-  Block before: 2, Block after: 8
+  Block before: 2, Block after: 8, statementIndex stays at: 0
 DEBUG: ForStmt - Lane 3 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 in phase ExecutingBody (Result-based, stack depth=1, our index=0, this=0x5080000027a0)
@@ -3915,7 +3943,7 @@ DEBUG: Block 8 unknown lanes before removal: {0 3}
 DEBUG: Block 8 unknown lanes after removal: {0}
 DEBUG: Block 8 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: ForStmt - Lane 3 child statement needs resume (Result-based)
-  Block before: 2, Block after: 2
+  Block before: 2, Block after: 2, statementIndex stays at: 0
 DEBUG: ForStmt - Lane 0 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=1, our index=0, this=0x5080000027a0)
@@ -3961,7 +3989,7 @@ DEBUG: Block 8 unknown lanes after removal: {}
 DEBUG: Block 8 areAllUnknownLanesResolvedForWave(0) = 1 (tracked by registry)
 DEBUG: Block 8 now has all unknowns resolved for wave 0 - checking for ready wave operations
 DEBUG: ForStmt - Lane 0 child statement needs resume (Result-based)
-  Block before: 2, Block after: 2
+  Block before: 2, Block after: 2, statementIndex stays at: 0
 DEBUG: ForStmt - Lane 1 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x5080000027a0)
@@ -4043,6 +4071,7 @@ DEBUG: removeThreadFromAllSets - block 8 has 0 participating lanes after removal
 DEBUG: IfStmt - Lane 3 reconvergence complete
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: ForStmt - Lane 3 natural flow from block 2 to block 9 during statement 0 (likely merge block, Result-based)
+DEBUG: ForStmt - Lane 3 completed statement 0, incrementing statementIndex to 1
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: ForStmt - Lane 3 executing statement 1 in block 9 (Result-based)
 DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
@@ -4102,6 +4131,7 @@ DEBUG: removeThreadFromAllSets - block 8 has 0 participating lanes after removal
 DEBUG: IfStmt - Lane 0 reconvergence complete
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: ForStmt - Lane 0 natural flow from block 2 to block 9 during statement 0 (likely merge block, Result-based)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: ForStmt - Lane 0 executing statement 1 in block 9 (Result-based)
 DEBUG: AssignStmt - Lane 0 assigning to variable 'result' (Result-based)
@@ -4179,7 +4209,7 @@ WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 10 (registry retu
 DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 10
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 1 child statement needs resume (Result-based)
-  Block before: 2, Block after: 10
+  Block before: 2, Block after: 10, statementIndex stays at: 0
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: onLaneFinishWaveOp - Lane 0 finishing wave op in block 9
 DEBUG: onLaneFinishWaveOp - Current status in block 9: 2
@@ -4212,6 +4242,7 @@ DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 2 (phase: Executed)
 DEBUG: AssignStmt - Lane 3 assigned value 7 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
+DEBUG: ForStmt - Lane 3 completed statement 1, incrementing statementIndex to 2
 DEBUG: ForStmt - Lane 3 popped iteration merge point 0x5080000277a0 after iteration 2
 DEBUG: ForStmt - Lane 3 body completed in block 9, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
@@ -4239,6 +4270,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 2 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 5 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry returned: 9)
+DEBUG: ForStmt - Lane 0 completed statement 1, incrementing statementIndex to 2
 DEBUG: ForStmt - Lane 0 popped iteration merge point 0x5080000277a0 after iteration 2
 DEBUG: ForStmt - Lane 0 body completed in block 9, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 2
@@ -4357,7 +4389,7 @@ DEBUG: Block 10 unknown lanes before removal: {0 2 3}
 DEBUG: Block 10 unknown lanes after removal: {0 3}
 DEBUG: Block 10 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: ForStmt - Lane 2 child statement needs resume (Result-based)
-  Block before: 2, Block after: 2
+  Block before: 2, Block after: 2, statementIndex stays at: 0
 DEBUG: ForStmt - Lane 3 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
 DEBUG: ForStmt - Lane 3 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x5080000027a0)
@@ -4453,6 +4485,7 @@ DEBUG: removeThreadFromAllSets - block 10 has 0 participating lanes after remova
 DEBUG: IfStmt - Lane 2 reconvergence complete
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: ForStmt - Lane 2 natural flow from block 2 to block 11 during statement 0 (likely merge block, Result-based)
+DEBUG: ForStmt - Lane 2 completed statement 0, incrementing statementIndex to 1
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: ForStmt - Lane 2 executing statement 1 in block 11 (Result-based)
 DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
@@ -4524,7 +4557,7 @@ WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 10 (registry retu
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 10
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 3 child statement needs resume (Result-based)
-  Block before: 2, Block after: 10
+  Block before: 2, Block after: 10, statementIndex stays at: 0
 DEBUG: isAllParticipantsKnown - Block 11 wave 0 has 2 unknown lanes: 0 3  - These lanes need to be resolved to Participating or Left
 DEBUG: ForStmt - Lane 0 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -4571,7 +4604,7 @@ DEBUG: Block 10 unknown lanes after removal: {}
 DEBUG: Block 10 areAllUnknownLanesResolvedForWave(0) = 1 (tracked by registry)
 DEBUG: Block 10 now has all unknowns resolved for wave 0 - checking for ready wave operations
 DEBUG: ForStmt - Lane 0 child statement needs resume (Result-based)
-  Block before: 2, Block after: 2
+  Block before: 2, Block after: 2, statementIndex stays at: 0
 DEBUG: isAllParticipantsKnown - Block 11 wave 0 has 2 unknown lanes: 0 3  - These lanes need to be resolved to Participating or Left
 DEBUG: ForStmt - Lane 1 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x5080000027a0)
@@ -4659,6 +4692,7 @@ DEBUG: removeThreadFromAllSets - block 10 has 0 participating lanes after remova
 DEBUG: IfStmt - Lane 0 reconvergence complete
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: ForStmt - Lane 0 natural flow from block 2 to block 11 during statement 0 (likely merge block, Result-based)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: ForStmt - Lane 0 executing statement 1 in block 11 (Result-based)
 DEBUG: AssignStmt - Lane 0 assigning to variable 'result' (Result-based)
@@ -4715,6 +4749,7 @@ DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 2 (phase: Executed)
 DEBUG: AssignStmt - Lane 2 assigned value 7 to variable 'result'
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
+DEBUG: ForStmt - Lane 2 completed statement 1, incrementing statementIndex to 2
 DEBUG: ForStmt - Lane 2 popped iteration merge point 0x5080000377a0 after iteration 3
 DEBUG: ForStmt - Lane 2 body completed in block 11, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
@@ -4751,6 +4786,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 2 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 7 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 11 (registry returned: 11)
+DEBUG: ForStmt - Lane 0 completed statement 1, incrementing statementIndex to 2
 DEBUG: ForStmt - Lane 0 popped iteration merge point 0x5080000377a0 after iteration 3
 DEBUG: ForStmt - Lane 0 body completed in block 11, moving to header block 2 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 2

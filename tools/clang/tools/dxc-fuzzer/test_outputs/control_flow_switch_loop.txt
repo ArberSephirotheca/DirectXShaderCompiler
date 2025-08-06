@@ -568,6 +568,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 11 (registry returned: 11)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 11, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -684,6 +685,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 12 (registry returned: 12)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 12, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -800,6 +802,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 13 (registry returned: 13)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 13, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -916,6 +919,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 14 (registry returned: 14)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 14, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -1032,6 +1036,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 15 (registry returned: 15)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 15, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -1148,6 +1153,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 16 (registry returned: 16)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 16, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -1264,6 +1270,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 17 (registry returned: 17)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 17, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -1380,6 +1387,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 18 (registry returned: 18)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 18, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -1496,6 +1504,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 19 (registry returned: 19)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 19, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -1612,6 +1621,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 20 (registry returned: 20)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 20, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -1728,6 +1738,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 21 (registry returned: 21)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 21, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -1844,6 +1855,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 22 (registry returned: 22)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 22, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -1960,6 +1972,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 23 (registry returned: 23)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 23, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -2076,6 +2089,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 24 (registry returned: 24)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 24, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -2192,6 +2206,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 25 (registry returned: 25)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 25, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -2308,6 +2323,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 26 (registry returned: 26)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 26, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -2424,6 +2440,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 27 (registry returned: 27)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 27, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -2540,6 +2557,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 28 (registry returned: 28)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 28, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -2656,6 +2674,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 29 (registry returned: 29)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 29, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -2772,6 +2791,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 30 (registry returned: 30)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 30, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -2888,6 +2908,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 31 (registry returned: 31)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 31, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -3004,6 +3025,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 32 (registry returned: 32)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 32, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -3120,6 +3142,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 33 (registry returned: 33)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 33, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -3236,6 +3259,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 34 (registry returned: 34)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 34, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -3352,6 +3376,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 35 (registry returned: 35)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 35, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -3468,6 +3493,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 36 (registry returned: 36)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 36, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -3584,6 +3610,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 37 (registry returned: 37)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 37, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -3700,6 +3727,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 38 (registry returned: 38)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 38, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -3816,6 +3844,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 39 (registry returned: 39)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 39, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -3932,6 +3961,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 40 (registry returned: 40)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 40, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -4048,6 +4078,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 41 (registry returned: 41)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 41, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -4164,6 +4195,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 42 (registry returned: 42)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 42, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -4280,6 +4312,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 43 (registry returned: 43)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 43, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -4396,6 +4429,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 44 (registry returned: 44)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 44, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -4512,6 +4546,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 45 (registry returned: 45)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 45, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -4628,6 +4663,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 46 (registry returned: 46)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 46, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -5095,6 +5131,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 11 (registry returned: 11)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 11, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -5211,6 +5248,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 12 (registry returned: 12)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 12, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -5327,6 +5365,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 13 (registry returned: 13)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 13, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -5443,6 +5482,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 14 (registry returned: 14)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 14, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -5559,6 +5599,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 15 (registry returned: 15)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 15, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -5675,6 +5716,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 16 (registry returned: 16)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 16, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -5791,6 +5833,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 17 (registry returned: 17)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 17, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -5907,6 +5950,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 18 (registry returned: 18)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 18, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -6023,6 +6067,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 19 (registry returned: 19)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 19, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -6139,6 +6184,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 20 (registry returned: 20)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 20, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -6255,6 +6301,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 21 (registry returned: 21)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 21, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -6371,6 +6418,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 22 (registry returned: 22)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 22, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -6487,6 +6535,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 23 (registry returned: 23)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 23, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -6603,6 +6652,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 24 (registry returned: 24)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 24, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -6719,6 +6769,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 25 (registry returned: 25)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 25, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -6835,6 +6886,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 26 (registry returned: 26)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 26, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -6951,6 +7003,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 27 (registry returned: 27)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 27, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -7067,6 +7120,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 28 (registry returned: 28)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 28, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -7183,6 +7237,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 29 (registry returned: 29)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 29, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -7299,6 +7354,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 30 (registry returned: 30)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 30, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -7415,6 +7471,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 31 (registry returned: 31)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 31, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -7531,6 +7588,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 32 (registry returned: 32)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 32, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -7647,6 +7705,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 33 (registry returned: 33)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 33, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -7763,6 +7822,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 34 (registry returned: 34)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 34, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -7879,6 +7939,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 35 (registry returned: 35)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 35, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -7995,6 +8056,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 36 (registry returned: 36)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 36, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -8111,6 +8173,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 37 (registry returned: 37)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 37, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -8227,6 +8290,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 38 (registry returned: 38)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 38, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -8343,6 +8407,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 39 (registry returned: 39)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 39, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -8459,6 +8524,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 40 (registry returned: 40)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 40, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -8575,6 +8641,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 41 (registry returned: 41)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 41, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -8691,6 +8758,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 42 (registry returned: 42)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 42, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -8807,6 +8875,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 43 (registry returned: 43)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 43, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -8923,6 +8992,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 44 (registry returned: 44)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 44, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -9039,6 +9109,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 45 (registry returned: 45)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 45, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -9155,6 +9226,7 @@ DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 9, 46 (registry returned: 46)
+DEBUG: ForStmt - Lane 0 completed statement 0, incrementing statementIndex to 1
 DEBUG: ForStmt - Lane 0 body completed in block 46, moving to header block 9 for increment
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 9
@@ -11615,7 +11687,7 @@ Dynamic Block 37:
   Block ID: 37
   Block Type: REGULAR
   Parent Block: 9
-  Program Point: 2140662456
+  Program Point: 3375884984
   Is Converged: No
   Nesting Level: 0
   Source Statement: 0x5080001a57a0
@@ -11643,7 +11715,7 @@ Dynamic Block 39:
   Block ID: 39
   Block Type: REGULAR
   Parent Block: 9
-  Program Point: 2140682936
+  Program Point: 3375905464
   Is Converged: No
   Nesting Level: 0
   Source Statement: 0x5080001c57a0

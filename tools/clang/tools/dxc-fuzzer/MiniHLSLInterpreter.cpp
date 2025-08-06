@@ -2508,6 +2508,9 @@ Result<Unit, ExecutionError> IfStmt::executeThenBranch_result(LaneContext &lane,
     lane.executionStack[ourStackIndex].statementIndex = i + 1;
   }
   
+  // All statements executed - transition to reconverging
+  lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::Reconverging;
+  
   return Ok<Unit, ExecutionError>(Unit{});
 }
 
@@ -2547,6 +2550,9 @@ Result<Unit, ExecutionError> IfStmt::executeElseBranch_result(LaneContext &lane,
 
     lane.executionStack[ourStackIndex].statementIndex = i + 1;
   }
+  
+  // All statements executed - transition to reconverging
+  lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::Reconverging;
   
   return Ok<Unit, ExecutionError>(Unit{});
 }
@@ -2818,12 +2824,15 @@ Result<Unit, ExecutionError> ForStmt::execute_result(LaneContext &lane, WaveCont
       return Ok<Unit, ExecutionError>(Unit{});
     }
 
-    // Clean up after body execution using non-throwing helper method
-    cleanupAfterBodyExecution(lane, wave, tg, ourStackIndex, headerBlockId);
-    
-    // Set state to WaitingForResume to prevent currentStatement increment
-    if (!isProtectedState(lane.state)) {
-      lane.state = ThreadState::WaitingForResume;
+    // Check if body is complete (all statements executed)
+    if (ourEntry.statementIndex >= body_.size()) {
+      // Clean up after body execution using non-throwing helper method
+      cleanupAfterBodyExecution(lane, wave, tg, ourStackIndex, headerBlockId);
+      
+      // Set state to WaitingForResume to prevent currentStatement increment
+      if (!isProtectedState(lane.state)) {
+        lane.state = ThreadState::WaitingForResume;
+      }
     }
     return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement increment, will resume later
   }
@@ -3200,10 +3209,8 @@ void ForStmt::evaluateConditionPhase(LaneContext &lane, WaveContext &wave, Threa
 // Result-based versions of ForStmt helper methods
 Result<Unit, ExecutionError> ForStmt::executeBodyStatements_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
                                    int ourStackIndex, uint32_t headerBlockId) {
-  auto &ourEntry = lane.executionStack[ourStackIndex];
-  
   // Execute statements - start in iteration block, naturally flow to merge blocks
-  for (size_t i = ourEntry.statementIndex; i < body_.size(); i++) {
+  for (size_t i = lane.executionStack[ourStackIndex].statementIndex; i < body_.size(); i++) {
     lane.executionStack[ourStackIndex].statementIndex = i;
 
     uint32_t blockBeforeStatement = tg.getCurrentBlock(wave.waveId, lane.laneId);
@@ -3219,7 +3226,7 @@ Result<Unit, ExecutionError> ForStmt::executeBodyStatements_result(LaneContext &
     if (lane.hasReturned) {
       // Clean up iteration-specific merge point if it exists
       const void *iterationMarker = reinterpret_cast<const void *>(
-          reinterpret_cast<uintptr_t>(this) + (ourEntry.loopIteration << 16) + 0x5000);
+          reinterpret_cast<uintptr_t>(this) + (lane.executionStack[ourStackIndex].loopIteration << 16) + 0x5000);
 
       std::vector<MergeStackEntry> currentMergeStack = tg.getCurrentMergeStack(wave.waveId, lane.laneId);
       if (!currentMergeStack.empty() && currentMergeStack.back().sourceStatement == iterationMarker) {
@@ -3238,7 +3245,8 @@ Result<Unit, ExecutionError> ForStmt::executeBodyStatements_result(LaneContext &
       uint32_t blockAfterStatement = tg.getCurrentBlock(wave.waveId, lane.laneId);
       std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " child statement needs resume (Result-based)" << std::endl;
       std::cout << "  Block before: " << blockBeforeStatement 
-                << ", Block after: " << blockAfterStatement << std::endl;
+                << ", Block after: " << blockAfterStatement 
+                << ", statementIndex stays at: " << lane.executionStack[ourStackIndex].statementIndex << std::endl;
       return Ok<Unit, ExecutionError>(Unit{});
     }
 
@@ -3250,6 +3258,8 @@ Result<Unit, ExecutionError> ForStmt::executeBodyStatements_result(LaneContext &
     }
 
     // Update statement index
+    std::cout << "DEBUG: ForStmt - Lane " << lane.laneId 
+              << " completed statement " << i << ", incrementing statementIndex to " << (i + 1) << std::endl;
     lane.executionStack[ourStackIndex].statementIndex = i + 1;
   }
   
