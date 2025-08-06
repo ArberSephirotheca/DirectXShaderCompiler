@@ -2201,10 +2201,8 @@ Result<Unit, ExecutionError> IfStmt::execute_with_error_handling(LaneContext &la
     
     switch (error) {
       case ExecutionError::WaveOperationWait:
-        // IfStmt-specific: Set waiting state
-        if (!isProtectedState(lane.state)) {
-          lane.state = ThreadState::WaitingForResume;
-        }
+        // IfStmt-specific: Wave operation already set the lane to WaitingForWave
+        // Just propagate the error without changing state
         return result; // Propagate for parent to handle
         
       case ExecutionError::ControlFlowBreak:
@@ -2277,11 +2275,13 @@ Result<Unit, ExecutionError> IfStmt::evaluateConditionAndSetup_result(LaneContex
 
   // Choose which branch to execute based on condition
   if (ourEntry.conditionResult) {
-    ourEntry.phase = LaneContext::ControlFlowPhase::ExecutingThenBlock;
+    ourEntry.phase = LaneContext::ControlFlowPhase::ExecutingBody;
+    ourEntry.inThenBranch = true;
     ourEntry.statementIndex = 0;
   } else {
     if (hasElse) {
-      ourEntry.phase = LaneContext::ControlFlowPhase::ExecutingElseBlock;
+      ourEntry.phase = LaneContext::ControlFlowPhase::ExecutingBody;
+      ourEntry.inThenBranch = false;
       ourEntry.statementIndex = 0;
     } else {
       ourEntry.phase = LaneContext::ControlFlowPhase::Reconverging;
@@ -3148,10 +3148,8 @@ Result<Unit, ExecutionError> ForStmt::execute_with_error_handling(LaneContext &l
     
     switch (error) {
       case ExecutionError::WaveOperationWait:
-        // ForStmt-specific: Set waiting state and propagate for parent coordination
-        if (!isProtectedState(lane.state)) {
-          lane.state = ThreadState::WaitingForResume;
-        }
+        // ForStmt-specific: Wave operation already set the lane to WaitingForWave
+        // Just propagate the error without changing state
         return result; // Propagate for parent to handle
         
       case ExecutionError::ControlFlowBreak:
@@ -3813,10 +3811,11 @@ bool MiniHLSLInterpreter::executeOneStep(ThreadId tid, const Program &program,
     switch (error) {
       case ExecutionError::WaveOperationWait:
         // Lane is waiting for wave operation - scheduler will resume it later
-        // Lane state should already be set to WaitingForWave
+        // Lane state should already be set to WaitingForWave by the wave operation
         std::cout << "DEBUG: WAVE_WAIT: Lane " << (tid % 32)
                   << " received WaveOperationWait error, state=" << (int)lane.state
                   << std::endl;
+        // Do nothing - state is already correct
         break;
         
       case ExecutionError::ControlFlowBreak:
@@ -5623,10 +5622,8 @@ Result<Unit, ExecutionError> WhileStmt::execute_with_error_handling(LaneContext 
     
     switch (error) {
       case ExecutionError::WaveOperationWait:
-        // WhileStmt-specific: Set waiting state
-        if (!isProtectedState(lane.state)) {
-          lane.state = ThreadState::WaitingForResume;
-        }
+        // WhileStmt-specific: Wave operation already set the lane to WaitingForWave
+        // Just propagate the error without changing state
         return result; // Propagate for parent to handle
         
       case ExecutionError::ControlFlowBreak:
@@ -6676,10 +6673,8 @@ Result<Unit, ExecutionError> DoWhileStmt::execute_with_error_handling(LaneContex
     
     switch (error) {
       case ExecutionError::WaveOperationWait:
-        // DoWhileStmt-specific: Set waiting state
-        if (!isProtectedState(lane.state)) {
-          lane.state = ThreadState::WaitingForResume;
-        }
+        // DoWhileStmt-specific: Wave operation already set the lane to WaitingForWave
+        // Just propagate the error without changing state
         return result; // Propagate for parent to handle
         
       case ExecutionError::ControlFlowBreak:
@@ -7518,10 +7513,8 @@ Result<Unit, ExecutionError> SwitchStmt::execute_with_error_handling(LaneContext
     
     switch (error) {
       case ExecutionError::WaveOperationWait:
-        // SwitchStmt-specific: Set waiting state
-        if (!isProtectedState(lane.state)) {
-          lane.state = ThreadState::WaitingForResume;
-        }
+        // SwitchStmt-specific: Wave operation already set the lane to WaitingForWave
+        // Just propagate the error without changing state
         return result; // Propagate for parent to handle
         
       case ExecutionError::ControlFlowBreak:
@@ -7571,6 +7564,14 @@ Result<Unit, ExecutionError> BreakStmt::execute_result(LaneContext &lane, WaveCo
   // Pure Result-based break - no exceptions thrown!
   std::cout << "DEBUG: BreakStmt - Lane " << lane.laneId
             << " executing break via Result" << std::endl;
+  
+  // Debug: print execution stack to see nesting
+  std::cout << "DEBUG: BreakStmt - Execution stack size: " << lane.executionStack.size() << std::endl;
+  for (size_t i = 0; i < lane.executionStack.size(); i++) {
+    std::cout << "  Stack[" << i << "]: statement=" << lane.executionStack[i].statement
+              << ", phase=" << static_cast<int>(lane.executionStack[i].phase) << std::endl;
+  }
+  
   return Err<Unit, ExecutionError>(ExecutionError::ControlFlowBreak);
 }
 
