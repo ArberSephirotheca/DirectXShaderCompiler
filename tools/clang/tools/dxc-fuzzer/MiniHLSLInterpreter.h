@@ -1494,6 +1494,24 @@ class DoWhileStmt : public Statement {
                                           ThreadgroupContext &tg);
   Result<bool, ExecutionError> evaluateCondition(LaneContext &lane, WaveContext &wave,
                                                 ThreadgroupContext &tg);
+  
+  // Helper methods for phase execution (following WhileStmt pattern)
+  void setupFreshExecution(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                          int ourStackIndex, uint32_t &headerBlockId, uint32_t &mergeBlockId);
+  void setupIterationBlocks(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                           int ourStackIndex, uint32_t headerBlockId);
+  void executeBodyStatements(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                            int ourStackIndex, uint32_t headerBlockId);
+  void cleanupAfterBodyExecution(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                                int ourStackIndex, uint32_t headerBlockId);
+  void evaluateConditionPhase(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                             int ourStackIndex, uint32_t headerBlockId);
+  void handleLoopExit(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                     int ourStackIndex, uint32_t mergeBlockId);
+  void handleBreakException(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                           int ourStackIndex, uint32_t headerBlockId, uint32_t mergeBlockId);
+  void handleContinueException(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                              int ourStackIndex, uint32_t headerBlockId);
 
 public:
   DoWhileStmt(std::vector<std::unique_ptr<Statement>> body,
