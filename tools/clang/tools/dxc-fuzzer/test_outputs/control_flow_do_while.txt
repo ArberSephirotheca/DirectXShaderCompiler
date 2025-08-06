@@ -100,8 +100,6 @@ DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (0), 0 waiti
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 4
 DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 4
 DEBUG: DoWhileStmt - Lane 0 moved to iteration starting block 4 for iteration 0
-DEBUG: AssignStmt - Lane 0 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 0 at 0x50f000000040)
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 4, instruction key=(0x5030000018a0,4)
@@ -133,8 +131,6 @@ DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (1), 1 waiti
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 4
 DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 4
 DEBUG: DoWhileStmt - Lane 1 moved to iteration starting block 4 for iteration 0
-DEBUG: AssignStmt - Lane 1 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 1 at 0x50f000000130)
 DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 4, instruction key=(0x5030000018a0,4)
@@ -166,8 +162,6 @@ DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (2), 2 waiti
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 4
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 4
 DEBUG: DoWhileStmt - Lane 2 moved to iteration starting block 4 for iteration 0
-DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 2 at 0x50f000000220)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 4, instruction key=(0x5030000018a0,4)
@@ -199,8 +193,6 @@ DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (3), 3 waiti
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 4
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 4
 DEBUG: DoWhileStmt - Lane 3 moved to iteration starting block 4 for iteration 0
-DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 3 at 0x50f000000310)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 4, instruction key=(0x5030000018a0,4)
@@ -228,15 +220,12 @@ DEBUG: onLaneFinishWaveOp - Updated lane 3 to Participating in block 4
 DEBUG: DoWhileStmt - Lane 0 resuming Result-based do-while loop
 DEBUG: DoWhileStmt - Lane 0 executing body for iteration 0 from statement 0 (Result-based)
 DEBUG: DoWhileStmt - Lane 0 needs iteration block (first statement is not control flow)
-DEBUG: AssignStmt - Lane 0 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 0 at 0x50f000000040)
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 4, instruction key=(0x5030000018a0,4)
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 4 (phase: Executed)
 DEBUG: AssignStmt - Lane 0 assigned value 4 to variable 'result'
-DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 0 at 0x50f000000040)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 2
@@ -251,15 +240,12 @@ DEBUG: DoWhileStmt - Lane 0 completed body for iteration 0
 DEBUG: DoWhileStmt - Lane 1 resuming Result-based do-while loop
 DEBUG: DoWhileStmt - Lane 1 executing body for iteration 0 from statement 0 (Result-based)
 DEBUG: DoWhileStmt - Lane 1 needs iteration block (first statement is not control flow)
-DEBUG: AssignStmt - Lane 1 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 1 at 0x50f000000130)
 DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 4, instruction key=(0x5030000018a0,4)
 DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 4 (phase: Executed)
 DEBUG: AssignStmt - Lane 1 assigned value 4 to variable 'result'
-DEBUG: UnaryOpExpr - Lane 1 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 1 at 0x50f000000130)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 2
@@ -274,15 +260,12 @@ DEBUG: DoWhileStmt - Lane 1 completed body for iteration 0
 DEBUG: DoWhileStmt - Lane 2 resuming Result-based do-while loop
 DEBUG: DoWhileStmt - Lane 2 executing body for iteration 0 from statement 0 (Result-based)
 DEBUG: DoWhileStmt - Lane 2 needs iteration block (first statement is not control flow)
-DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 2 at 0x50f000000220)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 4, instruction key=(0x5030000018a0,4)
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 4 (phase: Executed)
 DEBUG: AssignStmt - Lane 2 assigned value 4 to variable 'result'
-DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 2 at 0x50f000000220)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
@@ -297,15 +280,12 @@ DEBUG: DoWhileStmt - Lane 2 completed body for iteration 0
 DEBUG: DoWhileStmt - Lane 3 resuming Result-based do-while loop
 DEBUG: DoWhileStmt - Lane 3 executing body for iteration 0 from statement 0 (Result-based)
 DEBUG: DoWhileStmt - Lane 3 needs iteration block (first statement is not control flow)
-DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 3 at 0x50f000000310)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 4, instruction key=(0x5030000018a0,4)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 4 (phase: Consumed)
 DEBUG: AssignStmt - Lane 3 assigned value 4 to variable 'result'
-DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 3 at 0x50f000000310)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
@@ -319,7 +299,6 @@ DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 2
 DEBUG: DoWhileStmt - Lane 3 completed body for iteration 0
 DEBUG: DoWhileStmt - Lane 0 resuming Result-based do-while loop
 DEBUG: DoWhileStmt - Lane 0 evaluating condition after iteration 0 (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 0 at 0x50f000000040)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'laneId' (Result-based)
@@ -334,7 +313,6 @@ DEBUG: removeThreadFromAllSets - block 4 had 0 participating lanes before remova
 DEBUG: removeThreadFromAllSets - block 4 has 0 participating lanes after removal
 DEBUG: DoWhileStmt - Lane 1 resuming Result-based do-while loop
 DEBUG: DoWhileStmt - Lane 1 evaluating condition after iteration 0 (Result-based)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 1 at 0x50f000000130)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
@@ -349,14 +327,12 @@ DEBUG: removeThreadFromAllSets - block 4 had 0 participating lanes before remova
 DEBUG: removeThreadFromAllSets - block 4 has 0 participating lanes after removal
 DEBUG: DoWhileStmt - Lane 2 resuming Result-based do-while loop
 DEBUG: DoWhileStmt - Lane 2 evaluating condition after iteration 0 (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 2 at 0x50f000000220)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 2 (lane 2 at 0x50f000000220)
 DEBUG: DoWhileStmt - Lane 3 resuming Result-based do-while loop
 DEBUG: DoWhileStmt - Lane 3 evaluating condition after iteration 0 (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 3 at 0x50f000000310)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
@@ -395,8 +371,6 @@ DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 5
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 5
 DEBUG: DoWhileStmt - Lane 2 moved to iteration starting block 5 for iteration 1
-DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 4 (lane 2 at 0x50f000000220)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
@@ -427,8 +401,6 @@ DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 5
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 5
 DEBUG: DoWhileStmt - Lane 3 moved to iteration starting block 5 for iteration 1
-DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 4 (lane 3 at 0x50f000000310)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
@@ -477,8 +449,6 @@ DEBUG: DoWhileStmt - Lane 2 resuming Result-based do-while loop
 DEBUG: DoWhileStmt - Lane 2 executing body for iteration 1 from statement 0 (Result-based)
 DEBUG: DoWhileStmt - Lane 2 needs iteration block (first statement is not control flow)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
-DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 4 (lane 2 at 0x50f000000220)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
@@ -486,7 +456,6 @@ DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 5, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 2 (phase: Executed)
 DEBUG: AssignStmt - Lane 2 assigned value 6 to variable 'result'
-DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 2 at 0x50f000000220)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
@@ -503,8 +472,6 @@ DEBUG: DoWhileStmt - Lane 3 resuming Result-based do-while loop
 DEBUG: DoWhileStmt - Lane 3 executing body for iteration 1 from statement 0 (Result-based)
 DEBUG: DoWhileStmt - Lane 3 needs iteration block (first statement is not control flow)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
-DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 4 (lane 3 at 0x50f000000310)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
@@ -512,7 +479,6 @@ DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 5, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 2 (phase: Consumed)
 DEBUG: AssignStmt - Lane 3 assigned value 6 to variable 'result'
-DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 3 at 0x50f000000310)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
@@ -527,7 +493,6 @@ DEBUG: DoWhileStmt - Lane 3 completed body for iteration 1
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: DoWhileStmt - Lane 2 resuming Result-based do-while loop
 DEBUG: DoWhileStmt - Lane 2 evaluating condition after iteration 1 (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 2 at 0x50f000000220)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
@@ -547,7 +512,6 @@ DEBUG: removeThreadFromAllSets - block 5 has 0 participating lanes after removal
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: DoWhileStmt - Lane 3 resuming Result-based do-while loop
 DEBUG: DoWhileStmt - Lane 3 evaluating condition after iteration 1 (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 3 at 0x50f000000310)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
@@ -579,8 +543,6 @@ DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 6
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 6
 DEBUG: DoWhileStmt - Lane 3 moved to iteration starting block 6 for iteration 2
-DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 6 (lane 3 at 0x50f000000310)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
@@ -616,8 +578,6 @@ DEBUG: DoWhileStmt - Lane 3 resuming Result-based do-while loop
 DEBUG: DoWhileStmt - Lane 3 executing body for iteration 2 from statement 0 (Result-based)
 DEBUG: DoWhileStmt - Lane 3 needs iteration block (first statement is not control flow)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
-DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 6 (lane 3 at 0x50f000000310)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
@@ -625,7 +585,6 @@ DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 6, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 1 (phase: Consumed)
 DEBUG: AssignStmt - Lane 3 assigned value 7 to variable 'result'
-DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 3 at 0x50f000000310)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
@@ -640,7 +599,6 @@ DEBUG: DoWhileStmt - Lane 3 completed body for iteration 2
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 1 unknown lanes: 3  - These lanes need to be resolved to Participating or Left
 DEBUG: DoWhileStmt - Lane 3 resuming Result-based do-while loop
 DEBUG: DoWhileStmt - Lane 3 evaluating condition after iteration 2 (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 3 (lane 3 at 0x50f000000310)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
@@ -671,6 +629,14 @@ DEBUG: assignLaneToBlock - AFTER: block 3 has 1 participating lanes (3), 3 waiti
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 3
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 3
 DEBUG: WAVE_OP: Updated participants before execution to include all current block lanes: 0 1 2 3 
+DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
+DEBUG: VariableExpr - Variable 'result' = 4 (lane 0 at 0x50f000000040)
+DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
+DEBUG: VariableExpr - Variable 'result' = 4 (lane 1 at 0x50f000000130)
+DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
+DEBUG: VariableExpr - Variable 'result' = 6 (lane 2 at 0x50f000000220)
+DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
+DEBUG: VariableExpr - Variable 'result' = 7 (lane 3 at 0x50f000000310)
 DEBUG: WAVE_OP: Storing collective result for lanes: 0 1 2 3  (phase: 2)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 3, instruction key=(0x5030000019c0,3)
 DEBUG: onLaneFinishWaveOp - Lane 0 finishing wave op in block 3
@@ -744,8 +710,6 @@ DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (0), 0 waiti
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 4
 DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 4
 DEBUG: DoWhileStmt - Lane 0 moved to iteration starting block 4 for iteration 0
-DEBUG: AssignStmt - Lane 0 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 0 at 0x50f000000400)
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 4, instruction key=(0x5030000018a0,4)
@@ -777,8 +741,6 @@ DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (1), 1 waiti
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 4
 DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 4
 DEBUG: DoWhileStmt - Lane 1 moved to iteration starting block 4 for iteration 0
-DEBUG: AssignStmt - Lane 1 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 1 at 0x50f0000004f0)
 DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 4, instruction key=(0x5030000018a0,4)
@@ -810,8 +772,6 @@ DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (2), 2 waiti
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 4
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 4
 DEBUG: DoWhileStmt - Lane 2 moved to iteration starting block 4 for iteration 0
-DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 2 at 0x50f0000005e0)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 4, instruction key=(0x5030000018a0,4)
@@ -843,8 +803,6 @@ DEBUG: assignLaneToBlock - AFTER: block 4 has 1 participating lanes (3), 3 waiti
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 4
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 4
 DEBUG: DoWhileStmt - Lane 3 moved to iteration starting block 4 for iteration 0
-DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 3 at 0x50f0000006d0)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 4, instruction key=(0x5030000018a0,4)
@@ -872,15 +830,12 @@ DEBUG: onLaneFinishWaveOp - Updated lane 3 to Participating in block 4
 DEBUG: DoWhileStmt - Lane 0 resuming Result-based do-while loop
 DEBUG: DoWhileStmt - Lane 0 executing body for iteration 0 from statement 0 (Result-based)
 DEBUG: DoWhileStmt - Lane 0 needs iteration block (first statement is not control flow)
-DEBUG: AssignStmt - Lane 0 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 0 at 0x50f000000400)
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 4, instruction key=(0x5030000018a0,4)
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 4 (phase: Executed)
 DEBUG: AssignStmt - Lane 0 assigned value 4 to variable 'result'
-DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 0 at 0x50f000000400)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 2
@@ -895,15 +850,12 @@ DEBUG: DoWhileStmt - Lane 0 completed body for iteration 0
 DEBUG: DoWhileStmt - Lane 1 resuming Result-based do-while loop
 DEBUG: DoWhileStmt - Lane 1 executing body for iteration 0 from statement 0 (Result-based)
 DEBUG: DoWhileStmt - Lane 1 needs iteration block (first statement is not control flow)
-DEBUG: AssignStmt - Lane 1 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 1 at 0x50f0000004f0)
 DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 4, instruction key=(0x5030000018a0,4)
 DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 4 (phase: Executed)
 DEBUG: AssignStmt - Lane 1 assigned value 4 to variable 'result'
-DEBUG: UnaryOpExpr - Lane 1 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 1 at 0x50f0000004f0)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 2
@@ -918,15 +870,12 @@ DEBUG: DoWhileStmt - Lane 1 completed body for iteration 0
 DEBUG: DoWhileStmt - Lane 2 resuming Result-based do-while loop
 DEBUG: DoWhileStmt - Lane 2 executing body for iteration 0 from statement 0 (Result-based)
 DEBUG: DoWhileStmt - Lane 2 needs iteration block (first statement is not control flow)
-DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 2 at 0x50f0000005e0)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 4, instruction key=(0x5030000018a0,4)
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 4 (phase: Executed)
 DEBUG: AssignStmt - Lane 2 assigned value 4 to variable 'result'
-DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 2 at 0x50f0000005e0)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
@@ -941,15 +890,12 @@ DEBUG: DoWhileStmt - Lane 2 completed body for iteration 0
 DEBUG: DoWhileStmt - Lane 3 resuming Result-based do-while loop
 DEBUG: DoWhileStmt - Lane 3 executing body for iteration 0 from statement 0 (Result-based)
 DEBUG: DoWhileStmt - Lane 3 needs iteration block (first statement is not control flow)
-DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 3 at 0x50f0000006d0)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 4, instruction key=(0x5030000018a0,4)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 4 (phase: Consumed)
 DEBUG: AssignStmt - Lane 3 assigned value 4 to variable 'result'
-DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 3 at 0x50f0000006d0)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
@@ -963,7 +909,6 @@ DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 2
 DEBUG: DoWhileStmt - Lane 3 completed body for iteration 0
 DEBUG: DoWhileStmt - Lane 0 resuming Result-based do-while loop
 DEBUG: DoWhileStmt - Lane 0 evaluating condition after iteration 0 (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 0 at 0x50f000000400)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'laneId' (Result-based)
@@ -978,7 +923,6 @@ DEBUG: removeThreadFromAllSets - block 4 had 0 participating lanes before remova
 DEBUG: removeThreadFromAllSets - block 4 has 0 participating lanes after removal
 DEBUG: DoWhileStmt - Lane 1 resuming Result-based do-while loop
 DEBUG: DoWhileStmt - Lane 1 evaluating condition after iteration 0 (Result-based)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 1 at 0x50f0000004f0)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
@@ -993,14 +937,12 @@ DEBUG: removeThreadFromAllSets - block 4 had 0 participating lanes before remova
 DEBUG: removeThreadFromAllSets - block 4 has 0 participating lanes after removal
 DEBUG: DoWhileStmt - Lane 2 resuming Result-based do-while loop
 DEBUG: DoWhileStmt - Lane 2 evaluating condition after iteration 0 (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 2 at 0x50f0000005e0)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 2 (lane 2 at 0x50f0000005e0)
 DEBUG: DoWhileStmt - Lane 3 resuming Result-based do-while loop
 DEBUG: DoWhileStmt - Lane 3 evaluating condition after iteration 0 (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 3 at 0x50f0000006d0)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
@@ -1039,8 +981,6 @@ DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 5
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 5
 DEBUG: DoWhileStmt - Lane 2 moved to iteration starting block 5 for iteration 1
-DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 4 (lane 2 at 0x50f0000005e0)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
@@ -1071,8 +1011,6 @@ DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 5
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 5
 DEBUG: DoWhileStmt - Lane 3 moved to iteration starting block 5 for iteration 1
-DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 4 (lane 3 at 0x50f0000006d0)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
@@ -1121,8 +1059,6 @@ DEBUG: DoWhileStmt - Lane 2 resuming Result-based do-while loop
 DEBUG: DoWhileStmt - Lane 2 executing body for iteration 1 from statement 0 (Result-based)
 DEBUG: DoWhileStmt - Lane 2 needs iteration block (first statement is not control flow)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
-DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 4 (lane 2 at 0x50f0000005e0)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
@@ -1130,7 +1066,6 @@ DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 5, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 2 (phase: Executed)
 DEBUG: AssignStmt - Lane 2 assigned value 6 to variable 'result'
-DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 2 at 0x50f0000005e0)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
@@ -1147,8 +1082,6 @@ DEBUG: DoWhileStmt - Lane 3 resuming Result-based do-while loop
 DEBUG: DoWhileStmt - Lane 3 executing body for iteration 1 from statement 0 (Result-based)
 DEBUG: DoWhileStmt - Lane 3 needs iteration block (first statement is not control flow)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
-DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 4 (lane 3 at 0x50f0000006d0)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
@@ -1156,7 +1089,6 @@ DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 5, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 2 (phase: Consumed)
 DEBUG: AssignStmt - Lane 3 assigned value 6 to variable 'result'
-DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 3 at 0x50f0000006d0)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
@@ -1171,7 +1103,6 @@ DEBUG: DoWhileStmt - Lane 3 completed body for iteration 1
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: DoWhileStmt - Lane 2 resuming Result-based do-while loop
 DEBUG: DoWhileStmt - Lane 2 evaluating condition after iteration 1 (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 2 at 0x50f0000005e0)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
@@ -1191,7 +1122,6 @@ DEBUG: removeThreadFromAllSets - block 5 has 0 participating lanes after removal
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: DoWhileStmt - Lane 3 resuming Result-based do-while loop
 DEBUG: DoWhileStmt - Lane 3 evaluating condition after iteration 1 (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 3 at 0x50f0000006d0)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
@@ -1223,8 +1153,6 @@ DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 6
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 6
 DEBUG: DoWhileStmt - Lane 3 moved to iteration starting block 6 for iteration 2
-DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 6 (lane 3 at 0x50f0000006d0)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
@@ -1260,8 +1188,6 @@ DEBUG: DoWhileStmt - Lane 3 resuming Result-based do-while loop
 DEBUG: DoWhileStmt - Lane 3 executing body for iteration 2 from statement 0 (Result-based)
 DEBUG: DoWhileStmt - Lane 3 needs iteration block (first statement is not control flow)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
-DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 6 (lane 3 at 0x50f0000006d0)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 6 (registry returned: 6)
@@ -1269,7 +1195,6 @@ DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 6, instruction key=(0x50
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 1 (phase: Consumed)
 DEBUG: AssignStmt - Lane 3 assigned value 7 to variable 'result'
-DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 3 at 0x50f0000006d0)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
@@ -1284,7 +1209,6 @@ DEBUG: DoWhileStmt - Lane 3 completed body for iteration 2
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 1 unknown lanes: 3  - These lanes need to be resolved to Participating or Left
 DEBUG: DoWhileStmt - Lane 3 resuming Result-based do-while loop
 DEBUG: DoWhileStmt - Lane 3 evaluating condition after iteration 2 (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 3 (lane 3 at 0x50f0000006d0)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
@@ -1315,6 +1239,14 @@ DEBUG: assignLaneToBlock - AFTER: block 3 has 1 participating lanes (3), 3 waiti
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 3
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 3
 DEBUG: WAVE_OP: Updated participants before execution to include all current block lanes: 0 1 2 3 
+DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
+DEBUG: VariableExpr - Variable 'result' = 4 (lane 0 at 0x50f000000400)
+DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
+DEBUG: VariableExpr - Variable 'result' = 4 (lane 1 at 0x50f0000004f0)
+DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
+DEBUG: VariableExpr - Variable 'result' = 6 (lane 2 at 0x50f0000005e0)
+DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
+DEBUG: VariableExpr - Variable 'result' = 7 (lane 3 at 0x50f0000006d0)
 DEBUG: WAVE_OP: Storing collective result for lanes: 0 1 2 3  (phase: 2)
 DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 3, instruction key=(0x5030000019c0,3)
 DEBUG: onLaneFinishWaveOp - Lane 0 finishing wave op in block 3

@@ -118,7 +118,6 @@ DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 2
 DEBUG: WhileStmt - Lane 0 evaluating condition for iteration 0 (Result-based)
 DEBUG: WhileStmt - Lane 0 variables: i=0 laneId=0 result=0 
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 0 at 0x50f000000040)
 DEBUG: WhileStmt - Lane 1 starting Result-based while loop
@@ -138,7 +137,6 @@ DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 2
 DEBUG: WhileStmt - Lane 1 evaluating condition for iteration 0 (Result-based)
 DEBUG: WhileStmt - Lane 1 variables: i=0 laneId=1 result=0 
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 1 at 0x50f000000130)
 DEBUG: WhileStmt - Lane 2 starting Result-based while loop
@@ -158,7 +156,6 @@ DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 2
 DEBUG: WhileStmt - Lane 2 evaluating condition for iteration 0 (Result-based)
 DEBUG: WhileStmt - Lane 2 variables: i=0 laneId=2 result=0 
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 2 at 0x50f000000220)
 DEBUG: WhileStmt - Lane 3 starting Result-based while loop
@@ -178,7 +175,6 @@ DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 2
 DEBUG: WhileStmt - Lane 3 evaluating condition for iteration 0 (Result-based)
 DEBUG: WhileStmt - Lane 3 variables: i=0 laneId=3 result=0 
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 3 at 0x50f000000310)
 DEBUG: WhileStmt - Lane 0 resuming Result-based while loop
@@ -196,13 +192,10 @@ DEBUG: IfStmt - Lane 0 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 0 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 0 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 0 (lane 0 at 0x50f000000040)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 0 at 0x50f000000040)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 0 (lane 0 at 0x50f000000040)
 DEBUG: IfStmt - Lane 0 condition result=1 (Result-based)
@@ -253,13 +246,10 @@ DEBUG: IfStmt - Lane 1 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 1 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 1 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 1 (lane 1 at 0x50f000000130)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 1 at 0x50f000000130)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 1 (lane 1 at 0x50f000000130)
 DEBUG: IfStmt - Lane 1 condition result=1 (Result-based)
@@ -304,13 +294,10 @@ DEBUG: IfStmt - Lane 2 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 2 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 2 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 2 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 2 (lane 2 at 0x50f000000220)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 2 at 0x50f000000220)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 2 (lane 2 at 0x50f000000220)
 DEBUG: IfStmt - Lane 2 condition result=0 (Result-based)
@@ -349,13 +336,10 @@ DEBUG: IfStmt - Lane 3 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 3 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 3 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 3 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 3 (lane 3 at 0x50f000000310)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 3 at 0x50f000000310)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 3 (lane 3 at 0x50f000000310)
 DEBUG: IfStmt - Lane 3 condition result=0 (Result-based)
@@ -401,8 +385,6 @@ DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=2, our 
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 2 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: i = (i + 1);
 DEBUG: IfStmt - Lane 0 variables BEFORE statement: i=0 laneId=0 result=0 
-DEBUG: AssignStmt - Lane 0 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 0 at 0x50f000000040)
 DEBUG: AssignStmt - Lane 0 assigned value 1 to variable 'i'
@@ -444,8 +426,6 @@ DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=2, our 
 DEBUG: IfStmt - Lane 1 executing then block from statement 0 of 2 total statements (Result-based)
 DEBUG: IfStmt - Lane 1 executing then block statement 0: i = (i + 1);
 DEBUG: IfStmt - Lane 1 variables BEFORE statement: i=0 laneId=1 result=0 
-DEBUG: AssignStmt - Lane 1 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 1 at 0x50f000000130)
 DEBUG: AssignStmt - Lane 1 assigned value 1 to variable 'i'
@@ -506,8 +486,6 @@ WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry retur
 DEBUG: WhileStmt - Lane 2 natural flow from block 2 to block 5 during statement 0 (likely merge block, Result-based)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WhileStmt - Lane 2 executing statement 1 in block 5 (Result-based)
-DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 2 at 0x50f000000220)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
@@ -564,8 +542,6 @@ WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry retur
 DEBUG: WhileStmt - Lane 3 natural flow from block 2 to block 5 during statement 0 (likely merge block, Result-based)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WhileStmt - Lane 3 executing statement 1 in block 5 (Result-based)
-DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 3 at 0x50f000000310)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
@@ -585,7 +561,6 @@ DEBUG: WAVE_OP: Storing collective result for lanes: 2 3  (phase: 2)
 DEBUG: WhileStmt - Lane 0 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 0 evaluating condition for iteration 1 (Result-based)
 DEBUG: WhileStmt - Lane 0 variables: i=1 laneId=0 result=0 
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 0 at 0x50f000000040)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
@@ -599,7 +574,6 @@ DEBUG: onLaneFinishWaveOp - Updated lane 3 to Participating in block 5
 DEBUG: WhileStmt - Lane 1 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 1 evaluating condition for iteration 1 (Result-based)
 DEBUG: WhileStmt - Lane 1 variables: i=1 laneId=1 result=0 
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 1 at 0x50f000000130)
 DEBUG: WhileStmt - Lane 2 resuming Result-based while loop
@@ -608,8 +582,6 @@ DEBUG: WhileStmt - Lane 2 variables at body start: i=0 laneId=2 result=0
 DEBUG: WhileStmt - Lane 2 no iteration block needed (first statement is control flow)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WhileStmt - Lane 2 executing statement 1 in block 5 (Result-based)
-DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 2 at 0x50f000000220)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
@@ -620,8 +592,6 @@ DEBUG: AssignStmt - Lane 2 assigned value 2 to variable 'result'
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WhileStmt - Lane 2 executing statement 2 in block 5 (Result-based)
-DEBUG: AssignStmt - Lane 2 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 2 at 0x50f000000220)
 DEBUG: AssignStmt - Lane 2 assigned value 1 to variable 'i'
@@ -642,8 +612,6 @@ DEBUG: WhileStmt - Lane 3 variables at body start: i=0 laneId=3 result=0
 DEBUG: WhileStmt - Lane 3 no iteration block needed (first statement is control flow)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WhileStmt - Lane 3 executing statement 1 in block 5 (Result-based)
-DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 3 at 0x50f000000310)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
@@ -654,8 +622,6 @@ DEBUG: AssignStmt - Lane 3 assigned value 2 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WhileStmt - Lane 3 executing statement 2 in block 5 (Result-based)
-DEBUG: AssignStmt - Lane 3 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 3 at 0x50f000000310)
 DEBUG: AssignStmt - Lane 3 assigned value 1 to variable 'i'
@@ -685,13 +651,10 @@ DEBUG: IfStmt - Lane 0 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 0 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 0 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 0 (lane 0 at 0x50f000000040)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 0 at 0x50f000000040)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 0 (lane 0 at 0x50f000000040)
 DEBUG: IfStmt - Lane 0 condition result=0 (Result-based)
@@ -736,13 +699,10 @@ DEBUG: IfStmt - Lane 1 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 1 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 1 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 1 (lane 1 at 0x50f000000130)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 1 at 0x50f000000130)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 1 (lane 1 at 0x50f000000130)
 DEBUG: IfStmt - Lane 1 condition result=1 (Result-based)
@@ -775,13 +735,11 @@ DEBUG: WhileStmt - Lane 1 child statement needs resume (Result-based)
 DEBUG: WhileStmt - Lane 2 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 2 evaluating condition for iteration 1 (Result-based)
 DEBUG: WhileStmt - Lane 2 variables: i=1 laneId=2 result=2 
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 2 at 0x50f000000220)
 DEBUG: WhileStmt - Lane 3 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 3 evaluating condition for iteration 1 (Result-based)
 DEBUG: WhileStmt - Lane 3 variables: i=1 laneId=3 result=2 
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 3 at 0x50f000000310)
 DEBUG: WhileStmt - Lane 0 resuming Result-based while loop
@@ -824,8 +782,6 @@ WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry retur
 DEBUG: WhileStmt - Lane 0 natural flow from block 2 to block 7 during statement 0 (likely merge block, Result-based)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WhileStmt - Lane 0 executing statement 1 in block 7 (Result-based)
-DEBUG: AssignStmt - Lane 0 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 0 at 0x50f000000040)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
@@ -863,8 +819,6 @@ DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=2, our 
 DEBUG: IfStmt - Lane 1 executing then block from statement 0 of 2 total statements (Result-based)
 DEBUG: IfStmt - Lane 1 executing then block statement 0: i = (i + 1);
 DEBUG: IfStmt - Lane 1 variables BEFORE statement: i=1 laneId=1 result=0 
-DEBUG: AssignStmt - Lane 1 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 1 at 0x50f000000130)
 DEBUG: AssignStmt - Lane 1 assigned value 2 to variable 'i'
@@ -901,13 +855,10 @@ DEBUG: IfStmt - Lane 2 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 2 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 2 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 2 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 2 (lane 2 at 0x50f000000220)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 2 at 0x50f000000220)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 2 (lane 2 at 0x50f000000220)
 DEBUG: IfStmt - Lane 2 condition result=0 (Result-based)
@@ -947,13 +898,10 @@ DEBUG: IfStmt - Lane 3 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 3 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 3 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 3 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 3 (lane 3 at 0x50f000000310)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 3 at 0x50f000000310)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 3 (lane 3 at 0x50f000000310)
 DEBUG: IfStmt - Lane 3 condition result=0 (Result-based)
@@ -982,7 +930,6 @@ DEBUG: isAllParticipantsKnown - Block 7 wave 0 has 2 unknown lanes: 2 3  - These
 DEBUG: WhileStmt - Lane 1 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 1 evaluating condition for iteration 2 (Result-based)
 DEBUG: WhileStmt - Lane 1 variables: i=2 laneId=1 result=0 
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 1 at 0x50f000000130)
 DEBUG: isAllParticipantsKnown - Block 7 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
@@ -1026,8 +973,6 @@ WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry retur
 DEBUG: WhileStmt - Lane 2 natural flow from block 2 to block 7 during statement 0 (likely merge block, Result-based)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WhileStmt - Lane 2 executing statement 1 in block 7 (Result-based)
-DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 2 (lane 2 at 0x50f000000220)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
@@ -1084,8 +1029,6 @@ WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry retur
 DEBUG: WhileStmt - Lane 3 natural flow from block 2 to block 7 during statement 0 (likely merge block, Result-based)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WhileStmt - Lane 3 executing statement 1 in block 7 (Result-based)
-DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 2 (lane 3 at 0x50f000000310)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
@@ -1117,13 +1060,10 @@ DEBUG: IfStmt - Lane 1 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 1 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 1 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 1 (lane 1 at 0x50f000000130)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 1 at 0x50f000000130)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 1 (lane 1 at 0x50f000000130)
 DEBUG: IfStmt - Lane 1 condition result=1 (Result-based)
@@ -1177,8 +1117,6 @@ DEBUG: WhileStmt - Lane 2 variables at body start: i=1 laneId=2 result=2
 DEBUG: WhileStmt - Lane 2 no iteration block needed (first statement is control flow)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WhileStmt - Lane 2 executing statement 1 in block 7 (Result-based)
-DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 2 (lane 2 at 0x50f000000220)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
@@ -1189,8 +1127,6 @@ DEBUG: AssignStmt - Lane 2 assigned value 5 to variable 'result'
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WhileStmt - Lane 2 executing statement 2 in block 7 (Result-based)
-DEBUG: AssignStmt - Lane 2 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 2 at 0x50f000000220)
 DEBUG: AssignStmt - Lane 2 assigned value 2 to variable 'i'
@@ -1211,8 +1147,6 @@ DEBUG: WhileStmt - Lane 3 variables at body start: i=1 laneId=3 result=2
 DEBUG: WhileStmt - Lane 3 no iteration block needed (first statement is control flow)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WhileStmt - Lane 3 executing statement 1 in block 7 (Result-based)
-DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 2 (lane 3 at 0x50f000000310)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
@@ -1223,8 +1157,6 @@ DEBUG: AssignStmt - Lane 3 assigned value 5 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WhileStmt - Lane 3 executing statement 2 in block 7 (Result-based)
-DEBUG: AssignStmt - Lane 3 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 3 at 0x50f000000310)
 DEBUG: AssignStmt - Lane 3 assigned value 2 to variable 'i'
@@ -1245,8 +1177,6 @@ DEBUG: WhileStmt - Lane 0 variables at body start: i=1 laneId=0 result=0
 DEBUG: WhileStmt - Lane 0 no iteration block needed (first statement is control flow)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WhileStmt - Lane 0 executing statement 1 in block 7 (Result-based)
-DEBUG: AssignStmt - Lane 0 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 0 at 0x50f000000040)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
@@ -1257,8 +1187,6 @@ DEBUG: AssignStmt - Lane 0 assigned value 3 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WhileStmt - Lane 0 executing statement 2 in block 7 (Result-based)
-DEBUG: AssignStmt - Lane 0 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 0 at 0x50f000000040)
 DEBUG: AssignStmt - Lane 0 assigned value 2 to variable 'i'
@@ -1294,8 +1222,6 @@ DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=2, our 
 DEBUG: IfStmt - Lane 1 executing then block from statement 0 of 2 total statements (Result-based)
 DEBUG: IfStmt - Lane 1 executing then block statement 0: i = (i + 1);
 DEBUG: IfStmt - Lane 1 variables BEFORE statement: i=2 laneId=1 result=0 
-DEBUG: AssignStmt - Lane 1 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 1 at 0x50f000000130)
 DEBUG: AssignStmt - Lane 1 assigned value 3 to variable 'i'
@@ -1319,25 +1245,21 @@ DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 2
 DEBUG: WhileStmt - Lane 2 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 2 evaluating condition for iteration 2 (Result-based)
 DEBUG: WhileStmt - Lane 2 variables: i=2 laneId=2 result=5 
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 2 at 0x50f000000220)
 DEBUG: WhileStmt - Lane 3 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 3 evaluating condition for iteration 2 (Result-based)
 DEBUG: WhileStmt - Lane 3 variables: i=2 laneId=3 result=5 
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 3 at 0x50f000000310)
 DEBUG: WhileStmt - Lane 0 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 0 evaluating condition for iteration 2 (Result-based)
 DEBUG: WhileStmt - Lane 0 variables: i=2 laneId=0 result=3 
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 0 at 0x50f000000040)
 DEBUG: WhileStmt - Lane 1 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 1 evaluating condition for iteration 3 (Result-based)
 DEBUG: WhileStmt - Lane 1 variables: i=3 laneId=1 result=0 
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 3 (lane 1 at 0x50f000000130)
 DEBUG: WhileStmt - Lane 2 resuming Result-based while loop
@@ -1355,13 +1277,10 @@ DEBUG: IfStmt - Lane 2 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 2 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 2 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 2 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 2 (lane 2 at 0x50f000000220)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 2 at 0x50f000000220)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 2 (lane 2 at 0x50f000000220)
 DEBUG: IfStmt - Lane 2 condition result=1 (Result-based)
@@ -1406,13 +1325,10 @@ DEBUG: IfStmt - Lane 3 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 3 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 3 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 3 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 3 (lane 3 at 0x50f000000310)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 3 at 0x50f000000310)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 3 (lane 3 at 0x50f000000310)
 DEBUG: IfStmt - Lane 3 condition result=0 (Result-based)
@@ -1451,13 +1367,10 @@ DEBUG: IfStmt - Lane 0 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 0 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 0 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 0 (lane 0 at 0x50f000000040)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 0 at 0x50f000000040)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 0 (lane 0 at 0x50f000000040)
 DEBUG: IfStmt - Lane 0 condition result=0 (Result-based)
@@ -1497,13 +1410,10 @@ DEBUG: IfStmt - Lane 1 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 1 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 1 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 1 (lane 1 at 0x50f000000130)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 3 (lane 1 at 0x50f000000130)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 1 (lane 1 at 0x50f000000130)
 DEBUG: IfStmt - Lane 1 condition result=1 (Result-based)
@@ -1560,8 +1470,6 @@ DEBUG: IfStmt - Lane 2 in phase ExecutingBody (Result-based, stack depth=2, our 
 DEBUG: IfStmt - Lane 2 executing then block from statement 0 of 2 total statements (Result-based)
 DEBUG: IfStmt - Lane 2 executing then block statement 0: i = (i + 1);
 DEBUG: IfStmt - Lane 2 variables BEFORE statement: i=2 laneId=2 result=5 
-DEBUG: AssignStmt - Lane 2 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 2 at 0x50f000000220)
 DEBUG: AssignStmt - Lane 2 assigned value 3 to variable 'i'
@@ -1622,8 +1530,6 @@ WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry retur
 DEBUG: WhileStmt - Lane 3 natural flow from block 2 to block 9 during statement 0 (likely merge block, Result-based)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: WhileStmt - Lane 3 executing statement 1 in block 9 (Result-based)
-DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 5 (lane 3 at 0x50f000000310)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
@@ -1680,8 +1586,6 @@ WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry retur
 DEBUG: WhileStmt - Lane 0 natural flow from block 2 to block 9 during statement 0 (likely merge block, Result-based)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: WhileStmt - Lane 0 executing statement 1 in block 9 (Result-based)
-DEBUG: AssignStmt - Lane 0 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 3 (lane 0 at 0x50f000000040)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry returned: 9)
@@ -1719,8 +1623,6 @@ DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=2, our 
 DEBUG: IfStmt - Lane 1 executing then block from statement 0 of 2 total statements (Result-based)
 DEBUG: IfStmt - Lane 1 executing then block statement 0: i = (i + 1);
 DEBUG: IfStmt - Lane 1 variables BEFORE statement: i=3 laneId=1 result=0 
-DEBUG: AssignStmt - Lane 1 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 3 (lane 1 at 0x50f000000130)
 DEBUG: AssignStmt - Lane 1 assigned value 4 to variable 'i'
@@ -1752,7 +1654,6 @@ DEBUG: onLaneFinishWaveOp - Updated lane 3 to Participating in block 9
 DEBUG: WhileStmt - Lane 2 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 2 evaluating condition for iteration 3 (Result-based)
 DEBUG: WhileStmt - Lane 2 variables: i=3 laneId=2 result=5 
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 3 (lane 2 at 0x50f000000220)
 DEBUG: WhileStmt - Lane 3 resuming Result-based while loop
@@ -1761,8 +1662,6 @@ DEBUG: WhileStmt - Lane 3 variables at body start: i=2 laneId=3 result=5
 DEBUG: WhileStmt - Lane 3 no iteration block needed (first statement is control flow)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: WhileStmt - Lane 3 executing statement 1 in block 9 (Result-based)
-DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 5 (lane 3 at 0x50f000000310)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
@@ -1773,8 +1672,6 @@ DEBUG: AssignStmt - Lane 3 assigned value 7 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: WhileStmt - Lane 3 executing statement 2 in block 9 (Result-based)
-DEBUG: AssignStmt - Lane 3 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 3 at 0x50f000000310)
 DEBUG: AssignStmt - Lane 3 assigned value 3 to variable 'i'
@@ -1795,8 +1692,6 @@ DEBUG: WhileStmt - Lane 0 variables at body start: i=2 laneId=0 result=3
 DEBUG: WhileStmt - Lane 0 no iteration block needed (first statement is control flow)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: WhileStmt - Lane 0 executing statement 1 in block 9 (Result-based)
-DEBUG: AssignStmt - Lane 0 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 3 (lane 0 at 0x50f000000040)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry returned: 9)
@@ -1807,8 +1702,6 @@ DEBUG: AssignStmt - Lane 0 assigned value 5 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry returned: 9)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: WhileStmt - Lane 0 executing statement 2 in block 9 (Result-based)
-DEBUG: AssignStmt - Lane 0 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 0 at 0x50f000000040)
 DEBUG: AssignStmt - Lane 0 assigned value 3 to variable 'i'
@@ -1826,7 +1719,6 @@ DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 2
 DEBUG: WhileStmt - Lane 1 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 1 evaluating condition for iteration 4 (Result-based)
 DEBUG: WhileStmt - Lane 1 variables: i=4 laneId=1 result=0 
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 4 (lane 1 at 0x50f000000130)
 DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 2
@@ -1880,13 +1772,10 @@ DEBUG: IfStmt - Lane 2 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 2 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 2 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 2 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 2 (lane 2 at 0x50f000000220)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 3 (lane 2 at 0x50f000000220)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 2 (lane 2 at 0x50f000000220)
 DEBUG: IfStmt - Lane 2 condition result=0 (Result-based)
@@ -1913,13 +1802,11 @@ DEBUG: WhileStmt - Lane 2 child statement needs resume (Result-based)
 DEBUG: WhileStmt - Lane 3 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 3 evaluating condition for iteration 3 (Result-based)
 DEBUG: WhileStmt - Lane 3 variables: i=3 laneId=3 result=7 
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 3 (lane 3 at 0x50f000000310)
 DEBUG: WhileStmt - Lane 0 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 0 evaluating condition for iteration 3 (Result-based)
 DEBUG: WhileStmt - Lane 0 variables: i=3 laneId=0 result=5 
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 3 (lane 0 at 0x50f000000040)
 DEBUG: WhileStmt - Lane 1 resuming Result-based while loop
@@ -1974,8 +1861,6 @@ WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry retu
 DEBUG: WhileStmt - Lane 2 natural flow from block 2 to block 11 during statement 0 (likely merge block, Result-based)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: WhileStmt - Lane 2 executing statement 1 in block 11 (Result-based)
-DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 5 (lane 2 at 0x50f000000220)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
@@ -2007,13 +1892,10 @@ DEBUG: IfStmt - Lane 3 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 3 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 3 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 3 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 3 (lane 3 at 0x50f000000310)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 3 (lane 3 at 0x50f000000310)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 3 (lane 3 at 0x50f000000310)
 DEBUG: IfStmt - Lane 3 condition result=1 (Result-based)
@@ -2059,13 +1941,10 @@ DEBUG: IfStmt - Lane 0 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 0 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 0 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 0 (lane 0 at 0x50f000000040)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 3 (lane 0 at 0x50f000000040)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 0 (lane 0 at 0x50f000000040)
 DEBUG: IfStmt - Lane 0 condition result=0 (Result-based)
@@ -2123,8 +2002,6 @@ DEBUG: IfStmt - Lane 3 in phase ExecutingBody (Result-based, stack depth=2, our 
 DEBUG: IfStmt - Lane 3 executing then block from statement 0 of 2 total statements (Result-based)
 DEBUG: IfStmt - Lane 3 executing then block statement 0: i = (i + 1);
 DEBUG: IfStmt - Lane 3 variables BEFORE statement: i=3 laneId=3 result=7 
-DEBUG: AssignStmt - Lane 3 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 3 (lane 3 at 0x50f000000310)
 DEBUG: AssignStmt - Lane 3 assigned value 4 to variable 'i'
@@ -2187,8 +2064,6 @@ WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 11 (registry retu
 DEBUG: WhileStmt - Lane 0 natural flow from block 2 to block 11 during statement 0 (likely merge block, Result-based)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: WhileStmt - Lane 0 executing statement 1 in block 11 (Result-based)
-DEBUG: AssignStmt - Lane 0 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 5 (lane 0 at 0x50f000000040)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 11 (registry returned: 11)
@@ -2209,7 +2084,6 @@ DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 3 unknown lanes: 0 2 3  - The
 DEBUG: WhileStmt - Lane 3 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 3 evaluating condition for iteration 4 (Result-based)
 DEBUG: WhileStmt - Lane 3 variables: i=4 laneId=3 result=7 
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 4 (lane 3 at 0x50f000000310)
 DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 2
@@ -2263,8 +2137,6 @@ DEBUG: WhileStmt - Lane 0 variables at body start: i=3 laneId=0 result=5
 DEBUG: WhileStmt - Lane 0 no iteration block needed (first statement is control flow)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: WhileStmt - Lane 0 executing statement 1 in block 11 (Result-based)
-DEBUG: AssignStmt - Lane 0 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 5 (lane 0 at 0x50f000000040)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 11 (registry returned: 11)
@@ -2275,8 +2147,6 @@ DEBUG: AssignStmt - Lane 0 assigned value 7 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 11 (registry returned: 11)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: WhileStmt - Lane 0 executing statement 2 in block 11 (Result-based)
-DEBUG: AssignStmt - Lane 0 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 3 (lane 0 at 0x50f000000040)
 DEBUG: AssignStmt - Lane 0 assigned value 4 to variable 'i'
@@ -2298,8 +2168,6 @@ DEBUG: WhileStmt - Lane 2 variables at body start: i=3 laneId=2 result=5
 DEBUG: WhileStmt - Lane 2 no iteration block needed (first statement is control flow)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: WhileStmt - Lane 2 executing statement 1 in block 11 (Result-based)
-DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 5 (lane 2 at 0x50f000000220)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
@@ -2310,8 +2178,6 @@ DEBUG: AssignStmt - Lane 2 assigned value 7 to variable 'result'
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: WhileStmt - Lane 2 executing statement 2 in block 11 (Result-based)
-DEBUG: AssignStmt - Lane 2 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 3 (lane 2 at 0x50f000000220)
 DEBUG: AssignStmt - Lane 2 assigned value 4 to variable 'i'
@@ -2343,7 +2209,6 @@ DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 0 2  - These
 DEBUG: WhileStmt - Lane 0 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 0 evaluating condition for iteration 4 (Result-based)
 DEBUG: WhileStmt - Lane 0 variables: i=4 laneId=0 result=7 
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 4 (lane 0 at 0x50f000000040)
 DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 2
@@ -2386,7 +2251,6 @@ DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 0 2  - These
 DEBUG: WhileStmt - Lane 2 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 2 evaluating condition for iteration 4 (Result-based)
 DEBUG: WhileStmt - Lane 2 variables: i=4 laneId=2 result=7 
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 4 (lane 2 at 0x50f000000220)
 DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 2
@@ -2462,6 +2326,14 @@ DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 3
 DEBUG: WhileStmt - Lane 2 successfully moved to merge block 3 and marked as Participating
 DEBUG: WhileStmt - Lane 2 completing reconvergence, set state to Ready for statement progression
 DEBUG: WAVE_OP: Updated participants before execution to include all current block lanes: 0 1 2 3 
+DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
+DEBUG: VariableExpr - Variable 'result' = 7 (lane 0 at 0x50f000000040)
+DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
+DEBUG: VariableExpr - Variable 'result' = 0 (lane 1 at 0x50f000000130)
+DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
+DEBUG: VariableExpr - Variable 'result' = 7 (lane 2 at 0x50f000000220)
+DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
+DEBUG: VariableExpr - Variable 'result' = 7 (lane 3 at 0x50f000000310)
 DEBUG: WAVE_OP: Storing collective result for lanes: 0 1 2 3  (phase: 2)
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 3, instruction key=(0x503000001b70,3)
 DEBUG: onLaneFinishWaveOp - Lane 1 finishing wave op in block 3
@@ -2522,7 +2394,6 @@ DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 2
 DEBUG: WhileStmt - Lane 0 evaluating condition for iteration 0 (Result-based)
 DEBUG: WhileStmt - Lane 0 variables: i=0 laneId=0 result=0 
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 0 at 0x50f000000400)
 DEBUG: WhileStmt - Lane 1 starting Result-based while loop
@@ -2542,7 +2413,6 @@ DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 2
 DEBUG: WhileStmt - Lane 1 evaluating condition for iteration 0 (Result-based)
 DEBUG: WhileStmt - Lane 1 variables: i=0 laneId=1 result=0 
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 1 at 0x50f0000004f0)
 DEBUG: WhileStmt - Lane 2 starting Result-based while loop
@@ -2562,7 +2432,6 @@ DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 2
 DEBUG: WhileStmt - Lane 2 evaluating condition for iteration 0 (Result-based)
 DEBUG: WhileStmt - Lane 2 variables: i=0 laneId=2 result=0 
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 2 at 0x50f0000005e0)
 DEBUG: WhileStmt - Lane 3 starting Result-based while loop
@@ -2582,7 +2451,6 @@ DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 2
 DEBUG: WhileStmt - Lane 3 evaluating condition for iteration 0 (Result-based)
 DEBUG: WhileStmt - Lane 3 variables: i=0 laneId=3 result=0 
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 3 at 0x50f0000006d0)
 DEBUG: WhileStmt - Lane 0 resuming Result-based while loop
@@ -2600,13 +2468,10 @@ DEBUG: IfStmt - Lane 0 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 0 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 0 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 0 (lane 0 at 0x50f000000400)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 0 at 0x50f000000400)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 0 (lane 0 at 0x50f000000400)
 DEBUG: IfStmt - Lane 0 condition result=1 (Result-based)
@@ -2657,13 +2522,10 @@ DEBUG: IfStmt - Lane 1 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 1 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 1 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 1 (lane 1 at 0x50f0000004f0)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 1 at 0x50f0000004f0)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 1 (lane 1 at 0x50f0000004f0)
 DEBUG: IfStmt - Lane 1 condition result=1 (Result-based)
@@ -2708,13 +2570,10 @@ DEBUG: IfStmt - Lane 2 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 2 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 2 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 2 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 2 (lane 2 at 0x50f0000005e0)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 2 at 0x50f0000005e0)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 2 (lane 2 at 0x50f0000005e0)
 DEBUG: IfStmt - Lane 2 condition result=0 (Result-based)
@@ -2753,13 +2612,10 @@ DEBUG: IfStmt - Lane 3 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 3 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 3 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 3 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 3 (lane 3 at 0x50f0000006d0)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 3 at 0x50f0000006d0)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 3 (lane 3 at 0x50f0000006d0)
 DEBUG: IfStmt - Lane 3 condition result=0 (Result-based)
@@ -2805,8 +2661,6 @@ DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=2, our 
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 2 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: i = (i + 1);
 DEBUG: IfStmt - Lane 0 variables BEFORE statement: i=0 laneId=0 result=0 
-DEBUG: AssignStmt - Lane 0 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 0 at 0x50f000000400)
 DEBUG: AssignStmt - Lane 0 assigned value 1 to variable 'i'
@@ -2848,8 +2702,6 @@ DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=2, our 
 DEBUG: IfStmt - Lane 1 executing then block from statement 0 of 2 total statements (Result-based)
 DEBUG: IfStmt - Lane 1 executing then block statement 0: i = (i + 1);
 DEBUG: IfStmt - Lane 1 variables BEFORE statement: i=0 laneId=1 result=0 
-DEBUG: AssignStmt - Lane 1 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 1 at 0x50f0000004f0)
 DEBUG: AssignStmt - Lane 1 assigned value 1 to variable 'i'
@@ -2910,8 +2762,6 @@ WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry retur
 DEBUG: WhileStmt - Lane 2 natural flow from block 2 to block 5 during statement 0 (likely merge block, Result-based)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WhileStmt - Lane 2 executing statement 1 in block 5 (Result-based)
-DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 2 at 0x50f0000005e0)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
@@ -2968,8 +2818,6 @@ WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry retur
 DEBUG: WhileStmt - Lane 3 natural flow from block 2 to block 5 during statement 0 (likely merge block, Result-based)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WhileStmt - Lane 3 executing statement 1 in block 5 (Result-based)
-DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 3 at 0x50f0000006d0)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
@@ -2989,7 +2837,6 @@ DEBUG: WAVE_OP: Storing collective result for lanes: 2 3  (phase: 2)
 DEBUG: WhileStmt - Lane 0 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 0 evaluating condition for iteration 1 (Result-based)
 DEBUG: WhileStmt - Lane 0 variables: i=1 laneId=0 result=0 
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 0 at 0x50f000000400)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
@@ -3003,7 +2850,6 @@ DEBUG: onLaneFinishWaveOp - Updated lane 3 to Participating in block 5
 DEBUG: WhileStmt - Lane 1 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 1 evaluating condition for iteration 1 (Result-based)
 DEBUG: WhileStmt - Lane 1 variables: i=1 laneId=1 result=0 
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 1 at 0x50f0000004f0)
 DEBUG: WhileStmt - Lane 2 resuming Result-based while loop
@@ -3012,8 +2858,6 @@ DEBUG: WhileStmt - Lane 2 variables at body start: i=0 laneId=2 result=0
 DEBUG: WhileStmt - Lane 2 no iteration block needed (first statement is control flow)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WhileStmt - Lane 2 executing statement 1 in block 5 (Result-based)
-DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 2 at 0x50f0000005e0)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
@@ -3024,8 +2868,6 @@ DEBUG: AssignStmt - Lane 2 assigned value 2 to variable 'result'
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WhileStmt - Lane 2 executing statement 2 in block 5 (Result-based)
-DEBUG: AssignStmt - Lane 2 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 2 at 0x50f0000005e0)
 DEBUG: AssignStmt - Lane 2 assigned value 1 to variable 'i'
@@ -3046,8 +2888,6 @@ DEBUG: WhileStmt - Lane 3 variables at body start: i=0 laneId=3 result=0
 DEBUG: WhileStmt - Lane 3 no iteration block needed (first statement is control flow)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WhileStmt - Lane 3 executing statement 1 in block 5 (Result-based)
-DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 3 at 0x50f0000006d0)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
@@ -3058,8 +2898,6 @@ DEBUG: AssignStmt - Lane 3 assigned value 2 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: WhileStmt - Lane 3 executing statement 2 in block 5 (Result-based)
-DEBUG: AssignStmt - Lane 3 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 3 at 0x50f0000006d0)
 DEBUG: AssignStmt - Lane 3 assigned value 1 to variable 'i'
@@ -3089,13 +2927,10 @@ DEBUG: IfStmt - Lane 0 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 0 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 0 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 0 (lane 0 at 0x50f000000400)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 0 at 0x50f000000400)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 0 (lane 0 at 0x50f000000400)
 DEBUG: IfStmt - Lane 0 condition result=0 (Result-based)
@@ -3140,13 +2975,10 @@ DEBUG: IfStmt - Lane 1 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 1 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 1 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 1 (lane 1 at 0x50f0000004f0)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 1 at 0x50f0000004f0)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 1 (lane 1 at 0x50f0000004f0)
 DEBUG: IfStmt - Lane 1 condition result=1 (Result-based)
@@ -3179,13 +3011,11 @@ DEBUG: WhileStmt - Lane 1 child statement needs resume (Result-based)
 DEBUG: WhileStmt - Lane 2 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 2 evaluating condition for iteration 1 (Result-based)
 DEBUG: WhileStmt - Lane 2 variables: i=1 laneId=2 result=2 
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 2 at 0x50f0000005e0)
 DEBUG: WhileStmt - Lane 3 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 3 evaluating condition for iteration 1 (Result-based)
 DEBUG: WhileStmt - Lane 3 variables: i=1 laneId=3 result=2 
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 3 at 0x50f0000006d0)
 DEBUG: WhileStmt - Lane 0 resuming Result-based while loop
@@ -3228,8 +3058,6 @@ WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry retur
 DEBUG: WhileStmt - Lane 0 natural flow from block 2 to block 7 during statement 0 (likely merge block, Result-based)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WhileStmt - Lane 0 executing statement 1 in block 7 (Result-based)
-DEBUG: AssignStmt - Lane 0 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 0 at 0x50f000000400)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
@@ -3267,8 +3095,6 @@ DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=2, our 
 DEBUG: IfStmt - Lane 1 executing then block from statement 0 of 2 total statements (Result-based)
 DEBUG: IfStmt - Lane 1 executing then block statement 0: i = (i + 1);
 DEBUG: IfStmt - Lane 1 variables BEFORE statement: i=1 laneId=1 result=0 
-DEBUG: AssignStmt - Lane 1 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 1 at 0x50f0000004f0)
 DEBUG: AssignStmt - Lane 1 assigned value 2 to variable 'i'
@@ -3305,13 +3131,10 @@ DEBUG: IfStmt - Lane 2 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 2 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 2 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 2 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 2 (lane 2 at 0x50f0000005e0)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 2 at 0x50f0000005e0)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 2 (lane 2 at 0x50f0000005e0)
 DEBUG: IfStmt - Lane 2 condition result=0 (Result-based)
@@ -3351,13 +3174,10 @@ DEBUG: IfStmt - Lane 3 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 3 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 3 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 3 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 3 (lane 3 at 0x50f0000006d0)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 3 at 0x50f0000006d0)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 3 (lane 3 at 0x50f0000006d0)
 DEBUG: IfStmt - Lane 3 condition result=0 (Result-based)
@@ -3386,7 +3206,6 @@ DEBUG: isAllParticipantsKnown - Block 7 wave 0 has 2 unknown lanes: 2 3  - These
 DEBUG: WhileStmt - Lane 1 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 1 evaluating condition for iteration 2 (Result-based)
 DEBUG: WhileStmt - Lane 1 variables: i=2 laneId=1 result=0 
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 1 at 0x50f0000004f0)
 DEBUG: isAllParticipantsKnown - Block 7 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
@@ -3430,8 +3249,6 @@ WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry retur
 DEBUG: WhileStmt - Lane 2 natural flow from block 2 to block 7 during statement 0 (likely merge block, Result-based)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WhileStmt - Lane 2 executing statement 1 in block 7 (Result-based)
-DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 2 (lane 2 at 0x50f0000005e0)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
@@ -3488,8 +3305,6 @@ WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry retur
 DEBUG: WhileStmt - Lane 3 natural flow from block 2 to block 7 during statement 0 (likely merge block, Result-based)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WhileStmt - Lane 3 executing statement 1 in block 7 (Result-based)
-DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 2 (lane 3 at 0x50f0000006d0)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
@@ -3521,13 +3336,10 @@ DEBUG: IfStmt - Lane 1 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 1 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 1 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 1 (lane 1 at 0x50f0000004f0)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 1 at 0x50f0000004f0)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 1 (lane 1 at 0x50f0000004f0)
 DEBUG: IfStmt - Lane 1 condition result=1 (Result-based)
@@ -3581,8 +3393,6 @@ DEBUG: WhileStmt - Lane 2 variables at body start: i=1 laneId=2 result=2
 DEBUG: WhileStmt - Lane 2 no iteration block needed (first statement is control flow)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WhileStmt - Lane 2 executing statement 1 in block 7 (Result-based)
-DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 2 (lane 2 at 0x50f0000005e0)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
@@ -3593,8 +3403,6 @@ DEBUG: AssignStmt - Lane 2 assigned value 5 to variable 'result'
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WhileStmt - Lane 2 executing statement 2 in block 7 (Result-based)
-DEBUG: AssignStmt - Lane 2 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 2 at 0x50f0000005e0)
 DEBUG: AssignStmt - Lane 2 assigned value 2 to variable 'i'
@@ -3615,8 +3423,6 @@ DEBUG: WhileStmt - Lane 3 variables at body start: i=1 laneId=3 result=2
 DEBUG: WhileStmt - Lane 3 no iteration block needed (first statement is control flow)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WhileStmt - Lane 3 executing statement 1 in block 7 (Result-based)
-DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 2 (lane 3 at 0x50f0000006d0)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
@@ -3627,8 +3433,6 @@ DEBUG: AssignStmt - Lane 3 assigned value 5 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WhileStmt - Lane 3 executing statement 2 in block 7 (Result-based)
-DEBUG: AssignStmt - Lane 3 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 3 at 0x50f0000006d0)
 DEBUG: AssignStmt - Lane 3 assigned value 2 to variable 'i'
@@ -3649,8 +3453,6 @@ DEBUG: WhileStmt - Lane 0 variables at body start: i=1 laneId=0 result=0
 DEBUG: WhileStmt - Lane 0 no iteration block needed (first statement is control flow)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WhileStmt - Lane 0 executing statement 1 in block 7 (Result-based)
-DEBUG: AssignStmt - Lane 0 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 0 at 0x50f000000400)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
@@ -3661,8 +3463,6 @@ DEBUG: AssignStmt - Lane 0 assigned value 3 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: WhileStmt - Lane 0 executing statement 2 in block 7 (Result-based)
-DEBUG: AssignStmt - Lane 0 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 0 at 0x50f000000400)
 DEBUG: AssignStmt - Lane 0 assigned value 2 to variable 'i'
@@ -3698,8 +3498,6 @@ DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=2, our 
 DEBUG: IfStmt - Lane 1 executing then block from statement 0 of 2 total statements (Result-based)
 DEBUG: IfStmt - Lane 1 executing then block statement 0: i = (i + 1);
 DEBUG: IfStmt - Lane 1 variables BEFORE statement: i=2 laneId=1 result=0 
-DEBUG: AssignStmt - Lane 1 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 1 at 0x50f0000004f0)
 DEBUG: AssignStmt - Lane 1 assigned value 3 to variable 'i'
@@ -3723,25 +3521,21 @@ DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 2
 DEBUG: WhileStmt - Lane 2 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 2 evaluating condition for iteration 2 (Result-based)
 DEBUG: WhileStmt - Lane 2 variables: i=2 laneId=2 result=5 
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 2 at 0x50f0000005e0)
 DEBUG: WhileStmt - Lane 3 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 3 evaluating condition for iteration 2 (Result-based)
 DEBUG: WhileStmt - Lane 3 variables: i=2 laneId=3 result=5 
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 3 at 0x50f0000006d0)
 DEBUG: WhileStmt - Lane 0 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 0 evaluating condition for iteration 2 (Result-based)
 DEBUG: WhileStmt - Lane 0 variables: i=2 laneId=0 result=3 
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 0 at 0x50f000000400)
 DEBUG: WhileStmt - Lane 1 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 1 evaluating condition for iteration 3 (Result-based)
 DEBUG: WhileStmt - Lane 1 variables: i=3 laneId=1 result=0 
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 3 (lane 1 at 0x50f0000004f0)
 DEBUG: WhileStmt - Lane 2 resuming Result-based while loop
@@ -3759,13 +3553,10 @@ DEBUG: IfStmt - Lane 2 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 2 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 2 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 2 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 2 (lane 2 at 0x50f0000005e0)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 2 at 0x50f0000005e0)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 2 (lane 2 at 0x50f0000005e0)
 DEBUG: IfStmt - Lane 2 condition result=1 (Result-based)
@@ -3810,13 +3601,10 @@ DEBUG: IfStmt - Lane 3 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 3 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 3 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 3 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 3 (lane 3 at 0x50f0000006d0)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 3 at 0x50f0000006d0)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 3 (lane 3 at 0x50f0000006d0)
 DEBUG: IfStmt - Lane 3 condition result=0 (Result-based)
@@ -3855,13 +3643,10 @@ DEBUG: IfStmt - Lane 0 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 0 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 0 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 0 (lane 0 at 0x50f000000400)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 0 at 0x50f000000400)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 0 (lane 0 at 0x50f000000400)
 DEBUG: IfStmt - Lane 0 condition result=0 (Result-based)
@@ -3901,13 +3686,10 @@ DEBUG: IfStmt - Lane 1 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 1 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 1 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 1 (lane 1 at 0x50f0000004f0)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 3 (lane 1 at 0x50f0000004f0)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 1 (lane 1 at 0x50f0000004f0)
 DEBUG: IfStmt - Lane 1 condition result=1 (Result-based)
@@ -3964,8 +3746,6 @@ DEBUG: IfStmt - Lane 2 in phase ExecutingBody (Result-based, stack depth=2, our 
 DEBUG: IfStmt - Lane 2 executing then block from statement 0 of 2 total statements (Result-based)
 DEBUG: IfStmt - Lane 2 executing then block statement 0: i = (i + 1);
 DEBUG: IfStmt - Lane 2 variables BEFORE statement: i=2 laneId=2 result=5 
-DEBUG: AssignStmt - Lane 2 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 2 at 0x50f0000005e0)
 DEBUG: AssignStmt - Lane 2 assigned value 3 to variable 'i'
@@ -4026,8 +3806,6 @@ WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry retur
 DEBUG: WhileStmt - Lane 3 natural flow from block 2 to block 9 during statement 0 (likely merge block, Result-based)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: WhileStmt - Lane 3 executing statement 1 in block 9 (Result-based)
-DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 5 (lane 3 at 0x50f0000006d0)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
@@ -4084,8 +3862,6 @@ WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry retur
 DEBUG: WhileStmt - Lane 0 natural flow from block 2 to block 9 during statement 0 (likely merge block, Result-based)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: WhileStmt - Lane 0 executing statement 1 in block 9 (Result-based)
-DEBUG: AssignStmt - Lane 0 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 3 (lane 0 at 0x50f000000400)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry returned: 9)
@@ -4123,8 +3899,6 @@ DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=2, our 
 DEBUG: IfStmt - Lane 1 executing then block from statement 0 of 2 total statements (Result-based)
 DEBUG: IfStmt - Lane 1 executing then block statement 0: i = (i + 1);
 DEBUG: IfStmt - Lane 1 variables BEFORE statement: i=3 laneId=1 result=0 
-DEBUG: AssignStmt - Lane 1 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 3 (lane 1 at 0x50f0000004f0)
 DEBUG: AssignStmt - Lane 1 assigned value 4 to variable 'i'
@@ -4156,7 +3930,6 @@ DEBUG: onLaneFinishWaveOp - Updated lane 3 to Participating in block 9
 DEBUG: WhileStmt - Lane 2 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 2 evaluating condition for iteration 3 (Result-based)
 DEBUG: WhileStmt - Lane 2 variables: i=3 laneId=2 result=5 
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 3 (lane 2 at 0x50f0000005e0)
 DEBUG: WhileStmt - Lane 3 resuming Result-based while loop
@@ -4165,8 +3938,6 @@ DEBUG: WhileStmt - Lane 3 variables at body start: i=2 laneId=3 result=5
 DEBUG: WhileStmt - Lane 3 no iteration block needed (first statement is control flow)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: WhileStmt - Lane 3 executing statement 1 in block 9 (Result-based)
-DEBUG: AssignStmt - Lane 3 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 5 (lane 3 at 0x50f0000006d0)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
@@ -4177,8 +3948,6 @@ DEBUG: AssignStmt - Lane 3 assigned value 7 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: WhileStmt - Lane 3 executing statement 2 in block 9 (Result-based)
-DEBUG: AssignStmt - Lane 3 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 3 at 0x50f0000006d0)
 DEBUG: AssignStmt - Lane 3 assigned value 3 to variable 'i'
@@ -4199,8 +3968,6 @@ DEBUG: WhileStmt - Lane 0 variables at body start: i=2 laneId=0 result=3
 DEBUG: WhileStmt - Lane 0 no iteration block needed (first statement is control flow)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: WhileStmt - Lane 0 executing statement 1 in block 9 (Result-based)
-DEBUG: AssignStmt - Lane 0 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 3 (lane 0 at 0x50f000000400)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry returned: 9)
@@ -4211,8 +3978,6 @@ DEBUG: AssignStmt - Lane 0 assigned value 5 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry returned: 9)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: WhileStmt - Lane 0 executing statement 2 in block 9 (Result-based)
-DEBUG: AssignStmt - Lane 0 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 0 at 0x50f000000400)
 DEBUG: AssignStmt - Lane 0 assigned value 3 to variable 'i'
@@ -4230,7 +3995,6 @@ DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 2
 DEBUG: WhileStmt - Lane 1 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 1 evaluating condition for iteration 4 (Result-based)
 DEBUG: WhileStmt - Lane 1 variables: i=4 laneId=1 result=0 
-DEBUG: BinaryOpExpr - Lane 1 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 4 (lane 1 at 0x50f0000004f0)
 DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 2
@@ -4284,13 +4048,10 @@ DEBUG: IfStmt - Lane 2 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 2 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 2 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 2 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 2 (lane 2 at 0x50f0000005e0)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 3 (lane 2 at 0x50f0000005e0)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 2 (lane 2 at 0x50f0000005e0)
 DEBUG: IfStmt - Lane 2 condition result=0 (Result-based)
@@ -4317,13 +4078,11 @@ DEBUG: WhileStmt - Lane 2 child statement needs resume (Result-based)
 DEBUG: WhileStmt - Lane 3 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 3 evaluating condition for iteration 3 (Result-based)
 DEBUG: WhileStmt - Lane 3 variables: i=3 laneId=3 result=7 
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 3 (lane 3 at 0x50f0000006d0)
 DEBUG: WhileStmt - Lane 0 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 0 evaluating condition for iteration 3 (Result-based)
 DEBUG: WhileStmt - Lane 0 variables: i=3 laneId=0 result=5 
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 3 (lane 0 at 0x50f000000400)
 DEBUG: WhileStmt - Lane 1 resuming Result-based while loop
@@ -4378,8 +4137,6 @@ WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry retu
 DEBUG: WhileStmt - Lane 2 natural flow from block 2 to block 11 during statement 0 (likely merge block, Result-based)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: WhileStmt - Lane 2 executing statement 1 in block 11 (Result-based)
-DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 5 (lane 2 at 0x50f0000005e0)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
@@ -4411,13 +4168,10 @@ DEBUG: IfStmt - Lane 3 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 3 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 3 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 3 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 3 (lane 3 at 0x50f0000006d0)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 3 (lane 3 at 0x50f0000006d0)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 3 (lane 3 at 0x50f0000006d0)
 DEBUG: IfStmt - Lane 3 condition result=1 (Result-based)
@@ -4463,13 +4217,10 @@ DEBUG: IfStmt - Lane 0 starting fresh execution (pushed to stack depth=2, this=0
 DEBUG: IfStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 0 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 0 evaluating condition for first time (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 0 (lane 0 at 0x50f000000400)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 3 (lane 0 at 0x50f000000400)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 0 (lane 0 at 0x50f000000400)
 DEBUG: IfStmt - Lane 0 condition result=0 (Result-based)
@@ -4527,8 +4278,6 @@ DEBUG: IfStmt - Lane 3 in phase ExecutingBody (Result-based, stack depth=2, our 
 DEBUG: IfStmt - Lane 3 executing then block from statement 0 of 2 total statements (Result-based)
 DEBUG: IfStmt - Lane 3 executing then block statement 0: i = (i + 1);
 DEBUG: IfStmt - Lane 3 variables BEFORE statement: i=3 laneId=3 result=7 
-DEBUG: AssignStmt - Lane 3 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 3 (lane 3 at 0x50f0000006d0)
 DEBUG: AssignStmt - Lane 3 assigned value 4 to variable 'i'
@@ -4591,8 +4340,6 @@ WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 11 (registry retu
 DEBUG: WhileStmt - Lane 0 natural flow from block 2 to block 11 during statement 0 (likely merge block, Result-based)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: WhileStmt - Lane 0 executing statement 1 in block 11 (Result-based)
-DEBUG: AssignStmt - Lane 0 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 5 (lane 0 at 0x50f000000400)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 11 (registry returned: 11)
@@ -4613,7 +4360,6 @@ DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 3 unknown lanes: 0 2 3  - The
 DEBUG: WhileStmt - Lane 3 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 3 evaluating condition for iteration 4 (Result-based)
 DEBUG: WhileStmt - Lane 3 variables: i=4 laneId=3 result=7 
-DEBUG: BinaryOpExpr - Lane 3 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 4 (lane 3 at 0x50f0000006d0)
 DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 2
@@ -4667,8 +4413,6 @@ DEBUG: WhileStmt - Lane 0 variables at body start: i=3 laneId=0 result=5
 DEBUG: WhileStmt - Lane 0 no iteration block needed (first statement is control flow)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: WhileStmt - Lane 0 executing statement 1 in block 11 (Result-based)
-DEBUG: AssignStmt - Lane 0 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 5 (lane 0 at 0x50f000000400)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 11 (registry returned: 11)
@@ -4679,8 +4423,6 @@ DEBUG: AssignStmt - Lane 0 assigned value 7 to variable 'result'
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 11 (registry returned: 11)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: WhileStmt - Lane 0 executing statement 2 in block 11 (Result-based)
-DEBUG: AssignStmt - Lane 0 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 3 (lane 0 at 0x50f000000400)
 DEBUG: AssignStmt - Lane 0 assigned value 4 to variable 'i'
@@ -4702,8 +4444,6 @@ DEBUG: WhileStmt - Lane 2 variables at body start: i=3 laneId=2 result=5
 DEBUG: WhileStmt - Lane 2 no iteration block needed (first statement is control flow)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: WhileStmt - Lane 2 executing statement 1 in block 11 (Result-based)
-DEBUG: AssignStmt - Lane 2 assigning to variable 'result' (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 5 (lane 2 at 0x50f0000005e0)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
@@ -4714,8 +4454,6 @@ DEBUG: AssignStmt - Lane 2 assigned value 7 to variable 'result'
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: WhileStmt - Lane 2 executing statement 2 in block 11 (Result-based)
-DEBUG: AssignStmt - Lane 2 assigning to variable 'i' (Result-based)
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 3 (lane 2 at 0x50f0000005e0)
 DEBUG: AssignStmt - Lane 2 assigned value 4 to variable 'i'
@@ -4747,7 +4485,6 @@ DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 0 2  - These
 DEBUG: WhileStmt - Lane 0 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 0 evaluating condition for iteration 4 (Result-based)
 DEBUG: WhileStmt - Lane 0 variables: i=4 laneId=0 result=7 
-DEBUG: BinaryOpExpr - Lane 0 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 4 (lane 0 at 0x50f000000400)
 DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 2
@@ -4790,7 +4527,6 @@ DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 0 2  - These
 DEBUG: WhileStmt - Lane 2 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 2 evaluating condition for iteration 4 (Result-based)
 DEBUG: WhileStmt - Lane 2 variables: i=4 laneId=2 result=7 
-DEBUG: BinaryOpExpr - Lane 2 evaluating binary operation (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 4 (lane 2 at 0x50f0000005e0)
 DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 2
@@ -4866,6 +4602,14 @@ DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 3
 DEBUG: WhileStmt - Lane 2 successfully moved to merge block 3 and marked as Participating
 DEBUG: WhileStmt - Lane 2 completing reconvergence, set state to Ready for statement progression
 DEBUG: WAVE_OP: Updated participants before execution to include all current block lanes: 0 1 2 3 
+DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
+DEBUG: VariableExpr - Variable 'result' = 7 (lane 0 at 0x50f000000400)
+DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
+DEBUG: VariableExpr - Variable 'result' = 0 (lane 1 at 0x50f0000004f0)
+DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
+DEBUG: VariableExpr - Variable 'result' = 7 (lane 2 at 0x50f0000005e0)
+DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
+DEBUG: VariableExpr - Variable 'result' = 7 (lane 3 at 0x50f0000006d0)
 DEBUG: WAVE_OP: Storing collective result for lanes: 0 1 2 3  (phase: 2)
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 3, instruction key=(0x503000001b70,3)
 DEBUG: onLaneFinishWaveOp - Lane 1 finishing wave op in block 3

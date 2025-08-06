@@ -194,7 +194,6 @@ Result<T, E> Err(E error) {
 // Forward declarations
 class Expression;
 class Statement;
-class WaveOperationWaitException;
 class WaveOp;
 class SharedMemoryOp;
 
@@ -1066,21 +1065,10 @@ struct ExecutionResult {
 class Expression {
 public:
   virtual ~Expression() = default;
-  virtual Value evaluate(LaneContext &lane, WaveContext &wave,
-                         ThreadgroupContext &tg) const = 0;
+  
+  // Primary evaluation method - all expressions must implement this
   virtual Result<Value, ExecutionError> evaluate_result(LaneContext &lane, WaveContext &wave,
-                                                       ThreadgroupContext &tg) const {
-    // Default implementation: call exception-based evaluate and wrap in try-catch
-    // Individual expressions can override this for pure Result-based implementations
-    try {
-      Value result = evaluate(lane, wave, tg);
-      return Ok<Value, ExecutionError>(std::move(result));
-    } catch (const std::exception &) {
-      // For compatibility, assume all exceptions from expressions are wave operations
-      // Individual expression classes should override this method for true Result-based behavior
-      return Err<Value, ExecutionError>(ExecutionError::WaveOperationWait);
-    }
-  }
+                                                       ThreadgroupContext &tg) const = 0;
   virtual bool isDeterministic() const = 0;
   virtual std::string toString() const = 0;
 };
@@ -1091,10 +1079,6 @@ class LiteralExpr : public Expression {
 
 public:
   explicit LiteralExpr(Value v) : value_(v) {}
-  Value evaluate(LaneContext &, WaveContext &,
-                 ThreadgroupContext &) const override {
-    return value_;
-  }
   Result<Value, ExecutionError> evaluate_result(LaneContext &, WaveContext &,
                                                ThreadgroupContext &) const override {
     // Pure Result-based implementation - literals are always successful
@@ -1109,8 +1093,6 @@ class VariableExpr : public Expression {
 
 public:
   explicit VariableExpr(const std::string &name) : name_(name) {}
-  Value evaluate(LaneContext &lane, WaveContext &,
-                 ThreadgroupContext &) const override;
   Result<Value, ExecutionError> evaluate_result(LaneContext &lane, WaveContext &,
                                                ThreadgroupContext &) const override;
   bool isDeterministic() const override { return false; }
@@ -1119,8 +1101,6 @@ public:
 
 class LaneIndexExpr : public Expression {
 public:
-  Value evaluate(LaneContext &lane, WaveContext &,
-                 ThreadgroupContext &) const override;
   Result<Value, ExecutionError> evaluate_result(LaneContext &lane, WaveContext &,
                                                ThreadgroupContext &) const override;
   bool isDeterministic() const override { return true; }
@@ -1129,8 +1109,6 @@ public:
 
 class WaveIndexExpr : public Expression {
 public:
-  Value evaluate(LaneContext &, WaveContext &wave,
-                 ThreadgroupContext &) const override;
   Result<Value, ExecutionError> evaluate_result(LaneContext &, WaveContext &wave,
                                                ThreadgroupContext &) const override;
   bool isDeterministic() const override { return true; }
@@ -1139,8 +1117,6 @@ public:
 
 class ThreadIndexExpr : public Expression {
 public:
-  Value evaluate(LaneContext &lane, WaveContext &wave,
-                 ThreadgroupContext &tg) const override;
   Result<Value, ExecutionError> evaluate_result(LaneContext &lane, WaveContext &,
                                                ThreadgroupContext &) const override;
   bool isDeterministic() const override { return true; }
@@ -1159,8 +1135,6 @@ private:
 public:
   BinaryOpExpr(std::unique_ptr<Expression> left,
                std::unique_ptr<Expression> right, OpType op);
-  Value evaluate(LaneContext &lane, WaveContext &wave,
-                 ThreadgroupContext &tg) const override;
   Result<Value, ExecutionError> evaluate_result(LaneContext &lane, WaveContext &wave,
                                                ThreadgroupContext &tg) const override;
   bool isDeterministic() const override;
@@ -1187,8 +1161,6 @@ private:
 
 public:
   UnaryOpExpr(std::unique_ptr<Expression> expr, OpType op);
-  Value evaluate(LaneContext &lane, WaveContext &wave,
-                 ThreadgroupContext &tg) const override;
   Result<Value, ExecutionError> evaluate_result(LaneContext &lane, WaveContext &wave,
                                                ThreadgroupContext &tg) const override;
   bool isDeterministic() const override;
@@ -1205,8 +1177,6 @@ public:
   ConditionalExpr(std::unique_ptr<Expression> condition,
                   std::unique_ptr<Expression> trueExpr,
                   std::unique_ptr<Expression> falseExpr);
-  Value evaluate(LaneContext &lane, WaveContext &wave,
-                 ThreadgroupContext &tg) const override;
   Result<Value, ExecutionError> evaluate_result(LaneContext &lane, WaveContext &wave,
                                                ThreadgroupContext &tg) const override;
   bool isDeterministic() const override;
@@ -1237,8 +1207,6 @@ private:
 
 public:
   WaveActiveOp(std::unique_ptr<Expression> expr, OpType op);
-  Value evaluate(LaneContext &lane, WaveContext &wave,
-                 ThreadgroupContext &tg) const override;
   Result<Value, ExecutionError> evaluate_result(LaneContext &lane, WaveContext &wave,
                                               ThreadgroupContext &tg) const override;
   bool isDeterministic() const override { return false; }
@@ -1251,8 +1219,6 @@ public:
 
 class WaveGetLaneCountExpr : public Expression {
 public:
-  Value evaluate(LaneContext &, WaveContext &wave,
-                 ThreadgroupContext &) const override;
   Result<Value, ExecutionError> evaluate_result(LaneContext &, WaveContext &wave,
                                                ThreadgroupContext &) const override;
   bool isDeterministic() const override { return true; }
@@ -1261,55 +1227,12 @@ public:
 
 class WaveIsFirstLaneExpr : public Expression {
 public:
-  Value evaluate(LaneContext &lane, WaveContext &wave,
-                 ThreadgroupContext &tg) const override;
   Result<Value, ExecutionError> evaluate_result(LaneContext &lane, WaveContext &wave,
                                                ThreadgroupContext &) const override;
   bool isDeterministic() const override { return false; }
   std::string toString() const override { return "WaveIsFirstLane()"; }
 };
 
-class WaveActiveAllEqualExpr : public Expression {
-private:
-  std::unique_ptr<Expression> expr_;
-
-public:
-  explicit WaveActiveAllEqualExpr(std::unique_ptr<Expression> expr);
-  Value evaluate(LaneContext &lane, WaveContext &wave,
-                 ThreadgroupContext &tg) const override;
-  Result<Value, ExecutionError> evaluate_result(LaneContext &lane, WaveContext &wave,
-                                               ThreadgroupContext &tg) const override;
-  bool isDeterministic() const override { return false; }
-  std::string toString() const override;
-};
-
-class WaveActiveAllTrueExpr : public Expression {
-private:
-  std::unique_ptr<Expression> expr_;
-
-public:
-  explicit WaveActiveAllTrueExpr(std::unique_ptr<Expression> expr);
-  Value evaluate(LaneContext &lane, WaveContext &wave,
-                 ThreadgroupContext &tg) const override;
-  Result<Value, ExecutionError> evaluate_result(LaneContext &lane, WaveContext &wave,
-                                               ThreadgroupContext &tg) const override;
-  bool isDeterministic() const override { return false; }
-  std::string toString() const override;
-};
-
-class WaveActiveAnyTrueExpr : public Expression {
-private:
-  std::unique_ptr<Expression> expr_;
-
-public:
-  explicit WaveActiveAnyTrueExpr(std::unique_ptr<Expression> expr);
-  Value evaluate(LaneContext &lane, WaveContext &wave,
-                 ThreadgroupContext &tg) const override;
-  Result<Value, ExecutionError> evaluate_result(LaneContext &lane, WaveContext &wave,
-                                               ThreadgroupContext &tg) const override;
-  bool isDeterministic() const override { return false; }
-  std::string toString() const override;
-};
 
 // Statement AST nodes
 class Statement {
@@ -1326,17 +1249,10 @@ protected:
 
 public:
   virtual ~Statement() = default;
-  virtual void execute(LaneContext &lane, WaveContext &wave,
-                       ThreadgroupContext &tg) = 0;
+  
+  // Primary execution method - all statements must implement this
   virtual Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
-                                                    ThreadgroupContext &tg) {
-    try {
-      execute(lane, wave, tg);
-      return Ok<Unit, ExecutionError>(Unit{});
-    } catch (const std::exception&) {
-      return Err<Unit, ExecutionError>(ExecutionError::InvalidState);
-    }
-  }
+                                                    ThreadgroupContext &tg) = 0;
   
   // Default implementation that just calls execute_result
   // Control flow statements override this with specialized error handling
@@ -1354,8 +1270,6 @@ class VarDeclStmt : public Statement {
 
 public:
   VarDeclStmt(const std::string &name, std::unique_ptr<Expression> init);
-  void execute(LaneContext &lane, WaveContext &wave,
-               ThreadgroupContext &tg) override;
   Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
                                             ThreadgroupContext &tg) override;
   std::string toString() const override;
@@ -1367,8 +1281,6 @@ class AssignStmt : public Statement {
 
 public:
   AssignStmt(const std::string &name, std::unique_ptr<Expression> expr);
-  void execute(LaneContext &lane, WaveContext &wave,
-               ThreadgroupContext &tg) override;
   Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
                                             ThreadgroupContext &tg) override;
   std::string toString() const override;
@@ -1386,8 +1298,6 @@ public:
   IfStmt(std::unique_ptr<Expression> cond,
          std::vector<std::unique_ptr<Statement>> thenBlock,
          std::vector<std::unique_ptr<Statement>> elseBlock = {});
-  void execute(LaneContext &lane, WaveContext &wave,
-               ThreadgroupContext &tg) override;
   Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
                                             ThreadgroupContext &tg) override;
   bool requiresAllLanesActive() const override;
@@ -1483,8 +1393,6 @@ public:
   ForStmt(const std::string &var, std::unique_ptr<Expression> init,
           std::unique_ptr<Expression> cond, std::unique_ptr<Expression> inc,
           std::vector<std::unique_ptr<Statement>> body);
-  void execute(LaneContext &lane, WaveContext &wave,
-               ThreadgroupContext &tg) override;
   Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
                                             ThreadgroupContext &tg) override;
   std::string toString() const override;
@@ -1530,8 +1438,6 @@ class WhileStmt : public Statement {
 public:
   WhileStmt(std::unique_ptr<Expression> cond,
             std::vector<std::unique_ptr<Statement>> body);
-  void execute(LaneContext &lane, WaveContext &wave,
-               ThreadgroupContext &tg) override;
   Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
                                             ThreadgroupContext &tg) override;
   std::string toString() const override;
@@ -1577,8 +1483,6 @@ class DoWhileStmt : public Statement {
 public:
   DoWhileStmt(std::vector<std::unique_ptr<Statement>> body,
               std::unique_ptr<Expression> cond);
-  void execute(LaneContext &lane, WaveContext &wave,
-               ThreadgroupContext &tg) override;
   Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
                                             ThreadgroupContext &tg) override;
   std::string toString() const override;
@@ -1602,8 +1506,6 @@ public:
   SwitchStmt(std::unique_ptr<Expression> cond);
   void addCase(int value, std::vector<std::unique_ptr<Statement>> stmts);
   void addDefault(std::vector<std::unique_ptr<Statement>> stmts);
-  void execute(LaneContext &lane, WaveContext &wave,
-               ThreadgroupContext &tg) override;
   Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
                                             ThreadgroupContext &tg) override;
   std::string toString() const override;
@@ -1632,26 +1534,9 @@ public:
   Result<Unit, ExecutionError> execute_with_error_handling(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg) override;
 };
 
-// Control flow exceptions for break/continue
-class ControlFlowException : public std::exception {
-public:
-  enum Type { Break, Continue };
-  Type type;
-  explicit ControlFlowException(Type t) : type(t) {}
-};
-
-// Wave operation wait exception
-class WaveOperationWaitException : public std::exception {
-public:
-  const char *what() const noexcept override {
-    return "Wave operation waiting for synchronization";
-  }
-};
 
 class BreakStmt : public Statement {
 public:
-  void execute(LaneContext &lane, WaveContext &wave,
-               ThreadgroupContext &tg) override;
   Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
                                             ThreadgroupContext &tg) override;
   std::string toString() const override { return "break;"; }
@@ -1659,8 +1544,6 @@ public:
 
 class ContinueStmt : public Statement {
 public:
-  void execute(LaneContext &lane, WaveContext &wave,
-               ThreadgroupContext &tg) override;
   Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
                                             ThreadgroupContext &tg) override;
   std::string toString() const override { return "continue;"; }
@@ -1671,8 +1554,6 @@ class ReturnStmt : public Statement {
 
 public:
   explicit ReturnStmt(std::unique_ptr<Expression> expr = nullptr);
-  void execute(LaneContext &lane, WaveContext &wave,
-               ThreadgroupContext &tg) override;
   Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
                                             ThreadgroupContext &tg) override;
   std::string toString() const override;
@@ -1689,8 +1570,6 @@ private:
 
 class BarrierStmt : public Statement {
 public:
-  void execute(LaneContext &lane, WaveContext &wave,
-               ThreadgroupContext &tg) override;
   Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
                                             ThreadgroupContext &tg) override;
   bool requiresAllLanesActive() const override { return true; }
@@ -1704,8 +1583,6 @@ class ExprStmt : public Statement {
 
 public:
   explicit ExprStmt(std::unique_ptr<Expression> expr);
-  void execute(LaneContext &lane, WaveContext &wave,
-               ThreadgroupContext &tg) override;
   Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
                                             ThreadgroupContext &tg) override;
   std::string toString() const override;
@@ -1717,8 +1594,6 @@ class SharedWriteStmt : public Statement {
 
 public:
   SharedWriteStmt(MemoryAddress addr, std::unique_ptr<Expression> expr);
-  void execute(LaneContext &lane, WaveContext &wave,
-               ThreadgroupContext &tg) override;
   Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
                                             ThreadgroupContext &tg) override;
   std::string toString() const override;
@@ -1729,8 +1604,6 @@ class SharedReadExpr : public Expression {
 
 public:
   explicit SharedReadExpr(MemoryAddress addr) : addr_(addr) {}
-  Value evaluate(LaneContext &lane, WaveContext &wave,
-                 ThreadgroupContext &tg) const override;
   Result<Value, ExecutionError> evaluate_result(LaneContext &lane, WaveContext &wave,
                                                ThreadgroupContext &tg) const override;
   bool isDeterministic() const override { return false; }
@@ -1745,8 +1618,6 @@ public:
   BufferAccessExpr(std::string bufferName,
                    std::unique_ptr<Expression> indexExpr)
       : bufferName_(std::move(bufferName)), indexExpr_(std::move(indexExpr)) {}
-  Value evaluate(LaneContext &lane, WaveContext &wave,
-                 ThreadgroupContext &tg) const override;
   Result<Value, ExecutionError> evaluate_result(LaneContext &lane, WaveContext &wave,
                                                ThreadgroupContext &tg) const override;
   bool isDeterministic() const override { return false; }
@@ -1780,7 +1651,7 @@ private:
                       ThreadgroupContext &tgContext);
   void processWaveOperations(ThreadgroupContext &tgContext);
   void processControlFlowResumption(ThreadgroupContext &tgContext);
-  void executeCollectiveWaveOperation(
+  Result<Unit, ExecutionError> executeCollectiveWaveOperation(
       ThreadgroupContext &tgContext, WaveId waveId,
       const std::pair<const void *, uint32_t> &instructionKey,
       WaveOperationSyncPoint &syncPoint);
