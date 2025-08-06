@@ -3802,30 +3802,51 @@ bool MiniHLSLInterpreter::executeOneStep(ThreadId tid, const Program &program,
     return true;
   }
 
-  // Execute the current statement using stable exception-based approach
-  // Note: All Result-based infrastructure (execute_result methods) remains available
-  // This approach maintains compatibility with the existing wave operation system
-  try {
-    const auto &stmt = program.statements[lane.currentStatement];
-    stmt->execute(lane, wave, tgContext);
-
-    // Only increment if the lane is not waiting
-    if (lane.state == ThreadState::Ready) {
-      lane.currentStatement++;
+  // Execute the current statement using Result-based approach with specialized error handling
+  const auto &stmt = program.statements[lane.currentStatement];
+  
+  // Use the specialized wrapper functions that handle errors properly
+  auto result = stmt->execute_with_error_handling(lane, wave, tgContext);
+  
+  if (result.is_err()) {
+    ExecutionError error = result.unwrap_err();
+    switch (error) {
+      case ExecutionError::WaveOperationWait:
+        // Lane is waiting for wave operation - scheduler will resume it later
+        // Lane state should already be set to WaitingForWave
+        std::cout << "DEBUG: WAVE_WAIT: Lane " << (tid % 32)
+                  << " received WaveOperationWait error, state=" << (int)lane.state
+                  << std::endl;
+        break;
+        
+      case ExecutionError::ControlFlowBreak:
+      case ExecutionError::ControlFlowContinue:
+        // These should have been handled by the wrapper functions
+        // If we see them here, it means they propagated from nested statements
+        // which indicates an error in our implementation
+        lane.state = ThreadState::Error;
+        lane.errorMessage = "Unhandled control flow error";
+        break;
+        
+      case ExecutionError::InvalidState:
+        // Runtime error occurred
+        lane.state = ThreadState::Error;
+        lane.errorMessage = "Invalid execution state";
+        break;
+        
+      default:
+        lane.state = ThreadState::Error;
+        lane.errorMessage = "Unknown execution error";
+        break;
     }
-
+  } else {
+    // Success case - handle statement completion
     if (lane.hasReturned) {
       lane.state = ThreadState::Completed;
+    } else if (lane.state == ThreadState::Ready) {
+      // Only increment if the lane is not waiting
+      lane.currentStatement++;
     }
-  } catch (const WaveOperationWaitException &) {
-    // Wave operation is waiting - do nothing, statement will be retried
-    // Lane state should already be set to WaitingForWave
-    std::cout << "DEBUG: WAVE_WAIT: Lane " << (tid % 32)
-              << " caught WaveOperationWaitException, state=" << (int)lane.state
-              << std::endl;
-  } catch (const std::exception &e) {
-    lane.state = ThreadState::Error;
-    lane.errorMessage = e.what();
   }
 
   return true;
