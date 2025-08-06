@@ -1590,11 +1590,6 @@ Result<Unit, ExecutionError> IfStmt::execute_result(LaneContext &lane,
               << " starting fresh execution (pushed to stack depth="
               << lane.executionStack.size() << ", this=" << this << ")"
               << std::endl;
-  } else {
-    std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
-              << " resuming execution (found at stack index=" << ourStackIndex
-              << ", current stack depth=" << lane.executionStack.size()
-              << ", this=" << this << ")" << std::endl;
   }
 
   // Don't hold reference to vector element - it can be invalidated during
@@ -1656,7 +1651,7 @@ Result<Unit, ExecutionError> IfStmt::execute_result(LaneContext &lane,
     std::cout << "ERROR: IfStmt - Lane " << lane.laneId
               << " unexpected phase in Result-based execution" << std::endl;
     lane.executionStack.pop_back();
-    return Ok<Unit, ExecutionError>(Unit{});
+    return Err<Unit, ExecutionError>(ExecutionError::InvalidState);
   }
 }
 
@@ -1749,7 +1744,7 @@ IfStmt::execute_with_error_handling(LaneContext &lane, WaveContext &wave,
       return result; // Propagate to parent loop
 
     default:
-      return result; // Propagate unknown errors
+      return Err<Unit, ExecutionError>(ExecutionError::InvalidState);
     }
   }
   return result; // Success case

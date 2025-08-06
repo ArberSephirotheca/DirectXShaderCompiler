@@ -247,7 +247,6 @@ DEBUG: assignLaneToBlock - AFTER: block 3 has 2 participating lanes (2 3), 0 wai
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 3
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 3
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
-DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x506000001700)
 DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=1, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 2 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
@@ -298,7 +297,6 @@ DEBUG: Block 6 unknown lanes after removal: {1}
 DEBUG: Block 6 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: IfStmt - Lane 0 variables AFTER statement: laneId=0 result=0 
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
-DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=1, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 executing then block from statement 0 of 2 total statements (Result-based)
 DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
@@ -347,7 +345,6 @@ DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 6
 DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 6
 DEBUG: IfStmt - Lane 1 variables AFTER statement: laneId=1 result=0 
 DEBUG: IfStmt - Lane 2 resuming Result-based if statement
-DEBUG: IfStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x506000001700)
 DEBUG: IfStmt - Lane 2 in phase ExecutingBody (Result-based, stack depth=1, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 2 executing else block from statement 0 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
@@ -361,7 +358,6 @@ DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sy
 DEBUG: canExecuteWaveInstruction for lane 2 in block 3: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=0, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: WAVE_WAIT: Lane 2 received WaveOperationWait error, state=2
 DEBUG: IfStmt - Lane 3 resuming Result-based if statement
-DEBUG: IfStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x506000001700)
 DEBUG: IfStmt - Lane 3 in phase ExecutingBody (Result-based, stack depth=1, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 3 executing else block from statement 0 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
@@ -377,7 +373,6 @@ DEBUG: WAVE_OP: After lane 3 started waiting, wave operation can now execute!
 DEBUG: WAVE_WAIT: Lane 3 received WaveOperationWait error, state=2
 DEBUG: WAVE_OP: Storing collective result for lanes: 2 3  (phase: 2)
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
-DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=2, this=0x506000001700)
 DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=2, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 2 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
@@ -388,7 +383,6 @@ DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
 }
 DEBUG: IfStmt - Lane 0 variables BEFORE statement: laneId=0 result=0 
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
-DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 2 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: return;
@@ -411,7 +405,6 @@ DEBUG: ReturnStmt - Return completed successfully
 DEBUG: IfStmt - Lane 0 variables AFTER statement: laneId=0 result=0 
 DEBUG: IfStmt - Lane 0 variables AFTER statement: laneId=0 result=0 
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
-DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=2, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=2, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 executing then block from statement 0 of 2 total statements (Result-based)
 DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
@@ -422,7 +415,6 @@ DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
 }
 DEBUG: IfStmt - Lane 1 variables BEFORE statement: laneId=1 result=0 
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
-DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 1 executing else block from statement 0 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
@@ -438,7 +430,6 @@ DEBUG: WAVE_OP: After lane 1 started waiting, wave operation can now execute!
 DEBUG: WAVE_WAIT: Lane 1 received WaveOperationWait error, state=2
 DEBUG: WAVE_OP: Storing collective result for lanes: 1  (phase: 2)
 DEBUG: IfStmt - Lane 2 resuming Result-based if statement
-DEBUG: IfStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x506000001700)
 DEBUG: IfStmt - Lane 2 in phase ExecutingBody (Result-based, stack depth=1, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 2 executing else block from statement 0 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
@@ -451,7 +442,6 @@ DEBUG: onLaneFinishWaveOp - Lane 1 finishing wave op in block 6
 DEBUG: onLaneFinishWaveOp - Current status in block 6: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 1 to Participating in block 6
 DEBUG: IfStmt - Lane 3 resuming Result-based if statement
-DEBUG: IfStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x506000001700)
 DEBUG: IfStmt - Lane 3 in phase ExecutingBody (Result-based, stack depth=1, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 3 executing else block from statement 0 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
@@ -461,7 +451,6 @@ DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 4 (phase: Consumed)
 DEBUG: AssignStmt - Lane 3 assigned value 4 to variable 'result'
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
-DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=2, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=2, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 executing then block from statement 0 of 2 total statements (Result-based)
 DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
@@ -472,7 +461,6 @@ DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
 }
 DEBUG: IfStmt - Lane 1 variables BEFORE statement: laneId=1 result=0 
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
-DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 1 executing else block from statement 0 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
@@ -483,7 +471,6 @@ DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 1 (phase: Consumed)
 DEBUG: AssignStmt - Lane 1 assigned value 1 to variable 'result'
 DEBUG: IfStmt - Lane 1 variables AFTER statement: laneId=1 result=1 
 DEBUG: IfStmt - Lane 2 resuming Result-based if statement
-DEBUG: IfStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x506000001700)
 DEBUG: IfStmt - Lane 2 in phase Reconverging (Result-based, stack depth=1, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 2 performing reconvergence from block 3 to laneSpecificMergeBlockId=4
 DEBUG: IfStmt - Lane 2 merge stack before reconvergence (size=1):
@@ -519,7 +506,6 @@ DEBUG: removeThreadFromAllSets - block 3 had 1 participating lanes before remova
 DEBUG: removeThreadFromAllSets - block 3 has 1 participating lanes after removal (participating: 3 )
 DEBUG: IfStmt - Lane 2 reconvergence complete
 DEBUG: IfStmt - Lane 3 resuming Result-based if statement
-DEBUG: IfStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x506000001700)
 DEBUG: IfStmt - Lane 3 in phase Reconverging (Result-based, stack depth=1, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 3 performing reconvergence from block 3 to laneSpecificMergeBlockId=4
 DEBUG: IfStmt - Lane 3 merge stack before reconvergence (size=1):
@@ -555,7 +541,6 @@ DEBUG: removeThreadFromAllSets - block 3 had 0 participating lanes before remova
 DEBUG: removeThreadFromAllSets - block 3 has 0 participating lanes after removal
 DEBUG: IfStmt - Lane 3 reconvergence complete
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
-DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=2, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=2, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 executing then block from statement 0 of 2 total statements (Result-based)
 DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
@@ -566,7 +551,6 @@ DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
 }
 DEBUG: IfStmt - Lane 1 variables BEFORE statement: laneId=1 result=1 
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
-DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 1 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 1 performing reconvergence from block 6 to laneSpecificMergeBlockId=7
 DEBUG: IfStmt - Lane 1 merge stack before reconvergence (size=2):
@@ -629,7 +613,6 @@ DEBUG: canExecuteWaveInstruction for lane 3 in block 4: canExecuteInBlock=0, all
 DEBUG: WAVE_WAIT: Lane 3 received WaveOperationWait error, state=2
 DEBUG: isAllParticipantsKnown - Block 4 wave 0 has 1 unknown lanes: 1  - These lanes need to be resolved to Participating or Left
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
-DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=1, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 executing then block from statement 1 of 2 total statements (Result-based)
 DEBUG: IfStmt - Lane 1 executing then block statement 1: result = (result + WaveActiveSum(2));
@@ -643,7 +626,6 @@ DEBUG: AssignStmt - Lane 1 assigned value 3 to variable 'result'
 DEBUG: IfStmt - Lane 1 variables AFTER statement: laneId=1 result=3 
 DEBUG: isAllParticipantsKnown - Block 4 wave 0 has 1 unknown lanes: 1  - These lanes need to be resolved to Participating or Left
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
-DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 in phase Reconverging (Result-based, stack depth=1, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 performing reconvergence from block 7 to laneSpecificMergeBlockId=4
 DEBUG: IfStmt - Lane 1 merge stack before reconvergence (size=1):
@@ -871,7 +853,6 @@ DEBUG: assignLaneToBlock - AFTER: block 3 has 2 participating lanes (2 3), 0 wai
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 3
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 3
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
-DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x506000001700)
 DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=1, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 2 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
@@ -922,7 +903,6 @@ DEBUG: Block 6 unknown lanes after removal: {1}
 DEBUG: Block 6 areAllUnknownLanesResolvedForWave(0) = 0 (tracked by registry)
 DEBUG: IfStmt - Lane 0 variables AFTER statement: laneId=0 result=0 
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
-DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=1, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 executing then block from statement 0 of 2 total statements (Result-based)
 DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
@@ -971,7 +951,6 @@ DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 6
 DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 6
 DEBUG: IfStmt - Lane 1 variables AFTER statement: laneId=1 result=0 
 DEBUG: IfStmt - Lane 2 resuming Result-based if statement
-DEBUG: IfStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x506000001700)
 DEBUG: IfStmt - Lane 2 in phase ExecutingBody (Result-based, stack depth=1, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 2 executing else block from statement 0 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
@@ -985,7 +964,6 @@ DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sy
 DEBUG: canExecuteWaveInstruction for lane 2 in block 3: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=0, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: WAVE_WAIT: Lane 2 received WaveOperationWait error, state=2
 DEBUG: IfStmt - Lane 3 resuming Result-based if statement
-DEBUG: IfStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x506000001700)
 DEBUG: IfStmt - Lane 3 in phase ExecutingBody (Result-based, stack depth=1, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 3 executing else block from statement 0 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
@@ -1001,7 +979,6 @@ DEBUG: WAVE_OP: After lane 3 started waiting, wave operation can now execute!
 DEBUG: WAVE_WAIT: Lane 3 received WaveOperationWait error, state=2
 DEBUG: WAVE_OP: Storing collective result for lanes: 2 3  (phase: 2)
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
-DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=2, this=0x506000001700)
 DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=2, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 2 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
@@ -1012,7 +989,6 @@ DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
 }
 DEBUG: IfStmt - Lane 0 variables BEFORE statement: laneId=0 result=0 
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
-DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 2 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: return;
@@ -1035,7 +1011,6 @@ DEBUG: ReturnStmt - Return completed successfully
 DEBUG: IfStmt - Lane 0 variables AFTER statement: laneId=0 result=0 
 DEBUG: IfStmt - Lane 0 variables AFTER statement: laneId=0 result=0 
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
-DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=2, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=2, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 executing then block from statement 0 of 2 total statements (Result-based)
 DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
@@ -1046,7 +1021,6 @@ DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
 }
 DEBUG: IfStmt - Lane 1 variables BEFORE statement: laneId=1 result=0 
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
-DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 1 executing else block from statement 0 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
@@ -1062,7 +1036,6 @@ DEBUG: WAVE_OP: After lane 1 started waiting, wave operation can now execute!
 DEBUG: WAVE_WAIT: Lane 1 received WaveOperationWait error, state=2
 DEBUG: WAVE_OP: Storing collective result for lanes: 1  (phase: 2)
 DEBUG: IfStmt - Lane 2 resuming Result-based if statement
-DEBUG: IfStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x506000001700)
 DEBUG: IfStmt - Lane 2 in phase ExecutingBody (Result-based, stack depth=1, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 2 executing else block from statement 0 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
@@ -1075,7 +1048,6 @@ DEBUG: onLaneFinishWaveOp - Lane 1 finishing wave op in block 6
 DEBUG: onLaneFinishWaveOp - Current status in block 6: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 1 to Participating in block 6
 DEBUG: IfStmt - Lane 3 resuming Result-based if statement
-DEBUG: IfStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x506000001700)
 DEBUG: IfStmt - Lane 3 in phase ExecutingBody (Result-based, stack depth=1, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 3 executing else block from statement 0 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
@@ -1085,7 +1057,6 @@ DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored resu
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 4 (phase: Consumed)
 DEBUG: AssignStmt - Lane 3 assigned value 4 to variable 'result'
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
-DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=2, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=2, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 executing then block from statement 0 of 2 total statements (Result-based)
 DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
@@ -1096,7 +1067,6 @@ DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
 }
 DEBUG: IfStmt - Lane 1 variables BEFORE statement: laneId=1 result=0 
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
-DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 1 executing else block from statement 0 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
@@ -1107,7 +1077,6 @@ DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 1 (phase: Consumed)
 DEBUG: AssignStmt - Lane 1 assigned value 1 to variable 'result'
 DEBUG: IfStmt - Lane 1 variables AFTER statement: laneId=1 result=1 
 DEBUG: IfStmt - Lane 2 resuming Result-based if statement
-DEBUG: IfStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x506000001700)
 DEBUG: IfStmt - Lane 2 in phase Reconverging (Result-based, stack depth=1, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 2 performing reconvergence from block 3 to laneSpecificMergeBlockId=4
 DEBUG: IfStmt - Lane 2 merge stack before reconvergence (size=1):
@@ -1143,7 +1112,6 @@ DEBUG: removeThreadFromAllSets - block 3 had 1 participating lanes before remova
 DEBUG: removeThreadFromAllSets - block 3 has 1 participating lanes after removal (participating: 3 )
 DEBUG: IfStmt - Lane 2 reconvergence complete
 DEBUG: IfStmt - Lane 3 resuming Result-based if statement
-DEBUG: IfStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x506000001700)
 DEBUG: IfStmt - Lane 3 in phase Reconverging (Result-based, stack depth=1, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 3 performing reconvergence from block 3 to laneSpecificMergeBlockId=4
 DEBUG: IfStmt - Lane 3 merge stack before reconvergence (size=1):
@@ -1179,7 +1147,6 @@ DEBUG: removeThreadFromAllSets - block 3 had 0 participating lanes before remova
 DEBUG: removeThreadFromAllSets - block 3 has 0 participating lanes after removal
 DEBUG: IfStmt - Lane 3 reconvergence complete
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
-DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=2, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=2, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 executing then block from statement 0 of 2 total statements (Result-based)
 DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
@@ -1190,7 +1157,6 @@ DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
 }
 DEBUG: IfStmt - Lane 1 variables BEFORE statement: laneId=1 result=1 
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
-DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 1 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5060000016a0)
 DEBUG: IfStmt - Lane 1 performing reconvergence from block 6 to laneSpecificMergeBlockId=7
 DEBUG: IfStmt - Lane 1 merge stack before reconvergence (size=2):
@@ -1253,7 +1219,6 @@ DEBUG: canExecuteWaveInstruction for lane 3 in block 4: canExecuteInBlock=0, all
 DEBUG: WAVE_WAIT: Lane 3 received WaveOperationWait error, state=2
 DEBUG: isAllParticipantsKnown - Block 4 wave 0 has 1 unknown lanes: 1  - These lanes need to be resolved to Participating or Left
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
-DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=1, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 executing then block from statement 1 of 2 total statements (Result-based)
 DEBUG: IfStmt - Lane 1 executing then block statement 1: result = (result + WaveActiveSum(2));
@@ -1267,7 +1232,6 @@ DEBUG: AssignStmt - Lane 1 assigned value 3 to variable 'result'
 DEBUG: IfStmt - Lane 1 variables AFTER statement: laneId=1 result=3 
 DEBUG: isAllParticipantsKnown - Block 4 wave 0 has 1 unknown lanes: 1  - These lanes need to be resolved to Participating or Left
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
-DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 in phase Reconverging (Result-based, stack depth=1, our index=0, this=0x506000001700)
 DEBUG: IfStmt - Lane 1 performing reconvergence from block 7 to laneSpecificMergeBlockId=4
 DEBUG: IfStmt - Lane 1 merge stack before reconvergence (size=1):

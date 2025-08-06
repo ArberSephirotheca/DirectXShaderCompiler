@@ -383,7 +383,6 @@ DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 4 (Result-based)
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
-DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 1 total statements (Result-based)
@@ -429,7 +428,6 @@ DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 4 (Result-based)
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
-DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 1 executing then block from statement 0 of 1 total statements (Result-based)
@@ -474,7 +472,6 @@ DEBUG: ForStmt - Lane 2 merge stack size: 3
 DEBUG: ForStmt - Lane 2 iteration merge point already found in merge stack
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 2 (Result-based)
 DEBUG: IfStmt - Lane 2 resuming Result-based if statement
-DEBUG: IfStmt - Lane 2 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 2 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 2 performing reconvergence from block 2 to laneSpecificMergeBlockId=5
 DEBUG: IfStmt - Lane 2 merge stack before reconvergence (size=3):
@@ -532,7 +529,6 @@ DEBUG: ForStmt - Lane 3 merge stack size: 3
 DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 2 (Result-based)
 DEBUG: IfStmt - Lane 3 resuming Result-based if statement
-DEBUG: IfStmt - Lane 3 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 3 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 3 performing reconvergence from block 2 to laneSpecificMergeBlockId=5
 DEBUG: IfStmt - Lane 3 merge stack before reconvergence (size=3):
@@ -807,7 +803,6 @@ DEBUG: ForStmt - Lane 2 merge stack size: 3
 DEBUG: ForStmt - Lane 2 iteration merge point already found in merge stack
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 2 (Result-based)
 DEBUG: IfStmt - Lane 2 resuming Result-based if statement
-DEBUG: IfStmt - Lane 2 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 2 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 2 performing reconvergence from block 2 to laneSpecificMergeBlockId=7
 DEBUG: IfStmt - Lane 2 merge stack before reconvergence (size=3):
@@ -866,7 +861,6 @@ DEBUG: ForStmt - Lane 3 merge stack size: 3
 DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 2 (Result-based)
 DEBUG: IfStmt - Lane 3 resuming Result-based if statement
-DEBUG: IfStmt - Lane 3 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 3 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 3 performing reconvergence from block 2 to laneSpecificMergeBlockId=7
 DEBUG: IfStmt - Lane 3 merge stack before reconvergence (size=3):
@@ -1112,7 +1106,6 @@ DEBUG: ForStmt - Lane 2 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 8 (registry returned: 8)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 8 (Result-based)
 DEBUG: IfStmt - Lane 2 resuming Result-based if statement
-DEBUG: IfStmt - Lane 2 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 8 (registry returned: 8)
 DEBUG: IfStmt - Lane 2 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 2 executing then block from statement 0 of 1 total statements (Result-based)
@@ -1174,7 +1167,6 @@ DEBUG: ForStmt - Lane 3 merge stack size: 3
 DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 2 (Result-based)
 DEBUG: IfStmt - Lane 3 resuming Result-based if statement
-DEBUG: IfStmt - Lane 3 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 3 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 3 performing reconvergence from block 2 to laneSpecificMergeBlockId=9
 DEBUG: IfStmt - Lane 3 merge stack before reconvergence (size=3):
@@ -1349,7 +1341,6 @@ DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 10 (Result-based)
 DEBUG: IfStmt - Lane 3 resuming Result-based if statement
-DEBUG: IfStmt - Lane 3 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 10 (registry returned: 10)
 DEBUG: IfStmt - Lane 3 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 3 executing then block from statement 0 of 1 total statements (Result-based)
@@ -1770,7 +1761,6 @@ DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 4 (Result-based)
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
-DEBUG: IfStmt - Lane 0 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 1 total statements (Result-based)
@@ -1816,7 +1806,6 @@ DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 4 (Result-based)
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
-DEBUG: IfStmt - Lane 1 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 1 executing then block from statement 0 of 1 total statements (Result-based)
@@ -1861,7 +1850,6 @@ DEBUG: ForStmt - Lane 2 merge stack size: 3
 DEBUG: ForStmt - Lane 2 iteration merge point already found in merge stack
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 2 (Result-based)
 DEBUG: IfStmt - Lane 2 resuming Result-based if statement
-DEBUG: IfStmt - Lane 2 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 2 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 2 performing reconvergence from block 2 to laneSpecificMergeBlockId=5
 DEBUG: IfStmt - Lane 2 merge stack before reconvergence (size=3):
@@ -1919,7 +1907,6 @@ DEBUG: ForStmt - Lane 3 merge stack size: 3
 DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 2 (Result-based)
 DEBUG: IfStmt - Lane 3 resuming Result-based if statement
-DEBUG: IfStmt - Lane 3 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 3 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 3 performing reconvergence from block 2 to laneSpecificMergeBlockId=5
 DEBUG: IfStmt - Lane 3 merge stack before reconvergence (size=3):
@@ -2194,7 +2181,6 @@ DEBUG: ForStmt - Lane 2 merge stack size: 3
 DEBUG: ForStmt - Lane 2 iteration merge point already found in merge stack
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 2 (Result-based)
 DEBUG: IfStmt - Lane 2 resuming Result-based if statement
-DEBUG: IfStmt - Lane 2 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 2 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 2 performing reconvergence from block 2 to laneSpecificMergeBlockId=7
 DEBUG: IfStmt - Lane 2 merge stack before reconvergence (size=3):
@@ -2253,7 +2239,6 @@ DEBUG: ForStmt - Lane 3 merge stack size: 3
 DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 2 (Result-based)
 DEBUG: IfStmt - Lane 3 resuming Result-based if statement
-DEBUG: IfStmt - Lane 3 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 3 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 3 performing reconvergence from block 2 to laneSpecificMergeBlockId=7
 DEBUG: IfStmt - Lane 3 merge stack before reconvergence (size=3):
@@ -2499,7 +2484,6 @@ DEBUG: ForStmt - Lane 2 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 8 (registry returned: 8)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 8 (Result-based)
 DEBUG: IfStmt - Lane 2 resuming Result-based if statement
-DEBUG: IfStmt - Lane 2 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 8 (registry returned: 8)
 DEBUG: IfStmt - Lane 2 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 2 executing then block from statement 0 of 1 total statements (Result-based)
@@ -2561,7 +2545,6 @@ DEBUG: ForStmt - Lane 3 merge stack size: 3
 DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 2 (Result-based)
 DEBUG: IfStmt - Lane 3 resuming Result-based if statement
-DEBUG: IfStmt - Lane 3 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 3 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 3 performing reconvergence from block 2 to laneSpecificMergeBlockId=9
 DEBUG: IfStmt - Lane 3 merge stack before reconvergence (size=3):
@@ -2736,7 +2719,6 @@ DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 10 (Result-based)
 DEBUG: IfStmt - Lane 3 resuming Result-based if statement
-DEBUG: IfStmt - Lane 3 resuming execution (found at stack index=1, current stack depth=2, this=0x5060000015e0)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 10 (registry returned: 10)
 DEBUG: IfStmt - Lane 3 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x5060000015e0)
 DEBUG: IfStmt - Lane 3 executing then block from statement 0 of 1 total statements (Result-based)
