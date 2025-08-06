@@ -1165,8 +1165,6 @@ DEBUG: ForStmt - Lane 0 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 0 (lane 0 at 0x50f000000040)
-DEBUG: UnaryOpExpr - Lane 0 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 0 PreIncrement succeeded, result=1
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 0 child statement needs resume (Result-based)
   Block before: 5, Block after: 5, statementIndex stays at: 1
@@ -1195,8 +1193,6 @@ DEBUG: ForStmt - Lane 1 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 1 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 0 (lane 1 at 0x50f000000130)
-DEBUG: UnaryOpExpr - Lane 1 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 1 PreIncrement succeeded, result=1
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 1 child statement needs resume (Result-based)
   Block before: 5, Block after: 5, statementIndex stays at: 1
@@ -1225,8 +1221,6 @@ DEBUG: ForStmt - Lane 2 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 0 (lane 2 at 0x50f000000220)
-DEBUG: UnaryOpExpr - Lane 2 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 2 PreIncrement succeeded, result=1
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 4, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 child statement needs resume (Result-based)
   Block before: 5, Block after: 5, statementIndex stays at: 1
@@ -1255,8 +1249,6 @@ DEBUG: ForStmt - Lane 3 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 0 (lane 3 at 0x50f000000310)
-DEBUG: UnaryOpExpr - Lane 3 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 3 PreIncrement succeeded, result=1
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 4, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 child statement needs resume (Result-based)
   Block before: 5, Block after: 5, statementIndex stays at: 1
@@ -1887,8 +1879,6 @@ DEBUG: ForStmt - Lane 0 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 1 (lane 0 at 0x50f000000040)
-DEBUG: UnaryOpExpr - Lane 0 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 0 PreIncrement succeeded, result=2
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 0 child statement needs resume (Result-based)
   Block before: 5, Block after: 5, statementIndex stays at: 1
@@ -1917,8 +1907,6 @@ DEBUG: ForStmt - Lane 1 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 1 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 1 (lane 1 at 0x50f000000130)
-DEBUG: UnaryOpExpr - Lane 1 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 1 PreIncrement succeeded, result=2
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 1 child statement needs resume (Result-based)
   Block before: 5, Block after: 5, statementIndex stays at: 1
@@ -1947,8 +1935,6 @@ DEBUG: ForStmt - Lane 2 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 1 (lane 2 at 0x50f000000220)
-DEBUG: UnaryOpExpr - Lane 2 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 2 PreIncrement succeeded, result=2
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 4, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 child statement needs resume (Result-based)
   Block before: 5, Block after: 5, statementIndex stays at: 1
@@ -1977,8 +1963,6 @@ DEBUG: ForStmt - Lane 3 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 1 (lane 3 at 0x50f000000310)
-DEBUG: UnaryOpExpr - Lane 3 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 3 PreIncrement succeeded, result=2
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 4, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 child statement needs resume (Result-based)
   Block before: 5, Block after: 5, statementIndex stays at: 1
@@ -2281,8 +2265,6 @@ DEBUG: ForStmt - Lane 0 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 0 at 0x50f000000040)
-DEBUG: UnaryOpExpr - Lane 0 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 0 PreIncrement succeeded, result=1
 DEBUG: ForStmt - Lane 1 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 in phase EvaluatingIncrement (Result-based, stack depth=1, our index=0, this=0x508000002820)
@@ -2290,8 +2272,6 @@ DEBUG: ForStmt - Lane 1 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 1 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 1 at 0x50f000000130)
-DEBUG: UnaryOpExpr - Lane 1 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 1 PreIncrement succeeded, result=1
 DEBUG: ForStmt - Lane 2 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 in phase EvaluatingIncrement (Result-based, stack depth=1, our index=0, this=0x508000002820)
@@ -2299,8 +2279,6 @@ DEBUG: ForStmt - Lane 2 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 2 at 0x50f000000220)
-DEBUG: UnaryOpExpr - Lane 2 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 2 PreIncrement succeeded, result=1
 DEBUG: ForStmt - Lane 3 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 in phase EvaluatingIncrement (Result-based, stack depth=1, our index=0, this=0x508000002820)
@@ -2308,8 +2286,6 @@ DEBUG: ForStmt - Lane 3 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 3 at 0x50f000000310)
-DEBUG: UnaryOpExpr - Lane 3 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 3 PreIncrement succeeded, result=1
 DEBUG: ForStmt - Lane 0 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x508000002820)
@@ -3313,8 +3289,6 @@ DEBUG: ForStmt - Lane 0 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 0 (lane 0 at 0x50f000000040)
-DEBUG: UnaryOpExpr - Lane 0 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 0 PreIncrement succeeded, result=1
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 0 child statement needs resume (Result-based)
   Block before: 10, Block after: 10, statementIndex stays at: 1
@@ -3343,8 +3317,6 @@ DEBUG: ForStmt - Lane 1 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 1 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 0 (lane 1 at 0x50f000000130)
-DEBUG: UnaryOpExpr - Lane 1 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 1 PreIncrement succeeded, result=1
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 9, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 1 child statement needs resume (Result-based)
   Block before: 10, Block after: 10, statementIndex stays at: 1
@@ -3373,8 +3345,6 @@ DEBUG: ForStmt - Lane 2 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 0 (lane 2 at 0x50f000000220)
-DEBUG: UnaryOpExpr - Lane 2 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 2 PreIncrement succeeded, result=1
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 9, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 2 child statement needs resume (Result-based)
   Block before: 10, Block after: 10, statementIndex stays at: 1
@@ -3403,8 +3373,6 @@ DEBUG: ForStmt - Lane 3 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 0 (lane 3 at 0x50f000000310)
-DEBUG: UnaryOpExpr - Lane 3 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 3 PreIncrement succeeded, result=1
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 3 child statement needs resume (Result-based)
   Block before: 10, Block after: 10, statementIndex stays at: 1
@@ -4035,8 +4003,6 @@ DEBUG: ForStmt - Lane 0 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 1 (lane 0 at 0x50f000000040)
-DEBUG: UnaryOpExpr - Lane 0 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 0 PreIncrement succeeded, result=2
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 0 child statement needs resume (Result-based)
   Block before: 10, Block after: 10, statementIndex stays at: 1
@@ -4065,8 +4031,6 @@ DEBUG: ForStmt - Lane 1 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 1 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 1 (lane 1 at 0x50f000000130)
-DEBUG: UnaryOpExpr - Lane 1 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 1 PreIncrement succeeded, result=2
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 9, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 1 child statement needs resume (Result-based)
   Block before: 10, Block after: 10, statementIndex stays at: 1
@@ -4095,8 +4059,6 @@ DEBUG: ForStmt - Lane 2 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 1 (lane 2 at 0x50f000000220)
-DEBUG: UnaryOpExpr - Lane 2 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 2 PreIncrement succeeded, result=2
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 9, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 2 child statement needs resume (Result-based)
   Block before: 10, Block after: 10, statementIndex stays at: 1
@@ -4125,8 +4087,6 @@ DEBUG: ForStmt - Lane 3 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 1 (lane 3 at 0x50f000000310)
-DEBUG: UnaryOpExpr - Lane 3 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 3 PreIncrement succeeded, result=2
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 3 child statement needs resume (Result-based)
   Block before: 10, Block after: 10, statementIndex stays at: 1
@@ -4429,8 +4389,6 @@ DEBUG: ForStmt - Lane 0 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 0 at 0x50f000000040)
-DEBUG: UnaryOpExpr - Lane 0 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 0 PreIncrement succeeded, result=2
 DEBUG: ForStmt - Lane 1 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 in phase EvaluatingIncrement (Result-based, stack depth=1, our index=0, this=0x508000002820)
@@ -4438,8 +4396,6 @@ DEBUG: ForStmt - Lane 1 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 1 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 1 at 0x50f000000130)
-DEBUG: UnaryOpExpr - Lane 1 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 1 PreIncrement succeeded, result=2
 DEBUG: ForStmt - Lane 2 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 in phase EvaluatingIncrement (Result-based, stack depth=1, our index=0, this=0x508000002820)
@@ -4447,8 +4403,6 @@ DEBUG: ForStmt - Lane 2 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 2 at 0x50f000000220)
-DEBUG: UnaryOpExpr - Lane 2 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 2 PreIncrement succeeded, result=2
 DEBUG: ForStmt - Lane 3 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 in phase EvaluatingIncrement (Result-based, stack depth=1, our index=0, this=0x508000002820)
@@ -4456,8 +4410,6 @@ DEBUG: ForStmt - Lane 3 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 3 at 0x50f000000310)
-DEBUG: UnaryOpExpr - Lane 3 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 3 PreIncrement succeeded, result=2
 DEBUG: ForStmt - Lane 0 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x508000002820)
@@ -5839,8 +5791,6 @@ DEBUG: ForStmt - Lane 0 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 0 (lane 0 at 0x50f000000400)
-DEBUG: UnaryOpExpr - Lane 0 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 0 PreIncrement succeeded, result=1
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 0 child statement needs resume (Result-based)
   Block before: 5, Block after: 5, statementIndex stays at: 1
@@ -5869,8 +5819,6 @@ DEBUG: ForStmt - Lane 1 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 1 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 0 (lane 1 at 0x50f0000004f0)
-DEBUG: UnaryOpExpr - Lane 1 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 1 PreIncrement succeeded, result=1
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 1 child statement needs resume (Result-based)
   Block before: 5, Block after: 5, statementIndex stays at: 1
@@ -5899,8 +5847,6 @@ DEBUG: ForStmt - Lane 2 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 0 (lane 2 at 0x50f0000005e0)
-DEBUG: UnaryOpExpr - Lane 2 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 2 PreIncrement succeeded, result=1
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 4, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 child statement needs resume (Result-based)
   Block before: 5, Block after: 5, statementIndex stays at: 1
@@ -5929,8 +5875,6 @@ DEBUG: ForStmt - Lane 3 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 0 (lane 3 at 0x50f0000006d0)
-DEBUG: UnaryOpExpr - Lane 3 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 3 PreIncrement succeeded, result=1
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 4, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 child statement needs resume (Result-based)
   Block before: 5, Block after: 5, statementIndex stays at: 1
@@ -6561,8 +6505,6 @@ DEBUG: ForStmt - Lane 0 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 1 (lane 0 at 0x50f000000400)
-DEBUG: UnaryOpExpr - Lane 0 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 0 PreIncrement succeeded, result=2
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 0 child statement needs resume (Result-based)
   Block before: 5, Block after: 5, statementIndex stays at: 1
@@ -6591,8 +6533,6 @@ DEBUG: ForStmt - Lane 1 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 1 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 1 (lane 1 at 0x50f0000004f0)
-DEBUG: UnaryOpExpr - Lane 1 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 1 PreIncrement succeeded, result=2
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 1 child statement needs resume (Result-based)
   Block before: 5, Block after: 5, statementIndex stays at: 1
@@ -6621,8 +6561,6 @@ DEBUG: ForStmt - Lane 2 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 1 (lane 2 at 0x50f0000005e0)
-DEBUG: UnaryOpExpr - Lane 2 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 2 PreIncrement succeeded, result=2
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 4, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 child statement needs resume (Result-based)
   Block before: 5, Block after: 5, statementIndex stays at: 1
@@ -6651,8 +6589,6 @@ DEBUG: ForStmt - Lane 3 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 1 (lane 3 at 0x50f0000006d0)
-DEBUG: UnaryOpExpr - Lane 3 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 3 PreIncrement succeeded, result=2
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 4, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 child statement needs resume (Result-based)
   Block before: 5, Block after: 5, statementIndex stays at: 1
@@ -6955,8 +6891,6 @@ DEBUG: ForStmt - Lane 0 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 0 at 0x50f000000400)
-DEBUG: UnaryOpExpr - Lane 0 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 0 PreIncrement succeeded, result=1
 DEBUG: ForStmt - Lane 1 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 in phase EvaluatingIncrement (Result-based, stack depth=1, our index=0, this=0x508000002820)
@@ -6964,8 +6898,6 @@ DEBUG: ForStmt - Lane 1 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 1 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 1 at 0x50f0000004f0)
-DEBUG: UnaryOpExpr - Lane 1 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 1 PreIncrement succeeded, result=1
 DEBUG: ForStmt - Lane 2 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 in phase EvaluatingIncrement (Result-based, stack depth=1, our index=0, this=0x508000002820)
@@ -6973,8 +6905,6 @@ DEBUG: ForStmt - Lane 2 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 2 at 0x50f0000005e0)
-DEBUG: UnaryOpExpr - Lane 2 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 2 PreIncrement succeeded, result=1
 DEBUG: ForStmt - Lane 3 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 in phase EvaluatingIncrement (Result-based, stack depth=1, our index=0, this=0x508000002820)
@@ -6982,8 +6912,6 @@ DEBUG: ForStmt - Lane 3 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 3 at 0x50f0000006d0)
-DEBUG: UnaryOpExpr - Lane 3 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 3 PreIncrement succeeded, result=1
 DEBUG: ForStmt - Lane 0 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x508000002820)
@@ -7987,8 +7915,6 @@ DEBUG: ForStmt - Lane 0 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 0 (lane 0 at 0x50f000000400)
-DEBUG: UnaryOpExpr - Lane 0 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 0 PreIncrement succeeded, result=1
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 0 child statement needs resume (Result-based)
   Block before: 10, Block after: 10, statementIndex stays at: 1
@@ -8017,8 +7943,6 @@ DEBUG: ForStmt - Lane 1 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 1 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 0 (lane 1 at 0x50f0000004f0)
-DEBUG: UnaryOpExpr - Lane 1 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 1 PreIncrement succeeded, result=1
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 9, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 1 child statement needs resume (Result-based)
   Block before: 10, Block after: 10, statementIndex stays at: 1
@@ -8047,8 +7971,6 @@ DEBUG: ForStmt - Lane 2 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 0 (lane 2 at 0x50f0000005e0)
-DEBUG: UnaryOpExpr - Lane 2 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 2 PreIncrement succeeded, result=1
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 9, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 2 child statement needs resume (Result-based)
   Block before: 10, Block after: 10, statementIndex stays at: 1
@@ -8077,8 +7999,6 @@ DEBUG: ForStmt - Lane 3 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 0 (lane 3 at 0x50f0000006d0)
-DEBUG: UnaryOpExpr - Lane 3 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 3 PreIncrement succeeded, result=1
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 3 child statement needs resume (Result-based)
   Block before: 10, Block after: 10, statementIndex stays at: 1
@@ -8709,8 +8629,6 @@ DEBUG: ForStmt - Lane 0 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 1 (lane 0 at 0x50f000000400)
-DEBUG: UnaryOpExpr - Lane 0 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 0 PreIncrement succeeded, result=2
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 0 child statement needs resume (Result-based)
   Block before: 10, Block after: 10, statementIndex stays at: 1
@@ -8739,8 +8657,6 @@ DEBUG: ForStmt - Lane 1 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 1 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 1 (lane 1 at 0x50f0000004f0)
-DEBUG: UnaryOpExpr - Lane 1 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 1 PreIncrement succeeded, result=2
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 9, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 1 child statement needs resume (Result-based)
   Block before: 10, Block after: 10, statementIndex stays at: 1
@@ -8769,8 +8685,6 @@ DEBUG: ForStmt - Lane 2 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 1 (lane 2 at 0x50f0000005e0)
-DEBUG: UnaryOpExpr - Lane 2 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 2 PreIncrement succeeded, result=2
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 9, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 2 child statement needs resume (Result-based)
   Block before: 10, Block after: 10, statementIndex stays at: 1
@@ -8799,8 +8713,6 @@ DEBUG: ForStmt - Lane 3 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'j' (Result-based)
 DEBUG: VariableExpr - Variable 'j' = 1 (lane 3 at 0x50f0000006d0)
-DEBUG: UnaryOpExpr - Lane 3 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 3 PreIncrement succeeded, result=2
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 9, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 3 child statement needs resume (Result-based)
   Block before: 10, Block after: 10, statementIndex stays at: 1
@@ -9103,8 +9015,6 @@ DEBUG: ForStmt - Lane 0 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 0 at 0x50f000000400)
-DEBUG: UnaryOpExpr - Lane 0 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 0 PreIncrement succeeded, result=2
 DEBUG: ForStmt - Lane 1 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 in phase EvaluatingIncrement (Result-based, stack depth=1, our index=0, this=0x508000002820)
@@ -9112,8 +9022,6 @@ DEBUG: ForStmt - Lane 1 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 1 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 1 at 0x50f0000004f0)
-DEBUG: UnaryOpExpr - Lane 1 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 1 PreIncrement succeeded, result=2
 DEBUG: ForStmt - Lane 2 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 in phase EvaluatingIncrement (Result-based, stack depth=1, our index=0, this=0x508000002820)
@@ -9121,8 +9029,6 @@ DEBUG: ForStmt - Lane 2 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 2 at 0x50f0000005e0)
-DEBUG: UnaryOpExpr - Lane 2 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 2 PreIncrement succeeded, result=2
 DEBUG: ForStmt - Lane 3 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 in phase EvaluatingIncrement (Result-based, stack depth=1, our index=0, this=0x508000002820)
@@ -9130,8 +9036,6 @@ DEBUG: ForStmt - Lane 3 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 3 at 0x50f0000006d0)
-DEBUG: UnaryOpExpr - Lane 3 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 3 PreIncrement succeeded, result=2
 DEBUG: ForStmt - Lane 0 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x508000002820)

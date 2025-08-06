@@ -239,8 +239,6 @@ DEBUG: AssignStmt - Lane 0 assigned value 4 to variable 'result'
 DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 0 at 0x50f000000040)
-DEBUG: UnaryOpExpr - Lane 0 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 0 PreIncrement succeeded, result=1
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 2
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 2
 DEBUG: assignLaneToBlock - BEFORE: block 2 has 0 participating lanes, 0 waiting lanes, 4 unknown lanes (0 1 2 3)
@@ -264,8 +262,6 @@ DEBUG: AssignStmt - Lane 1 assigned value 4 to variable 'result'
 DEBUG: UnaryOpExpr - Lane 1 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 1 at 0x50f000000130)
-DEBUG: UnaryOpExpr - Lane 1 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 1 PreIncrement succeeded, result=1
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 2
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 2
 DEBUG: assignLaneToBlock - BEFORE: block 2 has 1 participating lanes (0), 0 waiting lanes, 3 unknown lanes (1 2 3)
@@ -289,8 +285,6 @@ DEBUG: AssignStmt - Lane 2 assigned value 4 to variable 'result'
 DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 2 at 0x50f000000220)
-DEBUG: UnaryOpExpr - Lane 2 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 2 PreIncrement succeeded, result=1
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 2
 DEBUG: assignLaneToBlock - BEFORE: block 2 has 2 participating lanes (0 1), 0 waiting lanes, 2 unknown lanes (2 3)
@@ -314,8 +308,6 @@ DEBUG: AssignStmt - Lane 3 assigned value 4 to variable 'result'
 DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 3 at 0x50f000000310)
-DEBUG: UnaryOpExpr - Lane 3 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 3 PreIncrement succeeded, result=1
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 2
 DEBUG: assignLaneToBlock - BEFORE: block 2 has 3 participating lanes (0 1 2), 0 waiting lanes, 1 unknown lanes (3)
@@ -497,8 +489,6 @@ DEBUG: AssignStmt - Lane 2 assigned value 6 to variable 'result'
 DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 2 at 0x50f000000220)
-DEBUG: UnaryOpExpr - Lane 2 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 2 PreIncrement succeeded, result=2
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 2
 DEBUG: assignLaneToBlock - BEFORE: block 2 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
@@ -525,8 +515,6 @@ DEBUG: AssignStmt - Lane 3 assigned value 6 to variable 'result'
 DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 3 at 0x50f000000310)
-DEBUG: UnaryOpExpr - Lane 3 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 3 PreIncrement succeeded, result=2
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 2
 DEBUG: assignLaneToBlock - BEFORE: block 2 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
@@ -640,8 +628,6 @@ DEBUG: AssignStmt - Lane 3 assigned value 7 to variable 'result'
 DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 3 at 0x50f000000310)
-DEBUG: UnaryOpExpr - Lane 3 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 3 PreIncrement succeeded, result=3
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 2
 DEBUG: assignLaneToBlock - BEFORE: block 2 has 1 participating lanes (3), 0 waiting lanes, 0 unknown lanes
@@ -897,8 +883,6 @@ DEBUG: AssignStmt - Lane 0 assigned value 4 to variable 'result'
 DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 0 at 0x50f000000400)
-DEBUG: UnaryOpExpr - Lane 0 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 0 PreIncrement succeeded, result=1
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 2
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 2
 DEBUG: assignLaneToBlock - BEFORE: block 2 has 0 participating lanes, 0 waiting lanes, 4 unknown lanes (0 1 2 3)
@@ -922,8 +906,6 @@ DEBUG: AssignStmt - Lane 1 assigned value 4 to variable 'result'
 DEBUG: UnaryOpExpr - Lane 1 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 1 at 0x50f0000004f0)
-DEBUG: UnaryOpExpr - Lane 1 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 1 PreIncrement succeeded, result=1
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 2
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 2
 DEBUG: assignLaneToBlock - BEFORE: block 2 has 1 participating lanes (0), 0 waiting lanes, 3 unknown lanes (1 2 3)
@@ -947,8 +929,6 @@ DEBUG: AssignStmt - Lane 2 assigned value 4 to variable 'result'
 DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 2 at 0x50f0000005e0)
-DEBUG: UnaryOpExpr - Lane 2 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 2 PreIncrement succeeded, result=1
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 2
 DEBUG: assignLaneToBlock - BEFORE: block 2 has 2 participating lanes (0 1), 0 waiting lanes, 2 unknown lanes (2 3)
@@ -972,8 +952,6 @@ DEBUG: AssignStmt - Lane 3 assigned value 4 to variable 'result'
 DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 3 at 0x50f0000006d0)
-DEBUG: UnaryOpExpr - Lane 3 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 3 PreIncrement succeeded, result=1
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 2
 DEBUG: assignLaneToBlock - BEFORE: block 2 has 3 participating lanes (0 1 2), 0 waiting lanes, 1 unknown lanes (3)
@@ -1155,8 +1133,6 @@ DEBUG: AssignStmt - Lane 2 assigned value 6 to variable 'result'
 DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 2 at 0x50f0000005e0)
-DEBUG: UnaryOpExpr - Lane 2 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 2 PreIncrement succeeded, result=2
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 2
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 2
 DEBUG: assignLaneToBlock - BEFORE: block 2 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
@@ -1183,8 +1159,6 @@ DEBUG: AssignStmt - Lane 3 assigned value 6 to variable 'result'
 DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 3 at 0x50f0000006d0)
-DEBUG: UnaryOpExpr - Lane 3 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 3 PreIncrement succeeded, result=2
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 2
 DEBUG: assignLaneToBlock - BEFORE: block 2 has 2 participating lanes (2 3), 0 waiting lanes, 0 unknown lanes
@@ -1298,8 +1272,6 @@ DEBUG: AssignStmt - Lane 3 assigned value 7 to variable 'result'
 DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 2 (lane 3 at 0x50f0000006d0)
-DEBUG: UnaryOpExpr - Lane 3 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 3 PreIncrement succeeded, result=3
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 2
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 2
 DEBUG: assignLaneToBlock - BEFORE: block 2 has 1 participating lanes (3), 0 waiting lanes, 0 unknown lanes

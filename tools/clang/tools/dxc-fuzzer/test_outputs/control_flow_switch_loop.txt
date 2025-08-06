@@ -594,10 +594,6 @@ DEBUG: ForStmt - Lane 0 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation op_=3 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'b' (Result-based)
 DEBUG: VariableExpr - Variable 'b' = 0 (lane 0 at 0x50f000000040)
-DEBUG: UnaryOpExpr - Lane 0 calling exception-based evaluate for PostIncrement
-DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 0 variable 'b' before increment = 0
-DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 0 variable 'b' after increment = 1, returning old value = 0
-DEBUG: UnaryOpExpr - Lane 0 PostIncrement succeeded, result=0
 DEBUG: SwitchStmt - Lane 0 child statement not ready (state=3), not advancing statementIndex=0
 DEBUG: isAllParticipantsKnown - Block 4 wave 0 has 1 unknown lanes: 0  - These lanes need to be resolved to Participating or Left
 DEBUG: isAllParticipantsKnown - Block 5 wave 0 has 2 unknown lanes: 0 1  - These lanes need to be resolved to Participating or Left
@@ -717,10 +713,6 @@ DEBUG: ForStmt - Lane 0 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation op_=3 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'b' (Result-based)
 DEBUG: VariableExpr - Variable 'b' = 1 (lane 0 at 0x50f000000040)
-DEBUG: UnaryOpExpr - Lane 0 calling exception-based evaluate for PostIncrement
-DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 0 variable 'b' before increment = 1
-DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 0 variable 'b' after increment = 2, returning old value = 1
-DEBUG: UnaryOpExpr - Lane 0 PostIncrement succeeded, result=1
 DEBUG: SwitchStmt - Lane 0 child statement not ready (state=3), not advancing statementIndex=0
 DEBUG: isAllParticipantsKnown - Block 4 wave 0 has 1 unknown lanes: 0  - These lanes need to be resolved to Participating or Left
 DEBUG: isAllParticipantsKnown - Block 5 wave 0 has 2 unknown lanes: 0 1  - These lanes need to be resolved to Participating or Left
@@ -840,10 +832,6 @@ DEBUG: ForStmt - Lane 0 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation op_=3 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'b' (Result-based)
 DEBUG: VariableExpr - Variable 'b' = 2 (lane 0 at 0x50f000000040)
-DEBUG: UnaryOpExpr - Lane 0 calling exception-based evaluate for PostIncrement
-DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 0 variable 'b' before increment = 2
-DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 0 variable 'b' after increment = 3, returning old value = 2
-DEBUG: UnaryOpExpr - Lane 0 PostIncrement succeeded, result=2
 DEBUG: SwitchStmt - Lane 0 child statement not ready (state=3), not advancing statementIndex=0
 DEBUG: isAllParticipantsKnown - Block 4 wave 0 has 1 unknown lanes: 0  - These lanes need to be resolved to Participating or Left
 DEBUG: isAllParticipantsKnown - Block 5 wave 0 has 2 unknown lanes: 0 1  - These lanes need to be resolved to Participating or Left
@@ -2004,10 +1992,6 @@ DEBUG: ForStmt - Lane 0 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation op_=3 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'b' (Result-based)
 DEBUG: VariableExpr - Variable 'b' = 0 (lane 0 at 0x50f000000400)
-DEBUG: UnaryOpExpr - Lane 0 calling exception-based evaluate for PostIncrement
-DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 0 variable 'b' before increment = 0
-DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 0 variable 'b' after increment = 1, returning old value = 0
-DEBUG: UnaryOpExpr - Lane 0 PostIncrement succeeded, result=0
 DEBUG: SwitchStmt - Lane 0 child statement not ready (state=3), not advancing statementIndex=0
 DEBUG: isAllParticipantsKnown - Block 4 wave 0 has 1 unknown lanes: 0  - These lanes need to be resolved to Participating or Left
 DEBUG: isAllParticipantsKnown - Block 5 wave 0 has 2 unknown lanes: 0 1  - These lanes need to be resolved to Participating or Left
@@ -2127,10 +2111,6 @@ DEBUG: ForStmt - Lane 0 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation op_=3 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'b' (Result-based)
 DEBUG: VariableExpr - Variable 'b' = 1 (lane 0 at 0x50f000000400)
-DEBUG: UnaryOpExpr - Lane 0 calling exception-based evaluate for PostIncrement
-DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 0 variable 'b' before increment = 1
-DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 0 variable 'b' after increment = 2, returning old value = 1
-DEBUG: UnaryOpExpr - Lane 0 PostIncrement succeeded, result=1
 DEBUG: SwitchStmt - Lane 0 child statement not ready (state=3), not advancing statementIndex=0
 DEBUG: isAllParticipantsKnown - Block 4 wave 0 has 1 unknown lanes: 0  - These lanes need to be resolved to Participating or Left
 DEBUG: isAllParticipantsKnown - Block 5 wave 0 has 2 unknown lanes: 0 1  - These lanes need to be resolved to Participating or Left
@@ -2250,10 +2230,6 @@ DEBUG: ForStmt - Lane 0 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation op_=3 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'b' (Result-based)
 DEBUG: VariableExpr - Variable 'b' = 2 (lane 0 at 0x50f000000400)
-DEBUG: UnaryOpExpr - Lane 0 calling exception-based evaluate for PostIncrement
-DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 0 variable 'b' before increment = 2
-DEBUG: UnaryOpExpr exception-based PostIncrement - Lane 0 variable 'b' after increment = 3, returning old value = 2
-DEBUG: UnaryOpExpr - Lane 0 PostIncrement succeeded, result=2
 DEBUG: SwitchStmt - Lane 0 child statement not ready (state=3), not advancing statementIndex=0
 DEBUG: isAllParticipantsKnown - Block 4 wave 0 has 1 unknown lanes: 0  - These lanes need to be resolved to Participating or Left
 DEBUG: isAllParticipantsKnown - Block 5 wave 0 has 2 unknown lanes: 0 1  - These lanes need to be resolved to Participating or Left

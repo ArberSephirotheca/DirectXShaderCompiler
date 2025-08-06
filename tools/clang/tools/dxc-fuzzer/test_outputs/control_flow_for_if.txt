@@ -941,8 +941,6 @@ DEBUG: ForStmt - Lane 2 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 2 at 0x50f000000220)
-DEBUG: UnaryOpExpr - Lane 2 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 2 PreIncrement succeeded, result=1
 DEBUG: ForStmt - Lane 3 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 in phase EvaluatingIncrement (Result-based, stack depth=1, our index=0, this=0x508000002820)
@@ -950,8 +948,6 @@ DEBUG: ForStmt - Lane 3 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 3 at 0x50f000000310)
-DEBUG: UnaryOpExpr - Lane 3 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 3 PreIncrement succeeded, result=1
 DEBUG: ForStmt - Lane 0 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=3, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=0, this=0x508000002820)
@@ -1166,8 +1162,6 @@ DEBUG: ForStmt - Lane 1 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 1 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 1 at 0x50f000000130)
-DEBUG: UnaryOpExpr - Lane 1 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 1 PreIncrement succeeded, result=1
 DEBUG: ForStmt - Lane 2 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (Result-based, stack depth=1, our index=0, this=0x508000002820)
@@ -1288,8 +1282,6 @@ DEBUG: ForStmt - Lane 0 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 0 at 0x50f000000040)
-DEBUG: UnaryOpExpr - Lane 0 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 0 PreIncrement succeeded, result=1
 DEBUG: ForStmt - Lane 1 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x508000002820)
@@ -1644,8 +1636,6 @@ DEBUG: ForStmt - Lane 2 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 2 at 0x50f000000220)
-DEBUG: UnaryOpExpr - Lane 2 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 2 PreIncrement succeeded, result=2
 DEBUG: ForStmt - Lane 3 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 in phase EvaluatingIncrement (Result-based, stack depth=1, our index=0, this=0x508000002820)
@@ -1653,8 +1643,6 @@ DEBUG: ForStmt - Lane 3 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 3 at 0x50f000000310)
-DEBUG: UnaryOpExpr - Lane 3 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 3 PreIncrement succeeded, result=2
 DEBUG: ForStmt - Lane 0 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=2, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=2, our index=0, this=0x508000002820)
@@ -2216,8 +2204,6 @@ DEBUG: ForStmt - Lane 1 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 1 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 1 at 0x50f000000130)
-DEBUG: UnaryOpExpr - Lane 1 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 1 PreIncrement succeeded, result=2
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 0 1  - These lanes need to be resolved to Participating or Left
 DEBUG: ForStmt - Lane 0 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=2, this=0x508000002820)
@@ -2354,8 +2340,6 @@ DEBUG: ForStmt - Lane 0 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 0 at 0x50f000000040)
-DEBUG: UnaryOpExpr - Lane 0 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 0 PreIncrement succeeded, result=2
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 0 1  - These lanes need to be resolved to Participating or Left
 DEBUG: ForStmt - Lane 1 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
@@ -3343,8 +3327,6 @@ DEBUG: ForStmt - Lane 2 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 2 at 0x50f0000005e0)
-DEBUG: UnaryOpExpr - Lane 2 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 2 PreIncrement succeeded, result=1
 DEBUG: ForStmt - Lane 3 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 in phase EvaluatingIncrement (Result-based, stack depth=1, our index=0, this=0x508000002820)
@@ -3352,8 +3334,6 @@ DEBUG: ForStmt - Lane 3 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 3 at 0x50f0000006d0)
-DEBUG: UnaryOpExpr - Lane 3 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 3 PreIncrement succeeded, result=1
 DEBUG: ForStmt - Lane 0 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=3, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=0, this=0x508000002820)
@@ -3568,8 +3548,6 @@ DEBUG: ForStmt - Lane 1 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 1 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 1 at 0x50f0000004f0)
-DEBUG: UnaryOpExpr - Lane 1 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 1 PreIncrement succeeded, result=1
 DEBUG: ForStmt - Lane 2 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 2 in phase ExecutingBody (Result-based, stack depth=1, our index=0, this=0x508000002820)
@@ -3690,8 +3668,6 @@ DEBUG: ForStmt - Lane 0 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 0 (lane 0 at 0x50f000000400)
-DEBUG: UnaryOpExpr - Lane 0 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 0 PreIncrement succeeded, result=1
 DEBUG: ForStmt - Lane 1 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x508000002820)
@@ -4046,8 +4022,6 @@ DEBUG: ForStmt - Lane 2 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 2 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 2 at 0x50f0000005e0)
-DEBUG: UnaryOpExpr - Lane 2 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 2 PreIncrement succeeded, result=2
 DEBUG: ForStmt - Lane 3 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)
 DEBUG: ForStmt - Lane 3 in phase EvaluatingIncrement (Result-based, stack depth=1, our index=0, this=0x508000002820)
@@ -4055,8 +4029,6 @@ DEBUG: ForStmt - Lane 3 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 3 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 3 at 0x50f0000006d0)
-DEBUG: UnaryOpExpr - Lane 3 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 3 PreIncrement succeeded, result=2
 DEBUG: ForStmt - Lane 0 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=2, this=0x508000002820)
 DEBUG: ForStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=2, our index=0, this=0x508000002820)
@@ -4618,8 +4590,6 @@ DEBUG: ForStmt - Lane 1 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 1 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 1 at 0x50f0000004f0)
-DEBUG: UnaryOpExpr - Lane 1 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 1 PreIncrement succeeded, result=2
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 0 1  - These lanes need to be resolved to Participating or Left
 DEBUG: ForStmt - Lane 0 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=2, this=0x508000002820)
@@ -4756,8 +4726,6 @@ DEBUG: ForStmt - Lane 0 evaluating increment (Result-based)
 DEBUG: UnaryOpExpr - Lane 0 evaluating unary operation op_=2 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'i' (Result-based)
 DEBUG: VariableExpr - Variable 'i' = 1 (lane 0 at 0x50f000000400)
-DEBUG: UnaryOpExpr - Lane 0 calling exception-based evaluate for PreIncrement
-DEBUG: UnaryOpExpr - Lane 0 PreIncrement succeeded, result=2
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 0 1  - These lanes need to be resolved to Participating or Left
 DEBUG: ForStmt - Lane 1 resuming Result-based for loop execution
 DEBUG: ForStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x508000002820)

@@ -1175,38 +1175,48 @@ Result<Value, ExecutionError> UnaryOpExpr::evaluate_result(LaneContext &lane, Wa
     return Ok<Value, ExecutionError>(!val);
   case Plus:
     return Ok<Value, ExecutionError>(val);
-  case PreIncrement:
-    // Note: This modifies the variable, would need variable reference
-    // For now, fall back to exception-based approach
-    try {
-      std::cout << "DEBUG: UnaryOpExpr - Lane " << lane.laneId << " calling exception-based evaluate for PreIncrement" << std::endl;
-      Value result = evaluate(lane, wave, tg);
-      std::cout << "DEBUG: UnaryOpExpr - Lane " << lane.laneId << " PreIncrement succeeded, result=" << result.asInt() << std::endl;
-      return Ok<Value, ExecutionError>(result);
-    } catch (const std::exception &e) {
-      std::cout << "DEBUG: UnaryOpExpr - Lane " << lane.laneId << " PreIncrement failed: " << e.what() << std::endl;
-      return Err<Value, ExecutionError>(ExecutionError::InvalidState);
+  case PreIncrement: {
+    // ++i: increment first, then return new value
+    if (auto varExpr = dynamic_cast<const VariableExpr *>(expr_.get())) {
+      std::string varName = varExpr->toString();
+      Value &var = lane.variables[varName];
+      var = Value(var.asInt() + 1);
+      return Ok<Value, ExecutionError>(var);
     }
-  case PostIncrement:
-    // These modify variables, need special handling
-    try {
-      std::cout << "DEBUG: UnaryOpExpr - Lane " << lane.laneId << " calling exception-based evaluate for PostIncrement" << std::endl;
-      Value result = evaluate(lane, wave, tg);
-      std::cout << "DEBUG: UnaryOpExpr - Lane " << lane.laneId << " PostIncrement succeeded, result=" << result.asInt() << std::endl;
-      return Ok<Value, ExecutionError>(result);
-    } catch (const std::exception &e) {
-      std::cout << "DEBUG: UnaryOpExpr - Lane " << lane.laneId << " PostIncrement failed: " << e.what() << std::endl;
-      return Err<Value, ExecutionError>(ExecutionError::InvalidState);
+    return Err<Value, ExecutionError>(ExecutionError::InvalidState);
+  }
+  case PostIncrement: {
+    // i++: return old value, then increment
+    if (auto varExpr = dynamic_cast<const VariableExpr *>(expr_.get())) {
+      std::string varName = varExpr->toString();
+      Value &var = lane.variables[varName];
+      Value oldValue = var;
+      var = Value(var.asInt() + 1);
+      return Ok<Value, ExecutionError>(oldValue);
     }
-  case PreDecrement:
-  case PostDecrement:
-    // These modify variables, need special handling
-    try {
-      Value result = evaluate(lane, wave, tg);
-      return Ok<Value, ExecutionError>(result);
-    } catch (const std::exception &) {
-      return Err<Value, ExecutionError>(ExecutionError::InvalidState);
+    return Err<Value, ExecutionError>(ExecutionError::InvalidState);
+  }
+  case PreDecrement: {
+    // --i: decrement first, then return new value
+    if (auto varExpr = dynamic_cast<const VariableExpr *>(expr_.get())) {
+      std::string varName = varExpr->toString();
+      Value &var = lane.variables[varName];
+      var = Value(var.asInt() - 1);
+      return Ok<Value, ExecutionError>(var);
     }
+    return Err<Value, ExecutionError>(ExecutionError::InvalidState);
+  }
+  case PostDecrement: {
+    // i--: return old value, then decrement
+    if (auto varExpr = dynamic_cast<const VariableExpr *>(expr_.get())) {
+      std::string varName = varExpr->toString();
+      Value &var = lane.variables[varName];
+      Value oldValue = var;
+      var = Value(var.asInt() - 1);
+      return Ok<Value, ExecutionError>(oldValue);
+    }
+    return Err<Value, ExecutionError>(ExecutionError::InvalidState);
+  }
   default:
     return Err<Value, ExecutionError>(ExecutionError::InvalidState);
   }
