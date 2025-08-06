@@ -71,6 +71,13 @@ hasIterationMarkerInStack(const std::vector<MergeStackEntry> &mergeStack,
   return false;
 }
 
+// Helper function to set thread state if unprotected
+static inline void setThreadStateIfUnprotected(LaneContext& lane) {
+  if (!isProtectedState(lane.state)) {
+    lane.state = ThreadState::WaitingForResume;
+  }
+}
+
 // Value implementation
 Value Value::operator+(const Value &other) const {
   if (std::holds_alternative<int32_t>(data) &&
@@ -1613,9 +1620,7 @@ Result<Unit, ExecutionError> IfStmt::execute_result(LaneContext &lane,
                Unit, ExecutionError);
 
     // Set state to WaitingForResume to prevent currentStatement increment
-    if (!isProtectedState(lane.state)) {
-      lane.state = ThreadState::WaitingForResume;
-    }
+    setThreadStateIfUnprotected(lane);
     return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement
                                              // increment, will resume later
   }
@@ -1634,9 +1639,7 @@ Result<Unit, ExecutionError> IfStmt::execute_result(LaneContext &lane,
     }
 
     // Set state to WaitingForResume to prevent currentStatement increment
-    if (!isProtectedState(lane.state)) {
-      lane.state = ThreadState::WaitingForResume;
-    }
+    setThreadStateIfUnprotected(lane);
     return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement
                                              // increment, will resume later
   }
@@ -2086,9 +2089,7 @@ Result<Unit, ExecutionError> ForStmt::execute_result(LaneContext &lane,
         Unit, ExecutionError);
 
     // Set state to WaitingForResume to prevent currentStatement increment
-    if (!isProtectedState(lane.state)) {
-      lane.state = ThreadState::WaitingForResume;
-    }
+    setThreadStateIfUnprotected(lane);
     return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement
                                              // increment, will resume later
   }
@@ -2100,9 +2101,7 @@ Result<Unit, ExecutionError> ForStmt::execute_result(LaneContext &lane,
                Unit, ExecutionError);
 
     // Set state to WaitingForResume to prevent currentStatement increment
-    if (!isProtectedState(lane.state)) {
-      lane.state = ThreadState::WaitingForResume;
-    }
+    setThreadStateIfUnprotected(lane);
     return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement
                                              // increment, will resume later
   }
@@ -2132,9 +2131,7 @@ Result<Unit, ExecutionError> ForStmt::execute_result(LaneContext &lane,
       cleanupAfterBodyExecution(lane, wave, tg, ourStackIndex, headerBlockId);
 
       // Set state to WaitingForResume to prevent currentStatement increment
-      if (!isProtectedState(lane.state)) {
-        lane.state = ThreadState::WaitingForResume;
-      }
+      setThreadStateIfUnprotected(lane);
     }
     return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement
                                              // increment, will resume later
@@ -2146,9 +2143,7 @@ Result<Unit, ExecutionError> ForStmt::execute_result(LaneContext &lane,
                Unit, ExecutionError);
 
     // Set state to WaitingForResume to prevent currentStatement increment
-    if (!isProtectedState(lane.state)) {
-      lane.state = ThreadState::WaitingForResume;
-    }
+    setThreadStateIfUnprotected(lane);
     return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement
                                              // increment, will resume later
   }
@@ -2332,9 +2327,7 @@ void ForStmt::cleanupAfterBodyExecution(LaneContext &lane, WaveContext &wave,
                                           lane.laneId);
   ourEntry.loopBodyBlockId = 0; // Reset for next iteration
   ourEntry.phase = LaneContext::ControlFlowPhase::EvaluatingIncrement;
-  if (!isProtectedState(lane.state)) {
-    lane.state = ThreadState::WaitingForResume;
-  }
+  setThreadStateIfUnprotected(lane);
 }
 
 // Helper method for loop exit/reconverging phase in ForStmt
@@ -2375,9 +2368,7 @@ void ForStmt::handleBreakException(LaneContext &lane, WaveContext &wave,
   tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId);
   lane.executionStack[ourStackIndex].phase =
       LaneContext::ControlFlowPhase::Reconverging;
-  if (!isProtectedState(lane.state)) {
-    lane.state = ThreadState::WaitingForResume;
-  }
+  setThreadStateIfUnprotected(lane);
 }
 
 // Helper method for continue exception handling in ForStmt
@@ -2418,9 +2409,7 @@ void ForStmt::handleContinueException(LaneContext &lane, WaveContext &wave,
       LaneContext::ControlFlowPhase::EvaluatingIncrement;
 
   // Set state to WaitingForResume to prevent currentStatement increment
-  if (!isProtectedState(lane.state)) {
-    lane.state = ThreadState::WaitingForResume;
-  }
+  setThreadStateIfUnprotected(lane);
 }
 
 // Helper method for fresh execution setup in ForStmt
@@ -2557,9 +2546,7 @@ ForStmt::evaluateInitPhase_result(LaneContext &lane, WaveContext &wave,
   lane.executionStack[ourStackIndex].phase =
       LaneContext::ControlFlowPhase::EvaluatingCondition;
   lane.executionStack[ourStackIndex].loopIteration = 0;
-  if (!isProtectedState(lane.state)) {
-    lane.state = ThreadState::WaitingForResume;
-  }
+  setThreadStateIfUnprotected(lane);
 
   return Ok<Unit, ExecutionError>(Unit{});
 }
@@ -2589,9 +2576,7 @@ Result<Unit, ExecutionError> ForStmt::evaluateConditionPhase_result(
     // Move to reconverging phase
     lane.executionStack[ourStackIndex].phase =
         LaneContext::ControlFlowPhase::Reconverging;
-    if (!isProtectedState(lane.state)) {
-      lane.state = ThreadState::WaitingForResume;
-    }
+    setThreadStateIfUnprotected(lane);
     return Ok<Unit, ExecutionError>(Unit{});
   }
 
@@ -2599,9 +2584,7 @@ Result<Unit, ExecutionError> ForStmt::evaluateConditionPhase_result(
   lane.executionStack[ourStackIndex].phase =
       LaneContext::ControlFlowPhase::ExecutingBody;
   lane.executionStack[ourStackIndex].statementIndex = 0;
-  if (!isProtectedState(lane.state)) {
-    lane.state = ThreadState::WaitingForResume;
-  }
+  setThreadStateIfUnprotected(lane);
 
   return Ok<Unit, ExecutionError>(Unit{});
 }
@@ -2623,9 +2606,7 @@ ForStmt::evaluateIncrementPhase_result(LaneContext &lane, WaveContext &wave,
   lane.executionStack[ourStackIndex].phase =
       LaneContext::ControlFlowPhase::EvaluatingCondition;
   lane.executionStack[ourStackIndex].loopIteration++;
-  if (!isProtectedState(lane.state)) {
-    lane.state = ThreadState::WaitingForResume;
-  }
+  setThreadStateIfUnprotected(lane);
 
   return Ok<Unit, ExecutionError>(Unit{});
 }
@@ -2659,9 +2640,7 @@ ForStmt::execute_with_error_handling(LaneContext &lane, WaveContext &wave,
           handleBreakException(lane, wave, tg, ourStackIndex, headerBlockId);
 
           // Set state to WaitingForResume
-          if (!isProtectedState(lane.state)) {
-            lane.state = ThreadState::WaitingForResume;
-          }
+          setThreadStateIfUnprotected(lane);
 
           // Restore active state (reconvergence)
           lane.isActive = lane.isActive && !lane.hasReturned;
@@ -2682,9 +2661,7 @@ ForStmt::execute_with_error_handling(LaneContext &lane, WaveContext &wave,
           handleContinueException(lane, wave, tg, ourStackIndex, headerBlockId);
 
           // Set state to WaitingForResume
-          if (!isProtectedState(lane.state)) {
-            lane.state = ThreadState::WaitingForResume;
-          }
+          setThreadStateIfUnprotected(lane);
 
           // Restore active state (reconvergence)
           lane.isActive = lane.isActive && !lane.hasReturned;
@@ -4904,9 +4881,7 @@ Result<Unit, ExecutionError> WhileStmt::execute_result(LaneContext &lane,
                Unit, ExecutionError);
 
     // Set state to WaitingForResume to prevent currentStatement increment
-    if (!isProtectedState(lane.state)) {
-      lane.state = ThreadState::WaitingForResume;
-    }
+    setThreadStateIfUnprotected(lane);
     return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement
                                              // increment, will resume later
   }
@@ -4942,9 +4917,7 @@ Result<Unit, ExecutionError> WhileStmt::execute_result(LaneContext &lane,
     cleanupAfterBodyExecution(lane, wave, tg, ourStackIndex, headerBlockId);
 
     // Set state to WaitingForResume to prevent currentStatement increment
-    if (!isProtectedState(lane.state)) {
-      lane.state = ThreadState::WaitingForResume;
-    }
+    setThreadStateIfUnprotected(lane);
     return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement
                                              // increment, will resume later
   }
@@ -4994,9 +4967,7 @@ WhileStmt::execute_with_error_handling(LaneContext &lane, WaveContext &wave,
           uint32_t headerBlockId =
               lane.executionStack[ourStackIndex].loopHeaderBlockId;
           handleBreakException(lane, wave, tg, ourStackIndex, headerBlockId);
-          if (!isProtectedState(lane.state)) {
-            lane.state = ThreadState::WaitingForResume;
-          }
+          setThreadStateIfUnprotected(lane);
 
           // Restore active state (reconvergence)
           lane.isActive = lane.isActive && !lane.hasReturned;
@@ -5012,9 +4983,7 @@ WhileStmt::execute_with_error_handling(LaneContext &lane, WaveContext &wave,
           uint32_t headerBlockId =
               lane.executionStack[ourStackIndex].loopHeaderBlockId;
           handleContinueException(lane, wave, tg, ourStackIndex, headerBlockId);
-          if (!isProtectedState(lane.state)) {
-            lane.state = ThreadState::WaitingForResume;
-          }
+          setThreadStateIfUnprotected(lane);
 
           // Restore active state (reconvergence)
           lane.isActive = lane.isActive && !lane.hasReturned;
@@ -5227,9 +5196,7 @@ void WhileStmt::cleanupAfterBodyExecution(LaneContext &lane, WaveContext &wave,
   ourEntry.loopIteration++;
   ourEntry.statementIndex = 0;
 
-  if (!isProtectedState(lane.state)) {
-    lane.state = ThreadState::WaitingForResume;
-  }
+  setThreadStateIfUnprotected(lane);
 }
 
 // Helper method for loop exit/reconverging phase in WhileStmt
@@ -5293,9 +5260,7 @@ void WhileStmt::handleBreakException(LaneContext &lane, WaveContext &wave,
   tg.removeThreadFromAllSets(headerBlockId, wave.waveId, lane.laneId);
   tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId);
 
-  if (!isProtectedState(lane.state)) {
-    lane.state = ThreadState::WaitingForResume;
-  }
+  setThreadStateIfUnprotected(lane);
 }
 
 // Helper method for continue exception handling in WhileStmt
@@ -5340,9 +5305,7 @@ void WhileStmt::handleContinueException(LaneContext &lane, WaveContext &wave,
   tg.popMergePoint(wave.waveId, lane.laneId);
 
   // Set state to WaitingForResume to prevent currentStatement increment
-  if (!isProtectedState(lane.state)) {
-    lane.state = ThreadState::WaitingForResume;
-  }
+  setThreadStateIfUnprotected(lane);
 }
 
 // Result-based versions of WhileStmt helper methods
@@ -5377,18 +5340,14 @@ Result<Unit, ExecutionError> WhileStmt::evaluateConditionPhase_result(
 
     // Move to reconverging phase
     ourEntry.phase = LaneContext::ControlFlowPhase::Reconverging;
-    if (!isProtectedState(lane.state)) {
-      lane.state = ThreadState::WaitingForResume;
-    }
+    setThreadStateIfUnprotected(lane);
     return Ok<Unit, ExecutionError>(Unit{});
   }
 
   // Condition passed, move to body execution
   ourEntry.phase = LaneContext::ControlFlowPhase::ExecutingBody;
   ourEntry.statementIndex = 0;
-  if (!isProtectedState(lane.state)) {
-    lane.state = ThreadState::WaitingForResume;
-  }
+  setThreadStateIfUnprotected(lane);
 
   return Ok<Unit, ExecutionError>(Unit{});
 }
@@ -5702,9 +5661,7 @@ void DoWhileStmt::handleBreakException(LaneContext &lane, WaveContext &wave,
 
   lane.executionStack[ourStackIndex].phase =
       LaneContext::ControlFlowPhase::Reconverging;
-  if (!isProtectedState(lane.state)) {
-    lane.state = ThreadState::WaitingForResume;
-  }
+  setThreadStateIfUnprotected(lane);
 }
 
 void DoWhileStmt::handleContinueException(LaneContext &lane, WaveContext &wave,
@@ -5745,9 +5702,7 @@ void DoWhileStmt::handleContinueException(LaneContext &lane, WaveContext &wave,
       0; // Reset for next iteration
 
   // Set state to WaitingForResume to prevent currentStatement increment
-  if (!isProtectedState(lane.state)) {
-    lane.state = ThreadState::WaitingForResume;
-  }
+  setThreadStateIfUnprotected(lane);
 }
 
 // Phase-based Result methods for DoWhileStmt
@@ -5856,9 +5811,7 @@ DoWhileStmt::execute_result(LaneContext &lane, WaveContext &wave,
     cleanupAfterBodyExecution(lane, wave, tg, ourStackIndex, headerBlockId);
 
     // Set state to WaitingForResume to prevent currentStatement increment
-    if (!isProtectedState(lane.state)) {
-      lane.state = ThreadState::WaitingForResume;
-    }
+    setThreadStateIfUnprotected(lane);
     return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement
                                              // increment, will resume later
   }
@@ -5870,9 +5823,7 @@ DoWhileStmt::execute_result(LaneContext &lane, WaveContext &wave,
                Unit, ExecutionError);
 
     // Set state to WaitingForResume to prevent currentStatement increment
-    if (!isProtectedState(lane.state)) {
-      lane.state = ThreadState::WaitingForResume;
-    }
+    setThreadStateIfUnprotected(lane);
     return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement
                                              // increment, will resume later
   }
@@ -5925,9 +5876,7 @@ DoWhileStmt::execute_with_error_handling(LaneContext &lane, WaveContext &wave,
               lane.executionStack[ourStackIndex].loopMergeBlockId;
           handleBreakException(lane, wave, tg, ourStackIndex, headerBlockId,
                                mergeBlockId);
-          if (!isProtectedState(lane.state)) {
-            lane.state = ThreadState::WaitingForResume;
-          }
+          setThreadStateIfUnprotected(lane);
 
           // Restore active state (reconvergence)
           lane.isActive = lane.isActive && !lane.hasReturned;
@@ -5943,9 +5892,7 @@ DoWhileStmt::execute_with_error_handling(LaneContext &lane, WaveContext &wave,
           uint32_t headerBlockId =
               lane.executionStack[ourStackIndex].loopHeaderBlockId;
           handleContinueException(lane, wave, tg, ourStackIndex, headerBlockId);
-          if (!isProtectedState(lane.state)) {
-            lane.state = ThreadState::WaitingForResume;
-          }
+          setThreadStateIfUnprotected(lane);
 
           // Restore active state (reconvergence)
           lane.isActive = lane.isActive && !lane.hasReturned;
@@ -6040,9 +5987,7 @@ Result<Unit, ExecutionError> DoWhileStmt::evaluateConditionPhase_result(
     // Move to reconverging phase
     lane.executionStack[ourStackIndex].phase =
         LaneContext::ControlFlowPhase::Reconverging;
-    if (!isProtectedState(lane.state)) {
-      lane.state = ThreadState::WaitingForResume;
-    }
+    setThreadStateIfUnprotected(lane);
     return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement
                                              // increment, will resume later
   }
@@ -6052,9 +5997,7 @@ Result<Unit, ExecutionError> DoWhileStmt::evaluateConditionPhase_result(
       LaneContext::ControlFlowPhase::ExecutingBody;
   lane.executionStack[ourStackIndex].statementIndex = 0;
   lane.executionStack[ourStackIndex].loopIteration++;
-  if (!isProtectedState(lane.state)) {
-    lane.state = ThreadState::WaitingForResume;
-  }
+  setThreadStateIfUnprotected(lane);
 
   return Ok<Unit, ExecutionError>(Unit{});
 }
@@ -6172,9 +6115,7 @@ void SwitchStmt::findMatchingCase(LaneContext &lane, WaveContext &wave,
     }
 
     ourEntry.phase = LaneContext::ControlFlowPhase::Reconverging;
-    if (!isProtectedState(lane.state)) {
-      lane.state = ThreadState::WaitingForResume;
-    }
+    setThreadStateIfUnprotected(lane);
     return;
   }
 
@@ -6373,9 +6314,7 @@ SwitchStmt::execute_result(LaneContext &lane, WaveContext &wave,
     }
 
     // Set state to WaitingForResume to prevent currentStatement increment
-    if (!isProtectedState(lane.state)) {
-      lane.state = ThreadState::WaitingForResume;
-    }
+    setThreadStateIfUnprotected(lane);
     return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement
                                              // increment, will resume later
   }
@@ -6390,9 +6329,7 @@ SwitchStmt::execute_result(LaneContext &lane, WaveContext &wave,
     }
 
     // Set state to WaitingForResume to prevent currentStatement increment
-    if (!isProtectedState(lane.state)) {
-      lane.state = ThreadState::WaitingForResume;
-    }
+    setThreadStateIfUnprotected(lane);
     return Ok<Unit, ExecutionError>(Unit{});
   }
 
@@ -6581,9 +6518,7 @@ SwitchStmt::execute_with_error_handling(LaneContext &lane, WaveContext &wave,
         int ourStackIndex = findStackIndex(lane);
         if (ourStackIndex >= 0) {
           handleBreakException(lane, wave, tg, ourStackIndex);
-          if (!isProtectedState(lane.state)) {
-            lane.state = ThreadState::WaitingForResume;
-          }
+          setThreadStateIfUnprotected(lane);
 
           // Restore active state (reconvergence)
           lane.isActive = lane.isActive && !lane.hasReturned;
