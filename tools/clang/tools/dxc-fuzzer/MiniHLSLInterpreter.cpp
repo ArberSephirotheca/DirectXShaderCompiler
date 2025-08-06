@@ -2455,7 +2455,6 @@ Result<Unit, ExecutionError> ForStmt::execute_result(LaneContext &lane, WaveCont
     }
   }
 }
-}
 
 // Helper method for executing body statements in ForStmt
 void ForStmt::executeBodyStatements(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
