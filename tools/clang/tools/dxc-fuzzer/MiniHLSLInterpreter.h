@@ -1383,6 +1383,16 @@ public:
                                             ThreadgroupContext &tg) override;
   bool requiresAllLanesActive() const override;
   std::string toString() const override;
+  
+  // Helper methods for phase execution
+  void evaluateConditionAndSetup(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                                  int ourStackIndex, uint32_t parentBlockId, bool hasElse);
+  void executeThenBranch(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                         int ourStackIndex);
+  void executeElseBranch(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                         int ourStackIndex);
+  void performReconvergence(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                            int ourStackIndex, bool hasElse);
 };
 
 class ForStmt : public Statement {
@@ -1546,6 +1556,20 @@ public:
   Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
                                             ThreadgroupContext &tg) override;
   std::string toString() const override;
+  
+  // Helper methods for phase execution
+  void setupSwitchExecution(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                            int ourStackIndex);
+  void evaluateSwitchValue(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                           int ourStackIndex);
+  void findMatchingCase(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                        int ourStackIndex);
+  void executeCaseStatements(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                             int ourStackIndex);
+  void handleReconvergence(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                           int ourStackIndex);
+  void handleBreakException(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                            int ourStackIndex);
 };
 
 // Control flow exceptions for break/continue
