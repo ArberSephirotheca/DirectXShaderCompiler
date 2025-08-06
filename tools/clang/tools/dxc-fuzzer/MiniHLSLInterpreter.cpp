@@ -2193,6 +2193,40 @@ std::string IfStmt::toString() const {
   return result;
 }
 
+// Specialized wrapper function for IfStmt-specific error handling
+Result<Unit, ExecutionError> IfStmt::execute_with_error_handling(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg) {
+  auto result = execute_result(lane, wave, tg);
+  if (result.is_err()) {
+    ExecutionError error = result.unwrap_err();
+    
+    switch (error) {
+      case ExecutionError::WaveOperationWait:
+        // IfStmt-specific: Set waiting state
+        if (!isProtectedState(lane.state)) {
+          lane.state = ThreadState::WaitingForResume;
+        }
+        return result; // Propagate for parent to handle
+        
+      case ExecutionError::ControlFlowBreak:
+      case ExecutionError::ControlFlowContinue:
+        // IfStmt does NOT consume break/continue - propagate to enclosing loop
+        // Clean up our stack entry first
+        {
+          int ourStackIndex = findStackIndex(lane);
+          if (ourStackIndex >= 0) {
+            lane.executionStack.pop_back();
+            tg.popMergePoint(wave.waveId, lane.laneId);
+          }
+        }
+        return result; // Propagate to parent loop
+        
+      default:
+        return result; // Propagate unknown errors
+    }
+  }
+  return result; // Success case
+}
+
 // Result-based versions of IfStmt helper methods
 Result<Unit, ExecutionError> IfStmt::evaluateConditionAndSetup_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
                                 int ourStackIndex, uint32_t parentBlockId, bool hasElse) {
@@ -3103,6 +3137,64 @@ Result<Unit, ExecutionError> ForStmt::evaluateIncrementPhase_result(LaneContext 
   }
   
   return Ok<Unit, ExecutionError>(Unit{});
+}
+
+// ForStmt specialized wrapper function
+Result<Unit, ExecutionError> ForStmt::execute_with_error_handling(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg) {
+  auto result = execute_result(lane, wave, tg);
+  if (result.is_err()) {
+    ExecutionError error = result.unwrap_err();
+    std::cout << "DEBUG: ForStmt - Handling error in wrapper: " << static_cast<int>(error) << std::endl;
+    
+    switch (error) {
+      case ExecutionError::WaveOperationWait:
+        // ForStmt-specific: Set waiting state and propagate for parent coordination
+        if (!isProtectedState(lane.state)) {
+          lane.state = ThreadState::WaitingForResume;
+        }
+        return result; // Propagate for parent to handle
+        
+      case ExecutionError::ControlFlowBreak:
+        // ForStmt consumes break: exit loop cleanly
+        {
+          std::cout << "DEBUG: ForStmt - Break consumed, exiting loop cleanly" << std::endl;
+          // Find our stack entry to get merge block ID
+          int ourStackIndex = findStackIndex(lane);
+          if (ourStackIndex >= 0) {
+            uint32_t mergeBlockId = lane.executionStack[ourStackIndex].loopMergeBlockId;
+            handleBreakException(lane, wave, tg, ourStackIndex, mergeBlockId);
+            
+            // Set state to WaitingForResume 
+            if (!isProtectedState(lane.state)) {
+              lane.state = ThreadState::WaitingForResume;
+            }
+          }
+        }
+        return Ok<Unit, ExecutionError>(Unit{}); // Success - break handled
+        
+      case ExecutionError::ControlFlowContinue:
+        // ForStmt consumes continue: jump to increment phase
+        {
+          std::cout << "DEBUG: ForStmt - Continue consumed, jumping to increment phase" << std::endl;
+          int ourStackIndex = findStackIndex(lane);
+          if (ourStackIndex >= 0) {
+            uint32_t headerBlockId = lane.executionStack[ourStackIndex].loopHeaderBlockId;
+            handleContinueException(lane, wave, tg, ourStackIndex, headerBlockId);
+            
+            // Set state to WaitingForResume
+            if (!isProtectedState(lane.state)) {
+              lane.state = ThreadState::WaitingForResume;
+            }
+          }
+        }
+        return Ok<Unit, ExecutionError>(Unit{}); // Success - continue handled
+        
+      default:
+        // Other errors propagate up unchanged
+        return result;
+    }
+  }
+  return result; // Success case
 }
 
 std::string ForStmt::toString() const {
@@ -5502,6 +5594,55 @@ std::string WhileStmt::toString() const {
   return result;
 }
 
+// Specialized wrapper function for WhileStmt-specific error handling
+Result<Unit, ExecutionError> WhileStmt::execute_with_error_handling(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg) {
+  auto result = execute_result(lane, wave, tg);
+  if (result.is_err()) {
+    ExecutionError error = result.unwrap_err();
+    
+    switch (error) {
+      case ExecutionError::WaveOperationWait:
+        // WhileStmt-specific: Set waiting state
+        if (!isProtectedState(lane.state)) {
+          lane.state = ThreadState::WaitingForResume;
+        }
+        return result; // Propagate for parent to handle
+        
+      case ExecutionError::ControlFlowBreak:
+        // WhileStmt consumes break: exit loop cleanly
+        {
+          int ourStackIndex = findStackIndex(lane);
+          if (ourStackIndex >= 0) {
+            uint32_t mergeBlockId = lane.executionStack[ourStackIndex].loopMergeBlockId;
+            handleBreakException(lane, wave, tg, ourStackIndex, mergeBlockId);
+            if (!isProtectedState(lane.state)) {
+              lane.state = ThreadState::WaitingForResume;
+            }
+          }
+        }
+        return Ok<Unit, ExecutionError>(Unit{}); // Success - break handled
+        
+      case ExecutionError::ControlFlowContinue:
+        // WhileStmt consumes continue: jump back to condition phase
+        {
+          int ourStackIndex = findStackIndex(lane);
+          if (ourStackIndex >= 0) {
+            uint32_t headerBlockId = lane.executionStack[ourStackIndex].loopHeaderBlockId;
+            handleContinueException(lane, wave, tg, ourStackIndex, headerBlockId);
+            if (!isProtectedState(lane.state)) {
+              lane.state = ThreadState::WaitingForResume;
+            }
+          }
+        }
+        return Ok<Unit, ExecutionError>(Unit{}); // Success - continue handled
+        
+      default:
+        return result; // Propagate unknown errors
+    }
+  }
+  return result; // Success case
+}
+
 // Helper method for fresh execution setup in WhileStmt
 void WhileStmt::setupFreshExecution(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
                                    int ourStackIndex, uint32_t &headerBlockId, uint32_t &mergeBlockId) {
@@ -6506,6 +6647,56 @@ std::string DoWhileStmt::toString() const {
   return result;
 }
 
+// Specialized wrapper function for DoWhileStmt-specific error handling
+Result<Unit, ExecutionError> DoWhileStmt::execute_with_error_handling(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg) {
+  auto result = execute_result(lane, wave, tg);
+  if (result.is_err()) {
+    ExecutionError error = result.unwrap_err();
+    
+    switch (error) {
+      case ExecutionError::WaveOperationWait:
+        // DoWhileStmt-specific: Set waiting state
+        if (!isProtectedState(lane.state)) {
+          lane.state = ThreadState::WaitingForResume;
+        }
+        return result; // Propagate for parent to handle
+        
+      case ExecutionError::ControlFlowBreak:
+        // DoWhileStmt consumes break: exit loop cleanly
+        {
+          int ourStackIndex = findStackIndex(lane);
+          if (ourStackIndex >= 0) {
+            uint32_t headerBlockId = lane.executionStack[ourStackIndex].loopHeaderBlockId;
+            uint32_t mergeBlockId = lane.executionStack[ourStackIndex].loopMergeBlockId;
+            handleBreakException(lane, wave, tg, ourStackIndex, headerBlockId, mergeBlockId);
+            if (!isProtectedState(lane.state)) {
+              lane.state = ThreadState::WaitingForResume;
+            }
+          }
+        }
+        return Ok<Unit, ExecutionError>(Unit{}); // Success - break handled
+        
+      case ExecutionError::ControlFlowContinue:
+        // DoWhileStmt consumes continue: jump to condition phase
+        {
+          int ourStackIndex = findStackIndex(lane);
+          if (ourStackIndex >= 0) {
+            uint32_t headerBlockId = lane.executionStack[ourStackIndex].loopHeaderBlockId;
+            handleContinueException(lane, wave, tg, ourStackIndex, headerBlockId);
+            if (!isProtectedState(lane.state)) {
+              lane.state = ThreadState::WaitingForResume;
+            }
+          }
+        }
+        return Ok<Unit, ExecutionError>(Unit{}); // Success - continue handled
+        
+      default:
+        return result; // Propagate unknown errors
+    }
+  }
+  return result; // Success case
+}
+
 // Result-based versions of DoWhileStmt helper methods
 Result<Unit, ExecutionError> DoWhileStmt::executeBodyStatements_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
                                 int ourStackIndex, uint32_t headerBlockId) {
@@ -7296,6 +7487,51 @@ std::string SwitchStmt::toString() const {
   }
   result += "}";
   return result;
+}
+
+// Specialized wrapper function for SwitchStmt-specific error handling
+Result<Unit, ExecutionError> SwitchStmt::execute_with_error_handling(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg) {
+  auto result = execute_result(lane, wave, tg);
+  if (result.is_err()) {
+    ExecutionError error = result.unwrap_err();
+    
+    switch (error) {
+      case ExecutionError::WaveOperationWait:
+        // SwitchStmt-specific: Set waiting state
+        if (!isProtectedState(lane.state)) {
+          lane.state = ThreadState::WaitingForResume;
+        }
+        return result; // Propagate for parent to handle
+        
+      case ExecutionError::ControlFlowBreak:
+        // SwitchStmt consumes break: exit switch cleanly
+        {
+          int ourStackIndex = findStackIndex(lane);
+          if (ourStackIndex >= 0) {
+            handleBreakException(lane, wave, tg, ourStackIndex);
+            if (!isProtectedState(lane.state)) {
+              lane.state = ThreadState::WaitingForResume;
+            }
+          }
+        }
+        return Ok<Unit, ExecutionError>(Unit{}); // Success - break handled
+        
+      case ExecutionError::ControlFlowContinue:
+        // SwitchStmt does NOT consume continue - propagate to enclosing loop
+        // Clean up our stack entry
+        {
+          int ourStackIndex = findStackIndex(lane);
+          if (ourStackIndex >= 0) {
+            lane.executionStack.pop_back();
+          }
+        }
+        return result; // Propagate to parent loop
+        
+      default:
+        return result; // Propagate unknown errors
+    }
+  }
+  return result; // Success case
 }
 
 // BreakStmt implementation

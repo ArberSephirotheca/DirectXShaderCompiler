@@ -1401,6 +1401,9 @@ public:
                          int ourStackIndex);
   Result<Unit, ExecutionError> executeElseBranch_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
                          int ourStackIndex);
+  
+  // Specialized wrapper function for IfStmt-specific error handling
+  Result<Unit, ExecutionError> execute_with_error_handling(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg);
 };
 
 class ForStmt : public Statement {
@@ -1463,6 +1466,9 @@ class ForStmt : public Statement {
                                     int ourStackIndex, uint32_t headerBlockId);
   Result<Unit, ExecutionError> evaluateIncrementPhase_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
                              int ourStackIndex);
+  
+  // Specialized wrapper function for ForStmt-specific error handling
+  Result<Unit, ExecutionError> execute_with_error_handling(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg);
 
 public:
   ForStmt(const std::string &var, std::unique_ptr<Expression> init,
@@ -1508,6 +1514,9 @@ class WhileStmt : public Statement {
                                       int ourStackIndex, uint32_t headerBlockId);
   Result<Unit, ExecutionError> executeBodyStatements_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
                                      int ourStackIndex, uint32_t headerBlockId);
+  
+  // Specialized wrapper function for WhileStmt-specific error handling
+  Result<Unit, ExecutionError> execute_with_error_handling(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg);
 
 public:
   WhileStmt(std::unique_ptr<Expression> cond,
@@ -1552,6 +1561,9 @@ class DoWhileStmt : public Statement {
                                 int ourStackIndex, uint32_t headerBlockId);
   Result<Unit, ExecutionError> evaluateConditionPhase_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
                                  int ourStackIndex, uint32_t headerBlockId);
+  
+  // Specialized wrapper function for DoWhileStmt-specific error handling
+  Result<Unit, ExecutionError> execute_with_error_handling(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg);
 
 public:
   DoWhileStmt(std::vector<std::unique_ptr<Statement>> body,
@@ -1606,6 +1618,9 @@ public:
                              int ourStackIndex);
   Result<Unit, ExecutionError> evaluateSwitchValue_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
                            int ourStackIndex);
+  
+  // Specialized wrapper function for SwitchStmt-specific error handling
+  Result<Unit, ExecutionError> execute_with_error_handling(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg);
 };
 
 // Control flow exceptions for break/continue
