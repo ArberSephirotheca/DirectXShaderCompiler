@@ -3328,16 +3328,19 @@ Result<Unit, ExecutionError> ForStmt::execute_with_error_handling(LaneContext &l
         // ForStmt consumes break: exit loop cleanly
         {
           std::cout << "DEBUG: ForStmt - Break consumed, exiting loop cleanly" << std::endl;
-          // Find our stack entry to get merge block ID
+          // Find our stack entry to get header block ID
           int ourStackIndex = findStackIndex(lane);
           if (ourStackIndex >= 0) {
-            uint32_t mergeBlockId = lane.executionStack[ourStackIndex].loopMergeBlockId;
-            handleBreakException(lane, wave, tg, ourStackIndex, mergeBlockId);
+            uint32_t headerBlockId = lane.executionStack[ourStackIndex].loopHeaderBlockId;
+            handleBreakException(lane, wave, tg, ourStackIndex, headerBlockId);
             
             // Set state to WaitingForResume 
             if (!isProtectedState(lane.state)) {
               lane.state = ThreadState::WaitingForResume;
             }
+            
+            // Restore active state (reconvergence)
+            lane.isActive = lane.isActive && !lane.hasReturned;
           }
         }
         return Ok<Unit, ExecutionError>(Unit{}); // Success - break handled
@@ -3355,6 +3358,9 @@ Result<Unit, ExecutionError> ForStmt::execute_with_error_handling(LaneContext &l
             if (!isProtectedState(lane.state)) {
               lane.state = ThreadState::WaitingForResume;
             }
+            
+            // Restore active state (reconvergence)
+            lane.isActive = lane.isActive && !lane.hasReturned;
           }
         }
         return Ok<Unit, ExecutionError>(Unit{}); // Success - continue handled
@@ -5830,11 +5836,14 @@ Result<Unit, ExecutionError> WhileStmt::execute_with_error_handling(LaneContext 
         {
           int ourStackIndex = findStackIndex(lane);
           if (ourStackIndex >= 0) {
-            uint32_t mergeBlockId = lane.executionStack[ourStackIndex].loopMergeBlockId;
-            handleBreakException(lane, wave, tg, ourStackIndex, mergeBlockId);
+            uint32_t headerBlockId = lane.executionStack[ourStackIndex].loopHeaderBlockId;
+            handleBreakException(lane, wave, tg, ourStackIndex, headerBlockId);
             if (!isProtectedState(lane.state)) {
               lane.state = ThreadState::WaitingForResume;
             }
+            
+            // Restore active state (reconvergence)
+            lane.isActive = lane.isActive && !lane.hasReturned;
           }
         }
         return Ok<Unit, ExecutionError>(Unit{}); // Success - break handled
@@ -5849,6 +5858,9 @@ Result<Unit, ExecutionError> WhileStmt::execute_with_error_handling(LaneContext 
             if (!isProtectedState(lane.state)) {
               lane.state = ThreadState::WaitingForResume;
             }
+            
+            // Restore active state (reconvergence)
+            lane.isActive = lane.isActive && !lane.hasReturned;
           }
         }
         return Ok<Unit, ExecutionError>(Unit{}); // Success - continue handled
@@ -6899,6 +6911,9 @@ Result<Unit, ExecutionError> DoWhileStmt::execute_with_error_handling(LaneContex
             if (!isProtectedState(lane.state)) {
               lane.state = ThreadState::WaitingForResume;
             }
+            
+            // Restore active state (reconvergence)
+            lane.isActive = lane.isActive && !lane.hasReturned;
           }
         }
         return Ok<Unit, ExecutionError>(Unit{}); // Success - break handled
@@ -6913,6 +6928,9 @@ Result<Unit, ExecutionError> DoWhileStmt::execute_with_error_handling(LaneContex
             if (!isProtectedState(lane.state)) {
               lane.state = ThreadState::WaitingForResume;
             }
+            
+            // Restore active state (reconvergence)
+            lane.isActive = lane.isActive && !lane.hasReturned;
           }
         }
         return Ok<Unit, ExecutionError>(Unit{}); // Success - continue handled
@@ -7744,6 +7762,9 @@ Result<Unit, ExecutionError> SwitchStmt::execute_with_error_handling(LaneContext
             if (!isProtectedState(lane.state)) {
               lane.state = ThreadState::WaitingForResume;
             }
+            
+            // Restore active state (reconvergence)
+            lane.isActive = lane.isActive && !lane.hasReturned;
           }
         }
         return Ok<Unit, ExecutionError>(Unit{}); // Success - break handled

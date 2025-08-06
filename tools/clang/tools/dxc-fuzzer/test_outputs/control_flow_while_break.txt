@@ -370,9 +370,18 @@ DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 5
 DEBUG: removeThreadFromAllSets - block 5 had 0 participating lanes before removal
 DEBUG: removeThreadFromAllSets - block 5 has 0 participating lanes after removal
 DEBUG: WhileStmt - Lane 0 breaking from while loop
-DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 3
-DEBUG: removeThreadFromAllSets - block 3 had 0 participating lanes before removal
-DEBUG: removeThreadFromAllSets - block 3 has 0 participating lanes after removal
+DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 2
+DEBUG: removeThreadFromAllSets - block 2 had 4 participating lanes before removal (participating: 0 1 2 3 )
+DEBUG: removeThreadFromAllSets - block 2 has 3 participating lanes after removal (participating: 1 2 3 )
+DEBUG: removeThreadFromNestedBlocks - skipping 3 (LOOP_EXIT block where lanes should go)
+DEBUG: removeThreadFromNestedBlocks - removing lane 0 from block 4 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 4
+DEBUG: removeThreadFromAllSets - block 4 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 4 has 0 participating lanes after removal
+DEBUG: removeThreadFromNestedBlocks - removing lane 0 from block 5 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 5
+DEBUG: removeThreadFromAllSets - block 5 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 5 has 0 participating lanes after removal
 DEBUG: WhileStmt - Lane 1 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 1 executing body for iteration 0 from statement 0 (Result-based)
 DEBUG: WhileStmt - Lane 1 variables at body start: i=0 laneId=1 result=0 
@@ -403,9 +412,18 @@ DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 5
 DEBUG: removeThreadFromAllSets - block 5 had 0 participating lanes before removal
 DEBUG: removeThreadFromAllSets - block 5 has 0 participating lanes after removal
 DEBUG: WhileStmt - Lane 1 breaking from while loop
-DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 3
-DEBUG: removeThreadFromAllSets - block 3 had 0 participating lanes before removal
-DEBUG: removeThreadFromAllSets - block 3 has 0 participating lanes after removal
+DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 2
+DEBUG: removeThreadFromAllSets - block 2 had 3 participating lanes before removal (participating: 1 2 3 )
+DEBUG: removeThreadFromAllSets - block 2 has 2 participating lanes after removal (participating: 2 3 )
+DEBUG: removeThreadFromNestedBlocks - skipping 3 (LOOP_EXIT block where lanes should go)
+DEBUG: removeThreadFromNestedBlocks - removing lane 1 from block 4 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 4
+DEBUG: removeThreadFromAllSets - block 4 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 4 has 0 participating lanes after removal
+DEBUG: removeThreadFromNestedBlocks - removing lane 1 from block 5 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 5
+DEBUG: removeThreadFromAllSets - block 5 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 5 has 0 participating lanes after removal
 DEBUG: WhileStmt - Lane 2 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 2 executing body for iteration 0 from statement 0 (Result-based)
 DEBUG: WhileStmt - Lane 2 variables at body start: i=0 laneId=2 result=0 
@@ -528,10 +546,8 @@ DEBUG: WhileStmt - Lane 0 execution stack size before pop: 1
 DEBUG: WhileStmt - Lane 0 execution stack size after pop: 0
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 3
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 3
-DEBUG: assignLaneToBlock - BEFORE: block 3 has 0 participating lanes, 0 waiting lanes, 2 unknown lanes (2 3)
-DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 3 (type 6), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from block 2
-DEBUG: assignLaneToBlock - AFTER: block 3 has 1 participating lanes (0), 0 waiting lanes, 2 unknown lanes (2 3)
+DEBUG: assignLaneToBlock - BEFORE: block 3 has 0 participating lanes, 0 waiting lanes, 4 unknown lanes (0 1 2 3)
+DEBUG: assignLaneToBlock - AFTER: block 3 has 1 participating lanes (0), 0 waiting lanes, 3 unknown lanes (1 2 3)
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 3
 DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 3
 DEBUG: WhileStmt - Lane 0 successfully moved to merge block 3 and marked as Participating
@@ -550,9 +566,7 @@ DEBUG: WhileStmt - Lane 1 execution stack size before pop: 1
 DEBUG: WhileStmt - Lane 1 execution stack size after pop: 0
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 3
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 3
-DEBUG: assignLaneToBlock - BEFORE: block 3 has 1 participating lanes (0), 0 waiting lanes, 2 unknown lanes (2 3)
-DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 4) to block 3 (type 6), isHeaderToLoopBody=0
-DEBUG: Removed lane 1 from block 2
+DEBUG: assignLaneToBlock - BEFORE: block 3 has 1 participating lanes (0), 0 waiting lanes, 3 unknown lanes (1 2 3)
 DEBUG: assignLaneToBlock - AFTER: block 3 has 2 participating lanes (0 1), 0 waiting lanes, 2 unknown lanes (2 3)
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 3
 DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 3
@@ -1065,10 +1079,35 @@ DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 9
 DEBUG: removeThreadFromAllSets - block 9 had 0 participating lanes before removal
 DEBUG: removeThreadFromAllSets - block 9 has 0 participating lanes after removal
 DEBUG: WhileStmt - Lane 2 breaking from while loop
-DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 3
-DEBUG: removeThreadFromAllSets - block 3 had 2 participating lanes before removal (waiting: 0 1 )
-DEBUG: removeThreadFromAllSets - block 3 has 2 participating lanes after removal (waiting: 0 1 )
-DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 1 unknown lanes: 3  - These lanes need to be resolved to Participating or Left
+DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 2
+DEBUG: removeThreadFromAllSets - block 2 had 2 participating lanes before removal (participating: 2 3 )
+DEBUG: removeThreadFromAllSets - block 2 has 1 participating lanes after removal (participating: 3 )
+DEBUG: removeThreadFromNestedBlocks - skipping 3 (LOOP_EXIT block where lanes should go)
+DEBUG: removeThreadFromNestedBlocks - removing lane 2 from block 4 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 4
+DEBUG: removeThreadFromAllSets - block 4 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 4 has 0 participating lanes after removal
+DEBUG: removeThreadFromNestedBlocks - removing lane 2 from block 5 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 5
+DEBUG: removeThreadFromAllSets - block 5 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 5 has 0 participating lanes after removal
+DEBUG: removeThreadFromNestedBlocks - removing lane 2 from block 6 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 6
+DEBUG: removeThreadFromAllSets - block 6 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 6 has 0 participating lanes after removal
+DEBUG: removeThreadFromNestedBlocks - removing lane 2 from block 7 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 7
+DEBUG: removeThreadFromAllSets - block 7 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 7 has 0 participating lanes after removal
+DEBUG: removeThreadFromNestedBlocks - removing lane 2 from block 8 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 8
+DEBUG: removeThreadFromAllSets - block 8 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 8 has 0 participating lanes after removal
+DEBUG: removeThreadFromNestedBlocks - removing lane 2 from block 9 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 9
+DEBUG: removeThreadFromAllSets - block 9 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 9 has 0 participating lanes after removal
+DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: WhileStmt - Lane 3 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 3 executing body for iteration 2 from statement 0 (Result-based)
 DEBUG: WhileStmt - Lane 3 variables at body start: i=2 laneId=3 result=4 
@@ -1127,16 +1166,14 @@ DEBUG: canExecuteWaveInstruction for lane 3 in block 9: canExecuteInBlock=1, all
 DEBUG: WAVE_OP: After lane 3 started waiting, wave operation can now execute!
 DEBUG: WAVE_WAIT: Lane 3 received WaveOperationWait error, state=2
 DEBUG: WAVE_OP: Storing collective result for lanes: 3  (phase: 2)
-DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 1 unknown lanes: 3  - These lanes need to be resolved to Participating or Left
+DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: WhileStmt - Lane 2 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 2 reconverging from while loop to merge block 3
 DEBUG: WhileStmt - Lane 2 execution stack size before pop: 1
 DEBUG: WhileStmt - Lane 2 execution stack size after pop: 0
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 3
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 3
-DEBUG: assignLaneToBlock - BEFORE: block 3 has 0 participating lanes, 2 waiting lanes (0 1), 1 unknown lanes (3)
-DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 3 (type 6), isHeaderToLoopBody=0
-DEBUG: Removed lane 2 from block 2
+DEBUG: assignLaneToBlock - BEFORE: block 3 has 0 participating lanes, 2 waiting lanes (0 1), 2 unknown lanes (2 3)
 DEBUG: assignLaneToBlock - AFTER: block 3 has 1 participating lanes (2), 2 waiting lanes (0 1), 1 unknown lanes (3)
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 3
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 3
@@ -1269,24 +1306,58 @@ DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 11
 DEBUG: removeThreadFromAllSets - block 11 had 0 participating lanes before removal
 DEBUG: removeThreadFromAllSets - block 11 has 0 participating lanes after removal
 DEBUG: WhileStmt - Lane 3 breaking from while loop
-DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 3
-DEBUG: removeThreadFromAllSets - block 3 had 3 participating lanes before removal (waiting: 0 1 2 )
-DEBUG: removeThreadFromAllSets - block 3 has 3 participating lanes after removal (waiting: 0 1 2 )
-DEBUG: WAVE_OP: Storing collective result for lanes: 0 1 2  (phase: 2)
+DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 2
+DEBUG: removeThreadFromAllSets - block 2 had 1 participating lanes before removal (participating: 3 )
+DEBUG: removeThreadFromAllSets - block 2 has 0 participating lanes after removal
+DEBUG: removeThreadFromNestedBlocks - skipping 3 (LOOP_EXIT block where lanes should go)
+DEBUG: removeThreadFromNestedBlocks - removing lane 3 from block 4 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 4
+DEBUG: removeThreadFromAllSets - block 4 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 4 has 0 participating lanes after removal
+DEBUG: removeThreadFromNestedBlocks - removing lane 3 from block 5 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 5
+DEBUG: removeThreadFromAllSets - block 5 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 5 has 0 participating lanes after removal
+DEBUG: removeThreadFromNestedBlocks - removing lane 3 from block 6 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 6
+DEBUG: removeThreadFromAllSets - block 6 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 6 has 0 participating lanes after removal
+DEBUG: removeThreadFromNestedBlocks - removing lane 3 from block 7 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 7
+DEBUG: removeThreadFromAllSets - block 7 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 7 has 0 participating lanes after removal
+DEBUG: removeThreadFromNestedBlocks - removing lane 3 from block 8 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 8
+DEBUG: removeThreadFromAllSets - block 8 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 8 has 0 participating lanes after removal
+DEBUG: removeThreadFromNestedBlocks - removing lane 3 from block 9 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 9
+DEBUG: removeThreadFromAllSets - block 9 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 9 has 0 participating lanes after removal
+DEBUG: removeThreadFromNestedBlocks - removing lane 3 from block 10 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 10
+DEBUG: removeThreadFromAllSets - block 10 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 10 has 0 participating lanes after removal
+DEBUG: removeThreadFromNestedBlocks - removing lane 3 from block 11 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 11
+DEBUG: removeThreadFromAllSets - block 11 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 11 has 0 participating lanes after removal
+DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 1 unknown lanes: 3  - These lanes need to be resolved to Participating or Left
 DEBUG: WhileStmt - Lane 3 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 3 reconverging from while loop to merge block 3
 DEBUG: WhileStmt - Lane 3 execution stack size before pop: 1
 DEBUG: WhileStmt - Lane 3 execution stack size after pop: 0
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 3
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 3
-DEBUG: assignLaneToBlock - BEFORE: block 3 has 0 participating lanes, 3 waiting lanes (0 1 2), 0 unknown lanes
-DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 3 (type 6), isHeaderToLoopBody=0
-DEBUG: Removed lane 3 from block 2
+DEBUG: assignLaneToBlock - BEFORE: block 3 has 0 participating lanes, 3 waiting lanes (0 1 2), 1 unknown lanes (3)
 DEBUG: assignLaneToBlock - AFTER: block 3 has 1 participating lanes (3), 3 waiting lanes (0 1 2), 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 3
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 3
 DEBUG: WhileStmt - Lane 3 successfully moved to merge block 3 and marked as Participating
 DEBUG: WhileStmt - Lane 3 completing reconvergence, set state to Ready for statement progression
+DEBUG: WAVE_OP: Updated participants before execution to include all current block lanes: 0 1 2 3 
+DEBUG: WAVE_OP: Storing collective result for lanes: 0 1 2 3  (phase: 2)
+DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 3, instruction key=(0x503000001ae0,3)
 DEBUG: onLaneFinishWaveOp - Lane 0 finishing wave op in block 3
 DEBUG: onLaneFinishWaveOp - Current status in block 3: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 0 to Participating in block 3
@@ -1298,27 +1369,25 @@ DEBUG: onLaneFinishWaveOp - Current status in block 3: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 2 to Participating in block 3
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 3, instruction key=(0x503000001ae0,3)
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
-DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 4 (phase: Executed)
+DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 9 (phase: Executed)
 DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 3, instruction key=(0x503000001ae0,3)
 DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored result
-DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 4 (phase: Executed)
+DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 9 (phase: Executed)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 3, instruction key=(0x503000001ae0,3)
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
-DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 4 (phase: Consumed)
-DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 3, instruction key=(0x503000001ae0,3)
-DEBUG: markLaneWaitingForWave - Lane 3 wave 0 in block 3
-DEBUG: markLaneWaitingForWave - Successfully set lane 3 to WaitingForWave in block 3
-DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 3
-DEBUG: Block 3 wave 0 unknown lanes: {}
-DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
-DEBUG: canExecuteWaveInstruction for lane 3 in block 3: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_3
-DEBUG: WAVE_OP: After lane 3 started waiting, wave operation can now execute!
-DEBUG: WAVE_WAIT: Lane 3 received WaveOperationWait error, state=2
+DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 9 (phase: Consumed)
+lane 3 have completed execution
 lane 0 have completed execution
 lane 1 have completed execution
 lane 2 have completed execution
 === Sequential Execution ===
-❌ Execution failed: Execution timeout: possible infinite loop or deadlock
+✅ Execution successful
+Thread Return Values:
+  Thread 0: 0
+  Thread 1: 0
+  Thread 2: 0
+  Thread 3: 0
+
 DEBUG: findOrCreateBlockForPath called with 0 waves of unknown lanes
 DEBUG: Initializing wave 0 with 4 lanes in initial block 1
 DEBUG: markLaneArrived - Lane 0 transitioned from Unknown to Participating in block 1
@@ -1615,9 +1684,18 @@ DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 5
 DEBUG: removeThreadFromAllSets - block 5 had 0 participating lanes before removal
 DEBUG: removeThreadFromAllSets - block 5 has 0 participating lanes after removal
 DEBUG: WhileStmt - Lane 0 breaking from while loop
-DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 3
-DEBUG: removeThreadFromAllSets - block 3 had 0 participating lanes before removal
-DEBUG: removeThreadFromAllSets - block 3 has 0 participating lanes after removal
+DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 2
+DEBUG: removeThreadFromAllSets - block 2 had 4 participating lanes before removal (participating: 0 1 2 3 )
+DEBUG: removeThreadFromAllSets - block 2 has 3 participating lanes after removal (participating: 1 2 3 )
+DEBUG: removeThreadFromNestedBlocks - skipping 3 (LOOP_EXIT block where lanes should go)
+DEBUG: removeThreadFromNestedBlocks - removing lane 0 from block 4 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 4
+DEBUG: removeThreadFromAllSets - block 4 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 4 has 0 participating lanes after removal
+DEBUG: removeThreadFromNestedBlocks - removing lane 0 from block 5 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 5
+DEBUG: removeThreadFromAllSets - block 5 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 5 has 0 participating lanes after removal
 DEBUG: WhileStmt - Lane 1 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 1 executing body for iteration 0 from statement 0 (Result-based)
 DEBUG: WhileStmt - Lane 1 variables at body start: i=0 laneId=1 result=0 
@@ -1648,9 +1726,18 @@ DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 5
 DEBUG: removeThreadFromAllSets - block 5 had 0 participating lanes before removal
 DEBUG: removeThreadFromAllSets - block 5 has 0 participating lanes after removal
 DEBUG: WhileStmt - Lane 1 breaking from while loop
-DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 3
-DEBUG: removeThreadFromAllSets - block 3 had 0 participating lanes before removal
-DEBUG: removeThreadFromAllSets - block 3 has 0 participating lanes after removal
+DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 2
+DEBUG: removeThreadFromAllSets - block 2 had 3 participating lanes before removal (participating: 1 2 3 )
+DEBUG: removeThreadFromAllSets - block 2 has 2 participating lanes after removal (participating: 2 3 )
+DEBUG: removeThreadFromNestedBlocks - skipping 3 (LOOP_EXIT block where lanes should go)
+DEBUG: removeThreadFromNestedBlocks - removing lane 1 from block 4 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 4
+DEBUG: removeThreadFromAllSets - block 4 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 4 has 0 participating lanes after removal
+DEBUG: removeThreadFromNestedBlocks - removing lane 1 from block 5 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 5
+DEBUG: removeThreadFromAllSets - block 5 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 5 has 0 participating lanes after removal
 DEBUG: WhileStmt - Lane 2 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 2 executing body for iteration 0 from statement 0 (Result-based)
 DEBUG: WhileStmt - Lane 2 variables at body start: i=0 laneId=2 result=0 
@@ -1773,10 +1860,8 @@ DEBUG: WhileStmt - Lane 0 execution stack size before pop: 1
 DEBUG: WhileStmt - Lane 0 execution stack size after pop: 0
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 3
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 3
-DEBUG: assignLaneToBlock - BEFORE: block 3 has 0 participating lanes, 0 waiting lanes, 2 unknown lanes (2 3)
-DEBUG: assignLaneToBlock - moving lane 0 from block 2 (type 4) to block 3 (type 6), isHeaderToLoopBody=0
-DEBUG: Removed lane 0 from block 2
-DEBUG: assignLaneToBlock - AFTER: block 3 has 1 participating lanes (0), 0 waiting lanes, 2 unknown lanes (2 3)
+DEBUG: assignLaneToBlock - BEFORE: block 3 has 0 participating lanes, 0 waiting lanes, 4 unknown lanes (0 1 2 3)
+DEBUG: assignLaneToBlock - AFTER: block 3 has 1 participating lanes (0), 0 waiting lanes, 3 unknown lanes (1 2 3)
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 3
 DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 3
 DEBUG: WhileStmt - Lane 0 successfully moved to merge block 3 and marked as Participating
@@ -1795,9 +1880,7 @@ DEBUG: WhileStmt - Lane 1 execution stack size before pop: 1
 DEBUG: WhileStmt - Lane 1 execution stack size after pop: 0
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 3
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 3
-DEBUG: assignLaneToBlock - BEFORE: block 3 has 1 participating lanes (0), 0 waiting lanes, 2 unknown lanes (2 3)
-DEBUG: assignLaneToBlock - moving lane 1 from block 2 (type 4) to block 3 (type 6), isHeaderToLoopBody=0
-DEBUG: Removed lane 1 from block 2
+DEBUG: assignLaneToBlock - BEFORE: block 3 has 1 participating lanes (0), 0 waiting lanes, 3 unknown lanes (1 2 3)
 DEBUG: assignLaneToBlock - AFTER: block 3 has 2 participating lanes (0 1), 0 waiting lanes, 2 unknown lanes (2 3)
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 3
 DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 3
@@ -2310,10 +2393,35 @@ DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 9
 DEBUG: removeThreadFromAllSets - block 9 had 0 participating lanes before removal
 DEBUG: removeThreadFromAllSets - block 9 has 0 participating lanes after removal
 DEBUG: WhileStmt - Lane 2 breaking from while loop
-DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 3
-DEBUG: removeThreadFromAllSets - block 3 had 2 participating lanes before removal (waiting: 0 1 )
-DEBUG: removeThreadFromAllSets - block 3 has 2 participating lanes after removal (waiting: 0 1 )
-DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 1 unknown lanes: 3  - These lanes need to be resolved to Participating or Left
+DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 2
+DEBUG: removeThreadFromAllSets - block 2 had 2 participating lanes before removal (participating: 2 3 )
+DEBUG: removeThreadFromAllSets - block 2 has 1 participating lanes after removal (participating: 3 )
+DEBUG: removeThreadFromNestedBlocks - skipping 3 (LOOP_EXIT block where lanes should go)
+DEBUG: removeThreadFromNestedBlocks - removing lane 2 from block 4 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 4
+DEBUG: removeThreadFromAllSets - block 4 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 4 has 0 participating lanes after removal
+DEBUG: removeThreadFromNestedBlocks - removing lane 2 from block 5 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 5
+DEBUG: removeThreadFromAllSets - block 5 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 5 has 0 participating lanes after removal
+DEBUG: removeThreadFromNestedBlocks - removing lane 2 from block 6 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 6
+DEBUG: removeThreadFromAllSets - block 6 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 6 has 0 participating lanes after removal
+DEBUG: removeThreadFromNestedBlocks - removing lane 2 from block 7 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 7
+DEBUG: removeThreadFromAllSets - block 7 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 7 has 0 participating lanes after removal
+DEBUG: removeThreadFromNestedBlocks - removing lane 2 from block 8 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 8
+DEBUG: removeThreadFromAllSets - block 8 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 8 has 0 participating lanes after removal
+DEBUG: removeThreadFromNestedBlocks - removing lane 2 from block 9 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 9
+DEBUG: removeThreadFromAllSets - block 9 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 9 has 0 participating lanes after removal
+DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: WhileStmt - Lane 3 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 3 executing body for iteration 2 from statement 0 (Result-based)
 DEBUG: WhileStmt - Lane 3 variables at body start: i=2 laneId=3 result=4 
@@ -2372,16 +2480,14 @@ DEBUG: canExecuteWaveInstruction for lane 3 in block 9: canExecuteInBlock=1, all
 DEBUG: WAVE_OP: After lane 3 started waiting, wave operation can now execute!
 DEBUG: WAVE_WAIT: Lane 3 received WaveOperationWait error, state=2
 DEBUG: WAVE_OP: Storing collective result for lanes: 3  (phase: 2)
-DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 1 unknown lanes: 3  - These lanes need to be resolved to Participating or Left
+DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: WhileStmt - Lane 2 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 2 reconverging from while loop to merge block 3
 DEBUG: WhileStmt - Lane 2 execution stack size before pop: 1
 DEBUG: WhileStmt - Lane 2 execution stack size after pop: 0
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 3
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 3
-DEBUG: assignLaneToBlock - BEFORE: block 3 has 0 participating lanes, 2 waiting lanes (0 1), 1 unknown lanes (3)
-DEBUG: assignLaneToBlock - moving lane 2 from block 2 (type 4) to block 3 (type 6), isHeaderToLoopBody=0
-DEBUG: Removed lane 2 from block 2
+DEBUG: assignLaneToBlock - BEFORE: block 3 has 0 participating lanes, 2 waiting lanes (0 1), 2 unknown lanes (2 3)
 DEBUG: assignLaneToBlock - AFTER: block 3 has 1 participating lanes (2), 2 waiting lanes (0 1), 1 unknown lanes (3)
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 3
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 3
@@ -2514,24 +2620,58 @@ DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 11
 DEBUG: removeThreadFromAllSets - block 11 had 0 participating lanes before removal
 DEBUG: removeThreadFromAllSets - block 11 has 0 participating lanes after removal
 DEBUG: WhileStmt - Lane 3 breaking from while loop
-DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 3
-DEBUG: removeThreadFromAllSets - block 3 had 3 participating lanes before removal (waiting: 0 1 2 )
-DEBUG: removeThreadFromAllSets - block 3 has 3 participating lanes after removal (waiting: 0 1 2 )
-DEBUG: WAVE_OP: Storing collective result for lanes: 0 1 2  (phase: 2)
+DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 2
+DEBUG: removeThreadFromAllSets - block 2 had 1 participating lanes before removal (participating: 3 )
+DEBUG: removeThreadFromAllSets - block 2 has 0 participating lanes after removal
+DEBUG: removeThreadFromNestedBlocks - skipping 3 (LOOP_EXIT block where lanes should go)
+DEBUG: removeThreadFromNestedBlocks - removing lane 3 from block 4 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 4
+DEBUG: removeThreadFromAllSets - block 4 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 4 has 0 participating lanes after removal
+DEBUG: removeThreadFromNestedBlocks - removing lane 3 from block 5 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 5
+DEBUG: removeThreadFromAllSets - block 5 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 5 has 0 participating lanes after removal
+DEBUG: removeThreadFromNestedBlocks - removing lane 3 from block 6 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 6
+DEBUG: removeThreadFromAllSets - block 6 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 6 has 0 participating lanes after removal
+DEBUG: removeThreadFromNestedBlocks - removing lane 3 from block 7 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 7
+DEBUG: removeThreadFromAllSets - block 7 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 7 has 0 participating lanes after removal
+DEBUG: removeThreadFromNestedBlocks - removing lane 3 from block 8 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 8
+DEBUG: removeThreadFromAllSets - block 8 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 8 has 0 participating lanes after removal
+DEBUG: removeThreadFromNestedBlocks - removing lane 3 from block 9 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 9
+DEBUG: removeThreadFromAllSets - block 9 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 9 has 0 participating lanes after removal
+DEBUG: removeThreadFromNestedBlocks - removing lane 3 from block 10 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 10
+DEBUG: removeThreadFromAllSets - block 10 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 10 has 0 participating lanes after removal
+DEBUG: removeThreadFromNestedBlocks - removing lane 3 from block 11 (child of 2)
+DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 11
+DEBUG: removeThreadFromAllSets - block 11 had 0 participating lanes before removal
+DEBUG: removeThreadFromAllSets - block 11 has 0 participating lanes after removal
+DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 1 unknown lanes: 3  - These lanes need to be resolved to Participating or Left
 DEBUG: WhileStmt - Lane 3 resuming Result-based while loop
 DEBUG: WhileStmt - Lane 3 reconverging from while loop to merge block 3
 DEBUG: WhileStmt - Lane 3 execution stack size before pop: 1
 DEBUG: WhileStmt - Lane 3 execution stack size after pop: 0
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 3
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 3
-DEBUG: assignLaneToBlock - BEFORE: block 3 has 0 participating lanes, 3 waiting lanes (0 1 2), 0 unknown lanes
-DEBUG: assignLaneToBlock - moving lane 3 from block 2 (type 4) to block 3 (type 6), isHeaderToLoopBody=0
-DEBUG: Removed lane 3 from block 2
+DEBUG: assignLaneToBlock - BEFORE: block 3 has 0 participating lanes, 3 waiting lanes (0 1 2), 1 unknown lanes (3)
 DEBUG: assignLaneToBlock - AFTER: block 3 has 1 participating lanes (3), 3 waiting lanes (0 1 2), 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 3
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 3
 DEBUG: WhileStmt - Lane 3 successfully moved to merge block 3 and marked as Participating
 DEBUG: WhileStmt - Lane 3 completing reconvergence, set state to Ready for statement progression
+DEBUG: WAVE_OP: Updated participants before execution to include all current block lanes: 0 1 2 3 
+DEBUG: WAVE_OP: Storing collective result for lanes: 0 1 2 3  (phase: 2)
+DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 3, instruction key=(0x503000001ae0,3)
 DEBUG: onLaneFinishWaveOp - Lane 0 finishing wave op in block 3
 DEBUG: onLaneFinishWaveOp - Current status in block 3: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 0 to Participating in block 3
@@ -2543,22 +2683,14 @@ DEBUG: onLaneFinishWaveOp - Current status in block 3: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 2 to Participating in block 3
 DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 3, instruction key=(0x503000001ae0,3)
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
-DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 4 (phase: Executed)
+DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 9 (phase: Executed)
 DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 3, instruction key=(0x503000001ae0,3)
 DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored result
-DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 4 (phase: Executed)
+DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 9 (phase: Executed)
 DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 3, instruction key=(0x503000001ae0,3)
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
-DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 4 (phase: Consumed)
-DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 3, instruction key=(0x503000001ae0,3)
-DEBUG: markLaneWaitingForWave - Lane 3 wave 0 in block 3
-DEBUG: markLaneWaitingForWave - Successfully set lane 3 to WaitingForWave in block 3
-DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 3
-DEBUG: Block 3 wave 0 unknown lanes: {}
-DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
-DEBUG: canExecuteWaveInstruction for lane 3 in block 3: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=1, canExecuteGlobal=1, syncPointPhase=phase_3
-DEBUG: WAVE_OP: After lane 3 started waiting, wave operation can now execute!
-DEBUG: WAVE_WAIT: Lane 3 received WaveOperationWait error, state=2
+DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 9 (phase: Consumed)
+lane 3 have completed execution
 lane 0 have completed execution
 lane 1 have completed execution
 lane 2 have completed execution
@@ -2877,9 +3009,10 @@ Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 3 from WaitingForResume to Ready
   Waking up lane 3 from WaitingForResume to Ready
   Waking up lane 3 from WaitingForResume to Ready
-Executing collective wave operation for wave 0 at instruction 0x503000001ae0 block 3
-Collective wave operation result: 4
   Waking up lane 3 from WaitingForResume to Ready
+Executing collective wave operation for wave 0 at instruction 0x503000001ae0 block 3
+Collective wave operation result: 9
+Lane 3 retrieving stored wave result: 9 (phase: 2)
 Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 0 from WaitingForWave to Ready
   Waking up lane 1 from WaitingForWave to Ready
@@ -2926,12 +3059,10 @@ Dynamic Block 3:
   Nesting Level: 0
   Source Statement: 0x5040000044d0
   Participating Lanes by Wave:
-    Wave 0: {0, 1, 2} (3 lanes)
-  Total Participating Lanes: 3
+    Wave 0: {0, 1, 2, 3} (4 lanes)
+  Total Participating Lanes: 4
   Arrived Lanes by Wave:
-    Wave 0: {0, 1, 2} (3 lanes)
-  Waiting Lanes by Wave:
-    Wave 0: {3} (1 lanes)
+    Wave 0: {0, 1, 2, 3} (4 lanes)
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001ae0)
 
@@ -3075,25 +3206,26 @@ Wave 0:
     i = 0
     laneId = 0
     result = 0
-    totalSum = 4
+    totalSum = 9
     (state: Completed)
   Lane 1:
     i = 0
     laneId = 1
     result = 0
-    totalSum = 4
+    totalSum = 9
     (state: Completed)
   Lane 2:
     i = 2
     laneId = 2
     result = 4
-    totalSum = 4
+    totalSum = 9
     (state: Completed)
   Lane 3:
     i = 3
     laneId = 3
     result = 5
-    (state: WaitingForWave)
+    totalSum = 9
+    (state: Completed)
 === End Variable Values ===
 
   Waking up lane 0 from WaitingForResume to Ready
@@ -3139,9 +3271,10 @@ Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 3 from WaitingForResume to Ready
   Waking up lane 3 from WaitingForResume to Ready
   Waking up lane 3 from WaitingForResume to Ready
-Executing collective wave operation for wave 0 at instruction 0x503000001ae0 block 3
-Collective wave operation result: 4
   Waking up lane 3 from WaitingForResume to Ready
+Executing collective wave operation for wave 0 at instruction 0x503000001ae0 block 3
+Collective wave operation result: 9
+Lane 3 retrieving stored wave result: 9 (phase: 2)
 Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 0 from WaitingForWave to Ready
   Waking up lane 1 from WaitingForWave to Ready
@@ -3188,12 +3321,10 @@ Dynamic Block 3:
   Nesting Level: 0
   Source Statement: 0x5040000044d0
   Participating Lanes by Wave:
-    Wave 0: {0, 1, 2} (3 lanes)
-  Total Participating Lanes: 3
+    Wave 0: {0, 1, 2, 3} (4 lanes)
+  Total Participating Lanes: 4
   Arrived Lanes by Wave:
-    Wave 0: {0, 1, 2} (3 lanes)
-  Waiting Lanes by Wave:
-    Wave 0: {3} (1 lanes)
+    Wave 0: {0, 1, 2, 3} (4 lanes)
   Instructions (1):
     0: WaveActiveOp (ptr: 0x503000001ae0)
 
@@ -3337,29 +3468,30 @@ Wave 0:
     i = 0
     laneId = 0
     result = 0
-    totalSum = 4
+    totalSum = 9
     (state: Completed)
   Lane 1:
     i = 0
     laneId = 1
     result = 0
-    totalSum = 4
+    totalSum = 9
     (state: Completed)
   Lane 2:
     i = 2
     laneId = 2
     result = 4
-    totalSum = 4
+    totalSum = 9
     (state: Completed)
   Lane 3:
     i = 3
     laneId = 3
     result = 5
-    (state: WaitingForWave)
+    totalSum = 9
+    (state: Completed)
 === End Variable Values ===
 
 
 
 === VERIFICATION ===
-❌ totalSum: expected 9, got {4}
+✅ totalSum: 9 (found 8 instances)
 
