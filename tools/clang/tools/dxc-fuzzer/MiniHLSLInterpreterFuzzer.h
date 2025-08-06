@@ -1,0 +1,654 @@
+#pragma once
+
+#include "MiniHLSLInterpreter.h"
+#include <cstdint>
+#include <memory>
+#include <vector>
+#include <unordered_map>
+#include <chrono>
+#include <queue>
+#include <set>
+
+namespace minihlsl {
+namespace fuzzer {
+
+// Forward declarations
+class ExecutionTrace;
+class MutationStrategy;
+class SemanticValidator;
+
+// ===== Execution Trace Data Structures =====
+
+struct ExecutionTrace {
+  // Thread hierarchy information
+  struct ThreadHierarchy {
+    uint32_t threadgroupSize;
+    uint32_t waveSize;
+    uint32_t waveCount;
+    
+    // Global thread ID to wave/lane mapping
+    std::map<interpreter::ThreadId, std::pair<interpreter::WaveId, interpreter::LaneId>> threadToWaveLane;
+    
+    // Reverse mapping for convenience
+    std::map<std::pair<interpreter::WaveId, interpreter::LaneId>, interpreter::ThreadId> waveLaneToThread;
+  };
+  ThreadHierarchy hierarchy;
+  
+  // Dynamic block execution graph
+  struct BlockExecutionRecord {
+    uint32_t blockId;
+    interpreter::BlockIdentity identity;
+    interpreter::BlockType blockType;
+    
+    // Creation context
+    const void* sourceStatement;
+    uint32_t parentBlockId;
+    interpreter::WaveId creatorWave;
+    
+    // Participation tracking (matches BlockMembershipRegistry)
+    struct WaveParticipation {
+      std::set<interpreter::LaneId> participatingLanes;
+      std::set<interpreter::LaneId> arrivedLanes;
+      std::set<interpreter::LaneId> unknownLanes;
+      std::set<interpreter::LaneId> waitingForWaveLanes;
+      
+      // Visit count per lane
+      std::map<interpreter::LaneId, uint32_t> visitCount;
+      
+      // Entry/exit order for each lane
+      std::map<interpreter::LaneId, std::vector<uint64_t>> entryTimestamps;
+      std::map<interpreter::LaneId, std::vector<uint64_t>> exitTimestamps;
+    };
+    std::map<interpreter::WaveId, WaveParticipation> waveParticipation;
+    
+    // Block relationships
+    std::set<uint32_t> predecessors;
+    std::set<uint32_t> successors;
+    
+    // Merge information
+    bool isMergePoint;
+    std::set<uint32_t> mergedFromBlocks;
+  };
+  std::map<uint32_t, BlockExecutionRecord> blocks;
+  
+  // Control flow decisions
+  struct ControlFlowDecision {
+    const void* statement;
+    uint32_t executionBlockId;
+    uint64_t timestamp;
+    
+    struct LaneDecision {
+      interpreter::Value conditionValue;
+      bool branchTaken;
+      interpreter::LaneContext::ControlFlowPhase phase;
+      uint32_t nextBlockId;
+    };
+    
+    // Per-wave, per-lane decisions
+    std::map<interpreter::WaveId, std::map<interpreter::LaneId, LaneDecision>> decisions;
+  };
+  std::vector<ControlFlowDecision> controlFlowHistory;
+  
+  // Wave operation synchronization
+  struct WaveOpRecord {
+    // Identification
+    const void* instruction;
+    std::string opType;
+    uint32_t blockId;
+    interpreter::WaveId waveId;
+    uint64_t syncPointId;
+    
+    // Participants and values
+    std::set<interpreter::LaneId> expectedParticipants;
+    std::set<interpreter::LaneId> arrivedParticipants;
+    std::map<interpreter::LaneId, interpreter::Value> inputValues;
+    std::map<interpreter::LaneId, interpreter::Value> outputValues;
+    
+    // Synchronization behavior
+    struct SyncBehavior {
+      std::vector<interpreter::LaneId> arrivalOrder;
+      std::map<interpreter::LaneId, uint64_t> arrivalTime;
+      std::map<interpreter::LaneId, uint64_t> resumeTime;
+      bool anyLaneWaited;
+      uint64_t totalWaitTime;
+    };
+    SyncBehavior syncBehavior;
+    
+    // Final state from sync point
+    interpreter::SyncPointState finalState;
+  };
+  std::vector<WaveOpRecord> waveOperations;
+  
+  // Loop execution patterns
+  struct LoopExecutionPattern {
+    const void* loopStatement;
+    
+    struct LanePattern {
+      uint32_t totalIterations;
+      std::vector<uint32_t> iterationBlocks;
+      bool exitedEarly;
+      uint32_t breakIteration;
+      
+      // Condition values per iteration
+      std::vector<interpreter::Value> conditionHistory;
+    };
+    
+    // Per-wave, per-lane patterns
+    std::map<interpreter::WaveId, std::map<interpreter::LaneId, LanePattern>> lanePatterns;
+    
+    // Loop body variations
+    std::set<std::vector<uint32_t>> uniqueBodyPaths;
+  };
+  std::map<const void*, LoopExecutionPattern> loops;
+  
+  // Variable access tracking
+  struct VariableAccess {
+    std::string varName;
+    const void* accessSite;
+    uint32_t blockId;
+    bool isWrite;
+    
+    // Values per wave/lane at access time
+    std::map<interpreter::WaveId, std::map<interpreter::LaneId, interpreter::Value>> values;
+    
+    // For detecting data races
+    uint64_t timestamp;
+    enum AccessType { Read, Write, ReadModifyWrite };
+    AccessType type;
+  };
+  std::vector<VariableAccess> variableAccesses;
+  
+  // Memory access patterns
+  struct MemoryAccess {
+    enum MemoryType { SharedMemory, GlobalBuffer };
+    MemoryType type;
+    std::string bufferName;
+    uint32_t address;
+    
+    interpreter::ThreadId accessingThread;
+    interpreter::WaveId waveId;
+    interpreter::LaneId laneId;
+    
+    bool isAtomic;
+    std::string atomicOp;
+    interpreter::Value oldValue;
+    interpreter::Value newValue;
+    
+    uint64_t timestamp;
+    uint32_t blockId;
+  };
+  std::vector<MemoryAccess> memoryAccesses;
+  
+  // Threadgroup barriers
+  struct BarrierRecord {
+    uint32_t barrierId;
+    const void* barrierSite;
+    
+    // Arrival pattern
+    std::map<interpreter::ThreadId, uint64_t> arrivalTimes;
+    std::map<interpreter::ThreadId, uint64_t> releaseTimes;
+    
+    // Wave synchronization
+    std::map<interpreter::WaveId, std::set<interpreter::LaneId>> arrivedLanesPerWave;
+    std::vector<interpreter::WaveId> waveArrivalOrder;
+    
+    uint64_t totalWaitTime;
+  };
+  std::vector<BarrierRecord> barriers;
+  
+  // Final program state
+  struct FinalState {
+    // Variable values per lane
+    std::map<interpreter::WaveId, 
+             std::map<interpreter::LaneId, 
+                      std::map<std::string, interpreter::Value>>> laneVariables;
+    
+    // Return values
+    std::map<interpreter::WaveId, 
+             std::map<interpreter::LaneId, interpreter::Value>> returnValues;
+    
+    // Memory state
+    std::map<std::string, std::map<uint32_t, interpreter::Value>> globalBuffers;
+    std::map<interpreter::MemoryAddress, interpreter::Value> sharedMemory;
+    
+    // Thread states
+    std::map<interpreter::WaveId, 
+             std::map<interpreter::LaneId, interpreter::ThreadState>> finalThreadStates;
+  };
+  FinalState finalState;
+  
+  // Execution statistics
+  struct Statistics {
+    uint64_t totalInstructions;
+    uint64_t totalWaveOps;
+    uint64_t totalBarriers;
+    uint32_t maxDivergenceDepth;
+    uint32_t totalDynamicBlocks;
+    uint64_t totalSyncWaitTime;
+  };
+  Statistics stats;
+};
+
+// ===== Trace Capture Interpreter =====
+
+class TraceCaptureInterpreter : public interpreter::Interpreter {
+private:
+  ExecutionTrace* trace;
+  uint64_t globalTimestamp = 0;
+  
+public:
+  TraceCaptureInterpreter(ExecutionTrace* t) : trace(t) {}
+  
+  void captureFinalState(const interpreter::ThreadgroupContext& tg);
+  
+protected:
+  // Override key interpreter methods to capture trace
+  
+  // Block management hooks
+  uint32_t getOrCreateBlock(const interpreter::BlockIdentity& identity, 
+                           interpreter::WaveId waveId,
+                           const std::set<interpreter::LaneId>& lanes,
+                           uint32_t parentBlockId) override;
+  
+  void onLaneEnterBlock(interpreter::WaveId waveId, 
+                       interpreter::LaneId laneId, 
+                       uint32_t blockId) override;
+  
+  void onLaneExitBlock(interpreter::WaveId waveId, 
+                      interpreter::LaneId laneId, 
+                      uint32_t blockId) override;
+  
+  // Control flow hooks
+  void onControlFlowDecision(const interpreter::Statement* stmt,
+                            interpreter::WaveId waveId,
+                            interpreter::LaneId laneId,
+                            const interpreter::Value& condition,
+                            bool taken,
+                            interpreter::LaneContext::ControlFlowPhase phase) override;
+  
+  // Wave operation hooks
+  void onWaveOpSyncPointCreated(interpreter::WaveId waveId,
+                               const interpreter::WaveOperationSyncPoint& syncPoint) override;
+  
+  void onLaneArriveAtWaveOp(interpreter::WaveId waveId,
+                           interpreter::LaneId laneId,
+                           const interpreter::WaveOperationSyncPoint& syncPoint,
+                           const interpreter::Value& input) override;
+  
+  void onWaveOpExecuted(const interpreter::WaveOperationSyncPoint& syncPoint,
+                       const std::map<interpreter::LaneId, interpreter::Value>& results) override;
+  
+  // Variable access hooks
+  void onVariableAccess(interpreter::WaveId waveId,
+                       interpreter::LaneId laneId,
+                       const std::string& varName,
+                       const interpreter::Value& value,
+                       bool isWrite) override;
+  
+  // Memory access hooks
+  void onMemoryAccess(interpreter::ThreadId tid,
+                     ExecutionTrace::MemoryAccess::MemoryType type,
+                     uint32_t address,
+                     const interpreter::Value& value,
+                     bool isWrite,
+                     const std::string& atomicOp = "") override;
+  
+  // Barrier hooks
+  void onBarrierArrive(uint32_t barrierId, interpreter::ThreadId tid) override;
+  void onBarrierRelease(uint32_t barrierId, interpreter::ThreadId tid) override;
+  
+private:
+  uint32_t getCurrentBlockId(interpreter::WaveId waveId, 
+                            interpreter::LaneId laneId);
+};
+
+// ===== Mutation Strategies =====
+
+class MutationStrategy {
+public:
+  virtual ~MutationStrategy() = default;
+  
+  // Check if this mutation can be applied given the trace
+  virtual bool canApply(const interpreter::Statement* stmt, 
+                       const ExecutionTrace& trace) const = 0;
+  
+  // Apply the mutation
+  virtual std::unique_ptr<interpreter::Statement> apply(
+    const interpreter::Statement* stmt, 
+    const ExecutionTrace& trace) const = 0;
+  
+  // Verify the mutation preserves semantics
+  virtual bool validateSemanticPreservation(
+    const interpreter::Statement* original,
+    const interpreter::Statement* mutated,
+    const ExecutionTrace& trace) const = 0;
+  
+  virtual std::string getName() const = 0;
+};
+
+// Control flow mutations
+class ExplicitLaneDivergenceMutation : public MutationStrategy {
+public:
+  bool canApply(const interpreter::Statement* stmt, 
+                const ExecutionTrace& trace) const override;
+  
+  std::unique_ptr<interpreter::Statement> apply(
+    const interpreter::Statement* stmt, 
+    const ExecutionTrace& trace) const override;
+  
+  bool validateSemanticPreservation(
+    const interpreter::Statement* original,
+    const interpreter::Statement* mutated,
+    const ExecutionTrace& trace) const override;
+  
+  std::string getName() const override { return "ExplicitLaneDivergence"; }
+  
+private:
+  std::unique_ptr<interpreter::Expression> createComplexCondition(
+    interpreter::WaveId waveId,
+    const std::set<interpreter::LaneId>& lanes,
+    const std::unique_ptr<interpreter::Expression>& originalCond) const;
+};
+
+class LoopUnrollingMutation : public MutationStrategy {
+public:
+  bool canApply(const interpreter::Statement* stmt, 
+                const ExecutionTrace& trace) const override;
+  
+  std::unique_ptr<interpreter::Statement> apply(
+    const interpreter::Statement* stmt, 
+    const ExecutionTrace& trace) const override;
+  
+  bool validateSemanticPreservation(
+    const interpreter::Statement* original,
+    const interpreter::Statement* mutated,
+    const ExecutionTrace& trace) const override;
+  
+  std::string getName() const override { return "LoopUnrolling"; }
+  
+private:
+  std::unique_ptr<interpreter::Statement> createGuardedIteration(
+    const interpreter::Statement* loopStmt,
+    uint32_t iteration,
+    const std::map<interpreter::WaveId, std::set<interpreter::LaneId>>& activeWaveLanes) const;
+};
+
+// Wave operation mutations
+class PrecomputeWaveResultsMutation : public MutationStrategy {
+public:
+  bool canApply(const interpreter::Statement* stmt, 
+                const ExecutionTrace& trace) const override;
+  
+  std::unique_ptr<interpreter::Statement> apply(
+    const interpreter::Statement* stmt, 
+    const ExecutionTrace& trace) const override;
+  
+  bool validateSemanticPreservation(
+    const interpreter::Statement* original,
+    const interpreter::Statement* mutated,
+    const ExecutionTrace& trace) const override;
+  
+  std::string getName() const override { return "PrecomputeWaveResults"; }
+};
+
+class RedundantWaveSyncMutation : public MutationStrategy {
+public:
+  bool canApply(const interpreter::Statement* stmt, 
+                const ExecutionTrace& trace) const override;
+  
+  std::unique_ptr<interpreter::Statement> apply(
+    const interpreter::Statement* stmt, 
+    const ExecutionTrace& trace) const override;
+  
+  bool validateSemanticPreservation(
+    const interpreter::Statement* original,
+    const interpreter::Statement* mutated,
+    const ExecutionTrace& trace) const override;
+  
+  std::string getName() const override { return "RedundantWaveSync"; }
+  
+private:
+  const interpreter::WaveActiveOp* extractWaveOp(const interpreter::Statement* stmt) const;
+};
+
+// Block structure mutations
+class ForceBlockBoundariesMutation : public MutationStrategy {
+public:
+  bool canApply(const interpreter::Statement* stmt, 
+                const ExecutionTrace& trace) const override;
+  
+  std::unique_ptr<interpreter::Statement> apply(
+    const interpreter::Statement* stmt, 
+    const ExecutionTrace& trace) const override;
+  
+  bool validateSemanticPreservation(
+    const interpreter::Statement* original,
+    const interpreter::Statement* mutated,
+    const ExecutionTrace& trace) const override;
+  
+  std::string getName() const override { return "ForceBlockBoundaries"; }
+  
+private:
+  std::unique_ptr<interpreter::Statement> createBlockMarker(
+    uint32_t blockId, 
+    interpreter::BlockType type) const;
+};
+
+// Memory access mutations
+class SerializeMemoryAccessesMutation : public MutationStrategy {
+public:
+  bool canApply(const interpreter::Statement* stmt, 
+                const ExecutionTrace& trace) const override;
+  
+  std::unique_ptr<interpreter::Statement> apply(
+    const interpreter::Statement* stmt, 
+    const ExecutionTrace& trace) const override;
+  
+  bool validateSemanticPreservation(
+    const interpreter::Statement* original,
+    const interpreter::Statement* mutated,
+    const ExecutionTrace& trace) const override;
+  
+  std::string getName() const override { return "SerializeMemoryAccesses"; }
+  
+private:
+  uint32_t findBlockContaining(const interpreter::Statement* stmt, 
+                               const ExecutionTrace& trace) const;
+  
+  std::unique_ptr<interpreter::Statement> createMemoryAccessStmt(
+    const ExecutionTrace::MemoryAccess* access) const;
+};
+
+// ===== Semantic Validator =====
+
+class SemanticValidator {
+public:
+  struct ValidationResult {
+    bool isEquivalent;
+    std::string divergenceReason;
+    std::vector<std::string> differences;
+  };
+  
+  ValidationResult validate(const ExecutionTrace& golden, 
+                          const ExecutionTrace& mutant);
+  
+private:
+  bool compareFinalStates(const ExecutionTrace::FinalState& golden,
+                         const ExecutionTrace::FinalState& mutant,
+                         ValidationResult& result);
+  
+  bool compareWaveOperations(const std::vector<ExecutionTrace::WaveOpRecord>& golden,
+                            const std::vector<ExecutionTrace::WaveOpRecord>& mutant,
+                            ValidationResult& result);
+  
+  bool compareMemoryState(const ExecutionTrace& golden,
+                         const ExecutionTrace& mutant,
+                         ValidationResult& result);
+  
+  bool verifyControlFlowEquivalence(const ExecutionTrace& golden,
+                                   const ExecutionTrace& mutant,
+                                   ValidationResult& result);
+};
+
+// ===== Bug Reporting =====
+
+class BugReporter {
+public:
+  struct BugReport {
+    std::string id;
+    std::chrono::system_clock::time_point timestamp;
+    
+    // Program information
+    std::string originalProgram;
+    std::string mutantProgram;
+    std::string mutation;
+    
+    // Trace comparison
+    struct TraceDivergence {
+      enum DivergenceType {
+        BlockStructure,
+        WaveOperation,
+        ControlFlow,
+        Synchronization,
+        Memory
+      };
+      
+      DivergenceType type;
+      uint64_t divergencePoint;
+      std::string description;
+    };
+    TraceDivergence traceDivergence;
+    
+    SemanticValidator::ValidationResult validation;
+    
+    // Classification
+    enum BugType {
+      WaveOpInconsistency,
+      ReconvergenceError,
+      DeadlockOrRace,
+      MemoryCorruption,
+      ControlFlowError
+    };
+    BugType bugType;
+    
+    enum Severity {
+      Critical,
+      High,
+      Medium,
+      Low
+    };
+    Severity severity;
+    
+    std::string minimalReproducer;
+  };
+  
+  void reportBug(const interpreter::CompoundStmt* original,
+                const interpreter::CompoundStmt* mutant,
+                const ExecutionTrace& originalTrace,
+                const ExecutionTrace& mutantTrace,
+                const SemanticValidator::ValidationResult& validation);
+  
+  void reportCrash(const interpreter::CompoundStmt* original,
+                  const interpreter::CompoundStmt* mutant,
+                  const std::exception& e);
+  
+private:
+  BugReport::TraceDivergence findTraceDivergence(const ExecutionTrace& golden,
+                                                 const ExecutionTrace& mutant);
+  
+  BugReport::BugType classifyBug(const BugReport::TraceDivergence& divergence);
+  
+  BugReport::Severity assessSeverity(BugReport::BugType type,
+                                    const SemanticValidator::ValidationResult& validation);
+  
+  std::string generateBugId();
+  
+  void saveBugReport(const BugReport& report);
+  
+  void logBug(const BugReport& report);
+};
+
+// ===== Main Fuzzing Orchestrator =====
+
+struct FuzzingConfig {
+  uint32_t threadgroupSize = 32;
+  uint32_t waveSize = 32;
+  uint32_t maxMutants = 1000;
+  uint32_t maxDepth = 5;
+  bool enableLogging = true;
+  std::string outputDir = "./fuzzing_results";
+};
+
+class TraceGuidedFuzzer {
+private:
+  std::vector<std::unique_ptr<MutationStrategy>> mutationStrategies;
+  std::unique_ptr<SemanticValidator> validator;
+  std::unique_ptr<BugReporter> bugReporter;
+  
+  // Coverage tracking
+  std::set<uint64_t> seenBlockPatterns;
+  std::set<uint64_t> seenWavePatterns;
+  std::set<uint64_t> seenSyncPatterns;
+  
+  // Bug tracking
+  std::vector<BugReporter::BugReport> bugs;
+  
+public:
+  TraceGuidedFuzzer();
+  
+  void fuzzProgram(interpreter::CompoundStmt* seedProgram, 
+                  const FuzzingConfig& config);
+  
+  // For libFuzzer integration
+  std::unique_ptr<interpreter::CompoundStmt> mutateAST(
+    interpreter::CompoundStmt* program, 
+    unsigned int seed);
+  
+private:
+  std::vector<std::unique_ptr<interpreter::CompoundStmt>> generateMutants(
+    interpreter::CompoundStmt* program,
+    MutationStrategy* strategy,
+    const ExecutionTrace& trace);
+  
+  bool hasNewCoverage(const ExecutionTrace& trace);
+  
+  uint64_t hashBlockPattern(const ExecutionTrace::BlockExecutionRecord& block);
+  uint64_t hashWavePattern(const ExecutionTrace::WaveOpRecord& waveOp);
+  uint64_t hashSyncPattern(const ExecutionTrace::BarrierRecord& barrier);
+  
+  void logTrace(const std::string& message, const ExecutionTrace& trace);
+  void logMutation(const std::string& message, const std::string& strategy);
+  void logSummary(size_t testedMutants, size_t bugsFound);
+};
+
+// ===== LibFuzzer Integration =====
+
+// Global fuzzer instance
+extern std::unique_ptr<TraceGuidedFuzzer> g_fuzzer;
+
+// Seed corpus management
+void loadSeedCorpus(TraceGuidedFuzzer* fuzzer);
+
+// AST serialization for libFuzzer
+bool deserializeAST(const uint8_t* data, size_t size, 
+                   std::unique_ptr<interpreter::CompoundStmt>& program);
+
+size_t serializeAST(const interpreter::CompoundStmt* program, 
+                   uint8_t* data, size_t maxSize);
+
+size_t hashAST(const interpreter::CompoundStmt* program);
+
+} // namespace fuzzer
+} // namespace minihlsl
+
+// LibFuzzer entry points
+extern "C" {
+  int LLVMFuzzerInitialize(int* argc, char*** argv);
+  int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size);
+  size_t LLVMFuzzerCustomMutator(uint8_t* data, size_t size, 
+                                size_t maxSize, unsigned int seed);
+  size_t LLVMFuzzerCustomCrossOver(const uint8_t* data1, size_t size1,
+                                  const uint8_t* data2, size_t size2,
+                                  uint8_t* out, size_t maxOutSize,
+                                  unsigned int seed);
+}

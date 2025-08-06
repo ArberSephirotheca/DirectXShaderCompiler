@@ -2,7 +2,6 @@
 find_package(Threads REQUIRED)
 
 add_executable(dxc-fuzzer
-  HLSLFuzzer.cpp
   MiniHLSLValidator.cpp
 )
 target_link_libraries(dxc-fuzzer
@@ -36,27 +35,6 @@ target_link_libraries(test_runner
 # Enable testing
 enable_testing()
 
-# MiniHLSL-specific fuzzer - generates only valid MiniHLSL mutations
-add_executable(minihlsl-fuzzer
-  MiniHLSLFuzzer.cpp
-  MiniHLSLValidator.cpp
-)
-target_link_libraries(minihlsl-fuzzer
-  dxcompiler
-  clangAST
-  clangBasic
-  clangFrontend
-  clangLex
-  clangParse
-  clangSema
-  LLVMSupport
-  LLVMOption
-  LLVMCore
-)
-set_target_properties(minihlsl-fuzzer PROPERTIES
-  COMPILE_FLAGS "-fsanitize=address,fuzzer"
-  LINK_FLAGS    "-fsanitize=address,fuzzer"
-)
 
 # MiniHLSL Interpreter - executes MiniHLSL programs and verifies order independence
 add_executable(minihlsl-interpreter
@@ -119,14 +97,16 @@ add_test(NAME MiniHLSLValidatorTest COMMAND test_runner test_cases)
 # Add test for the interpreter
 add_test(NAME MiniHLSLInterpreterTest COMMAND minihlsl-interpreter)
 
-# Test HLSL AST to Interpreter conversion
-add_executable(test-hlsl-conversion
-  test_hlsl_conversion.cpp
-  MiniHLSLValidator.cpp
+# MiniHLSL Interpreter Fuzzer - trace-guided fuzzing for interpreter
+add_executable(minihlsl-fuzzer
   MiniHLSLInterpreter.cpp
+  MiniHLSLInterpreterFuzzer.cpp
+  MiniHLSLInterpreterFuzzerMutations.cpp
 )
-target_link_libraries(test-hlsl-conversion
+target_link_libraries(minihlsl-fuzzer
+  # Use pthread for std::thread and std::mutex
   Threads::Threads
+  # Clang/LLVM libraries needed for AST conversion
   dxcompiler
   clangAST
   clangBasic
@@ -137,8 +117,14 @@ target_link_libraries(test-hlsl-conversion
   LLVMSupport
   LLVMOption
   LLVMCore
+  # LibFuzzer for fuzzing runtime
+  LLVMFuzzer
 )
-set_target_properties(test-hlsl-conversion PROPERTIES
+
+# Set C++17 standard and fuzzing flags
+set_target_properties(minihlsl-fuzzer PROPERTIES
   CXX_STANDARD 17
   CXX_STANDARD_REQUIRED ON
+  COMPILE_FLAGS "-fsanitize=address,fuzzer -fno-omit-frame-pointer"
+  LINK_FLAGS    "-fsanitize=address,fuzzer"
 )

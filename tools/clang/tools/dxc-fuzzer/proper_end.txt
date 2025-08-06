@@ -1,5 +1,0 @@
-// Note: All old WaveContext dynamic block implementations have been moved to ThreadgroupContext
-// to support the correct architecture where dynamic blocks are global across all waves.
-
-} // namespace interpreter
-} // namespace minihlsl
