@@ -451,9 +451,9 @@ struct WaveOperationSyncPoint {
     }
   }
 
-  Value retrieveResult(LaneId lane) {
+  Result<Value, ExecutionError> retrieveResult(LaneId lane) {
     if (state != SyncPointState::Executed) {
-      throw std::runtime_error("Sync point not in Executed state");
+        return Err<Value, ExecutionError>(ExecutionError::InvalidState);
     }
     auto it = pendingResults.find(lane);
     if (it != pendingResults.end()) {
@@ -463,9 +463,9 @@ struct WaveOperationSyncPoint {
       if (pendingResults.empty()) {
         state = SyncPointState::Consumed;
       }
-      return result;
+      return Ok<Value, ExecutionError>(result);
     }
-    throw std::runtime_error("No result for lane");
+    return Err<Value, ExecutionError>(ExecutionError::InvalidState);
   }
 
   bool shouldExecute(const struct ThreadgroupContext &tg,

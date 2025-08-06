@@ -1219,9 +1219,8 @@ Result<Value, ExecutionError> WaveActiveOp::evaluate_result(LaneContext &lane, W
     if (syncPointIt != wave.activeSyncPoints.end()) {
       auto &syncPoint = syncPointIt->second;
       if (syncPoint.getPhase() == SyncPointState::Executed) {
-        try {
           // Use state machine method to retrieve result
-          Value result = syncPoint.retrieveResult(lane.laneId);
+          Value result = TRY_RESULT(syncPoint.retrieveResult(lane.laneId), Value, ExecutionError);
           std::cout << "DEBUG: WAVE_OP: Lane " << lane.laneId
                     << " retrieving stored wave result: " << result.toString()
                     << " (phase: "
@@ -1231,10 +1230,6 @@ Result<Value, ExecutionError> WaveActiveOp::evaluate_result(LaneContext &lane, W
           // Clear the resuming flag - we successfully retrieved the result
           const_cast<LaneContext &>(lane).isResumingFromWaveOp = false;
           return Ok<Value, ExecutionError>(std::move(result));
-        } catch (const std::runtime_error &e) {
-          std::cout << "DEBUG: WAVE_OP: Lane " << lane.laneId
-                    << " failed to retrieve result: " << e.what() << std::endl;
-        }
       }
     }
 
@@ -1252,20 +1247,14 @@ Result<Value, ExecutionError> WaveActiveOp::evaluate_result(LaneContext &lane, W
   if (syncPointIt != wave.activeSyncPoints.end()) {
     auto &syncPoint = syncPointIt->second;
     if (syncPoint.getPhase() == SyncPointState::Executed) {
-      try {
         // Use state machine method to retrieve result
-        Value result = syncPoint.retrieveResult(lane.laneId);
+        Value result = TRY_RESULT(syncPoint.retrieveResult(lane.laneId), Value, ExecutionError);
         INTERPRETER_DEBUG_LOG(
             "Lane " << lane.laneId
                     << " retrieving stored wave result: " << result.toString()
                     << " (phase: " << (int)syncPoint.getPhase() << ")\n");
 
         return Ok<Value, ExecutionError>(std::move(result));
-      } catch (const std::runtime_error &e) {
-        INTERPRETER_DEBUG_LOG("Lane " << lane.laneId
-                                      << " failed to retrieve result: "
-                                      << e.what() << "\n");
-      }
     }
   }
 
@@ -2955,7 +2944,6 @@ ExecutionResult MiniHLSLInterpreter::executeWithOrdering(
   // Create threadgroup context
   ThreadgroupContext tgContext(program.getTotalThreads(), waveSize);
 
-  try {
     uint32_t orderingIndex = 0;
     uint32_t maxIterations = program.getTotalThreads() *
                              program.statements.size() * 10; // Safety limit
@@ -3032,10 +3020,6 @@ ExecutionResult MiniHLSLInterpreter::executeWithOrdering(
             tgContext.waves[waveId]->lanes[laneId]->returnValue);
       }
     }
-
-  } catch (const std::exception &e) {
-    result.errorMessage = std::string("Runtime error: ") + e.what();
-  }
 
   // Collect final state
   result.sharedMemoryState = tgContext.sharedMemory->getSnapshot();
