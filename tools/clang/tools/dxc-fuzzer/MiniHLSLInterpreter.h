@@ -1445,6 +1445,16 @@ class ForStmt : public Statement {
                         int ourStackIndex, uint32_t headerBlockId);
   void evaluateConditionPhase(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
                              int ourStackIndex, uint32_t headerBlockId);
+  
+  // Result-based versions of helper methods
+  Result<Unit, ExecutionError> executeBodyStatements_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                                   int ourStackIndex, uint32_t headerBlockId);
+  Result<Unit, ExecutionError> evaluateInitPhase_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
+                               int ourStackIndex, uint32_t headerBlockId);
+  Result<Unit, ExecutionError> evaluateConditionPhase_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
+                                    int ourStackIndex, uint32_t headerBlockId);
+  Result<Unit, ExecutionError> evaluateIncrementPhase_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                             int ourStackIndex);
 
 public:
   ForStmt(const std::string &var, std::unique_ptr<Expression> init,
@@ -1484,6 +1494,12 @@ class WhileStmt : public Statement {
                            int ourStackIndex, uint32_t headerBlockId);
   void handleContinueException(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
                               int ourStackIndex, uint32_t headerBlockId);
+  
+  // Result-based versions of helper methods
+  Result<Unit, ExecutionError> evaluateConditionPhase_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
+                                      int ourStackIndex, uint32_t headerBlockId);
+  Result<Unit, ExecutionError> executeBodyStatements_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
+                                     int ourStackIndex, uint32_t headerBlockId);
 
 public:
   WhileStmt(std::unique_ptr<Expression> cond,
@@ -1522,6 +1538,12 @@ class DoWhileStmt : public Statement {
                            int ourStackIndex, uint32_t headerBlockId, uint32_t mergeBlockId);
   void handleContinueException(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
                               int ourStackIndex, uint32_t headerBlockId);
+  
+  // Result-based versions of helper methods
+  Result<Unit, ExecutionError> executeBodyStatements_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                                int ourStackIndex, uint32_t headerBlockId);
+  Result<Unit, ExecutionError> evaluateConditionPhase_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
+                                 int ourStackIndex, uint32_t headerBlockId);
 
 public:
   DoWhileStmt(std::vector<std::unique_ptr<Statement>> body,
