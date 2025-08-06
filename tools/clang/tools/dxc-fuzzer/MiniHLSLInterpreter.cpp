@@ -388,8 +388,10 @@ Value GlobalBuffer::atomicAnd(uint32_t index, const Value &value) {
     return Value(0);
 
   Value oldValue = data_[index];
-  if (std::holds_alternative<int>(oldValue.data) && std::holds_alternative<int>(value.data)) {
-    data_[index] = Value(std::get<int>(oldValue.data) & std::get<int>(value.data));
+  if (std::holds_alternative<int>(oldValue.data) &&
+      std::holds_alternative<int>(value.data)) {
+    data_[index] =
+        Value(std::get<int>(oldValue.data) & std::get<int>(value.data));
   }
   return oldValue;
 }
@@ -399,8 +401,10 @@ Value GlobalBuffer::atomicOr(uint32_t index, const Value &value) {
     return Value(0);
 
   Value oldValue = data_[index];
-  if (std::holds_alternative<int>(oldValue.data) && std::holds_alternative<int>(value.data)) {
-    data_[index] = Value(std::get<int>(oldValue.data) | std::get<int>(value.data));
+  if (std::holds_alternative<int>(oldValue.data) &&
+      std::holds_alternative<int>(value.data)) {
+    data_[index] =
+        Value(std::get<int>(oldValue.data) | std::get<int>(value.data));
   }
   return oldValue;
 }
@@ -410,8 +414,10 @@ Value GlobalBuffer::atomicXor(uint32_t index, const Value &value) {
     return Value(0);
 
   Value oldValue = data_[index];
-  if (std::holds_alternative<int>(oldValue.data) && std::holds_alternative<int>(value.data)) {
-    data_[index] = Value(std::get<int>(oldValue.data) ^ std::get<int>(value.data));
+  if (std::holds_alternative<int>(oldValue.data) &&
+      std::holds_alternative<int>(value.data)) {
+    data_[index] =
+        Value(std::get<int>(oldValue.data) ^ std::get<int>(value.data));
   }
   return oldValue;
 }
@@ -813,7 +819,7 @@ std::vector<ThreadId> ThreadgroupContext::getReadyThreads() const {
 // WaveOperationSyncPoint method implementation
 bool WaveOperationSyncPoint::isAllParticipantsKnown(
     const ThreadgroupContext &tg, uint32_t waveId) const {
-  const auto* block = tg.getBlock(blockId);
+  const auto *block = tg.getBlock(blockId);
   if (block) {
     // Check if all unknown lanes are resolved using registry
     auto unknownLanes = tg.membershipRegistry.getUnknownLanes(waveId, blockId);
@@ -935,13 +941,9 @@ ThreadOrdering ThreadOrdering::waveInterleaved(uint32_t threadCount,
 
 // Expression implementations
 
-
-
-
 BinaryOpExpr::BinaryOpExpr(std::unique_ptr<Expression> left,
                            std::unique_ptr<Expression> right, OpType op)
     : left_(std::move(left)), right_(std::move(right)), op_(op) {}
-
 
 bool BinaryOpExpr::isDeterministic() const {
   return left_->isDeterministic() && right_->isDeterministic();
@@ -957,37 +959,42 @@ std::string BinaryOpExpr::toString() const {
 UnaryOpExpr::UnaryOpExpr(std::unique_ptr<Expression> expr, OpType op)
     : expr_(std::move(expr)), op_(op) {}
 
-
 bool UnaryOpExpr::isDeterministic() const { return expr_->isDeterministic(); }
 
 // Pure Result-based implementations for key expression types
 
-Result<Value, ExecutionError> VariableExpr::evaluate_result(LaneContext &lane, WaveContext &,
-                                                           ThreadgroupContext &) const {
-  std::cout << "DEBUG: VariableExpr - Lane " << lane.laneId << " evaluating variable '" << name_ << "' (Result-based)" << std::endl;
-  
+Result<Value, ExecutionError>
+VariableExpr::evaluate_result(LaneContext &lane, WaveContext &,
+                              ThreadgroupContext &) const {
+  std::cout << "DEBUG: VariableExpr - Lane " << lane.laneId
+            << " evaluating variable '" << name_ << "' (Result-based)"
+            << std::endl;
+
   auto it = lane.variables.find(name_);
   if (it == lane.variables.end()) {
-    std::cout << "DEBUG: VariableExpr - Variable '" << name_ << "' not found" << std::endl;
+    std::cout << "DEBUG: VariableExpr - Variable '" << name_ << "' not found"
+              << std::endl;
     return Err<Value, ExecutionError>(ExecutionError::InvalidState);
   }
-  
-  std::cout << "DEBUG: VariableExpr - Variable '" << name_ << "' = " << it->second.toString() 
-            << " (lane " << lane.laneId << " at " << &lane << ")" << std::endl;
+
+  std::cout << "DEBUG: VariableExpr - Variable '" << name_
+            << "' = " << it->second.toString() << " (lane " << lane.laneId
+            << " at " << &lane << ")" << std::endl;
   return Ok<Value, ExecutionError>(it->second);
 }
 
-Result<Value, ExecutionError> BinaryOpExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
-                                                           ThreadgroupContext &tg) const {
-  
+Result<Value, ExecutionError>
+BinaryOpExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
+                              ThreadgroupContext &tg) const {
+
   // Evaluate left operand
   auto leftResult = left_->evaluate_result(lane, wave, tg);
   if (leftResult.is_err()) {
     return leftResult;
   }
   Value leftVal = leftResult.unwrap();
-  
-  // Evaluate right operand  
+
+  // Evaluate right operand
   auto rightResult = right_->evaluate_result(lane, wave, tg);
   if (rightResult.is_err()) {
     return rightResult;
@@ -1028,9 +1035,10 @@ Result<Value, ExecutionError> BinaryOpExpr::evaluate_result(LaneContext &lane, W
   }
 }
 
-Result<Value, ExecutionError> UnaryOpExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
-                                                          ThreadgroupContext &tg) const {
-  
+Result<Value, ExecutionError>
+UnaryOpExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
+                             ThreadgroupContext &tg) const {
+
   auto exprResult = expr_->evaluate_result(lane, wave, tg);
   if (exprResult.is_err()) {
     return exprResult;
@@ -1115,29 +1123,32 @@ std::string UnaryOpExpr::toString() const {
   return "?UnaryOp?";
 }
 
-
-Result<Value, ExecutionError> LaneIndexExpr::evaluate_result(LaneContext &lane, WaveContext &,
-                                                            ThreadgroupContext &) const {
+Result<Value, ExecutionError>
+LaneIndexExpr::evaluate_result(LaneContext &lane, WaveContext &,
+                               ThreadgroupContext &) const {
   return Ok<Value, ExecutionError>(Value(static_cast<int>(lane.laneId)));
 }
 
-Result<Value, ExecutionError> WaveIndexExpr::evaluate_result(LaneContext &, WaveContext &wave,
-                                                            ThreadgroupContext &) const {
+Result<Value, ExecutionError>
+WaveIndexExpr::evaluate_result(LaneContext &, WaveContext &wave,
+                               ThreadgroupContext &) const {
   return Ok<Value, ExecutionError>(Value(static_cast<int>(wave.waveId)));
 }
 
-Result<Value, ExecutionError> ThreadIndexExpr::evaluate_result(LaneContext &lane, WaveContext &,
-                                                              ThreadgroupContext &) const {
+Result<Value, ExecutionError>
+ThreadIndexExpr::evaluate_result(LaneContext &lane, WaveContext &,
+                                 ThreadgroupContext &) const {
   return Ok<Value, ExecutionError>(Value(static_cast<int>(lane.laneId)));
 }
 
-Result<Value, ExecutionError> ConditionalExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
-                                                              ThreadgroupContext &tg) const {
+Result<Value, ExecutionError>
+ConditionalExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
+                                 ThreadgroupContext &tg) const {
   auto condResult = condition_->evaluate_result(lane, wave, tg);
   if (condResult.is_err()) {
     return condResult;
   }
-  
+
   if (condResult.unwrap().asInt()) {
     return trueExpr_->evaluate_result(lane, wave, tg);
   } else {
@@ -1145,14 +1156,16 @@ Result<Value, ExecutionError> ConditionalExpr::evaluate_result(LaneContext &lane
   }
 }
 
-Result<Value, ExecutionError> WaveGetLaneCountExpr::evaluate_result(LaneContext &, WaveContext &wave,
-                                                                   ThreadgroupContext &) const {
+Result<Value, ExecutionError>
+WaveGetLaneCountExpr::evaluate_result(LaneContext &, WaveContext &wave,
+                                      ThreadgroupContext &) const {
   return Ok<Value, ExecutionError>(Value(static_cast<int>(wave.waveSize)));
 }
 
-Result<Value, ExecutionError> WaveIsFirstLaneExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
-                                                                  ThreadgroupContext &tg) const {
-    if (!lane.isActive)
+Result<Value, ExecutionError>
+WaveIsFirstLaneExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
+                                     ThreadgroupContext &tg) const {
+  if (!lane.isActive)
     return Err<Value, ExecutionError>(ExecutionError::InvalidState);
 
   // Find the first active lane in the wave
@@ -1162,20 +1175,21 @@ Result<Value, ExecutionError> WaveIsFirstLaneExpr::evaluate_result(LaneContext &
     }
   }
 
-return Err<Value, ExecutionError>(ExecutionError::InvalidState);
+  return Err<Value, ExecutionError>(ExecutionError::InvalidState);
 }
 
-
-
-Result<Value, ExecutionError> SharedReadExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
-                                                             ThreadgroupContext &tg) const {
+Result<Value, ExecutionError>
+SharedReadExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
+                                ThreadgroupContext &tg) const {
   ThreadId tid = tg.getGlobalThreadId(wave.waveId, lane.laneId);
   return Ok<Value, ExecutionError>(tg.sharedMemory->read(addr_, tid));
 }
 
-Result<Value, ExecutionError> BufferAccessExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
-                                                               ThreadgroupContext &tg) const {
-  Value indexValue = TRY_RESULT(indexExpr_->evaluate_result(lane, wave, tg), Value, ExecutionError);
+Result<Value, ExecutionError>
+BufferAccessExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
+                                  ThreadgroupContext &tg) const {
+  Value indexValue = TRY_RESULT(indexExpr_->evaluate_result(lane, wave, tg),
+                                Value, ExecutionError);
   uint32_t index = indexValue.asInt();
 
   // Look up the global buffer
@@ -1191,9 +1205,9 @@ Result<Value, ExecutionError> BufferAccessExpr::evaluate_result(LaneContext &lan
 WaveActiveOp::WaveActiveOp(std::unique_ptr<Expression> expr, OpType op)
     : expr_(std::move(expr)), op_(op) {}
 
-
-Result<Value, ExecutionError> WaveActiveOp::evaluate_result(LaneContext &lane, WaveContext &wave,
-                                                           ThreadgroupContext &tg) const {
+Result<Value, ExecutionError>
+WaveActiveOp::evaluate_result(LaneContext &lane, WaveContext &wave,
+                              ThreadgroupContext &tg) const {
   // Wave operations require all active lanes to participate
   if (!lane.isActive) {
     return Err<Value, ExecutionError>(ExecutionError::InvalidState);
@@ -1209,7 +1223,8 @@ Result<Value, ExecutionError> WaveActiveOp::evaluate_result(LaneContext &lane, W
             << ", instruction key=(" << static_cast<const void *>(this) << ","
             << currentBlockId << ")" << std::endl;
 
-  // CRITICAL: If lane is resuming from wave operation, check for stored results first
+  // CRITICAL: If lane is resuming from wave operation, check for stored results
+  // first
   if (lane.isResumingFromWaveOp) {
     std::cout << "DEBUG: WAVE_OP: Lane " << lane.laneId
               << " is resuming from wave operation, checking for stored result"
@@ -1219,17 +1234,17 @@ Result<Value, ExecutionError> WaveActiveOp::evaluate_result(LaneContext &lane, W
     if (syncPointIt != wave.activeSyncPoints.end()) {
       auto &syncPoint = syncPointIt->second;
       if (syncPoint.getPhase() == SyncPointState::Executed) {
-          // Use state machine method to retrieve result
-          Value result = TRY_RESULT(syncPoint.retrieveResult(lane.laneId), Value, ExecutionError);
-          std::cout << "DEBUG: WAVE_OP: Lane " << lane.laneId
-                    << " retrieving stored wave result: " << result.toString()
-                    << " (phase: "
-                    << syncPointStateToString(syncPoint.getPhase()) << ")"
-                    << std::endl;
+        // Use state machine method to retrieve result
+        Value result = TRY_RESULT(syncPoint.retrieveResult(lane.laneId), Value,
+                                  ExecutionError);
+        std::cout << "DEBUG: WAVE_OP: Lane " << lane.laneId
+                  << " retrieving stored wave result: " << result.toString()
+                  << " (phase: " << syncPointStateToString(syncPoint.getPhase())
+                  << ")" << std::endl;
 
-          // Clear the resuming flag - we successfully retrieved the result
-          const_cast<LaneContext &>(lane).isResumingFromWaveOp = false;
-          return Ok<Value, ExecutionError>(std::move(result));
+        // Clear the resuming flag - we successfully retrieved the result
+        const_cast<LaneContext &>(lane).isResumingFromWaveOp = false;
+        return Ok<Value, ExecutionError>(std::move(result));
       }
     }
 
@@ -1247,14 +1262,15 @@ Result<Value, ExecutionError> WaveActiveOp::evaluate_result(LaneContext &lane, W
   if (syncPointIt != wave.activeSyncPoints.end()) {
     auto &syncPoint = syncPointIt->second;
     if (syncPoint.getPhase() == SyncPointState::Executed) {
-        // Use state machine method to retrieve result
-        Value result = TRY_RESULT(syncPoint.retrieveResult(lane.laneId), Value, ExecutionError);
-        INTERPRETER_DEBUG_LOG(
-            "Lane " << lane.laneId
-                    << " retrieving stored wave result: " << result.toString()
-                    << " (phase: " << (int)syncPoint.getPhase() << ")\n");
+      // Use state machine method to retrieve result
+      Value result = TRY_RESULT(syncPoint.retrieveResult(lane.laneId), Value,
+                                ExecutionError);
+      INTERPRETER_DEBUG_LOG(
+          "Lane " << lane.laneId
+                  << " retrieving stored wave result: " << result.toString()
+                  << " (phase: " << (int)syncPoint.getPhase() << ")\n");
 
-        return Ok<Value, ExecutionError>(std::move(result));
+      return Ok<Value, ExecutionError>(std::move(result));
     }
   }
 
@@ -1262,7 +1278,7 @@ Result<Value, ExecutionError> WaveActiveOp::evaluate_result(LaneContext &lane, W
   tg.markLaneWaitingAtWaveInstruction(wave.waveId, lane.laneId,
                                       static_cast<const void *>(this),
                                       "WaveActiveOp");
-  
+
   // No stored result - need to wait
   if (!lane.isResumingFromWaveOp) {
     // Store the compound key in the sync point for proper tracking
@@ -1415,25 +1431,26 @@ std::string WaveActiveOp::toString() const {
   return std::string(opNames[op_]) + "(" + expr_->toString() + ")";
 }
 
-
 // Statement implementations
 VarDeclStmt::VarDeclStmt(const std::string &name,
                          std::unique_ptr<Expression> init)
     : name_(name), init_(std::move(init)) {}
 
-Result<Unit, ExecutionError> VarDeclStmt::execute_result(LaneContext &lane, WaveContext &wave,
-                                                       ThreadgroupContext &tg) {
+Result<Unit, ExecutionError>
+VarDeclStmt::execute_result(LaneContext &lane, WaveContext &wave,
+                            ThreadgroupContext &tg) {
   if (!lane.isActive)
     return Ok<Unit, ExecutionError>(Unit{});
-  
+
   // Pure Result-based implementation - no exceptions!
   Value initVal;
   if (init_) {
-    initVal = TRY_RESULT(init_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+    initVal = TRY_RESULT(init_->evaluate_result(lane, wave, tg), Unit,
+                         ExecutionError);
   } else {
     initVal = Value(0);
   }
-  
+
   lane.variables[name_] = initVal;
   return Ok<Unit, ExecutionError>(Unit{});
 }
@@ -1446,19 +1463,19 @@ AssignStmt::AssignStmt(const std::string &name,
                        std::unique_ptr<Expression> expr)
     : name_(name), expr_(std::move(expr)) {}
 
-
-Result<Unit, ExecutionError> AssignStmt::execute_result(LaneContext &lane, WaveContext &wave,
-                                                      ThreadgroupContext &tg) {
+Result<Unit, ExecutionError>
+AssignStmt::execute_result(LaneContext &lane, WaveContext &wave,
+                           ThreadgroupContext &tg) {
   if (!lane.isActive)
     return Ok<Unit, ExecutionError>(Unit{});
-  
-  
+
   // Pure Result-based implementation - no exceptions!
-  Value val = TRY_RESULT(expr_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
-  
-  std::cout << "DEBUG: AssignStmt - Lane " << lane.laneId 
-            << " assigned value " << val.toString() << " to variable '" << name_ << "'" << std::endl;
-  
+  Value val =
+      TRY_RESULT(expr_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+
+  std::cout << "DEBUG: AssignStmt - Lane " << lane.laneId << " assigned value "
+            << val.toString() << " to variable '" << name_ << "'" << std::endl;
+
   lane.variables[name_] = val;
   return Ok<Unit, ExecutionError>(Unit{});
 }
@@ -1473,11 +1490,11 @@ IfStmt::IfStmt(std::unique_ptr<Expression> cond,
     : condition_(std::move(cond)), thenBlock_(std::move(thenBlock)),
       elseBlock_(std::move(elseBlock)) {}
 
-
-void IfStmt::performReconvergence(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                          int ourStackIndex, bool hasElse) {
+void IfStmt::performReconvergence(LaneContext &lane, WaveContext &wave,
+                                  ThreadgroupContext &tg, int ourStackIndex,
+                                  bool hasElse) {
   auto &ourEntry = lane.executionStack[ourStackIndex];
-  
+
   uint32_t currentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
   uint32_t laneSpecificMergeBlockId = ourEntry.ifMergeBlockId;
   std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
@@ -1492,8 +1509,9 @@ void IfStmt::performReconvergence(LaneContext &lane, WaveContext &wave, Threadgr
             << " merge stack before reconvergence (size="
             << currentMergeStack.size() << "):" << std::endl;
   for (size_t i = 0; i < currentMergeStack.size(); i++) {
-    std::cout << "  Stack[" << i << "]: sourceStatement="
-              << currentMergeStack[i].sourceStatement << std::endl;
+    std::cout << "  Stack[" << i
+              << "]: sourceStatement=" << currentMergeStack[i].sourceStatement
+              << std::endl;
   }
 
   // Use stored merge block ID - don't recreate blocks during reconvergence
@@ -1519,8 +1537,8 @@ void IfStmt::performReconvergence(LaneContext &lane, WaveContext &wave, Threadgr
   // laneSpecificMergeBlockId);
 
   // Move lane to merge block as participating (reconvergence)
-  tg.moveThreadFromUnknownToParticipating(laneSpecificMergeBlockId,
-                                          wave.waveId, lane.laneId);
+  tg.moveThreadFromUnknownToParticipating(laneSpecificMergeBlockId, wave.waveId,
+                                          lane.laneId);
 
   // Clean up then/else blocks - lane will never return to them
   bool setupComplete =
@@ -1547,8 +1565,9 @@ void IfStmt::performReconvergence(LaneContext &lane, WaveContext &wave, Threadgr
             << " reconvergence complete" << std::endl;
 }
 
-Result<Unit, ExecutionError> IfStmt::execute_result(LaneContext &lane, WaveContext &wave,
-                                                  ThreadgroupContext &tg) {
+Result<Unit, ExecutionError> IfStmt::execute_result(LaneContext &lane,
+                                                    WaveContext &wave,
+                                                    ThreadgroupContext &tg) {
   if (!lane.isActive)
     return Ok<Unit, ExecutionError>(Unit{});
 
@@ -1558,8 +1577,8 @@ Result<Unit, ExecutionError> IfStmt::execute_result(LaneContext &lane, WaveConte
   bool isResuming = (ourStackIndex >= 0);
 
   std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " "
-            << (isResuming ? "resuming" : "starting") << " Result-based if statement"
-            << std::endl;
+            << (isResuming ? "resuming" : "starting")
+            << " Result-based if statement" << std::endl;
 
   if (!isResuming) {
     // Starting fresh - push initial state for condition evaluation
@@ -1578,7 +1597,8 @@ Result<Unit, ExecutionError> IfStmt::execute_result(LaneContext &lane, WaveConte
               << ", this=" << this << ")" << std::endl;
   }
 
-  // Don't hold reference to vector element - it can be invalidated during nested execution
+  // Don't hold reference to vector element - it can be invalidated during
+  // nested execution
   bool hasElse = !elseBlock_.empty();
   uint32_t parentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
   auto &ourEntry = lane.executionStack[ourStackIndex];
@@ -1589,17 +1609,20 @@ Result<Unit, ExecutionError> IfStmt::execute_result(LaneContext &lane, WaveConte
             << " (Result-based, stack depth=" << lane.executionStack.size()
             << ", our index=" << ourStackIndex << ", this=" << this << ")"
             << std::endl;
-  
+
   switch (ourEntry.phase) {
   case LaneContext::ControlFlowPhase::EvaluatingCondition: {
     // Evaluate condition and setup blocks using Result-based helper method
-    TRY_RESULT(evaluateConditionAndSetup_result(lane, wave, tg, ourStackIndex, parentBlockId, hasElse), Unit, ExecutionError);
-    
+    TRY_RESULT(evaluateConditionAndSetup_result(lane, wave, tg, ourStackIndex,
+                                                parentBlockId, hasElse),
+               Unit, ExecutionError);
+
     // Set state to WaitingForResume to prevent currentStatement increment
     if (!isProtectedState(lane.state)) {
       lane.state = ThreadState::WaitingForResume;
     }
-    return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement increment, will resume later
+    return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement
+                                             // increment, will resume later
   }
 
   case LaneContext::ControlFlowPhase::ExecutingBody: {
@@ -1607,17 +1630,20 @@ Result<Unit, ExecutionError> IfStmt::execute_result(LaneContext &lane, WaveConte
     // Check which branch to execute based on saved condition result
     if (ourEntry.inThenBranch) {
       // Execute then branch using Result-based helper method
-      TRY_RESULT(executeThenBranch_result(lane, wave, tg, ourStackIndex), Unit, ExecutionError);
+      TRY_RESULT(executeThenBranch_result(lane, wave, tg, ourStackIndex), Unit,
+                 ExecutionError);
     } else {
-      // Execute else branch using Result-based helper method  
-      TRY_RESULT(executeElseBranch_result(lane, wave, tg, ourStackIndex), Unit, ExecutionError);
+      // Execute else branch using Result-based helper method
+      TRY_RESULT(executeElseBranch_result(lane, wave, tg, ourStackIndex), Unit,
+                 ExecutionError);
     }
-    
+
     // Set state to WaitingForResume to prevent currentStatement increment
     if (!isProtectedState(lane.state)) {
       lane.state = ThreadState::WaitingForResume;
     }
-    return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement increment, will resume later
+    return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement
+                                             // increment, will resume later
   }
 
   case LaneContext::ControlFlowPhase::Reconverging: {
@@ -1664,79 +1690,92 @@ std::string IfStmt::toString() const {
 }
 
 // Specialized wrapper function for IfStmt-specific error handling
-Result<Unit, ExecutionError> IfStmt::execute_with_error_handling(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg) {
+Result<Unit, ExecutionError>
+IfStmt::execute_with_error_handling(LaneContext &lane, WaveContext &wave,
+                                    ThreadgroupContext &tg) {
   auto result = execute_result(lane, wave, tg);
   if (result.is_err()) {
     ExecutionError error = result.unwrap_err();
-    
+
     switch (error) {
-      case ExecutionError::WaveOperationWait:
-        // IfStmt-specific: Wave operation already set the lane to WaitingForWave
-        // Just propagate the error without changing state
-        return result; // Propagate for parent to handle
-        
-      case ExecutionError::ControlFlowBreak:
-      case ExecutionError::ControlFlowContinue:
-        // IfStmt does NOT consume break/continue - propagate to enclosing loop
-        // Clean up our stack entry first
-        {
-          int ourStackIndex = findStackIndex(lane);
-          if (ourStackIndex >= 0) {
-            // Get block IDs before popping the stack
-            uint32_t ifThenBlockId = lane.executionStack[ourStackIndex].ifThenBlockId;
-            uint32_t ifElseBlockId = lane.executionStack[ourStackIndex].ifElseBlockId;
-            uint32_t ifMergeBlockId = lane.executionStack[ourStackIndex].ifMergeBlockId;
-            
-            std::cout << "DEBUG: IfStmt - Lane " << lane.laneId 
-                      << " cleaning up for continue (popping stack from depth " 
-                      << lane.executionStack.size() << " to " 
-                      << (lane.executionStack.size() - 1) << ", this=" << this << ")" << std::endl;
-            
-            lane.executionStack.pop_back();
-            tg.popMergePoint(wave.waveId, lane.laneId);
-            
-            // Clean up then/else blocks - lane will never return to them
-            tg.removeThreadFromAllSets(ifThenBlockId, wave.waveId, lane.laneId);
-            tg.removeThreadFromNestedBlocks(ifThenBlockId, wave.waveId, lane.laneId);
-            if (ifElseBlockId != 0) {
-              tg.removeThreadFromAllSets(ifElseBlockId, wave.waveId, lane.laneId);
-              tg.removeThreadFromNestedBlocks(ifElseBlockId, wave.waveId, lane.laneId);
-            }
-            
-            // Also clean up merge block since we're not going there
-            tg.removeThreadFromAllSets(ifMergeBlockId, wave.waveId, lane.laneId);
-            tg.removeThreadFromNestedBlocks(ifMergeBlockId, wave.waveId, lane.laneId);
-            
-            // Restore active state (reconvergence)
-            lane.isActive = lane.isActive && !lane.hasReturned;
+    case ExecutionError::WaveOperationWait:
+      // IfStmt-specific: Wave operation already set the lane to WaitingForWave
+      // Just propagate the error without changing state
+      return result; // Propagate for parent to handle
+
+    case ExecutionError::ControlFlowBreak:
+    case ExecutionError::ControlFlowContinue:
+      // IfStmt does NOT consume break/continue - propagate to enclosing loop
+      // Clean up our stack entry first
+      {
+        int ourStackIndex = findStackIndex(lane);
+        if (ourStackIndex >= 0) {
+          // Get block IDs before popping the stack
+          uint32_t ifThenBlockId =
+              lane.executionStack[ourStackIndex].ifThenBlockId;
+          uint32_t ifElseBlockId =
+              lane.executionStack[ourStackIndex].ifElseBlockId;
+          uint32_t ifMergeBlockId =
+              lane.executionStack[ourStackIndex].ifMergeBlockId;
+
+          std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
+                    << " cleaning up for continue (popping stack from depth "
+                    << lane.executionStack.size() << " to "
+                    << (lane.executionStack.size() - 1) << ", this=" << this
+                    << ")" << std::endl;
+
+          lane.executionStack.pop_back();
+          tg.popMergePoint(wave.waveId, lane.laneId);
+
+          // Clean up then/else blocks - lane will never return to them
+          tg.removeThreadFromAllSets(ifThenBlockId, wave.waveId, lane.laneId);
+          tg.removeThreadFromNestedBlocks(ifThenBlockId, wave.waveId,
+                                          lane.laneId);
+          if (ifElseBlockId != 0) {
+            tg.removeThreadFromAllSets(ifElseBlockId, wave.waveId, lane.laneId);
+            tg.removeThreadFromNestedBlocks(ifElseBlockId, wave.waveId,
+                                            lane.laneId);
           }
+
+          // Also clean up merge block since we're not going there
+          tg.removeThreadFromAllSets(ifMergeBlockId, wave.waveId, lane.laneId);
+          tg.removeThreadFromNestedBlocks(ifMergeBlockId, wave.waveId,
+                                          lane.laneId);
+
+          // Restore active state (reconvergence)
+          lane.isActive = lane.isActive && !lane.hasReturned;
         }
-        return result; // Propagate to parent loop
-        
-      default:
-        return result; // Propagate unknown errors
+      }
+      return result; // Propagate to parent loop
+
+    default:
+      return result; // Propagate unknown errors
     }
   }
   return result; // Success case
 }
 
 // Result-based versions of IfStmt helper methods
-Result<Unit, ExecutionError> IfStmt::evaluateConditionAndSetup_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                                int ourStackIndex, uint32_t parentBlockId, bool hasElse) {
+Result<Unit, ExecutionError> IfStmt::evaluateConditionAndSetup_result(
+    LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
+    int ourStackIndex, uint32_t parentBlockId, bool hasElse) {
   auto &ourEntry = lane.executionStack[ourStackIndex];
-  
+
   std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
             << " evaluating condition (Result-based)" << std::endl;
 
-  // Only evaluate condition if not already evaluated (avoid re-evaluation on resume)
+  // Only evaluate condition if not already evaluated (avoid re-evaluation on
+  // resume)
   if (!ourEntry.conditionEvaluated) {
     std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
-              << " evaluating condition for first time (Result-based)" << std::endl;
-    
+              << " evaluating condition for first time (Result-based)"
+              << std::endl;
+
     // Evaluate condition using Result-based evaluation
-    Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+    Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg),
+                               Unit, ExecutionError);
     bool conditionResult = condVal.asBool();
-    
+
     lane.executionStack[ourStackIndex].conditionResult = conditionResult;
     lane.executionStack[ourStackIndex].conditionEvaluated = true;
     std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
@@ -1744,15 +1783,14 @@ Result<Unit, ExecutionError> IfStmt::evaluateConditionAndSetup_result(LaneContex
               << " (Result-based)" << std::endl;
   } else {
     std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
-              << " using cached condition result="
-              << ourEntry.conditionResult << " (Result-based)" << std::endl;
+              << " using cached condition result=" << ourEntry.conditionResult
+              << " (Result-based)" << std::endl;
   }
 
   // Condition evaluated successfully - set up blocks
   std::set<uint32_t> divergentBlocks;
-  tg.pushMergePoint(wave.waveId, lane.laneId,
-                    static_cast<const void *>(this), parentBlockId,
-                    divergentBlocks);
+  tg.pushMergePoint(wave.waveId, lane.laneId, static_cast<const void *>(this),
+                    parentBlockId, divergentBlocks);
 
   std::vector<MergeStackEntry> currentMergeStack =
       tg.getCurrentMergeStack(wave.waveId, lane.laneId);
@@ -1764,14 +1802,14 @@ Result<Unit, ExecutionError> IfStmt::evaluateConditionAndSetup_result(LaneContex
   ourEntry.ifMergeBlockId = std::get<2>(blockIds);
   std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
             << " setup complete: thenBlockId=" << ourEntry.ifThenBlockId
-            << ", elseBlockId=" << ourEntry.ifElseBlockId 
-            << ", mergeBlockId=" << ourEntry.ifMergeBlockId
-            << " (Result-based)" << std::endl;
+            << ", elseBlockId=" << ourEntry.ifElseBlockId
+            << ", mergeBlockId=" << ourEntry.ifMergeBlockId << " (Result-based)"
+            << std::endl;
 
   // Update blocks based on condition result
   if (ourEntry.conditionResult) {
-    tg.moveThreadFromUnknownToParticipating(ourEntry.ifThenBlockId,
-                                            wave.waveId, lane.laneId);
+    tg.moveThreadFromUnknownToParticipating(ourEntry.ifThenBlockId, wave.waveId,
+                                            lane.laneId);
     if (hasElse) {
       tg.removeThreadFromUnknown(ourEntry.ifElseBlockId, wave.waveId,
                                  lane.laneId);
@@ -1803,48 +1841,53 @@ Result<Unit, ExecutionError> IfStmt::evaluateConditionAndSetup_result(LaneContex
   return Ok<Unit, ExecutionError>(Unit{});
 }
 
-Result<Unit, ExecutionError> IfStmt::executeThenBranch_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                       int ourStackIndex) {
+Result<Unit, ExecutionError>
+IfStmt::executeThenBranch_result(LaneContext &lane, WaveContext &wave,
+                                 ThreadgroupContext &tg, int ourStackIndex) {
   auto &ourEntry = lane.executionStack[ourStackIndex];
-  
+
   std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
             << " executing then block from statement "
-            << ourEntry.statementIndex 
-            << " of " << thenBlock_.size() << " total statements (Result-based)" << std::endl;
-  
+            << ourEntry.statementIndex << " of " << thenBlock_.size()
+            << " total statements (Result-based)" << std::endl;
+
   // Execute statements in then block from saved position
   for (size_t i = ourEntry.statementIndex; i < thenBlock_.size(); i++) {
     lane.executionStack[ourStackIndex].statementIndex = i;
-    
+
     std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
-              << " executing then block statement " << i 
-              << ": " << thenBlock_[i]->toString() << std::endl;
-    
+              << " executing then block statement " << i << ": "
+              << thenBlock_[i]->toString() << std::endl;
+
     // Debug: Print variables before statement
-    std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " variables BEFORE statement: ";
-    for (const auto& var : lane.variables) {
+    std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
+              << " variables BEFORE statement: ";
+    for (const auto &var : lane.variables) {
       std::cout << var.first << "=" << var.second.toString() << " ";
     }
     std::cout << std::endl;
-    
-    // Use Result-based execute_with_error_handling for proper control flow handling
-    auto stmt_result = thenBlock_[i]->execute_with_error_handling(lane, wave, tg);
+
+    // Use Result-based execute_with_error_handling for proper control flow
+    // handling
+    auto stmt_result =
+        thenBlock_[i]->execute_with_error_handling(lane, wave, tg);
     if (stmt_result.is_err()) {
       return stmt_result; // Propagate the error
     }
-    
+
     // Debug: Print variables after statement
-    std::cout << "DEBUG: IfStmt - Lane " << lane.laneId << " variables AFTER statement: ";
-    for (const auto& var : lane.variables) {
+    std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
+              << " variables AFTER statement: ";
+    for (const auto &var : lane.variables) {
       std::cout << var.first << "=" << var.second.toString() << " ";
     }
     std::cout << std::endl;
-    
+
     if (lane.state != ThreadState::Ready) {
       // Child statement needs to resume - don't continue
       return Ok<Unit, ExecutionError>(Unit{});
     }
-    
+
     if (lane.hasReturned) {
       std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
                 << " popping stack due to return (depth "
@@ -1858,17 +1901,19 @@ Result<Unit, ExecutionError> IfStmt::executeThenBranch_result(LaneContext &lane,
 
     lane.executionStack[ourStackIndex].statementIndex = i + 1;
   }
-  
+
   // All statements executed - transition to reconverging
-  lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::Reconverging;
-  
+  lane.executionStack[ourStackIndex].phase =
+      LaneContext::ControlFlowPhase::Reconverging;
+
   return Ok<Unit, ExecutionError>(Unit{});
 }
 
-Result<Unit, ExecutionError> IfStmt::executeElseBranch_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                       int ourStackIndex) {
+Result<Unit, ExecutionError>
+IfStmt::executeElseBranch_result(LaneContext &lane, WaveContext &wave,
+                                 ThreadgroupContext &tg, int ourStackIndex) {
   auto &ourEntry = lane.executionStack[ourStackIndex];
-  
+
   std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
             << " executing else block from statement "
             << ourEntry.statementIndex << " (Result-based)" << std::endl;
@@ -1876,13 +1921,15 @@ Result<Unit, ExecutionError> IfStmt::executeElseBranch_result(LaneContext &lane,
   // Execute statements in else block from saved position
   for (size_t i = ourEntry.statementIndex; i < elseBlock_.size(); i++) {
     lane.executionStack[ourStackIndex].statementIndex = i;
-    
-    // Use Result-based execute_with_error_handling for proper control flow handling
-    auto stmt_result = elseBlock_[i]->execute_with_error_handling(lane, wave, tg);
+
+    // Use Result-based execute_with_error_handling for proper control flow
+    // handling
+    auto stmt_result =
+        elseBlock_[i]->execute_with_error_handling(lane, wave, tg);
     if (stmt_result.is_err()) {
       return stmt_result; // Propagate the error
     }
-    
+
     if (lane.hasReturned) {
       std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
                 << " popping stack due to return (depth "
@@ -1901,10 +1948,11 @@ Result<Unit, ExecutionError> IfStmt::executeElseBranch_result(LaneContext &lane,
 
     lane.executionStack[ourStackIndex].statementIndex = i + 1;
   }
-  
+
   // All statements executed - transition to reconverging
-  lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::Reconverging;
-  
+  lane.executionStack[ourStackIndex].phase =
+      LaneContext::ControlFlowPhase::Reconverging;
+
   return Ok<Unit, ExecutionError>(Unit{});
 }
 
@@ -1915,34 +1963,42 @@ ForStmt::ForStmt(const std::string &var, std::unique_ptr<Expression> init,
     : loopVar_(var), init_(std::move(init)), condition_(std::move(cond)),
       increment_(std::move(inc)), body_(std::move(body)) {}
 
-
 // Pure Result-based ForStmt phase implementations
-Result<Unit, ExecutionError> ForStmt::executeInit(LaneContext &lane, WaveContext &wave,
-                                                 ThreadgroupContext &tg) {
-  std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " executing init (Result-based)" << std::endl;
-  
+Result<Unit, ExecutionError> ForStmt::executeInit(LaneContext &lane,
+                                                  WaveContext &wave,
+                                                  ThreadgroupContext &tg) {
+  std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
+            << " executing init (Result-based)" << std::endl;
+
   // Initialize loop variable using Result-based evaluation
-  Value initVal = TRY_RESULT(init_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+  Value initVal =
+      TRY_RESULT(init_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
   lane.variables[loopVar_] = initVal;
-  
+
   return Ok<Unit, ExecutionError>(Unit{});
 }
 
-Result<bool, ExecutionError> ForStmt::evaluateCondition(LaneContext &lane, WaveContext &wave,
-                                                       ThreadgroupContext &tg) {
-  std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " evaluating condition (Result-based)" << std::endl;
-  
+Result<bool, ExecutionError>
+ForStmt::evaluateCondition(LaneContext &lane, WaveContext &wave,
+                           ThreadgroupContext &tg) {
+  std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
+            << " evaluating condition (Result-based)" << std::endl;
+
   // Evaluate condition using Result-based evaluation
-  Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), bool, ExecutionError);
+  Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), bool,
+                             ExecutionError);
   bool shouldContinue = condVal.asBool();
-  
+
   return Ok<bool, ExecutionError>(shouldContinue);
 }
 
-Result<Unit, ExecutionError> ForStmt::executeBody(LaneContext &lane, WaveContext &wave,
-                                                 ThreadgroupContext &tg, size_t &statementIndex) {
-  std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " executing body (Result-based)" << std::endl;
-  
+Result<Unit, ExecutionError> ForStmt::executeBody(LaneContext &lane,
+                                                  WaveContext &wave,
+                                                  ThreadgroupContext &tg,
+                                                  size_t &statementIndex) {
+  std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
+            << " executing body (Result-based)" << std::endl;
+
   // Execute body statements using Result-based approach
   for (size_t i = statementIndex; i < body_.size(); ++i) {
     auto result = body_[i]->execute_result(lane, wave, tg);
@@ -1953,8 +2009,9 @@ Result<Unit, ExecutionError> ForStmt::executeBody(LaneContext &lane, WaveContext
         std::cout << "DEBUG: ForStmt - Break encountered in body" << std::endl;
         return Err<Unit, ExecutionError>(ExecutionError::ControlFlowBreak);
       } else if (error == ExecutionError::ControlFlowContinue) {
-        std::cout << "DEBUG: ForStmt - Continue encountered in body" << std::endl;
-        statementIndex = body_.size(); // Skip remaining statements
+        std::cout << "DEBUG: ForStmt - Continue encountered in body"
+                  << std::endl;
+        statementIndex = body_.size();           // Skip remaining statements
         return Ok<Unit, ExecutionError>(Unit{}); // Continue to increment phase
       } else {
         // Other errors (like WaveOperationWait) should be propagated
@@ -1963,23 +2020,26 @@ Result<Unit, ExecutionError> ForStmt::executeBody(LaneContext &lane, WaveContext
       }
     }
   }
-  
+
   statementIndex = 0; // Reset for next iteration
   return Ok<Unit, ExecutionError>(Unit{});
 }
 
-Result<Unit, ExecutionError> ForStmt::executeIncrement(LaneContext &lane, WaveContext &wave,
-                                                     ThreadgroupContext &tg) {
-  std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " executing increment (Result-based)" << std::endl;
-  
+Result<Unit, ExecutionError> ForStmt::executeIncrement(LaneContext &lane,
+                                                       WaveContext &wave,
+                                                       ThreadgroupContext &tg) {
+  std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
+            << " executing increment (Result-based)" << std::endl;
+
   // Execute increment expression using Result-based evaluation
   TRY_RESULT(increment_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
-  
+
   return Ok<Unit, ExecutionError>(Unit{});
 }
 
-Result<Unit, ExecutionError> ForStmt::execute_result(LaneContext &lane, WaveContext &wave,
-                                                   ThreadgroupContext &tg) {
+Result<Unit, ExecutionError> ForStmt::execute_result(LaneContext &lane,
+                                                     WaveContext &wave,
+                                                     ThreadgroupContext &tg) {
   if (!lane.isActive)
     return Ok<Unit, ExecutionError>(Unit{});
 
@@ -1990,8 +2050,8 @@ Result<Unit, ExecutionError> ForStmt::execute_result(LaneContext &lane, WaveCont
   uint32_t headerBlockId = 0;
   uint32_t mergeBlockId = 0;
 
-  std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " " 
-            << (isResuming ? "resuming" : "starting") 
+  std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " "
+            << (isResuming ? "resuming" : "starting")
             << " Result-based for loop execution" << std::endl;
 
   if (!isResuming) {
@@ -2000,9 +2060,10 @@ Result<Unit, ExecutionError> ForStmt::execute_result(LaneContext &lane, WaveCont
         static_cast<const void *>(this),
         LaneContext::ControlFlowPhase::EvaluatingInit);
     ourStackIndex = lane.executionStack.size() - 1;
-    
+
     // Set up fresh execution using non-throwing helper method
-    setupFreshExecution(lane, wave, tg, ourStackIndex, headerBlockId, mergeBlockId);
+    setupFreshExecution(lane, wave, tg, ourStackIndex, headerBlockId,
+                        mergeBlockId);
   } else {
     std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
               << " resuming execution (found at stack index=" << ourStackIndex
@@ -2025,38 +2086,46 @@ Result<Unit, ExecutionError> ForStmt::execute_result(LaneContext &lane, WaveCont
   switch (ourEntry.phase) {
   case LaneContext::ControlFlowPhase::EvaluatingInit: {
     // Evaluate initialization using Result-based helper method
-    TRY_RESULT(evaluateInitPhase_result(lane, wave, tg, ourStackIndex, headerBlockId), Unit, ExecutionError);
-    
+    TRY_RESULT(
+        evaluateInitPhase_result(lane, wave, tg, ourStackIndex, headerBlockId),
+        Unit, ExecutionError);
+
     // Set state to WaitingForResume to prevent currentStatement increment
     if (!isProtectedState(lane.state)) {
       lane.state = ThreadState::WaitingForResume;
     }
-    return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement increment, will resume later
+    return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement
+                                             // increment, will resume later
   }
 
   case LaneContext::ControlFlowPhase::EvaluatingCondition: {
-    // Evaluate condition using Result-based helper method  
-    TRY_RESULT(evaluateConditionPhase_result(lane, wave, tg, ourStackIndex, headerBlockId), Unit, ExecutionError);
-    
+    // Evaluate condition using Result-based helper method
+    TRY_RESULT(evaluateConditionPhase_result(lane, wave, tg, ourStackIndex,
+                                             headerBlockId),
+               Unit, ExecutionError);
+
     // Set state to WaitingForResume to prevent currentStatement increment
     if (!isProtectedState(lane.state)) {
       lane.state = ThreadState::WaitingForResume;
     }
-    return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement increment, will resume later
+    return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement
+                                             // increment, will resume later
   }
 
   case LaneContext::ControlFlowPhase::ExecutingBody: {
     std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
               << " executing body for iteration " << ourEntry.loopIteration
-              << " from statement " << ourEntry.statementIndex 
+              << " from statement " << ourEntry.statementIndex
               << " (Result-based)" << std::endl;
 
     // Set up iteration-specific blocks using non-throwing helper method
     setupIterationBlocks(lane, wave, tg, ourStackIndex, headerBlockId);
 
     // Execute body statements using Result-based helper method
-    TRY_RESULT(executeBodyStatements_result(lane, wave, tg, ourStackIndex, headerBlockId), Unit, ExecutionError);
-    
+    TRY_RESULT(executeBodyStatements_result(lane, wave, tg, ourStackIndex,
+                                            headerBlockId),
+               Unit, ExecutionError);
+
     // Check if we need to return early (lane returned or needs resume)
     if (lane.hasReturned || lane.state != ThreadState::Ready) {
       return Ok<Unit, ExecutionError>(Unit{});
@@ -2066,24 +2135,27 @@ Result<Unit, ExecutionError> ForStmt::execute_result(LaneContext &lane, WaveCont
     if (ourEntry.statementIndex >= body_.size()) {
       // Clean up after body execution using non-throwing helper method
       cleanupAfterBodyExecution(lane, wave, tg, ourStackIndex, headerBlockId);
-      
+
       // Set state to WaitingForResume to prevent currentStatement increment
       if (!isProtectedState(lane.state)) {
         lane.state = ThreadState::WaitingForResume;
       }
     }
-    return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement increment, will resume later
+    return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement
+                                             // increment, will resume later
   }
 
   case LaneContext::ControlFlowPhase::EvaluatingIncrement: {
     // Evaluate increment using Result-based helper method
-    TRY_RESULT(evaluateIncrementPhase_result(lane, wave, tg, ourStackIndex), Unit, ExecutionError);
-    
+    TRY_RESULT(evaluateIncrementPhase_result(lane, wave, tg, ourStackIndex),
+               Unit, ExecutionError);
+
     // Set state to WaitingForResume to prevent currentStatement increment
     if (!isProtectedState(lane.state)) {
       lane.state = ThreadState::WaitingForResume;
     }
-    return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement increment, will resume later
+    return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement
+                                             // increment, will resume later
   }
 
   case LaneContext::ControlFlowPhase::Reconverging: {
@@ -2100,18 +2172,20 @@ Result<Unit, ExecutionError> ForStmt::execute_result(LaneContext &lane, WaveCont
   }
 }
 
-
 // Helper method for setting up iteration-specific blocks in ForStmt
-void ForStmt::setupIterationBlocks(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
-                                  int ourStackIndex, uint32_t headerBlockId) {
+void ForStmt::setupIterationBlocks(LaneContext &lane, WaveContext &wave,
+                                   ThreadgroupContext &tg, int ourStackIndex,
+                                   uint32_t headerBlockId) {
   auto &ourEntry = lane.executionStack[ourStackIndex];
-  
+
   // Check if we need an iteration-specific starting block
-  // Only create one if we have non-control-flow statements before any control flow
+  // Only create one if we have non-control-flow statements before any control
+  // flow
   bool needsIterationBlock = false;
   uint32_t iterationStartBlockId = 0;
 
-  // Look ahead to see if first statement (statement 0) requires unique iteration context
+  // Look ahead to see if first statement (statement 0) requires unique
+  // iteration context
   if (!body_.empty()) {
     bool firstStatementIsControlFlow =
         dynamic_cast<IfStmt *>(body_[0].get()) != nullptr ||
@@ -2122,40 +2196,55 @@ void ForStmt::setupIterationBlocks(LaneContext &lane, WaveContext &wave, Threadg
     if (!firstStatementIsControlFlow) {
       // We have regular statements that need unique iteration context
       needsIterationBlock = true;
-      std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
-                << " needs iteration block (first statement is not control flow)" << std::endl;
+      std::cout
+          << "DEBUG: ForStmt - Lane " << lane.laneId
+          << " needs iteration block (first statement is not control flow)"
+          << std::endl;
     } else {
-      std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
-                << " no iteration block needed (first statement is control flow)" << std::endl;
+      std::cout
+          << "DEBUG: ForStmt - Lane " << lane.laneId
+          << " no iteration block needed (first statement is control flow)"
+          << std::endl;
     }
   }
 
   if (needsIterationBlock) {
-    // Create iteration-specific starting block (unique context for this iteration)
+    // Create iteration-specific starting block (unique context for this
+    // iteration)
     iterationStartBlockId = ourEntry.loopBodyBlockId;
     if (iterationStartBlockId == 0) {
-      std::vector<MergeStackEntry> currentMergeStack = tg.getCurrentMergeStack(wave.waveId, lane.laneId);
+      std::vector<MergeStackEntry> currentMergeStack =
+          tg.getCurrentMergeStack(wave.waveId, lane.laneId);
 
       // Create unique identity for this iteration's starting block
       const void *iterationPtr = reinterpret_cast<const void *>(
-          reinterpret_cast<uintptr_t>(this) + (ourEntry.loopIteration << 16) + 0x3000);
+          reinterpret_cast<uintptr_t>(this) + (ourEntry.loopIteration << 16) +
+          0x3000);
 
-      // Use REGULAR block type - this is the starting context for this iteration
+      // Use REGULAR block type - this is the starting context for this
+      // iteration
       BlockIdentity iterationIdentity = tg.createBlockIdentity(
-          iterationPtr, BlockType::REGULAR, headerBlockId, currentMergeStack, true, lane.executionPath);
+          iterationPtr, BlockType::REGULAR, headerBlockId, currentMergeStack,
+          true, lane.executionPath);
 
       // Try to find existing block first
       iterationStartBlockId = tg.findBlockByIdentity(iterationIdentity);
 
       if (iterationStartBlockId == 0) {
         // Create new iteration starting block
-        std::map<WaveId, std::set<LaneId>> expectedLanes = tg.getCurrentBlockParticipants(headerBlockId);
-        iterationStartBlockId = tg.findOrCreateBlockForPath(iterationIdentity, expectedLanes);
-        std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " created iteration starting block "
-                  << iterationStartBlockId << " for iteration " << ourEntry.loopIteration << std::endl;
+        std::map<WaveId, std::set<LaneId>> expectedLanes =
+            tg.getCurrentBlockParticipants(headerBlockId);
+        iterationStartBlockId =
+            tg.findOrCreateBlockForPath(iterationIdentity, expectedLanes);
+        std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
+                  << " created iteration starting block "
+                  << iterationStartBlockId << " for iteration "
+                  << ourEntry.loopIteration << std::endl;
       } else {
-        std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " found existing iteration starting block "
-                  << iterationStartBlockId << " for iteration " << ourEntry.loopIteration << std::endl;
+        std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
+                  << " found existing iteration starting block "
+                  << iterationStartBlockId << " for iteration "
+                  << ourEntry.loopIteration << std::endl;
       }
 
       ourEntry.loopBodyBlockId = iterationStartBlockId;
@@ -2163,52 +2252,72 @@ void ForStmt::setupIterationBlocks(LaneContext &lane, WaveContext &wave, Threadg
 
     // Move to iteration-specific block
     if (tg.getCurrentBlock(wave.waveId, lane.laneId) != iterationStartBlockId) {
-      tg.moveThreadFromUnknownToParticipating(iterationStartBlockId, wave.waveId, lane.laneId);
-      std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " moved to iteration starting block "
+      tg.moveThreadFromUnknownToParticipating(iterationStartBlockId,
+                                              wave.waveId, lane.laneId);
+      std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
+                << " moved to iteration starting block "
                 << iterationStartBlockId << std::endl;
     }
   } else {
-    // No iteration block needed - but we still need to ensure unique execution context per iteration
-    // Only push merge point if we're at the beginning of the body (statement 0)
+    // No iteration block needed - but we still need to ensure unique execution
+    // context per iteration Only push merge point if we're at the beginning of
+    // the body (statement 0)
     if (ourEntry.statementIndex == 0) {
-      // Push iteration-specific merge point so nested control flow sees different merge stack
+      // Push iteration-specific merge point so nested control flow sees
+      // different merge stack
       const void *iterationMarker = reinterpret_cast<const void *>(
-          reinterpret_cast<uintptr_t>(this) + (ourEntry.loopIteration << 16) + 0x5000);
+          reinterpret_cast<uintptr_t>(this) + (ourEntry.loopIteration << 16) +
+          0x5000);
 
       // Push iteration-specific merge point if not already done
-      std::vector<MergeStackEntry> currentMergeStack = tg.getCurrentMergeStack(wave.waveId, lane.laneId);
-      std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " merge stack size: " << currentMergeStack.size() << std::endl;
+      std::vector<MergeStackEntry> currentMergeStack =
+          tg.getCurrentMergeStack(wave.waveId, lane.laneId);
+      std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
+                << " merge stack size: " << currentMergeStack.size()
+                << std::endl;
       for (size_t i = 0; i < currentMergeStack.size(); i++) {
-        std::cout << "  Stack[" << i << "]: sourceStatement=" << currentMergeStack[i].sourceStatement << std::endl;
+        std::cout << "  Stack[" << i << "]: sourceStatement="
+                  << currentMergeStack[i].sourceStatement << std::endl;
       }
-      std::cout << "  Looking for iterationMarker=" << iterationMarker << std::endl;
-      bool alreadyPushed = hasIterationMarkerInStack(currentMergeStack, iterationMarker);
+      std::cout << "  Looking for iterationMarker=" << iterationMarker
+                << std::endl;
+      bool alreadyPushed =
+          hasIterationMarkerInStack(currentMergeStack, iterationMarker);
       if (alreadyPushed) {
         std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
-                  << " iteration merge point already found in merge stack" << std::endl;
+                  << " iteration merge point already found in merge stack"
+                  << std::endl;
       }
 
       if (!alreadyPushed) {
-        std::set<uint32_t> emptyDivergentBlocks; // No actual divergence, just context
+        std::set<uint32_t>
+            emptyDivergentBlocks; // No actual divergence, just context
         tg.pushMergePoint(wave.waveId, lane.laneId, iterationMarker,
-                          tg.getCurrentBlock(wave.waveId, lane.laneId), emptyDivergentBlocks);
-        std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " pushed iteration merge point "
-                  << iterationMarker << " (no iteration block needed, but merge stack modified)" << std::endl;
+                          tg.getCurrentBlock(wave.waveId, lane.laneId),
+                          emptyDivergentBlocks);
+        std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
+                  << " pushed iteration merge point " << iterationMarker
+                  << " (no iteration block needed, but merge stack modified)"
+                  << std::endl;
       }
     }
   }
 }
 
 // Helper method for body completion cleanup in ForStmt
-void ForStmt::cleanupAfterBodyExecution(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
-                                       int ourStackIndex, uint32_t headerBlockId) {
+void ForStmt::cleanupAfterBodyExecution(LaneContext &lane, WaveContext &wave,
+                                        ThreadgroupContext &tg,
+                                        int ourStackIndex,
+                                        uint32_t headerBlockId) {
   auto &ourEntry = lane.executionStack[ourStackIndex];
-  
-  // Body completed - clean up iteration-specific merge point
-  const void *iterationMarker = reinterpret_cast<const void *>(
-      reinterpret_cast<uintptr_t>(this) + (ourEntry.loopIteration << 16) + 0x5000);
 
-  std::vector<MergeStackEntry> currentMergeStack = tg.getCurrentMergeStack(wave.waveId, lane.laneId);
+  // Body completed - clean up iteration-specific merge point
+  const void *iterationMarker =
+      reinterpret_cast<const void *>(reinterpret_cast<uintptr_t>(this) +
+                                     (ourEntry.loopIteration << 16) + 0x5000);
+
+  std::vector<MergeStackEntry> currentMergeStack =
+      tg.getCurrentMergeStack(wave.waveId, lane.laneId);
   if (!currentMergeStack.empty() &&
       currentMergeStack.back().sourceStatement == iterationMarker) {
     tg.popMergePoint(wave.waveId, lane.laneId);
@@ -2218,12 +2327,14 @@ void ForStmt::cleanupAfterBodyExecution(LaneContext &lane, WaveContext &wave, Th
   }
 
   // Move back to header block for increment phase
-  uint32_t finalBlock = tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
+  uint32_t finalBlock =
+      tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
   std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
             << " body completed in block " << finalBlock
-            << ", moving to header block " << headerBlockId
-            << " for increment" << std::endl;
-  tg.moveThreadFromUnknownToParticipating(headerBlockId, wave.waveId, lane.laneId);
+            << ", moving to header block " << headerBlockId << " for increment"
+            << std::endl;
+  tg.moveThreadFromUnknownToParticipating(headerBlockId, wave.waveId,
+                                          lane.laneId);
   ourEntry.loopBodyBlockId = 0; // Reset for next iteration
   ourEntry.phase = LaneContext::ControlFlowPhase::EvaluatingIncrement;
   if (!isProtectedState(lane.state)) {
@@ -2231,13 +2342,13 @@ void ForStmt::cleanupAfterBodyExecution(LaneContext &lane, WaveContext &wave, Th
   }
 }
 
-
 // Helper method for loop exit/reconverging phase in ForStmt
-void ForStmt::handleLoopExit(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
-                            int ourStackIndex, uint32_t mergeBlockId) {
+void ForStmt::handleLoopExit(LaneContext &lane, WaveContext &wave,
+                             ThreadgroupContext &tg, int ourStackIndex,
+                             uint32_t mergeBlockId) {
   auto &ourEntry = lane.executionStack[ourStackIndex];
-  std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
-            << " exiting loop after " << ourEntry.loopIteration << " iterations"
+  std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " exiting loop after "
+            << ourEntry.loopIteration << " iterations"
             << " (state before=" << (int)lane.state << ")" << std::endl;
 
   // Clean up execution state
@@ -2245,8 +2356,9 @@ void ForStmt::handleLoopExit(LaneContext &lane, WaveContext &wave, ThreadgroupCo
 
   // Pop merge point and move to merge block
   tg.popMergePoint(wave.waveId, lane.laneId);
-  tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId, lane.laneId);
-  
+  tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId,
+                                          lane.laneId);
+
   // Loop has completed, restore active state and reset thread state
   lane.isActive = lane.isActive && !lane.hasReturned;
   if (!isProtectedState(lane.state)) {
@@ -2255,48 +2367,60 @@ void ForStmt::handleLoopExit(LaneContext &lane, WaveContext &wave, ThreadgroupCo
 }
 
 // Helper method for break exception handling in ForStmt
-void ForStmt::handleBreakException(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
-                                  int ourStackIndex, uint32_t headerBlockId) {
+void ForStmt::handleBreakException(LaneContext &lane, WaveContext &wave,
+                                   ThreadgroupContext &tg, int ourStackIndex,
+                                   uint32_t headerBlockId) {
   // Break - exit loop
-  std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " breaking from loop" << std::endl;
+  std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " breaking from loop"
+            << std::endl;
   tg.popMergePoint(wave.waveId, lane.laneId);
 
   // Clean up - remove from blocks this lane will never reach
   tg.removeThreadFromAllSets(headerBlockId, wave.waveId, lane.laneId);
   tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId);
-  lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::Reconverging;
+  lane.executionStack[ourStackIndex].phase =
+      LaneContext::ControlFlowPhase::Reconverging;
   if (!isProtectedState(lane.state)) {
     lane.state = ThreadState::WaitingForResume;
   }
 }
 
 // Helper method for continue exception handling in ForStmt
-void ForStmt::handleContinueException(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
-                                     int ourStackIndex, uint32_t headerBlockId) {
+void ForStmt::handleContinueException(LaneContext &lane, WaveContext &wave,
+                                      ThreadgroupContext &tg, int ourStackIndex,
+                                      uint32_t headerBlockId) {
   // Continue - go to increment phase and skip remaining statements
-  std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " continuing loop" << std::endl;
+  std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " continuing loop"
+            << std::endl;
 
   // CRITICAL FIX: Mark lane as Left from current block when continuing
   auto &ourEntry = lane.executionStack[ourStackIndex];
   if (ourEntry.loopBodyBlockId != 0) {
-    tg.membershipRegistry.setLaneStatus(wave.waveId, lane.laneId, ourEntry.loopBodyBlockId,
+    tg.membershipRegistry.setLaneStatus(wave.waveId, lane.laneId,
+                                        ourEntry.loopBodyBlockId,
                                         LaneBlockStatus::Left);
-    std::cout << "DEBUG: ForStmt - Marked lane " << lane.laneId << " as Left from block "
-              << ourEntry.loopBodyBlockId << std::endl;
+    std::cout << "DEBUG: ForStmt - Marked lane " << lane.laneId
+              << " as Left from block " << ourEntry.loopBodyBlockId
+              << std::endl;
   }
 
   tg.popMergePoint(wave.waveId, lane.laneId);
 
   // Clean up - remove from all nested blocks this lane is abandoning
   if (lane.executionStack[ourStackIndex].loopBodyBlockId != 0) {
-    tg.removeThreadFromAllSets(lane.executionStack[ourStackIndex].loopBodyBlockId, wave.waveId,
-                               lane.laneId);
-    tg.removeThreadFromNestedBlocks(lane.executionStack[ourStackIndex].loopBodyBlockId,
-                                    wave.waveId, lane.laneId);
+    tg.removeThreadFromAllSets(
+        lane.executionStack[ourStackIndex].loopBodyBlockId, wave.waveId,
+        lane.laneId);
+    tg.removeThreadFromNestedBlocks(
+        lane.executionStack[ourStackIndex].loopBodyBlockId, wave.waveId,
+        lane.laneId);
   }
-  tg.moveThreadFromUnknownToParticipating(headerBlockId, wave.waveId, lane.laneId);
-  lane.executionStack[ourStackIndex].loopBodyBlockId = 0; // Reset for next iteration
-  lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingIncrement;
+  tg.moveThreadFromUnknownToParticipating(headerBlockId, wave.waveId,
+                                          lane.laneId);
+  lane.executionStack[ourStackIndex].loopBodyBlockId =
+      0; // Reset for next iteration
+  lane.executionStack[ourStackIndex].phase =
+      LaneContext::ControlFlowPhase::EvaluatingIncrement;
 
   // Set state to WaitingForResume to prevent currentStatement increment
   if (!isProtectedState(lane.state)) {
@@ -2305,21 +2429,27 @@ void ForStmt::handleContinueException(LaneContext &lane, WaveContext &wave, Thre
 }
 
 // Helper method for fresh execution setup in ForStmt
-void ForStmt::setupFreshExecution(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
-                                 int ourStackIndex, uint32_t &headerBlockId, uint32_t &mergeBlockId) {
+void ForStmt::setupFreshExecution(LaneContext &lane, WaveContext &wave,
+                                  ThreadgroupContext &tg, int ourStackIndex,
+                                  uint32_t &headerBlockId,
+                                  uint32_t &mergeBlockId) {
   std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
             << " starting fresh execution (pushed to stack depth="
-            << lane.executionStack.size() << ", this=" << this << ")" << std::endl;
+            << lane.executionStack.size() << ", this=" << this << ")"
+            << std::endl;
 
   // Get current block before entering loop
-  uint32_t parentBlockId = tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
+  uint32_t parentBlockId =
+      tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
 
   // Get current merge stack for block creation
-  std::vector<MergeStackEntry> currentMergeStack = tg.getCurrentMergeStack(wave.waveId, lane.laneId);
+  std::vector<MergeStackEntry> currentMergeStack =
+      tg.getCurrentMergeStack(wave.waveId, lane.laneId);
 
   // Create loop blocks (header, merge) - pass current execution path
-  auto [hBlockId, mBlockId] = tg.createLoopBlocks(static_cast<const void *>(this), parentBlockId,
-                                                  currentMergeStack, lane.executionPath);
+  auto [hBlockId, mBlockId] =
+      tg.createLoopBlocks(static_cast<const void *>(this), parentBlockId,
+                          currentMergeStack, lane.executionPath);
   headerBlockId = hBlockId;
   mergeBlockId = mBlockId;
 
@@ -2329,23 +2459,29 @@ void ForStmt::setupFreshExecution(LaneContext &lane, WaveContext &wave, Threadgr
 
   // Push merge point for loop divergence
   std::set<uint32_t> divergentBlocks = {headerBlockId};
-  tg.pushMergePoint(wave.waveId, lane.laneId, static_cast<const void *>(this), parentBlockId,
-                    divergentBlocks);
+  tg.pushMergePoint(wave.waveId, lane.laneId, static_cast<const void *>(this),
+                    parentBlockId, divergentBlocks);
 }
 
-
 // Result-based versions of ForStmt helper methods
-Result<Unit, ExecutionError> ForStmt::executeBodyStatements_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                                   int ourStackIndex, uint32_t headerBlockId) {
-  // Execute statements - start in iteration block, naturally flow to merge blocks
-  for (size_t i = lane.executionStack[ourStackIndex].statementIndex; i < body_.size(); i++) {
+Result<Unit, ExecutionError>
+ForStmt::executeBodyStatements_result(LaneContext &lane, WaveContext &wave,
+                                      ThreadgroupContext &tg, int ourStackIndex,
+                                      uint32_t headerBlockId) {
+  // Execute statements - start in iteration block, naturally flow to merge
+  // blocks
+  for (size_t i = lane.executionStack[ourStackIndex].statementIndex;
+       i < body_.size(); i++) {
     lane.executionStack[ourStackIndex].statementIndex = i;
 
-    uint32_t blockBeforeStatement = tg.getCurrentBlock(wave.waveId, lane.laneId);
-    std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " executing statement " << i 
-              << " in block " << blockBeforeStatement << " (Result-based)" << std::endl;
+    uint32_t blockBeforeStatement =
+        tg.getCurrentBlock(wave.waveId, lane.laneId);
+    std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
+              << " executing statement " << i << " in block "
+              << blockBeforeStatement << " (Result-based)" << std::endl;
 
-    // Use Result-based execute_with_error_handling for proper control flow handling
+    // Use Result-based execute_with_error_handling for proper control flow
+    // handling
     auto stmt_result = body_[i]->execute_with_error_handling(lane, wave, tg);
     if (stmt_result.is_err()) {
       return stmt_result; // Propagate the error
@@ -2354,13 +2490,18 @@ Result<Unit, ExecutionError> ForStmt::executeBodyStatements_result(LaneContext &
     if (lane.hasReturned) {
       // Clean up iteration-specific merge point if it exists
       const void *iterationMarker = reinterpret_cast<const void *>(
-          reinterpret_cast<uintptr_t>(this) + (lane.executionStack[ourStackIndex].loopIteration << 16) + 0x5000);
+          reinterpret_cast<uintptr_t>(this) +
+          (lane.executionStack[ourStackIndex].loopIteration << 16) + 0x5000);
 
-      std::vector<MergeStackEntry> currentMergeStack = tg.getCurrentMergeStack(wave.waveId, lane.laneId);
-      if (!currentMergeStack.empty() && currentMergeStack.back().sourceStatement == iterationMarker) {
+      std::vector<MergeStackEntry> currentMergeStack =
+          tg.getCurrentMergeStack(wave.waveId, lane.laneId);
+      if (!currentMergeStack.empty() &&
+          currentMergeStack.back().sourceStatement == iterationMarker) {
         tg.popMergePoint(wave.waveId, lane.laneId);
-        std::cout << "DEBUG: ForStmt - Lane " << lane.laneId 
-                  << " popped iteration merge point on early return (Result-based)" << std::endl;
+        std::cout
+            << "DEBUG: ForStmt - Lane " << lane.laneId
+            << " popped iteration merge point on early return (Result-based)"
+            << std::endl;
       }
       // Pop our entry and return from loop
       lane.executionStack.pop_back();
@@ -2370,68 +2511,89 @@ Result<Unit, ExecutionError> ForStmt::executeBodyStatements_result(LaneContext &
 
     if (lane.state != ThreadState::Ready) {
       // Child statement needs to resume - preserve current block context
-      uint32_t blockAfterStatement = tg.getCurrentBlock(wave.waveId, lane.laneId);
-      std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " child statement needs resume (Result-based)" << std::endl;
-      std::cout << "  Block before: " << blockBeforeStatement 
-                << ", Block after: " << blockAfterStatement 
-                << ", statementIndex stays at: " << lane.executionStack[ourStackIndex].statementIndex << std::endl;
+      uint32_t blockAfterStatement =
+          tg.getCurrentBlock(wave.waveId, lane.laneId);
+      std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
+                << " child statement needs resume (Result-based)" << std::endl;
+      std::cout << "  Block before: " << blockBeforeStatement
+                << ", Block after: " << blockAfterStatement
+                << ", statementIndex stays at: "
+                << lane.executionStack[ourStackIndex].statementIndex
+                << std::endl;
       return Ok<Unit, ExecutionError>(Unit{});
     }
 
     // Log block transitions (shows natural flow to merge blocks)
     uint32_t blockAfterStatement = tg.getCurrentBlock(wave.waveId, lane.laneId);
     if (blockBeforeStatement != blockAfterStatement) {
-      std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " natural flow from block " << blockBeforeStatement
-                << " to block " << blockAfterStatement << " during statement " << i << " (likely merge block, Result-based)" << std::endl;
+      std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
+                << " natural flow from block " << blockBeforeStatement
+                << " to block " << blockAfterStatement << " during statement "
+                << i << " (likely merge block, Result-based)" << std::endl;
     }
 
     // Update statement index
-    std::cout << "DEBUG: ForStmt - Lane " << lane.laneId 
-              << " completed statement " << i << ", incrementing statementIndex to " << (i + 1) << std::endl;
+    std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
+              << " completed statement " << i
+              << ", incrementing statementIndex to " << (i + 1) << std::endl;
     lane.executionStack[ourStackIndex].statementIndex = i + 1;
   }
-  
+
   return Ok<Unit, ExecutionError>(Unit{});
 }
 
-Result<Unit, ExecutionError> ForStmt::evaluateInitPhase_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
-                               int ourStackIndex, uint32_t headerBlockId) {
-  std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " evaluating init (Result-based)" << std::endl;
+Result<Unit, ExecutionError>
+ForStmt::evaluateInitPhase_result(LaneContext &lane, WaveContext &wave,
+                                  ThreadgroupContext &tg, int ourStackIndex,
+                                  uint32_t headerBlockId) {
+  std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
+            << " evaluating init (Result-based)" << std::endl;
 
   // Initialize loop variable using Result-based evaluation
-  Value initVal = TRY_RESULT(init_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+  Value initVal =
+      TRY_RESULT(init_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
   lane.variables[loopVar_] = initVal;
 
   // Move to loop header block
-  tg.moveThreadFromUnknownToParticipating(headerBlockId, wave.waveId, lane.laneId);
+  tg.moveThreadFromUnknownToParticipating(headerBlockId, wave.waveId,
+                                          lane.laneId);
 
   // Move to condition evaluation phase
-  lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingCondition;
+  lane.executionStack[ourStackIndex].phase =
+      LaneContext::ControlFlowPhase::EvaluatingCondition;
   lane.executionStack[ourStackIndex].loopIteration = 0;
   if (!isProtectedState(lane.state)) {
     lane.state = ThreadState::WaitingForResume;
   }
-  
+
   return Ok<Unit, ExecutionError>(Unit{});
 }
 
-Result<Unit, ExecutionError> ForStmt::evaluateConditionPhase_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
-                                    int ourStackIndex, uint32_t headerBlockId) {
+Result<Unit, ExecutionError> ForStmt::evaluateConditionPhase_result(
+    LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
+    int ourStackIndex, uint32_t headerBlockId) {
   auto &ourEntry = lane.executionStack[ourStackIndex];
   std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
-            << " evaluating condition for iteration " << ourEntry.loopIteration << " (Result-based)" << std::endl;
+            << " evaluating condition for iteration " << ourEntry.loopIteration
+            << " (Result-based)" << std::endl;
 
   // Check loop condition using Result-based evaluation
-  Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+  Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), Unit,
+                             ExecutionError);
   bool shouldContinue = condVal.asBool();
-  
+
   if (!shouldContinue) {
-    // Lane is exiting loop - comprehensive cleanup from header and all iteration blocks
-    tg.removeThreadFromAllSets(headerBlockId, wave.waveId, lane.laneId); // Remove from header
-    tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId); // Remove from iteration blocks
+    // Lane is exiting loop - comprehensive cleanup from header and all
+    // iteration blocks
+    tg.removeThreadFromAllSets(headerBlockId, wave.waveId,
+                               lane.laneId); // Remove from header
+    tg.removeThreadFromNestedBlocks(
+        headerBlockId, wave.waveId,
+        lane.laneId); // Remove from iteration blocks
 
     // Move to reconverging phase
-    lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::Reconverging;
+    lane.executionStack[ourStackIndex].phase =
+        LaneContext::ControlFlowPhase::Reconverging;
     if (!isProtectedState(lane.state)) {
       lane.state = ThreadState::WaitingForResume;
     }
@@ -2439,91 +2601,105 @@ Result<Unit, ExecutionError> ForStmt::evaluateConditionPhase_result(LaneContext 
   }
 
   // Condition passed, move to body execution
-  lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::ExecutingBody;
+  lane.executionStack[ourStackIndex].phase =
+      LaneContext::ControlFlowPhase::ExecutingBody;
   lane.executionStack[ourStackIndex].statementIndex = 0;
   if (!isProtectedState(lane.state)) {
     lane.state = ThreadState::WaitingForResume;
   }
-  
+
   return Ok<Unit, ExecutionError>(Unit{});
 }
 
-Result<Unit, ExecutionError> ForStmt::evaluateIncrementPhase_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                             int ourStackIndex) {
-  std::cout << "DEBUG: ForStmt - Lane " << lane.laneId << " evaluating increment (Result-based)" << std::endl;
+Result<Unit, ExecutionError>
+ForStmt::evaluateIncrementPhase_result(LaneContext &lane, WaveContext &wave,
+                                       ThreadgroupContext &tg,
+                                       int ourStackIndex) {
+  std::cout << "DEBUG: ForStmt - Lane " << lane.laneId
+            << " evaluating increment (Result-based)" << std::endl;
 
-  // Evaluate increment expression for side effects only - DO NOT assign result back to loop variable
-  // For b++, the result is the old value, but the side effect is incrementing b
-  // For ++b, the result is the new value, but we still don't want to assign it back
+  // Evaluate increment expression for side effects only - DO NOT assign result
+  // back to loop variable For b++, the result is the old value, but the side
+  // effect is incrementing b For ++b, the result is the new value, but we still
+  // don't want to assign it back
   TRY_RESULT(increment_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
 
   // Move back to condition evaluation
-  lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingCondition;
+  lane.executionStack[ourStackIndex].phase =
+      LaneContext::ControlFlowPhase::EvaluatingCondition;
   lane.executionStack[ourStackIndex].loopIteration++;
   if (!isProtectedState(lane.state)) {
     lane.state = ThreadState::WaitingForResume;
   }
-  
+
   return Ok<Unit, ExecutionError>(Unit{});
 }
 
 // ForStmt specialized wrapper function
-Result<Unit, ExecutionError> ForStmt::execute_with_error_handling(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg) {
+Result<Unit, ExecutionError>
+ForStmt::execute_with_error_handling(LaneContext &lane, WaveContext &wave,
+                                     ThreadgroupContext &tg) {
   auto result = execute_result(lane, wave, tg);
   if (result.is_err()) {
     ExecutionError error = result.unwrap_err();
-    std::cout << "DEBUG: ForStmt - Handling error in wrapper: " << static_cast<int>(error) << std::endl;
-    
+    std::cout << "DEBUG: ForStmt - Handling error in wrapper: "
+              << static_cast<int>(error) << std::endl;
+
     switch (error) {
-      case ExecutionError::WaveOperationWait:
-        // ForStmt-specific: Wave operation already set the lane to WaitingForWave
-        // Just propagate the error without changing state
-        return result; // Propagate for parent to handle
-        
-      case ExecutionError::ControlFlowBreak:
-        // ForStmt consumes break: exit loop cleanly
-        {
-          std::cout << "DEBUG: ForStmt - Break consumed, exiting loop cleanly" << std::endl;
-          // Find our stack entry to get header block ID
-          int ourStackIndex = findStackIndex(lane);
-          if (ourStackIndex >= 0) {
-            uint32_t headerBlockId = lane.executionStack[ourStackIndex].loopHeaderBlockId;
-            handleBreakException(lane, wave, tg, ourStackIndex, headerBlockId);
-            
-            // Set state to WaitingForResume 
-            if (!isProtectedState(lane.state)) {
-              lane.state = ThreadState::WaitingForResume;
-            }
-            
-            // Restore active state (reconvergence)
-            lane.isActive = lane.isActive && !lane.hasReturned;
+    case ExecutionError::WaveOperationWait:
+      // ForStmt-specific: Wave operation already set the lane to WaitingForWave
+      // Just propagate the error without changing state
+      return result; // Propagate for parent to handle
+
+    case ExecutionError::ControlFlowBreak:
+      // ForStmt consumes break: exit loop cleanly
+      {
+        std::cout << "DEBUG: ForStmt - Break consumed, exiting loop cleanly"
+                  << std::endl;
+        // Find our stack entry to get header block ID
+        int ourStackIndex = findStackIndex(lane);
+        if (ourStackIndex >= 0) {
+          uint32_t headerBlockId =
+              lane.executionStack[ourStackIndex].loopHeaderBlockId;
+          handleBreakException(lane, wave, tg, ourStackIndex, headerBlockId);
+
+          // Set state to WaitingForResume
+          if (!isProtectedState(lane.state)) {
+            lane.state = ThreadState::WaitingForResume;
           }
+
+          // Restore active state (reconvergence)
+          lane.isActive = lane.isActive && !lane.hasReturned;
         }
-        return Ok<Unit, ExecutionError>(Unit{}); // Success - break handled
-        
-      case ExecutionError::ControlFlowContinue:
-        // ForStmt consumes continue: jump to increment phase
-        {
-          std::cout << "DEBUG: ForStmt - Continue consumed, jumping to increment phase" << std::endl;
-          int ourStackIndex = findStackIndex(lane);
-          if (ourStackIndex >= 0) {
-            uint32_t headerBlockId = lane.executionStack[ourStackIndex].loopHeaderBlockId;
-            handleContinueException(lane, wave, tg, ourStackIndex, headerBlockId);
-            
-            // Set state to WaitingForResume
-            if (!isProtectedState(lane.state)) {
-              lane.state = ThreadState::WaitingForResume;
-            }
-            
-            // Restore active state (reconvergence)
-            lane.isActive = lane.isActive && !lane.hasReturned;
+      }
+      return Ok<Unit, ExecutionError>(Unit{}); // Success - break handled
+
+    case ExecutionError::ControlFlowContinue:
+      // ForStmt consumes continue: jump to increment phase
+      {
+        std::cout
+            << "DEBUG: ForStmt - Continue consumed, jumping to increment phase"
+            << std::endl;
+        int ourStackIndex = findStackIndex(lane);
+        if (ourStackIndex >= 0) {
+          uint32_t headerBlockId =
+              lane.executionStack[ourStackIndex].loopHeaderBlockId;
+          handleContinueException(lane, wave, tg, ourStackIndex, headerBlockId);
+
+          // Set state to WaitingForResume
+          if (!isProtectedState(lane.state)) {
+            lane.state = ThreadState::WaitingForResume;
           }
+
+          // Restore active state (reconvergence)
+          lane.isActive = lane.isActive && !lane.hasReturned;
         }
-        return Ok<Unit, ExecutionError>(Unit{}); // Success - continue handled
-        
-      default:
-        // Other errors propagate up unchanged
-        return result;
+      }
+      return Ok<Unit, ExecutionError>(Unit{}); // Success - continue handled
+
+    default:
+      // Other errors propagate up unchanged
+      return result;
     }
   }
   return result; // Success case
@@ -2542,7 +2718,6 @@ std::string ForStmt::toString() const {
 
 ReturnStmt::ReturnStmt(std::unique_ptr<Expression> expr)
     : expr_(std::move(expr)) {}
-
 
 void ReturnStmt::handleGlobalEarlyReturn(LaneContext &lane, WaveContext &wave,
                                          ThreadgroupContext &tg) {
@@ -2780,13 +2955,11 @@ std::string ReturnStmt::toString() const {
   return "return" + (expr_ ? " " + expr_->toString() : "") + ";";
 }
 
-
-
 ExprStmt::ExprStmt(std::unique_ptr<Expression> expr) : expr_(std::move(expr)) {}
 
-
-Result<Unit, ExecutionError> ExprStmt::execute_result(LaneContext &lane, WaveContext &wave,
-                                                    ThreadgroupContext &tg) {
+Result<Unit, ExecutionError> ExprStmt::execute_result(LaneContext &lane,
+                                                      WaveContext &wave,
+                                                      ThreadgroupContext &tg) {
   if (!lane.isActive)
     return Ok<Unit, ExecutionError>(Unit{});
 
@@ -2809,20 +2982,21 @@ SharedWriteStmt::SharedWriteStmt(MemoryAddress addr,
                                  std::unique_ptr<Expression> expr)
     : addr_(addr), expr_(std::move(expr)) {}
 
-
 std::string SharedWriteStmt::toString() const {
   return "g_shared[" + std::to_string(addr_) + "] = " + expr_->toString() + ";";
 }
 
 // Result-based implementations for missing statement types
 
-Result<Unit, ExecutionError> ReturnStmt::execute_result(LaneContext &lane, WaveContext &wave,
-                                                       ThreadgroupContext &tg) {
+Result<Unit, ExecutionError>
+ReturnStmt::execute_result(LaneContext &lane, WaveContext &wave,
+                           ThreadgroupContext &tg) {
   if (!lane.isActive)
     return Ok<Unit, ExecutionError>(Unit{});
 
-  std::cout << "DEBUG: ReturnStmt - Lane " << lane.laneId << " executing return (Result-based)" << std::endl;
-  
+  std::cout << "DEBUG: ReturnStmt - Lane " << lane.laneId
+            << " executing return (Result-based)" << std::endl;
+
   if (expr_) {
     auto exprResult = expr_->evaluate_result(lane, wave, tg);
     if (exprResult.is_err()) {
@@ -2833,13 +3007,14 @@ Result<Unit, ExecutionError> ReturnStmt::execute_result(LaneContext &lane, WaveC
 
   // Handle comprehensive global cleanup for early return
   handleGlobalEarlyReturn(lane, wave, tg);
-  
+
   std::cout << "DEBUG: ReturnStmt - Return completed successfully" << std::endl;
   return Ok<Unit, ExecutionError>(Unit{});
 }
 
-Result<Unit, ExecutionError> BarrierStmt::execute_result(LaneContext &lane, WaveContext &wave,
-                                                        ThreadgroupContext &tg) {
+Result<Unit, ExecutionError>
+BarrierStmt::execute_result(LaneContext &lane, WaveContext &wave,
+                            ThreadgroupContext &tg) {
   if (!lane.isActive)
     return Err<Unit, ExecutionError>(ExecutionError::InvalidState);
 
@@ -2906,31 +3081,32 @@ Result<Unit, ExecutionError> BarrierStmt::execute_result(LaneContext &lane, Wave
   // processBarriers()
 }
 
-Result<Unit, ExecutionError> SharedWriteStmt::execute_result(LaneContext &lane, WaveContext &wave,
-                                                           ThreadgroupContext &tg) {
+Result<Unit, ExecutionError>
+SharedWriteStmt::execute_result(LaneContext &lane, WaveContext &wave,
+                                ThreadgroupContext &tg) {
   if (!lane.isActive)
     return Ok<Unit, ExecutionError>(Unit{});
 
-  std::cout << "DEBUG: SharedWriteStmt - Lane " << lane.laneId << " executing shared write (Result-based)" << std::endl;
-  
+  std::cout << "DEBUG: SharedWriteStmt - Lane " << lane.laneId
+            << " executing shared write (Result-based)" << std::endl;
+
   auto valueResult = expr_->evaluate_result(lane, wave, tg);
   if (valueResult.is_err()) {
     return Err<Unit, ExecutionError>(valueResult.unwrap_err());
   }
-  
+
   Value value = valueResult.unwrap();
   ThreadId tid = tg.getGlobalThreadId(wave.waveId, lane.laneId);
   tg.sharedMemory->write(addr_, value, tid);
-  
-  std::cout << "DEBUG: SharedWriteStmt - Shared write completed successfully" << std::endl;
+
+  std::cout << "DEBUG: SharedWriteStmt - Shared write completed successfully"
+            << std::endl;
   return Ok<Unit, ExecutionError>(Unit{});
 }
-
 
 std::string SharedReadExpr::toString() const {
   return "g_shared[" + std::to_string(addr_) + "]";
 }
-
 
 std::string BufferAccessExpr::toString() const {
   return bufferName_ + "[" + indexExpr_->toString() + "]";
@@ -2944,82 +3120,81 @@ ExecutionResult MiniHLSLInterpreter::executeWithOrdering(
   // Create threadgroup context
   ThreadgroupContext tgContext(program.getTotalThreads(), waveSize);
 
-    uint32_t orderingIndex = 0;
-    uint32_t maxIterations = program.getTotalThreads() *
-                             program.statements.size() * 10; // Safety limit
-    uint32_t iteration = 0;
+  uint32_t orderingIndex = 0;
+  uint32_t maxIterations = program.getTotalThreads() *
+                           program.statements.size() * 10; // Safety limit
+  uint32_t iteration = 0;
 
-    // Cooperative scheduling main loop
-    while (iteration < maxIterations) {
-      iteration++;
+  // Cooperative scheduling main loop
+  while (iteration < maxIterations) {
+    iteration++;
 
-      // Process completed wave operations and barriers
-      processWaveOperations(tgContext);
-      // processBarriers(tgContext);
+    // Process completed wave operations and barriers
+    processWaveOperations(tgContext);
+    // processBarriers(tgContext);
 
-      // Process lanes waiting to resume control flow
-      processControlFlowResumption(tgContext);
+    // Process lanes waiting to resume control flow
+    processControlFlowResumption(tgContext);
 
-      // Get threads ready for execution
-      auto readyThreads = tgContext.getReadyThreads();
-      if (readyThreads.empty()) {
-        // Check if all threads are completed
-        bool allCompleted = true;
-        bool hasWaitingThreads = false;
-        for (const auto &wave : tgContext.waves) {
-          for (const auto &lane : wave->lanes) {
-            if (lane->state == ThreadState::WaitingForWave ||
-                lane->state == ThreadState::WaitingAtBarrier ||
-                lane->state == ThreadState::WaitingForResume) {
-              hasWaitingThreads = true;
-            }
-            if (lane->state != ThreadState::Completed &&
-                lane->state != ThreadState::Error) {
-              allCompleted = false;
-            }
+    // Get threads ready for execution
+    auto readyThreads = tgContext.getReadyThreads();
+    if (readyThreads.empty()) {
+      // Check if all threads are completed
+      bool allCompleted = true;
+      bool hasWaitingThreads = false;
+      for (const auto &wave : tgContext.waves) {
+        for (const auto &lane : wave->lanes) {
+          if (lane->state == ThreadState::WaitingForWave ||
+              lane->state == ThreadState::WaitingAtBarrier ||
+              lane->state == ThreadState::WaitingForResume) {
+            hasWaitingThreads = true;
+          }
+          if (lane->state != ThreadState::Completed &&
+              lane->state != ThreadState::Error) {
+            allCompleted = false;
           }
         }
-
-        if (allCompleted) {
-          break; // All threads finished
-        }
-
-        // If we have waiting threads but no ready threads,
-        // continue to let processWaveOperations wake them up
-        if (hasWaitingThreads) {
-          continue; // Let synchronization complete
-        }
-
-        // Check for true deadlock (no waiting, no ready, not completed)
-        result.errorMessage = "Deadlock detected: no threads ready or waiting";
-        break;
       }
 
-      // Select next thread to execute according to ordering
-      ThreadId nextTid =
-          selectNextThread(readyThreads, ordering, orderingIndex);
-
-      // Execute one step of the selected thread
-      bool continueExecution = executeOneStep(nextTid, program, tgContext);
-      if (!continueExecution) {
-        break; // Fatal error occurred
+      if (allCompleted) {
+        break; // All threads finished
       }
-    }
 
-    if (iteration >= maxIterations) {
-      result.errorMessage =
-          "Execution timeout: possible infinite loop or deadlock";
-    }
-
-    // Collect return values in thread order
-    for (ThreadId tid = 0; tid < program.getTotalThreads(); ++tid) {
-      auto [waveId, laneId] = tgContext.getWaveAndLane(tid);
-      if (waveId < tgContext.waves.size() &&
-          laneId < tgContext.waves[waveId]->lanes.size()) {
-        result.threadReturnValues.push_back(
-            tgContext.waves[waveId]->lanes[laneId]->returnValue);
+      // If we have waiting threads but no ready threads,
+      // continue to let processWaveOperations wake them up
+      if (hasWaitingThreads) {
+        continue; // Let synchronization complete
       }
+
+      // Check for true deadlock (no waiting, no ready, not completed)
+      result.errorMessage = "Deadlock detected: no threads ready or waiting";
+      break;
     }
+
+    // Select next thread to execute according to ordering
+    ThreadId nextTid = selectNextThread(readyThreads, ordering, orderingIndex);
+
+    // Execute one step of the selected thread
+    bool continueExecution = executeOneStep(nextTid, program, tgContext);
+    if (!continueExecution) {
+      break; // Fatal error occurred
+    }
+  }
+
+  if (iteration >= maxIterations) {
+    result.errorMessage =
+        "Execution timeout: possible infinite loop or deadlock";
+  }
+
+  // Collect return values in thread order
+  for (ThreadId tid = 0; tid < program.getTotalThreads(); ++tid) {
+    auto [waveId, laneId] = tgContext.getWaveAndLane(tid);
+    if (waveId < tgContext.waves.size() &&
+        laneId < tgContext.waves[waveId]->lanes.size()) {
+      result.threadReturnValues.push_back(
+          tgContext.waves[waveId]->lanes[laneId]->returnValue);
+    }
+  }
 
   // Collect final state
   result.sharedMemoryState = tgContext.sharedMemory->getSnapshot();
@@ -3062,43 +3237,45 @@ bool MiniHLSLInterpreter::executeOneStep(ThreadId tid, const Program &program,
     return true;
   }
 
-  // Execute the current statement using Result-based approach with specialized error handling
+  // Execute the current statement using Result-based approach with specialized
+  // error handling
   const auto &stmt = program.statements[lane.currentStatement];
-  
+
   // Use the specialized wrapper functions that handle errors properly
   auto result = stmt->execute_with_error_handling(lane, wave, tgContext);
-  
+
   if (result.is_err()) {
     ExecutionError error = result.unwrap_err();
     switch (error) {
-      case ExecutionError::WaveOperationWait:
-        // Lane is waiting for wave operation - scheduler will resume it later
-        // Lane state should already be set to WaitingForWave by the wave operation
-        std::cout << "DEBUG: WAVE_WAIT: Lane " << (tid % 32)
-                  << " received WaveOperationWait error, state=" << (int)lane.state
-                  << std::endl;
-        // Do nothing - state is already correct
-        break;
-        
-      case ExecutionError::ControlFlowBreak:
-      case ExecutionError::ControlFlowContinue:
-        // These should have been handled by the wrapper functions
-        // If we see them here, it means they propagated from nested statements
-        // which indicates an error in our implementation
-        lane.state = ThreadState::Error;
-        lane.errorMessage = "Unhandled control flow error";
-        break;
-        
-      case ExecutionError::InvalidState:
-        // Runtime error occurred
-        lane.state = ThreadState::Error;
-        lane.errorMessage = "Invalid execution state";
-        break;
-        
-      default:
-        lane.state = ThreadState::Error;
-        lane.errorMessage = "Unknown execution error";
-        break;
+    case ExecutionError::WaveOperationWait:
+      // Lane is waiting for wave operation - scheduler will resume it later
+      // Lane state should already be set to WaitingForWave by the wave
+      // operation
+      std::cout << "DEBUG: WAVE_WAIT: Lane " << (tid % 32)
+                << " received WaveOperationWait error, state="
+                << (int)lane.state << std::endl;
+      // Do nothing - state is already correct
+      break;
+
+    case ExecutionError::ControlFlowBreak:
+    case ExecutionError::ControlFlowContinue:
+      // These should have been handled by the wrapper functions
+      // If we see them here, it means they propagated from nested statements
+      // which indicates an error in our implementation
+      lane.state = ThreadState::Error;
+      lane.errorMessage = "Unhandled control flow error";
+      break;
+
+    case ExecutionError::InvalidState:
+      // Runtime error occurred
+      lane.state = ThreadState::Error;
+      lane.errorMessage = "Invalid execution state";
+      break;
+
+    default:
+      lane.state = ThreadState::Error;
+      lane.errorMessage = "Unknown execution error";
+      break;
     }
   } else {
     // Success case - handle statement completion
@@ -3132,7 +3309,7 @@ void MiniHLSLInterpreter::processWaveOperations(ThreadgroupContext &tgContext) {
         // Update arrivedParticipants to include all lanes currently in this
         // block
         uint32_t blockId = instructionKey.second;
-        const auto* block = tgContext.getBlock(blockId);
+        const auto *block = tgContext.getBlock(blockId);
         if (block) {
           // Get participating lanes from registry (single source of truth)
           auto participatingLanes =
@@ -3235,7 +3412,8 @@ void MiniHLSLInterpreter::processControlFlowResumption(
   }
 }
 
-Result<Unit, ExecutionError> MiniHLSLInterpreter::executeCollectiveWaveOperation(
+Result<Unit, ExecutionError>
+MiniHLSLInterpreter::executeCollectiveWaveOperation(
     ThreadgroupContext &tgContext, WaveId waveId,
     const std::pair<const void *, uint32_t> &instructionKey,
     WaveOperationSyncPoint &syncPoint) {
@@ -3251,8 +3429,9 @@ Result<Unit, ExecutionError> MiniHLSLInterpreter::executeCollectiveWaveOperation
   for (LaneId laneId : syncPoint.arrivedParticipants) {
     if (laneId < wave.lanes.size()) {
       // Evaluate the expression for this lane
-      Value value = TRY_RESULT(waveOp->getExpression()->evaluate_result(*wave.lanes[laneId], wave,
-                                                      tgContext), Unit, ExecutionError);
+      Value value = TRY_RESULT(waveOp->getExpression()->evaluate_result(
+                                   *wave.lanes[laneId], wave, tgContext),
+                               Unit, ExecutionError);
       values.push_back(value);
     }
   }
@@ -3723,8 +3902,10 @@ MiniHLSLInterpreter::convertStatement(const clang::Stmt *stmt,
     return nullptr;
   } else if (auto expr = clang::dyn_cast<clang::Expr>(stmt)) {
     // Handle other expressions as statements
-    std::cout << "Converting expression as statement: " << expr->getStmtClassName() << std::endl;
-    if (auto compoundOp = clang::dyn_cast<clang::CompoundAssignOperator>(expr)) {
+    std::cout << "Converting expression as statement: "
+              << expr->getStmtClassName() << std::endl;
+    if (auto compoundOp =
+            clang::dyn_cast<clang::CompoundAssignOperator>(expr)) {
       return convertCompoundAssignOperator(compoundOp, context);
     }
     // For other expressions, wrap in ExprStmt
@@ -3776,7 +3957,7 @@ MiniHLSLInterpreter::convertBinaryOperator(const clang::BinaryOperator *binOp,
 std::unique_ptr<Statement> MiniHLSLInterpreter::convertCompoundAssignOperator(
     const clang::CompoundAssignOperator *compoundOp,
     clang::ASTContext &context) {
-  std::cout << "Converting compound assignment operator: " 
+  std::cout << "Converting compound assignment operator: "
             << compoundOp->getOpcodeStr().str() << std::endl;
 
   // Get the target variable name
@@ -3820,13 +4001,13 @@ std::unique_ptr<Statement> MiniHLSLInterpreter::convertCompoundAssignOperator(
   auto binaryExpr =
       std::make_unique<BinaryOpExpr>(std::move(lhs), std::move(rhs), opType);
 
-  std::cout << "DEBUG: Creating AssignStmt for compound assignment: " 
+  std::cout << "DEBUG: Creating AssignStmt for compound assignment: "
             << targetVar << " = " << binaryExpr->toString() << std::endl;
 
   auto assignStmt = makeAssign(targetVar, std::move(binaryExpr));
-  std::cout << "DEBUG: Created statement type: AssignStmt with toString: " 
+  std::cout << "DEBUG: Created statement type: AssignStmt with toString: "
             << assignStmt->toString() << std::endl;
-  
+
   return assignStmt;
 }
 
@@ -4629,7 +4810,6 @@ ConditionalExpr::ConditionalExpr(std::unique_ptr<Expression> condition,
     : condition_(std::move(condition)), trueExpr_(std::move(trueExpr)),
       falseExpr_(std::move(falseExpr)) {}
 
-
 bool ConditionalExpr::isDeterministic() const {
   return condition_->isDeterministic() && trueExpr_->isDeterministic() &&
          falseExpr_->isDeterministic();
@@ -4640,38 +4820,43 @@ std::string ConditionalExpr::toString() const {
          falseExpr_->toString() + ")";
 }
 
-
 // WhileStmt implementation
 WhileStmt::WhileStmt(std::unique_ptr<Expression> cond,
                      std::vector<std::unique_ptr<Statement>> body)
     : condition_(std::move(cond)), body_(std::move(body)) {}
 
-
 // Pure Result-based WhileStmt phase implementations
-Result<bool, ExecutionError> WhileStmt::evaluateCondition(LaneContext &lane, WaveContext &wave,
-                                                         ThreadgroupContext &tg) {
-  std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " evaluating condition (Result-based)" << std::endl;
-  
-  Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), bool, ExecutionError);
+Result<bool, ExecutionError>
+WhileStmt::evaluateCondition(LaneContext &lane, WaveContext &wave,
+                             ThreadgroupContext &tg) {
+  std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
+            << " evaluating condition (Result-based)" << std::endl;
+
+  Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), bool,
+                             ExecutionError);
   bool shouldContinue = condVal.asBool();
-  
+
   return Ok<bool, ExecutionError>(shouldContinue);
 }
 
-Result<Unit, ExecutionError> WhileStmt::executeBody(LaneContext &lane, WaveContext &wave,
-                                                   ThreadgroupContext &tg) {
-  std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " executing body (Result-based)" << std::endl;
-  
+Result<Unit, ExecutionError> WhileStmt::executeBody(LaneContext &lane,
+                                                    WaveContext &wave,
+                                                    ThreadgroupContext &tg) {
+  std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
+            << " executing body (Result-based)" << std::endl;
+
   // Execute body statements using Result-based approach
   for (const auto &stmt : body_) {
     auto result = stmt->execute_result(lane, wave, tg);
     if (result.is_err()) {
       ExecutionError error = result.unwrap_err();
       if (error == ExecutionError::ControlFlowBreak) {
-        std::cout << "DEBUG: WhileStmt - Break encountered in body" << std::endl;
+        std::cout << "DEBUG: WhileStmt - Break encountered in body"
+                  << std::endl;
         return Err<Unit, ExecutionError>(ExecutionError::ControlFlowBreak);
       } else if (error == ExecutionError::ControlFlowContinue) {
-        std::cout << "DEBUG: WhileStmt - Continue encountered in body" << std::endl;
+        std::cout << "DEBUG: WhileStmt - Continue encountered in body"
+                  << std::endl;
         return Ok<Unit, ExecutionError>(Unit{}); // Continue to next iteration
       } else {
         // Other errors (like WaveOperationWait) should be propagated
@@ -4679,12 +4864,13 @@ Result<Unit, ExecutionError> WhileStmt::executeBody(LaneContext &lane, WaveConte
       }
     }
   }
-  
+
   return Ok<Unit, ExecutionError>(Unit{});
 }
 
-Result<Unit, ExecutionError> WhileStmt::execute_result(LaneContext &lane, WaveContext &wave,
-                                                     ThreadgroupContext &tg) {
+Result<Unit, ExecutionError> WhileStmt::execute_result(LaneContext &lane,
+                                                       WaveContext &wave,
+                                                       ThreadgroupContext &tg) {
   if (!lane.isActive)
     return Ok<Unit, ExecutionError>(Unit{});
 
@@ -4693,15 +4879,16 @@ Result<Unit, ExecutionError> WhileStmt::execute_result(LaneContext &lane, WaveCo
   bool isResuming = (ourStackIndex >= 0);
 
   std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " "
-            << (isResuming ? "resuming" : "starting") << " Result-based while loop"
-            << std::endl;
+            << (isResuming ? "resuming" : "starting")
+            << " Result-based while loop" << std::endl;
 
   uint32_t headerBlockId = 0;
   uint32_t mergeBlockId = 0;
-  
+
   if (!isResuming) {
     // First time execution - setup blocks and push onto execution stack
-    setupFreshExecution(lane, wave, tg, ourStackIndex, headerBlockId, mergeBlockId);
+    setupFreshExecution(lane, wave, tg, ourStackIndex, headerBlockId,
+                        mergeBlockId);
     ourStackIndex = lane.executionStack.size() - 1;
   } else {
     // Get our execution state
@@ -4712,29 +4899,33 @@ Result<Unit, ExecutionError> WhileStmt::execute_result(LaneContext &lane, WaveCo
 
   // Get our execution state
   auto &ourEntry = lane.executionStack[ourStackIndex];
-  
+
   // Result-based state machine for while loop execution
   switch (ourEntry.phase) {
   case LaneContext::ControlFlowPhase::EvaluatingCondition: {
     // Evaluate condition using Result-based helper method
-    TRY_RESULT(evaluateConditionPhase_result(lane, wave, tg, ourStackIndex, headerBlockId), Unit, ExecutionError);
-    
+    TRY_RESULT(evaluateConditionPhase_result(lane, wave, tg, ourStackIndex,
+                                             headerBlockId),
+               Unit, ExecutionError);
+
     // Set state to WaitingForResume to prevent currentStatement increment
     if (!isProtectedState(lane.state)) {
       lane.state = ThreadState::WaitingForResume;
     }
-    return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement increment, will resume later
+    return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement
+                                             // increment, will resume later
   }
 
   case LaneContext::ControlFlowPhase::ExecutingBody: {
     std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
               << " executing body for iteration " << ourEntry.loopIteration
-              << " from statement " << ourEntry.statementIndex 
+              << " from statement " << ourEntry.statementIndex
               << " (Result-based)" << std::endl;
-    
+
     // Debug: Print current variable state
-    std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " variables at body start: ";
-    for (const auto& var : lane.variables) {
+    std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
+              << " variables at body start: ";
+    for (const auto &var : lane.variables) {
       std::cout << var.first << "=" << var.second.toString() << " ";
     }
     std::cout << std::endl;
@@ -4743,8 +4934,10 @@ Result<Unit, ExecutionError> WhileStmt::execute_result(LaneContext &lane, WaveCo
     setupIterationBlocks(lane, wave, tg, ourStackIndex, headerBlockId);
 
     // Execute body statements using Result-based helper method
-    TRY_RESULT(executeBodyStatements_result(lane, wave, tg, ourStackIndex, headerBlockId), Unit, ExecutionError);
-    
+    TRY_RESULT(executeBodyStatements_result(lane, wave, tg, ourStackIndex,
+                                            headerBlockId),
+               Unit, ExecutionError);
+
     // Check if we need to return early (lane returned or needs resume)
     if (lane.hasReturned || lane.state != ThreadState::Ready) {
       return Ok<Unit, ExecutionError>(Unit{});
@@ -4752,12 +4945,13 @@ Result<Unit, ExecutionError> WhileStmt::execute_result(LaneContext &lane, WaveCo
 
     // Clean up after body execution using non-throwing helper method
     cleanupAfterBodyExecution(lane, wave, tg, ourStackIndex, headerBlockId);
-    
+
     // Set state to WaitingForResume to prevent currentStatement increment
     if (!isProtectedState(lane.state)) {
       lane.state = ThreadState::WaitingForResume;
     }
-    return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement increment, will resume later
+    return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement
+                                             // increment, will resume later
   }
 
   case LaneContext::ControlFlowPhase::Reconverging: {
@@ -4784,81 +4978,90 @@ std::string WhileStmt::toString() const {
 }
 
 // Specialized wrapper function for WhileStmt-specific error handling
-Result<Unit, ExecutionError> WhileStmt::execute_with_error_handling(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg) {
+Result<Unit, ExecutionError>
+WhileStmt::execute_with_error_handling(LaneContext &lane, WaveContext &wave,
+                                       ThreadgroupContext &tg) {
   auto result = execute_result(lane, wave, tg);
   if (result.is_err()) {
     ExecutionError error = result.unwrap_err();
-    
+
     switch (error) {
-      case ExecutionError::WaveOperationWait:
-        // WhileStmt-specific: Wave operation already set the lane to WaitingForWave
-        // Just propagate the error without changing state
-        return result; // Propagate for parent to handle
-        
-      case ExecutionError::ControlFlowBreak:
-        // WhileStmt consumes break: exit loop cleanly
-        {
-          int ourStackIndex = findStackIndex(lane);
-          if (ourStackIndex >= 0) {
-            uint32_t headerBlockId = lane.executionStack[ourStackIndex].loopHeaderBlockId;
-            handleBreakException(lane, wave, tg, ourStackIndex, headerBlockId);
-            if (!isProtectedState(lane.state)) {
-              lane.state = ThreadState::WaitingForResume;
-            }
-            
-            // Restore active state (reconvergence)
-            lane.isActive = lane.isActive && !lane.hasReturned;
+    case ExecutionError::WaveOperationWait:
+      // WhileStmt-specific: Wave operation already set the lane to
+      // WaitingForWave Just propagate the error without changing state
+      return result; // Propagate for parent to handle
+
+    case ExecutionError::ControlFlowBreak:
+      // WhileStmt consumes break: exit loop cleanly
+      {
+        int ourStackIndex = findStackIndex(lane);
+        if (ourStackIndex >= 0) {
+          uint32_t headerBlockId =
+              lane.executionStack[ourStackIndex].loopHeaderBlockId;
+          handleBreakException(lane, wave, tg, ourStackIndex, headerBlockId);
+          if (!isProtectedState(lane.state)) {
+            lane.state = ThreadState::WaitingForResume;
           }
+
+          // Restore active state (reconvergence)
+          lane.isActive = lane.isActive && !lane.hasReturned;
         }
-        return Ok<Unit, ExecutionError>(Unit{}); // Success - break handled
-        
-      case ExecutionError::ControlFlowContinue:
-        // WhileStmt consumes continue: jump back to condition phase
-        {
-          int ourStackIndex = findStackIndex(lane);
-          if (ourStackIndex >= 0) {
-            uint32_t headerBlockId = lane.executionStack[ourStackIndex].loopHeaderBlockId;
-            handleContinueException(lane, wave, tg, ourStackIndex, headerBlockId);
-            if (!isProtectedState(lane.state)) {
-              lane.state = ThreadState::WaitingForResume;
-            }
-            
-            // Restore active state (reconvergence)
-            lane.isActive = lane.isActive && !lane.hasReturned;
+      }
+      return Ok<Unit, ExecutionError>(Unit{}); // Success - break handled
+
+    case ExecutionError::ControlFlowContinue:
+      // WhileStmt consumes continue: jump back to condition phase
+      {
+        int ourStackIndex = findStackIndex(lane);
+        if (ourStackIndex >= 0) {
+          uint32_t headerBlockId =
+              lane.executionStack[ourStackIndex].loopHeaderBlockId;
+          handleContinueException(lane, wave, tg, ourStackIndex, headerBlockId);
+          if (!isProtectedState(lane.state)) {
+            lane.state = ThreadState::WaitingForResume;
           }
+
+          // Restore active state (reconvergence)
+          lane.isActive = lane.isActive && !lane.hasReturned;
         }
-        return Ok<Unit, ExecutionError>(Unit{}); // Success - continue handled
-        
-      default:
-        return result; // Propagate unknown errors
+      }
+      return Ok<Unit, ExecutionError>(Unit{}); // Success - continue handled
+
+    default:
+      return result; // Propagate unknown errors
     }
   }
   return result; // Success case
 }
 
 // Helper method for fresh execution setup in WhileStmt
-void WhileStmt::setupFreshExecution(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
-                                   int ourStackIndex, uint32_t &headerBlockId, uint32_t &mergeBlockId) {
+void WhileStmt::setupFreshExecution(LaneContext &lane, WaveContext &wave,
+                                    ThreadgroupContext &tg, int ourStackIndex,
+                                    uint32_t &headerBlockId,
+                                    uint32_t &mergeBlockId) {
   // Get current block before entering loop
   uint32_t parentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
 
   // Get current merge stack for block creation
-  std::vector<MergeStackEntry> currentMergeStack = tg.getCurrentMergeStack(wave.waveId, lane.laneId);
+  std::vector<MergeStackEntry> currentMergeStack =
+      tg.getCurrentMergeStack(wave.waveId, lane.laneId);
 
   // Create loop blocks (header, merge) - pass current execution path
-  auto [hBlockId, mBlockId] = tg.createLoopBlocks(static_cast<const void *>(this), parentBlockId,
-                                                  currentMergeStack, lane.executionPath);
+  auto [hBlockId, mBlockId] =
+      tg.createLoopBlocks(static_cast<const void *>(this), parentBlockId,
+                          currentMergeStack, lane.executionPath);
   headerBlockId = hBlockId;
   mergeBlockId = mBlockId;
 
   // Push merge point for loop divergence
   std::set<uint32_t> divergentBlocks = {headerBlockId};
-  tg.pushMergePoint(wave.waveId, lane.laneId, static_cast<const void *>(this), parentBlockId,
-                    divergentBlocks);
+  tg.pushMergePoint(wave.waveId, lane.laneId, static_cast<const void *>(this),
+                    parentBlockId, divergentBlocks);
 
   // Push execution state onto stack
-  LaneContext::BlockExecutionState newState(static_cast<const void *>(this),
-                                            LaneContext::ControlFlowPhase::EvaluatingCondition, 0);
+  LaneContext::BlockExecutionState newState(
+      static_cast<const void *>(this),
+      LaneContext::ControlFlowPhase::EvaluatingCondition, 0);
   newState.loopIteration = 0;
   newState.loopHeaderBlockId = headerBlockId;
   newState.loopMergeBlockId = mergeBlockId;
@@ -4866,21 +5069,22 @@ void WhileStmt::setupFreshExecution(LaneContext &lane, WaveContext &wave, Thread
   lane.executionStack.push_back(newState);
 
   // Move to loop header block
-  tg.moveThreadFromUnknownToParticipating(headerBlockId, wave.waveId, lane.laneId);
+  tg.moveThreadFromUnknownToParticipating(headerBlockId, wave.waveId,
+                                          lane.laneId);
 }
 
-
-
 // Helper method for setting up iteration-specific blocks in WhileStmt
-void WhileStmt::setupIterationBlocks(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
-                                    int ourStackIndex, uint32_t headerBlockId) {
+void WhileStmt::setupIterationBlocks(LaneContext &lane, WaveContext &wave,
+                                     ThreadgroupContext &tg, int ourStackIndex,
+                                     uint32_t headerBlockId) {
   auto &ourEntry = lane.executionStack[ourStackIndex];
-  
+
   // Check if we need an iteration-specific starting block
   bool needsIterationBlock = false;
   uint32_t iterationStartBlockId = 0;
 
-  // Look ahead to see if first statement (statement 0) requires unique iteration context
+  // Look ahead to see if first statement (statement 0) requires unique
+  // iteration context
   if (!body_.empty()) {
     bool firstStatementIsControlFlow =
         dynamic_cast<IfStmt *>(body_[0].get()) != nullptr ||
@@ -4890,11 +5094,15 @@ void WhileStmt::setupIterationBlocks(LaneContext &lane, WaveContext &wave, Threa
 
     if (!firstStatementIsControlFlow) {
       needsIterationBlock = true;
-      std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
-                << " needs iteration block (first statement is not control flow)" << std::endl;
+      std::cout
+          << "DEBUG: WhileStmt - Lane " << lane.laneId
+          << " needs iteration block (first statement is not control flow)"
+          << std::endl;
     } else {
-      std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
-                << " no iteration block needed (first statement is control flow)" << std::endl;
+      std::cout
+          << "DEBUG: WhileStmt - Lane " << lane.laneId
+          << " no iteration block needed (first statement is control flow)"
+          << std::endl;
     }
   }
 
@@ -4902,78 +5110,106 @@ void WhileStmt::setupIterationBlocks(LaneContext &lane, WaveContext &wave, Threa
     // Create iteration-specific starting block
     iterationStartBlockId = lane.executionStack[ourStackIndex].loopBodyBlockId;
     if (iterationStartBlockId == 0) {
-      std::vector<MergeStackEntry> currentMergeStack = tg.getCurrentMergeStack(wave.waveId, lane.laneId);
+      std::vector<MergeStackEntry> currentMergeStack =
+          tg.getCurrentMergeStack(wave.waveId, lane.laneId);
 
       const void *iterationPtr = reinterpret_cast<const void *>(
-          reinterpret_cast<uintptr_t>(this) + (ourEntry.loopIteration << 16) + 0x3000);
+          reinterpret_cast<uintptr_t>(this) + (ourEntry.loopIteration << 16) +
+          0x3000);
 
       BlockIdentity iterationIdentity = tg.createBlockIdentity(
-          iterationPtr, BlockType::REGULAR, headerBlockId, currentMergeStack, true, lane.executionPath);
+          iterationPtr, BlockType::REGULAR, headerBlockId, currentMergeStack,
+          true, lane.executionPath);
 
       iterationStartBlockId = tg.findBlockByIdentity(iterationIdentity);
 
       if (iterationStartBlockId == 0) {
-        std::map<WaveId, std::set<LaneId>> expectedLanes = tg.getCurrentBlockParticipants(headerBlockId);
-        iterationStartBlockId = tg.findOrCreateBlockForPath(iterationIdentity, expectedLanes);
-        std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " created iteration starting block "
-                  << iterationStartBlockId << " for iteration " << ourEntry.loopIteration << std::endl;
+        std::map<WaveId, std::set<LaneId>> expectedLanes =
+            tg.getCurrentBlockParticipants(headerBlockId);
+        iterationStartBlockId =
+            tg.findOrCreateBlockForPath(iterationIdentity, expectedLanes);
+        std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
+                  << " created iteration starting block "
+                  << iterationStartBlockId << " for iteration "
+                  << ourEntry.loopIteration << std::endl;
       }
 
-      lane.executionStack[ourStackIndex].loopBodyBlockId = iterationStartBlockId;
+      lane.executionStack[ourStackIndex].loopBodyBlockId =
+          iterationStartBlockId;
     }
 
     if (tg.getCurrentBlock(wave.waveId, lane.laneId) != iterationStartBlockId) {
-      tg.moveThreadFromUnknownToParticipating(iterationStartBlockId, wave.waveId, lane.laneId);
-      std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " moved to iteration starting block "
+      tg.moveThreadFromUnknownToParticipating(iterationStartBlockId,
+                                              wave.waveId, lane.laneId);
+      std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
+                << " moved to iteration starting block "
                 << iterationStartBlockId << std::endl;
     }
   } else {
-    // No iteration block needed - but we still need to ensure unique execution context per iteration
-    // Only push merge point if we're at the beginning of the body (statement 0)
+    // No iteration block needed - but we still need to ensure unique execution
+    // context per iteration Only push merge point if we're at the beginning of
+    // the body (statement 0)
     if (ourEntry.statementIndex == 0) {
-      // Push iteration-specific merge point so nested control flow sees different merge stack
+      // Push iteration-specific merge point so nested control flow sees
+      // different merge stack
       const void *iterationMarker = reinterpret_cast<const void *>(
-          reinterpret_cast<uintptr_t>(this) + (ourEntry.loopIteration << 16) + 0x5000);
+          reinterpret_cast<uintptr_t>(this) + (ourEntry.loopIteration << 16) +
+          0x5000);
 
       // Push iteration-specific merge point if not already done
-      std::vector<MergeStackEntry> currentMergeStack = tg.getCurrentMergeStack(wave.waveId, lane.laneId);
-      std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " merge stack size: " << currentMergeStack.size() << std::endl;
+      std::vector<MergeStackEntry> currentMergeStack =
+          tg.getCurrentMergeStack(wave.waveId, lane.laneId);
+      std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
+                << " merge stack size: " << currentMergeStack.size()
+                << std::endl;
       for (size_t i = 0; i < currentMergeStack.size(); i++) {
-        std::cout << "  Stack[" << i << "]: sourceStatement=" << currentMergeStack[i].sourceStatement << std::endl;
+        std::cout << "  Stack[" << i << "]: sourceStatement="
+                  << currentMergeStack[i].sourceStatement << std::endl;
       }
-      std::cout << "  Looking for iterationMarker=" << iterationMarker << std::endl;
-      bool alreadyPushed = hasIterationMarkerInStack(currentMergeStack, iterationMarker);
+      std::cout << "  Looking for iterationMarker=" << iterationMarker
+                << std::endl;
+      bool alreadyPushed =
+          hasIterationMarkerInStack(currentMergeStack, iterationMarker);
       if (alreadyPushed) {
         std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
-                  << " iteration merge point already found in merge stack" << std::endl;
+                  << " iteration merge point already found in merge stack"
+                  << std::endl;
       }
 
       if (!alreadyPushed) {
-        std::set<uint32_t> emptyDivergentBlocks; // No actual divergence, just context
+        std::set<uint32_t>
+            emptyDivergentBlocks; // No actual divergence, just context
         tg.pushMergePoint(wave.waveId, lane.laneId, iterationMarker,
-                          tg.getCurrentBlock(wave.waveId, lane.laneId), emptyDivergentBlocks);
-        std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " pushed iteration merge point "
-                  << iterationMarker << " for iteration " << ourEntry.loopIteration << std::endl;
+                          tg.getCurrentBlock(wave.waveId, lane.laneId),
+                          emptyDivergentBlocks);
+        std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
+                  << " pushed iteration merge point " << iterationMarker
+                  << " for iteration " << ourEntry.loopIteration << std::endl;
       }
 
-      std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " executing directly in current block "
+      std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
+                << " executing directly in current block "
                 << tg.getCurrentBlock(wave.waveId, lane.laneId)
-                << " (no iteration block needed, but merge stack modified)" << std::endl;
+                << " (no iteration block needed, but merge stack modified)"
+                << std::endl;
     }
   }
 }
 
-
 // Helper method for body completion cleanup in WhileStmt
-void WhileStmt::cleanupAfterBodyExecution(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
-                                         int ourStackIndex, uint32_t headerBlockId) {
+void WhileStmt::cleanupAfterBodyExecution(LaneContext &lane, WaveContext &wave,
+                                          ThreadgroupContext &tg,
+                                          int ourStackIndex,
+                                          uint32_t headerBlockId) {
   auto &ourEntry = lane.executionStack[ourStackIndex];
-  
-  // Clean up iteration-specific merge point
-  const void *iterationMarker = reinterpret_cast<const void *>(
-      reinterpret_cast<uintptr_t>(this) + (ourEntry.loopIteration << 16) + 0x5000);
 
-  std::vector<MergeStackEntry> currentMergeStack = tg.getCurrentMergeStack(wave.waveId, lane.laneId);
+  // Clean up iteration-specific merge point
+  const void *iterationMarker =
+      reinterpret_cast<const void *>(reinterpret_cast<uintptr_t>(this) +
+                                     (ourEntry.loopIteration << 16) + 0x5000);
+
+  std::vector<MergeStackEntry> currentMergeStack =
+      tg.getCurrentMergeStack(wave.waveId, lane.laneId);
   if (!currentMergeStack.empty() &&
       currentMergeStack.back().sourceStatement == iterationMarker) {
     tg.popMergePoint(wave.waveId, lane.laneId);
@@ -4983,12 +5219,14 @@ void WhileStmt::cleanupAfterBodyExecution(LaneContext &lane, WaveContext &wave, 
   }
 
   // Move back to header block for next iteration
-  uint32_t finalBlock = tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
+  uint32_t finalBlock =
+      tg.membershipRegistry.getCurrentBlock(wave.waveId, lane.laneId);
   std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
             << " body completed in block " << finalBlock
             << ", moving to header block " << headerBlockId
             << " for next iteration" << std::endl;
-  tg.moveThreadFromUnknownToParticipating(headerBlockId, wave.waveId, lane.laneId);
+  tg.moveThreadFromUnknownToParticipating(headerBlockId, wave.waveId,
+                                          lane.laneId);
   ourEntry.loopBodyBlockId = 0; // Reset for next iteration
   ourEntry.phase = LaneContext::ControlFlowPhase::EvaluatingCondition;
   ourEntry.loopIteration++;
@@ -5000,30 +5238,36 @@ void WhileStmt::cleanupAfterBodyExecution(LaneContext &lane, WaveContext &wave, 
 }
 
 // Helper method for loop exit/reconverging phase in WhileStmt
-void WhileStmt::handleLoopExit(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
-                              int ourStackIndex, uint32_t mergeBlockId) {
+void WhileStmt::handleLoopExit(LaneContext &lane, WaveContext &wave,
+                               ThreadgroupContext &tg, int ourStackIndex,
+                               uint32_t mergeBlockId) {
   std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
-            << " reconverging from while loop to merge block " << mergeBlockId << std::endl;
+            << " reconverging from while loop to merge block " << mergeBlockId
+            << std::endl;
 
   // Debug: Check execution stack state before popping
   std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
-            << " execution stack size before pop: " << lane.executionStack.size() << std::endl;
+            << " execution stack size before pop: "
+            << lane.executionStack.size() << std::endl;
 
   // Pop our entry from execution stack
   lane.executionStack.pop_back();
 
   std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
-            << " execution stack size after pop: " << lane.executionStack.size() << std::endl;
+            << " execution stack size after pop: " << lane.executionStack.size()
+            << std::endl;
 
   // Pop merge point and move to merge block
   tg.popMergePoint(wave.waveId, lane.laneId);
-  tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId, lane.laneId);
+  tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId,
+                                          lane.laneId);
 
   std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
             << " successfully moved to merge block " << mergeBlockId
             << " and marked as Participating" << std::endl;
 
-  // Loop has completed, restore active state and allow progression to next statement
+  // Loop has completed, restore active state and allow progression to next
+  // statement
   lane.isActive = lane.isActive && !lane.hasReturned;
 
   // CRITICAL FIX: Set lane state to Ready to allow statement progression
@@ -5034,16 +5278,21 @@ void WhileStmt::handleLoopExit(LaneContext &lane, WaveContext &wave, Threadgroup
   }
 
   std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
-            << " completing reconvergence, set state to Ready for statement progression" << std::endl;
+            << " completing reconvergence, set state to Ready for statement "
+               "progression"
+            << std::endl;
 }
 
 // Helper method for break exception handling in WhileStmt
-void WhileStmt::handleBreakException(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
-                                    int ourStackIndex, uint32_t headerBlockId) {
+void WhileStmt::handleBreakException(LaneContext &lane, WaveContext &wave,
+                                     ThreadgroupContext &tg, int ourStackIndex,
+                                     uint32_t headerBlockId) {
   // Break - exit loop
-  std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " breaking from while loop" << std::endl;
+  std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
+            << " breaking from while loop" << std::endl;
   tg.popMergePoint(wave.waveId, lane.laneId);
-  lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::Reconverging;
+  lane.executionStack[ourStackIndex].phase =
+      LaneContext::ControlFlowPhase::Reconverging;
 
   // Clean up - remove from blocks this lane will never reach
   tg.removeThreadFromAllSets(headerBlockId, wave.waveId, lane.laneId);
@@ -5055,36 +5304,46 @@ void WhileStmt::handleBreakException(LaneContext &lane, WaveContext &wave, Threa
 }
 
 // Helper method for continue exception handling in WhileStmt
-void WhileStmt::handleContinueException(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
-                                       int ourStackIndex, uint32_t headerBlockId) {
+void WhileStmt::handleContinueException(LaneContext &lane, WaveContext &wave,
+                                        ThreadgroupContext &tg,
+                                        int ourStackIndex,
+                                        uint32_t headerBlockId) {
   // Continue - go to next iteration
-  std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " continuing while loop" << std::endl;
+  std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
+            << " continuing while loop" << std::endl;
 
   // CRITICAL FIX: Mark lane as Left from current block when continuing
   auto &ourEntry = lane.executionStack[ourStackIndex];
   if (ourEntry.loopBodyBlockId != 0) {
-    tg.membershipRegistry.setLaneStatus(wave.waveId, lane.laneId, ourEntry.loopBodyBlockId,
+    tg.membershipRegistry.setLaneStatus(wave.waveId, lane.laneId,
+                                        ourEntry.loopBodyBlockId,
                                         LaneBlockStatus::Left);
-    std::cout << "DEBUG: WhileStmt - Marked lane " << lane.laneId << " as Left from block "
-              << ourEntry.loopBodyBlockId << std::endl;
+    std::cout << "DEBUG: WhileStmt - Marked lane " << lane.laneId
+              << " as Left from block " << ourEntry.loopBodyBlockId
+              << std::endl;
   }
 
-  lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingCondition;
+  lane.executionStack[ourStackIndex].phase =
+      LaneContext::ControlFlowPhase::EvaluatingCondition;
   lane.executionStack[ourStackIndex].loopIteration++;
 
   // Clean up - remove from all nested blocks this lane is abandoning
   if (lane.executionStack[ourStackIndex].loopBodyBlockId != 0) {
-    tg.removeThreadFromAllSets(lane.executionStack[ourStackIndex].loopBodyBlockId, wave.waveId,
-                               lane.laneId);
-    tg.removeThreadFromNestedBlocks(lane.executionStack[ourStackIndex].loopBodyBlockId,
-                                    wave.waveId, lane.laneId);
+    tg.removeThreadFromAllSets(
+        lane.executionStack[ourStackIndex].loopBodyBlockId, wave.waveId,
+        lane.laneId);
+    tg.removeThreadFromNestedBlocks(
+        lane.executionStack[ourStackIndex].loopBodyBlockId, wave.waveId,
+        lane.laneId);
   }
 
   // Move lane back to header block for proper context
-  tg.moveThreadFromUnknownToParticipating(headerBlockId, wave.waveId, lane.laneId);
-  lane.executionStack[ourStackIndex].loopBodyBlockId = 0; // Reset for next iteration
+  tg.moveThreadFromUnknownToParticipating(headerBlockId, wave.waveId,
+                                          lane.laneId);
+  lane.executionStack[ourStackIndex].loopBodyBlockId =
+      0; // Reset for next iteration
   tg.popMergePoint(wave.waveId, lane.laneId);
-  
+
   // Set state to WaitingForResume to prevent currentStatement increment
   if (!isProtectedState(lane.state)) {
     lane.state = ThreadState::WaitingForResume;
@@ -5092,27 +5351,34 @@ void WhileStmt::handleContinueException(LaneContext &lane, WaveContext &wave, Th
 }
 
 // Result-based versions of WhileStmt helper methods
-Result<Unit, ExecutionError> WhileStmt::evaluateConditionPhase_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
-                                      int ourStackIndex, uint32_t headerBlockId) {
+Result<Unit, ExecutionError> WhileStmt::evaluateConditionPhase_result(
+    LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
+    int ourStackIndex, uint32_t headerBlockId) {
   auto &ourEntry = lane.executionStack[ourStackIndex];
   std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
-            << " evaluating condition for iteration " << ourEntry.loopIteration << " (Result-based)" << std::endl;
-  
+            << " evaluating condition for iteration " << ourEntry.loopIteration
+            << " (Result-based)" << std::endl;
+
   // Debug: Print all variables
   std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " variables: ";
-  for (const auto& var : lane.variables) {
+  for (const auto &var : lane.variables) {
     std::cout << var.first << "=" << var.second.toString() << " ";
   }
   std::cout << std::endl;
 
   // Check loop condition using Result-based evaluation
-  Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+  Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), Unit,
+                             ExecutionError);
   bool shouldContinue = condVal.asBool();
-  
+
   if (!shouldContinue) {
-    // Lane is exiting loop - comprehensive cleanup from header and all iteration blocks
-    tg.removeThreadFromAllSets(headerBlockId, wave.waveId, lane.laneId); // Remove from header
-    tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId); // Remove from iteration blocks
+    // Lane is exiting loop - comprehensive cleanup from header and all
+    // iteration blocks
+    tg.removeThreadFromAllSets(headerBlockId, wave.waveId,
+                               lane.laneId); // Remove from header
+    tg.removeThreadFromNestedBlocks(
+        headerBlockId, wave.waveId,
+        lane.laneId); // Remove from iteration blocks
 
     // Move to reconverging phase
     ourEntry.phase = LaneContext::ControlFlowPhase::Reconverging;
@@ -5128,39 +5394,47 @@ Result<Unit, ExecutionError> WhileStmt::evaluateConditionPhase_result(LaneContex
   if (!isProtectedState(lane.state)) {
     lane.state = ThreadState::WaitingForResume;
   }
-  
+
   return Ok<Unit, ExecutionError>(Unit{});
 }
 
-Result<Unit, ExecutionError> WhileStmt::executeBodyStatements_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
-                                     int ourStackIndex, uint32_t headerBlockId) {
+Result<Unit, ExecutionError> WhileStmt::executeBodyStatements_result(
+    LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
+    int ourStackIndex, uint32_t headerBlockId) {
   auto &ourEntry = lane.executionStack[ourStackIndex];
-  
+
   // Execute statements using Result-based approach
   for (size_t i = ourEntry.statementIndex; i < body_.size(); i++) {
     lane.executionStack[ourStackIndex].statementIndex = i;
 
-    uint32_t blockBeforeStatement = tg.getCurrentBlock(wave.waveId, lane.laneId);
-    std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " executing statement " << i
-              << " in block " << blockBeforeStatement << " (Result-based)" << std::endl;
+    uint32_t blockBeforeStatement =
+        tg.getCurrentBlock(wave.waveId, lane.laneId);
+    std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
+              << " executing statement " << i << " in block "
+              << blockBeforeStatement << " (Result-based)" << std::endl;
 
-    // Use Result-based execute_with_error_handling for proper control flow handling
+    // Use Result-based execute_with_error_handling for proper control flow
+    // handling
     auto stmt_result = body_[i]->execute_with_error_handling(lane, wave, tg);
     if (stmt_result.is_err()) {
       return stmt_result; // Propagate the error
     }
-    
+
     if (lane.hasReturned) {
       // Clean up iteration-specific merge point if it exists
       const void *iterationMarker = reinterpret_cast<const void *>(
-          reinterpret_cast<uintptr_t>(this) + (ourEntry.loopIteration << 16) + 0x5000);
+          reinterpret_cast<uintptr_t>(this) + (ourEntry.loopIteration << 16) +
+          0x5000);
 
-      std::vector<MergeStackEntry> currentMergeStack = tg.getCurrentMergeStack(wave.waveId, lane.laneId);
+      std::vector<MergeStackEntry> currentMergeStack =
+          tg.getCurrentMergeStack(wave.waveId, lane.laneId);
       if (!currentMergeStack.empty() &&
           currentMergeStack.back().sourceStatement == iterationMarker) {
         tg.popMergePoint(wave.waveId, lane.laneId);
-        std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
-                  << " popped iteration merge point on early return (Result-based)" << std::endl;
+        std::cout
+            << "DEBUG: WhileStmt - Lane " << lane.laneId
+            << " popped iteration merge point on early return (Result-based)"
+            << std::endl;
       }
 
       // Pop our entry and return from loop
@@ -5171,9 +5445,11 @@ Result<Unit, ExecutionError> WhileStmt::executeBodyStatements_result(LaneContext
 
     if (lane.state != ThreadState::Ready) {
       // Child statement needs to resume - preserve current block context
-      uint32_t blockAfterStatement = tg.getCurrentBlock(wave.waveId, lane.laneId);
-      std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " child statement needs resume (Result-based)" << std::endl;
-      std::cout << "  Block before: " << blockBeforeStatement 
+      uint32_t blockAfterStatement =
+          tg.getCurrentBlock(wave.waveId, lane.laneId);
+      std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
+                << " child statement needs resume (Result-based)" << std::endl;
+      std::cout << "  Block before: " << blockBeforeStatement
                 << ", Block after: " << blockAfterStatement << std::endl;
       return Ok<Unit, ExecutionError>(Unit{});
     }
@@ -5181,14 +5457,16 @@ Result<Unit, ExecutionError> WhileStmt::executeBodyStatements_result(LaneContext
     // Log block transitions (shows natural flow to merge blocks)
     uint32_t blockAfterStatement = tg.getCurrentBlock(wave.waveId, lane.laneId);
     if (blockBeforeStatement != blockAfterStatement) {
-      std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId << " natural flow from block " << blockBeforeStatement
-                << " to block " << blockAfterStatement << " during statement " << i << " (likely merge block, Result-based)" << std::endl;
+      std::cout << "DEBUG: WhileStmt - Lane " << lane.laneId
+                << " natural flow from block " << blockBeforeStatement
+                << " to block " << blockAfterStatement << " during statement "
+                << i << " (likely merge block, Result-based)" << std::endl;
     }
 
     // Update statement index
     lane.executionStack[ourStackIndex].statementIndex = i + 1;
   }
-  
+
   return Ok<Unit, ExecutionError>(Unit{});
 }
 
@@ -5197,10 +5475,11 @@ DoWhileStmt::DoWhileStmt(std::vector<std::unique_ptr<Statement>> body,
                          std::unique_ptr<Expression> cond)
     : body_(std::move(body)), condition_(std::move(cond)) {}
 
-
 // Helper methods for DoWhileStmt execute phases
-void DoWhileStmt::setupFreshExecution(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                      int ourStackIndex, uint32_t &headerBlockId, uint32_t &mergeBlockId) {
+void DoWhileStmt::setupFreshExecution(LaneContext &lane, WaveContext &wave,
+                                      ThreadgroupContext &tg, int ourStackIndex,
+                                      uint32_t &headerBlockId,
+                                      uint32_t &mergeBlockId) {
   // Get current block before entering loop
   uint32_t parentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
 
@@ -5232,15 +5511,18 @@ void DoWhileStmt::setupFreshExecution(LaneContext &lane, WaveContext &wave, Thre
   lane.executionStack.push_back(newState);
 }
 
-void DoWhileStmt::setupIterationBlocks(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                       int ourStackIndex, uint32_t headerBlockId) {
+void DoWhileStmt::setupIterationBlocks(LaneContext &lane, WaveContext &wave,
+                                       ThreadgroupContext &tg,
+                                       int ourStackIndex,
+                                       uint32_t headerBlockId) {
   auto &ourEntry = lane.executionStack[ourStackIndex];
-  
+
   // Check if we need an iteration-specific starting block
   bool needsIterationBlock = false;
   uint32_t iterationStartBlockId = 0;
 
-  // Look ahead to see if first statement (statement 0) requires unique iteration context
+  // Look ahead to see if first statement (statement 0) requires unique
+  // iteration context
   if (!body_.empty()) {
     bool firstStatementIsControlFlow =
         dynamic_cast<IfStmt *>(body_[0].get()) != nullptr ||
@@ -5270,12 +5552,12 @@ void DoWhileStmt::setupIterationBlocks(LaneContext &lane, WaveContext &wave, Thr
           tg.getCurrentMergeStack(wave.waveId, lane.laneId);
 
       const void *iterationPtr = reinterpret_cast<const void *>(
-          reinterpret_cast<uintptr_t>(this) +
-          (ourEntry.loopIteration << 16) + 0x3000);
+          reinterpret_cast<uintptr_t>(this) + (ourEntry.loopIteration << 16) +
+          0x3000);
 
       BlockIdentity iterationIdentity = tg.createBlockIdentity(
-          iterationPtr, BlockType::REGULAR, headerBlockId,
-          currentMergeStack, true, lane.executionPath);
+          iterationPtr, BlockType::REGULAR, headerBlockId, currentMergeStack,
+          true, lane.executionPath);
 
       // Try to find existing block first
       iterationStartBlockId = tg.findBlockByIdentity(iterationIdentity);
@@ -5306,8 +5588,7 @@ void DoWhileStmt::setupIterationBlocks(LaneContext &lane, WaveContext &wave, Thr
     }
 
     // Move to iteration starting block if not already there
-    if (tg.getCurrentBlock(wave.waveId, lane.laneId) !=
-        iterationStartBlockId) {
+    if (tg.getCurrentBlock(wave.waveId, lane.laneId) != iterationStartBlockId) {
       tg.moveThreadFromUnknownToParticipating(iterationStartBlockId,
                                               wave.waveId, lane.laneId);
       std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId
@@ -5323,8 +5604,8 @@ void DoWhileStmt::setupIterationBlocks(LaneContext &lane, WaveContext &wave, Thr
       // Push iteration-specific merge point so nested control flow sees
       // different merge stack
       const void *iterationMarker = reinterpret_cast<const void *>(
-          reinterpret_cast<uintptr_t>(this) +
-          (ourEntry.loopIteration << 16) + 0x5000);
+          reinterpret_cast<uintptr_t>(this) + (ourEntry.loopIteration << 16) +
+          0x5000);
 
       // Push iteration-specific merge point if not already done
       std::vector<MergeStackEntry> currentMergeStack =
@@ -5345,8 +5626,7 @@ void DoWhileStmt::setupIterationBlocks(LaneContext &lane, WaveContext &wave, Thr
                           emptyDivergentBlocks);
         std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId
                   << " pushed iteration merge point " << iterationMarker
-                  << " for iteration " << ourEntry.loopIteration
-                  << std::endl;
+                  << " for iteration " << ourEntry.loopIteration << std::endl;
       }
 
       std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId
@@ -5358,15 +5638,17 @@ void DoWhileStmt::setupIterationBlocks(LaneContext &lane, WaveContext &wave, Thr
   }
 }
 
-
-void DoWhileStmt::cleanupAfterBodyExecution(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                                    int ourStackIndex, uint32_t headerBlockId) {
+void DoWhileStmt::cleanupAfterBodyExecution(LaneContext &lane,
+                                            WaveContext &wave,
+                                            ThreadgroupContext &tg,
+                                            int ourStackIndex,
+                                            uint32_t headerBlockId) {
   auto &ourEntry = lane.executionStack[ourStackIndex];
-  
+
   // Body completed - clean up iteration-specific merge point
-  const void *iterationMarker = reinterpret_cast<const void *>(
-      reinterpret_cast<uintptr_t>(this) + (ourEntry.loopIteration << 16) +
-      0x5000);
+  const void *iterationMarker =
+      reinterpret_cast<const void *>(reinterpret_cast<uintptr_t>(this) +
+                                     (ourEntry.loopIteration << 16) + 0x5000);
 
   std::vector<MergeStackEntry> currentMergeStack =
       tg.getCurrentMergeStack(wave.waveId, lane.laneId);
@@ -5376,25 +5658,24 @@ void DoWhileStmt::cleanupAfterBodyExecution(LaneContext &lane, WaveContext &wave
     std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId
               << " popped iteration merge point " << iterationMarker
               << " after iteration "
-              << lane.executionStack[ourStackIndex].loopIteration
-              << std::endl;
+              << lane.executionStack[ourStackIndex].loopIteration << std::endl;
   }
 
-  // Completed body execution - move back to header block and to condition evaluation
+  // Completed body execution - move back to header block and to condition
+  // evaluation
   tg.moveThreadFromUnknownToParticipating(headerBlockId, wave.waveId,
                                           lane.laneId);
   ourEntry.loopBodyBlockId = 0; // Reset for next iteration
   std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId
             << " completed body for iteration "
-            << lane.executionStack[ourStackIndex].loopIteration
-            << std::endl;
+            << lane.executionStack[ourStackIndex].loopIteration << std::endl;
   lane.executionStack[ourStackIndex].phase =
       LaneContext::ControlFlowPhase::EvaluatingCondition;
 }
 
-
-void DoWhileStmt::handleLoopExit(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                         int ourStackIndex, uint32_t mergeBlockId) {
+void DoWhileStmt::handleLoopExit(LaneContext &lane, WaveContext &wave,
+                                 ThreadgroupContext &tg, int ourStackIndex,
+                                 uint32_t mergeBlockId) {
   std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId
             << " reconverging from do-while loop" << std::endl;
 
@@ -5411,8 +5692,11 @@ void DoWhileStmt::handleLoopExit(LaneContext &lane, WaveContext &wave, Threadgro
   lane.isActive = lane.isActive && !lane.hasReturned;
 }
 
-void DoWhileStmt::handleBreakException(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                               int ourStackIndex, uint32_t headerBlockId, uint32_t mergeBlockId) {
+void DoWhileStmt::handleBreakException(LaneContext &lane, WaveContext &wave,
+                                       ThreadgroupContext &tg,
+                                       int ourStackIndex,
+                                       uint32_t headerBlockId,
+                                       uint32_t mergeBlockId) {
   std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId
             << " breaking from do-while loop" << std::endl;
   tg.popMergePoint(wave.waveId, lane.laneId);
@@ -5428,8 +5712,10 @@ void DoWhileStmt::handleBreakException(LaneContext &lane, WaveContext &wave, Thr
   }
 }
 
-void DoWhileStmt::handleContinueException(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                                  int ourStackIndex, uint32_t headerBlockId) {
+void DoWhileStmt::handleContinueException(LaneContext &lane, WaveContext &wave,
+                                          ThreadgroupContext &tg,
+                                          int ourStackIndex,
+                                          uint32_t headerBlockId) {
   std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId
             << " continuing do-while loop" << std::endl;
 
@@ -5470,51 +5756,59 @@ void DoWhileStmt::handleContinueException(LaneContext &lane, WaveContext &wave, 
 }
 
 // Phase-based Result methods for DoWhileStmt
-Result<Unit, ExecutionError> DoWhileStmt::executeBody(LaneContext &lane, WaveContext &wave,
-                                                    ThreadgroupContext &tg) {
-  std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId << " executing body (Result-based)" << std::endl;
-  
+Result<Unit, ExecutionError> DoWhileStmt::executeBody(LaneContext &lane,
+                                                      WaveContext &wave,
+                                                      ThreadgroupContext &tg) {
+  std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId
+            << " executing body (Result-based)" << std::endl;
+
   for (const auto &stmt : body_) {
     auto result = stmt->execute_result(lane, wave, tg);
     if (result.is_err()) {
       ExecutionError error = result.unwrap_err();
       std::cout << "DEBUG: DoWhileStmt - Body encountered error" << std::endl;
-      
+
       // Break and continue are normal control flow for do-while loops
       if (error == ExecutionError::ControlFlowBreak) {
-        std::cout << "DEBUG: DoWhileStmt - Break encountered in body" << std::endl;
+        std::cout << "DEBUG: DoWhileStmt - Break encountered in body"
+                  << std::endl;
         return Err<Unit, ExecutionError>(ExecutionError::ControlFlowBreak);
       } else if (error == ExecutionError::ControlFlowContinue) {
-        std::cout << "DEBUG: DoWhileStmt - Continue encountered in body" << std::endl;
+        std::cout << "DEBUG: DoWhileStmt - Continue encountered in body"
+                  << std::endl;
         return Err<Unit, ExecutionError>(ExecutionError::ControlFlowContinue);
       }
-      
+
       // Other errors propagate up
       return result;
     }
   }
-  
+
   return Ok<Unit, ExecutionError>(Unit{});
 }
 
-Result<bool, ExecutionError> DoWhileStmt::evaluateCondition(LaneContext &lane, WaveContext &wave,
-                                                          ThreadgroupContext &tg) {
-  std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId << " evaluating condition (Result-based)" << std::endl;
-  
+Result<bool, ExecutionError>
+DoWhileStmt::evaluateCondition(LaneContext &lane, WaveContext &wave,
+                               ThreadgroupContext &tg) {
+  std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId
+            << " evaluating condition (Result-based)" << std::endl;
+
   auto condResult = condition_->evaluate_result(lane, wave, tg);
   if (condResult.is_err()) {
     return Err<bool, ExecutionError>(condResult.unwrap_err());
   }
-  
+
   Value condVal = condResult.unwrap();
   bool shouldContinue = condVal.asBool();
-  
-  std::cout << "DEBUG: DoWhileStmt - Condition result: " << shouldContinue << std::endl;
+
+  std::cout << "DEBUG: DoWhileStmt - Condition result: " << shouldContinue
+            << std::endl;
   return Ok<bool, ExecutionError>(shouldContinue);
 }
 
-Result<Unit, ExecutionError> DoWhileStmt::execute_result(LaneContext &lane, WaveContext &wave,
-                                                       ThreadgroupContext &tg) {
+Result<Unit, ExecutionError>
+DoWhileStmt::execute_result(LaneContext &lane, WaveContext &wave,
+                            ThreadgroupContext &tg) {
   if (!lane.isActive)
     return Ok<Unit, ExecutionError>(Unit{});
 
@@ -5523,15 +5817,16 @@ Result<Unit, ExecutionError> DoWhileStmt::execute_result(LaneContext &lane, Wave
   bool isResuming = (ourStackIndex >= 0);
 
   std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId << " "
-            << (isResuming ? "resuming" : "starting") << " Result-based do-while loop"
-            << std::endl;
+            << (isResuming ? "resuming" : "starting")
+            << " Result-based do-while loop" << std::endl;
 
   uint32_t headerBlockId = 0;
   uint32_t mergeBlockId = 0;
-  
+
   if (!isResuming) {
     // First time execution - setup blocks and push onto execution stack
-    setupFreshExecution(lane, wave, tg, ourStackIndex, headerBlockId, mergeBlockId);
+    setupFreshExecution(lane, wave, tg, ourStackIndex, headerBlockId,
+                        mergeBlockId);
     ourStackIndex = lane.executionStack.size() - 1;
   }
 
@@ -5547,38 +5842,44 @@ Result<Unit, ExecutionError> DoWhileStmt::execute_result(LaneContext &lane, Wave
   case LaneContext::ControlFlowPhase::ExecutingBody: {
     std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId
               << " executing body for iteration " << ourEntry.loopIteration
-              << " from statement " << ourEntry.statementIndex 
+              << " from statement " << ourEntry.statementIndex
               << " (Result-based)" << std::endl;
 
     // Setup iteration blocks if needed
     setupIterationBlocks(lane, wave, tg, ourStackIndex, headerBlockId);
-    
+
     // Execute body statements using Result-based helper method
-    TRY_RESULT(executeBodyStatements_result(lane, wave, tg, ourStackIndex, headerBlockId), Unit, ExecutionError);
-    
+    TRY_RESULT(executeBodyStatements_result(lane, wave, tg, ourStackIndex,
+                                            headerBlockId),
+               Unit, ExecutionError);
+
     if (lane.hasReturned || lane.state != ThreadState::Ready) {
       return Ok<Unit, ExecutionError>(Unit{});
     }
-    
+
     // Clean up after body execution using non-throwing helper method
     cleanupAfterBodyExecution(lane, wave, tg, ourStackIndex, headerBlockId);
-    
+
     // Set state to WaitingForResume to prevent currentStatement increment
     if (!isProtectedState(lane.state)) {
       lane.state = ThreadState::WaitingForResume;
     }
-    return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement increment, will resume later
+    return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement
+                                             // increment, will resume later
   }
 
   case LaneContext::ControlFlowPhase::EvaluatingCondition: {
     // Evaluate condition using Result-based helper method
-    TRY_RESULT(evaluateConditionPhase_result(lane, wave, tg, ourStackIndex, headerBlockId), Unit, ExecutionError);
-    
+    TRY_RESULT(evaluateConditionPhase_result(lane, wave, tg, ourStackIndex,
+                                             headerBlockId),
+               Unit, ExecutionError);
+
     // Set state to WaitingForResume to prevent currentStatement increment
     if (!isProtectedState(lane.state)) {
       lane.state = ThreadState::WaitingForResume;
     }
-    return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement increment, will resume later
+    return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement
+                                             // increment, will resume later
   }
 
   case LaneContext::ControlFlowPhase::Reconverging: {
@@ -5605,88 +5906,97 @@ std::string DoWhileStmt::toString() const {
 }
 
 // Specialized wrapper function for DoWhileStmt-specific error handling
-Result<Unit, ExecutionError> DoWhileStmt::execute_with_error_handling(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg) {
+Result<Unit, ExecutionError>
+DoWhileStmt::execute_with_error_handling(LaneContext &lane, WaveContext &wave,
+                                         ThreadgroupContext &tg) {
   auto result = execute_result(lane, wave, tg);
   if (result.is_err()) {
     ExecutionError error = result.unwrap_err();
-    
+
     switch (error) {
-      case ExecutionError::WaveOperationWait:
-        // DoWhileStmt-specific: Wave operation already set the lane to WaitingForWave
-        // Just propagate the error without changing state
-        return result; // Propagate for parent to handle
-        
-      case ExecutionError::ControlFlowBreak:
-        // DoWhileStmt consumes break: exit loop cleanly
-        {
-          int ourStackIndex = findStackIndex(lane);
-          if (ourStackIndex >= 0) {
-            uint32_t headerBlockId = lane.executionStack[ourStackIndex].loopHeaderBlockId;
-            uint32_t mergeBlockId = lane.executionStack[ourStackIndex].loopMergeBlockId;
-            handleBreakException(lane, wave, tg, ourStackIndex, headerBlockId, mergeBlockId);
-            if (!isProtectedState(lane.state)) {
-              lane.state = ThreadState::WaitingForResume;
-            }
-            
-            // Restore active state (reconvergence)
-            lane.isActive = lane.isActive && !lane.hasReturned;
+    case ExecutionError::WaveOperationWait:
+      // DoWhileStmt-specific: Wave operation already set the lane to
+      // WaitingForWave Just propagate the error without changing state
+      return result; // Propagate for parent to handle
+
+    case ExecutionError::ControlFlowBreak:
+      // DoWhileStmt consumes break: exit loop cleanly
+      {
+        int ourStackIndex = findStackIndex(lane);
+        if (ourStackIndex >= 0) {
+          uint32_t headerBlockId =
+              lane.executionStack[ourStackIndex].loopHeaderBlockId;
+          uint32_t mergeBlockId =
+              lane.executionStack[ourStackIndex].loopMergeBlockId;
+          handleBreakException(lane, wave, tg, ourStackIndex, headerBlockId,
+                               mergeBlockId);
+          if (!isProtectedState(lane.state)) {
+            lane.state = ThreadState::WaitingForResume;
           }
+
+          // Restore active state (reconvergence)
+          lane.isActive = lane.isActive && !lane.hasReturned;
         }
-        return Ok<Unit, ExecutionError>(Unit{}); // Success - break handled
-        
-      case ExecutionError::ControlFlowContinue:
-        // DoWhileStmt consumes continue: jump to condition phase
-        {
-          int ourStackIndex = findStackIndex(lane);
-          if (ourStackIndex >= 0) {
-            uint32_t headerBlockId = lane.executionStack[ourStackIndex].loopHeaderBlockId;
-            handleContinueException(lane, wave, tg, ourStackIndex, headerBlockId);
-            if (!isProtectedState(lane.state)) {
-              lane.state = ThreadState::WaitingForResume;
-            }
-            
-            // Restore active state (reconvergence)
-            lane.isActive = lane.isActive && !lane.hasReturned;
+      }
+      return Ok<Unit, ExecutionError>(Unit{}); // Success - break handled
+
+    case ExecutionError::ControlFlowContinue:
+      // DoWhileStmt consumes continue: jump to condition phase
+      {
+        int ourStackIndex = findStackIndex(lane);
+        if (ourStackIndex >= 0) {
+          uint32_t headerBlockId =
+              lane.executionStack[ourStackIndex].loopHeaderBlockId;
+          handleContinueException(lane, wave, tg, ourStackIndex, headerBlockId);
+          if (!isProtectedState(lane.state)) {
+            lane.state = ThreadState::WaitingForResume;
           }
+
+          // Restore active state (reconvergence)
+          lane.isActive = lane.isActive && !lane.hasReturned;
         }
-        return Ok<Unit, ExecutionError>(Unit{}); // Success - continue handled
-        
-      default:
-        return result; // Propagate unknown errors
+      }
+      return Ok<Unit, ExecutionError>(Unit{}); // Success - continue handled
+
+    default:
+      return result; // Propagate unknown errors
     }
   }
   return result; // Success case
 }
 
 // Result-based versions of DoWhileStmt helper methods
-Result<Unit, ExecutionError> DoWhileStmt::executeBodyStatements_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                                int ourStackIndex, uint32_t headerBlockId) {
+Result<Unit, ExecutionError> DoWhileStmt::executeBodyStatements_result(
+    LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
+    int ourStackIndex, uint32_t headerBlockId) {
   auto &ourEntry = lane.executionStack[ourStackIndex];
-  
+
   // Execute statements from where we left off using Result-based approach
   for (size_t i = ourEntry.statementIndex; i < body_.size(); i++) {
     lane.executionStack[ourStackIndex].statementIndex = i;
-    
-    // Use Result-based execute_with_error_handling for proper control flow handling
+
+    // Use Result-based execute_with_error_handling for proper control flow
+    // handling
     auto stmt_result = body_[i]->execute_with_error_handling(lane, wave, tg);
     if (stmt_result.is_err()) {
       return stmt_result; // Propagate the error
     }
-    
+
     if (lane.hasReturned) {
       // Clean up iteration-specific merge point if it exists
       const void *iterationMarker = reinterpret_cast<const void *>(
-          reinterpret_cast<uintptr_t>(this) +
-          (ourEntry.loopIteration << 16) + 0x5000);
+          reinterpret_cast<uintptr_t>(this) + (ourEntry.loopIteration << 16) +
+          0x5000);
 
       std::vector<MergeStackEntry> currentMergeStack =
           tg.getCurrentMergeStack(wave.waveId, lane.laneId);
       if (!currentMergeStack.empty() &&
           currentMergeStack.back().sourceStatement == iterationMarker) {
         tg.popMergePoint(wave.waveId, lane.laneId);
-        std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId
-                  << " popped iteration merge point on early return (Result-based)"
-                  << std::endl;
+        std::cout
+            << "DEBUG: DoWhileStmt - Lane " << lane.laneId
+            << " popped iteration merge point on early return (Result-based)"
+            << std::endl;
       }
 
       // Pop our entry and return from loop
@@ -5697,31 +6007,35 @@ Result<Unit, ExecutionError> DoWhileStmt::executeBodyStatements_result(LaneConte
 
     if (lane.state != ThreadState::Ready) {
       // Child statement needs to resume - preserve current block context
-      std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId << " child statement needs resume (Result-based)" << std::endl;
+      std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId
+                << " child statement needs resume (Result-based)" << std::endl;
       return Ok<Unit, ExecutionError>(Unit{});
     }
 
-    // Update statement index  
+    // Update statement index
     lane.executionStack[ourStackIndex].statementIndex = i + 1;
   }
-  
+
   return Ok<Unit, ExecutionError>(Unit{});
 }
 
-Result<Unit, ExecutionError> DoWhileStmt::evaluateConditionPhase_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                                 int ourStackIndex, uint32_t headerBlockId) {
+Result<Unit, ExecutionError> DoWhileStmt::evaluateConditionPhase_result(
+    LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
+    int ourStackIndex, uint32_t headerBlockId) {
   auto &ourEntry = lane.executionStack[ourStackIndex];
-  
+
   std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId
             << " evaluating condition after iteration "
             << ourEntry.loopIteration << " (Result-based)" << std::endl;
 
   // Check loop condition using Result-based evaluation
-  Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+  Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), Unit,
+                             ExecutionError);
   bool shouldContinue = condVal.asBool();
-  
+
   if (!shouldContinue) {
-    // Lane is exiting loop - comprehensive cleanup from header and all iteration blocks
+    // Lane is exiting loop - comprehensive cleanup from header and all
+    // iteration blocks
     tg.removeThreadFromAllSets(headerBlockId, wave.waveId,
                                lane.laneId); // Remove from header
     tg.removeThreadFromNestedBlocks(
@@ -5734,7 +6048,8 @@ Result<Unit, ExecutionError> DoWhileStmt::evaluateConditionPhase_result(LaneCont
     if (!isProtectedState(lane.state)) {
       lane.state = ThreadState::WaitingForResume;
     }
-    return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement increment, will resume later
+    return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement
+                                             // increment, will resume later
   }
 
   // Condition passed, move to next iteration body execution
@@ -5745,7 +6060,7 @@ Result<Unit, ExecutionError> DoWhileStmt::evaluateConditionPhase_result(LaneCont
   if (!isProtectedState(lane.state)) {
     lane.state = ThreadState::WaitingForResume;
   }
-  
+
   return Ok<Unit, ExecutionError>(Unit{});
 }
 
@@ -5766,10 +6081,10 @@ void SwitchStmt::addDefault(std::vector<std::unique_ptr<Statement>> stmts) {
   cases_.push_back({std::nullopt, std::move(stmts)});
 }
 
-
 // Helper methods for SwitchStmt execute phases
-void SwitchStmt::setupSwitchExecution(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                          int ourStackIndex) {
+void SwitchStmt::setupSwitchExecution(LaneContext &lane, WaveContext &wave,
+                                      ThreadgroupContext &tg,
+                                      int ourStackIndex) {
   // Create blocks for all cases
   uint32_t parentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
   std::vector<MergeStackEntry> currentMergeStack =
@@ -5794,8 +6109,7 @@ void SwitchStmt::setupSwitchExecution(LaneContext &lane, WaveContext &wave, Thre
 
   // Extract blocks: [headerBlockId, caseBlock1, caseBlock2, ..., mergeBlockId]
   if (allBlockIds.size() < 2) {
-    std::cout << "ERROR: SwitchStmt - Insufficient blocks created"
-              << std::endl;
+    std::cout << "ERROR: SwitchStmt - Insufficient blocks created" << std::endl;
     return;
   }
 
@@ -5819,22 +6133,20 @@ void SwitchStmt::setupSwitchExecution(LaneContext &lane, WaveContext &wave, Thre
                                           wave.waveId, lane.laneId);
 }
 
-
-void SwitchStmt::findMatchingCase(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                      int ourStackIndex) {
+void SwitchStmt::findMatchingCase(LaneContext &lane, WaveContext &wave,
+                                  ThreadgroupContext &tg, int ourStackIndex) {
   auto &ourEntry = lane.executionStack[ourStackIndex];
-  
+
   // Find which case this lane should execute
   int switchValue = ourEntry.switchValue.asInt();
   size_t matchingCaseIndex = SIZE_MAX;
 
   for (size_t i = 0; i < cases_.size(); ++i) {
-    if (cases_[i].value.has_value() &&
-        cases_[i].value.value() == switchValue) {
+    if (cases_[i].value.has_value() && cases_[i].value.value() == switchValue) {
       matchingCaseIndex = i;
       std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
-                << " matched case " << cases_[i].value.value()
-                << " at index " << i << std::endl;
+                << " matched case " << cases_[i].value.value() << " at index "
+                << i << std::endl;
       break;
     } else if (!cases_[i].value.has_value()) {
       // Default case - only use if no exact match found
@@ -5847,7 +6159,8 @@ void SwitchStmt::findMatchingCase(LaneContext &lane, WaveContext &wave, Threadgr
   }
 
   if (matchingCaseIndex == SIZE_MAX) {
-    // No matching case - remove from all case blocks and exit switch via reconvergence
+    // No matching case - remove from all case blocks and exit switch via
+    // reconvergence
     std::cout
         << "DEBUG: SwitchStmt - Lane " << lane.laneId
         << " no matching case found, cleaning up and entering reconvergence"
@@ -5857,11 +6170,10 @@ void SwitchStmt::findMatchingCase(LaneContext &lane, WaveContext &wave, Threadgr
     for (size_t i = 0; i < ourEntry.switchCaseBlockIds.size(); ++i) {
       uint32_t caseBlockId = ourEntry.switchCaseBlockIds[i];
       std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
-                << " removing from case block " << caseBlockId << " (case "
-                << i << ") - no matching case" << std::endl;
+                << " removing from case block " << caseBlockId << " (case " << i
+                << ") - no matching case" << std::endl;
       tg.removeThreadFromAllSets(caseBlockId, wave.waveId, lane.laneId);
-      tg.removeThreadFromNestedBlocks(caseBlockId, wave.waveId,
-                                      lane.laneId);
+      tg.removeThreadFromNestedBlocks(caseBlockId, wave.waveId, lane.laneId);
     }
 
     ourEntry.phase = LaneContext::ControlFlowPhase::Reconverging;
@@ -5878,19 +6190,16 @@ void SwitchStmt::findMatchingCase(LaneContext &lane, WaveContext &wave, Threadgr
 
   // Move lane to the appropriate case block and remove from previous cases
   if (matchingCaseIndex < ourEntry.switchCaseBlockIds.size()) {
-    uint32_t chosenCaseBlockId =
-        ourEntry.switchCaseBlockIds[matchingCaseIndex];
+    uint32_t chosenCaseBlockId = ourEntry.switchCaseBlockIds[matchingCaseIndex];
     std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
-              << " moving to case block " << chosenCaseBlockId
-              << " for case " << matchingCaseIndex << std::endl;
+              << " moving to case block " << chosenCaseBlockId << " for case "
+              << matchingCaseIndex << std::endl;
 
     // Move to the first matching case block only (like if/loop pattern)
-    uint32_t firstCaseBlockId =
-        ourEntry.switchCaseBlockIds[matchingCaseIndex];
+    uint32_t firstCaseBlockId = ourEntry.switchCaseBlockIds[matchingCaseIndex];
     std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
-              << " moving from header to first case block "
-              << firstCaseBlockId << " (case " << matchingCaseIndex << ")"
-              << std::endl;
+              << " moving from header to first case block " << firstCaseBlockId
+              << " (case " << matchingCaseIndex << ")" << std::endl;
 
     // tg.assignLaneToBlock(wave.waveId, lane.laneId, firstCaseBlockId);
     tg.moveThreadFromUnknownToParticipating(firstCaseBlockId, wave.waveId,
@@ -5900,11 +6209,9 @@ void SwitchStmt::findMatchingCase(LaneContext &lane, WaveContext &wave, Threadgr
     for (size_t i = 0; i < matchingCaseIndex; ++i) {
       uint32_t previousCaseBlockId = ourEntry.switchCaseBlockIds[i];
       std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
-                << " removing from previous case block "
-                << previousCaseBlockId << " (case " << i << ")"
-                << std::endl;
-      tg.removeThreadFromUnknown(previousCaseBlockId, wave.waveId,
-                                 lane.laneId);
+                << " removing from previous case block " << previousCaseBlockId
+                << " (case " << i << ")" << std::endl;
+      tg.removeThreadFromUnknown(previousCaseBlockId, wave.waveId, lane.laneId);
       tg.removeThreadFromNestedBlocks(previousCaseBlockId, wave.waveId,
                                       lane.laneId);
     }
@@ -5918,11 +6225,11 @@ void SwitchStmt::findMatchingCase(LaneContext &lane, WaveContext &wave, Threadgr
   }
 }
 
-
-void SwitchStmt::handleReconvergence(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                         int ourStackIndex) {
+void SwitchStmt::handleReconvergence(LaneContext &lane, WaveContext &wave,
+                                     ThreadgroupContext &tg,
+                                     int ourStackIndex) {
   auto &ourEntry = lane.executionStack[ourStackIndex];
-  
+
   std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
             << " reconverging from switch" << std::endl;
 
@@ -5939,20 +6246,22 @@ void SwitchStmt::handleReconvergence(LaneContext &lane, WaveContext &wave, Threa
                                           lane.laneId);
 }
 
-void SwitchStmt::handleBreakException(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                          int ourStackIndex) {
+void SwitchStmt::handleBreakException(LaneContext &lane, WaveContext &wave,
+                                      ThreadgroupContext &tg,
+                                      int ourStackIndex) {
   // Break - exit switch and clean up subsequent case blocks
   std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
             << " breaking from switch" << std::endl;
 
   auto &ourEntry = lane.executionStack[ourStackIndex];
 
-  // Remove this lane from ALL case blocks (it's breaking out of the entire switch)
+  // Remove this lane from ALL case blocks (it's breaking out of the entire
+  // switch)
   for (size_t i = 0; i < ourEntry.switchCaseBlockIds.size(); ++i) {
     uint32_t caseBlockId = ourEntry.switchCaseBlockIds[i];
     std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
-              << " removing from case block " << caseBlockId << " (case "
-              << i << ") due to break" << std::endl;
+              << " removing from case block " << caseBlockId << " (case " << i
+              << ") due to break" << std::endl;
     tg.removeThreadFromAllSets(caseBlockId, wave.waveId, lane.laneId);
     tg.removeThreadFromNestedBlocks(caseBlockId, wave.waveId, lane.laneId);
   }
@@ -5962,51 +6271,59 @@ void SwitchStmt::handleBreakException(LaneContext &lane, WaveContext &wave, Thre
 }
 
 // Phase-based Result methods for SwitchStmt
-Result<int, ExecutionError> SwitchStmt::evaluateCondition(LaneContext &lane, WaveContext &wave,
-                                                        ThreadgroupContext &tg) {
-  std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId << " evaluating condition (Result-based)" << std::endl;
-  
+Result<int, ExecutionError>
+SwitchStmt::evaluateCondition(LaneContext &lane, WaveContext &wave,
+                              ThreadgroupContext &tg) {
+  std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
+            << " evaluating condition (Result-based)" << std::endl;
+
   auto condResult = condition_->evaluate_result(lane, wave, tg);
   if (condResult.is_err()) {
     return Err<int, ExecutionError>(condResult.unwrap_err());
   }
-  
+
   Value condVal = condResult.unwrap();
   int switchValue = condVal.asInt();
-  
+
   std::cout << "DEBUG: SwitchStmt - Switch value: " << switchValue << std::endl;
   return Ok<int, ExecutionError>(switchValue);
 }
 
-Result<Unit, ExecutionError> SwitchStmt::executeCase(size_t caseIndex, LaneContext &lane, 
-                                                    WaveContext &wave, ThreadgroupContext &tg) {
-  std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId << " executing case " << caseIndex << " (Result-based)" << std::endl;
-  
+Result<Unit, ExecutionError> SwitchStmt::executeCase(size_t caseIndex,
+                                                     LaneContext &lane,
+                                                     WaveContext &wave,
+                                                     ThreadgroupContext &tg) {
+  std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId << " executing case "
+            << caseIndex << " (Result-based)" << std::endl;
+
   const auto &caseBlock = cases_[caseIndex];
-  
+
   for (const auto &stmt : caseBlock.statements) {
     auto result = stmt->execute_result(lane, wave, tg);
     if (result.is_err()) {
       ExecutionError error = result.unwrap_err();
       std::cout << "DEBUG: SwitchStmt - Case encountered error" << std::endl;
-      
+
       // Break exits the switch (normal behavior)
       if (error == ExecutionError::ControlFlowBreak) {
-        std::cout << "DEBUG: SwitchStmt - Break encountered in case" << std::endl;
-        return Ok<Unit, ExecutionError>(Unit{}); // Break stops switch execution successfully
+        std::cout << "DEBUG: SwitchStmt - Break encountered in case"
+                  << std::endl;
+        return Ok<Unit, ExecutionError>(
+            Unit{}); // Break stops switch execution successfully
       }
-      
+
       // Continue should be handled by containing loop, not switch
       // Other errors propagate up
       return result;
     }
   }
-  
+
   return Ok<Unit, ExecutionError>(Unit{});
 }
 
-Result<Unit, ExecutionError> SwitchStmt::execute_result(LaneContext &lane, WaveContext &wave,
-                                                      ThreadgroupContext &tg) {
+Result<Unit, ExecutionError>
+SwitchStmt::execute_result(LaneContext &lane, WaveContext &wave,
+                           ThreadgroupContext &tg) {
   if (!lane.isActive)
     return Ok<Unit, ExecutionError>(Unit{});
 
@@ -6015,8 +6332,8 @@ Result<Unit, ExecutionError> SwitchStmt::execute_result(LaneContext &lane, WaveC
   bool isResuming = (ourStackIndex >= 0);
 
   std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId << " "
-            << (isResuming ? "resuming" : "starting") << " Result-based switch statement"
-            << std::endl;
+            << (isResuming ? "resuming" : "starting")
+            << " Result-based switch statement" << std::endl;
 
   if (!isResuming) {
     // Starting fresh - push initial state for condition evaluation
@@ -6049,31 +6366,34 @@ Result<Unit, ExecutionError> SwitchStmt::execute_result(LaneContext &lane, WaveC
   switch (ourEntry.phase) {
   case LaneContext::ControlFlowPhase::EvaluatingCondition: {
     // Evaluate switch value using Result-based helper method
-    TRY_RESULT(evaluateSwitchValue_result(lane, wave, tg, ourStackIndex), Unit, ExecutionError);
-    
+    TRY_RESULT(evaluateSwitchValue_result(lane, wave, tg, ourStackIndex), Unit,
+               ExecutionError);
+
     // Find matching case and set up execution using non-throwing helper method
     findMatchingCase(lane, wave, tg, ourStackIndex);
-    
+
     // Check if we're moving to reconverging (no matching case)
     if (ourEntry.phase == LaneContext::ControlFlowPhase::Reconverging) {
       return Ok<Unit, ExecutionError>(Unit{});
     }
-    
+
     // Set state to WaitingForResume to prevent currentStatement increment
     if (!isProtectedState(lane.state)) {
       lane.state = ThreadState::WaitingForResume;
     }
-    return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement increment, will resume later
+    return Ok<Unit, ExecutionError>(Unit{}); // Exit to prevent currentStatement
+                                             // increment, will resume later
   }
 
   case LaneContext::ControlFlowPhase::ExecutingCase: {
     // Execute case statements using Result-based helper method
-    TRY_RESULT(executeCaseStatements_result(lane, wave, tg, ourStackIndex), Unit, ExecutionError);
-    
+    TRY_RESULT(executeCaseStatements_result(lane, wave, tg, ourStackIndex),
+               Unit, ExecutionError);
+
     if (lane.hasReturned || lane.state != ThreadState::Ready) {
       return Ok<Unit, ExecutionError>(Unit{});
     }
-    
+
     // Set state to WaitingForResume to prevent currentStatement increment
     if (!isProtectedState(lane.state)) {
       lane.state = ThreadState::WaitingForResume;
@@ -6096,10 +6416,12 @@ Result<Unit, ExecutionError> SwitchStmt::execute_result(LaneContext &lane, WaveC
 }
 
 // Result-based helper functions for SwitchStmt
-Result<Unit, ExecutionError> SwitchStmt::evaluateSwitchValue_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                         int ourStackIndex) {
+Result<Unit, ExecutionError>
+SwitchStmt::evaluateSwitchValue_result(LaneContext &lane, WaveContext &wave,
+                                       ThreadgroupContext &tg,
+                                       int ourStackIndex) {
   auto &ourEntry = lane.executionStack[ourStackIndex];
-  
+
   std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
             << " evaluating switch condition (Result-based)" << std::endl;
 
@@ -6107,30 +6429,32 @@ Result<Unit, ExecutionError> SwitchStmt::evaluateSwitchValue_result(LaneContext 
   if (!ourEntry.conditionEvaluated) {
     std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
               << " evaluating condition for first time" << std::endl;
-    
+
     auto condValue = condition_->evaluate_result(lane, wave, tg);
     if (condValue.is_err()) {
       return Err<Unit, ExecutionError>(condValue.unwrap_err());
     }
-    
+
     lane.executionStack[ourStackIndex].switchValue = condValue.unwrap();
     lane.executionStack[ourStackIndex].conditionEvaluated = true;
     std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
-              << " switch condition evaluated to: " << condValue.unwrap().asInt()
-              << std::endl;
+              << " switch condition evaluated to: "
+              << condValue.unwrap().asInt() << std::endl;
   } else {
     std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
               << " using cached condition result="
               << ourEntry.switchValue.asInt() << std::endl;
   }
-  
+
   return Ok<Unit, ExecutionError>(Unit{});
 }
 
-Result<Unit, ExecutionError> SwitchStmt::executeCaseStatements_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                           int ourStackIndex) {
+Result<Unit, ExecutionError>
+SwitchStmt::executeCaseStatements_result(LaneContext &lane, WaveContext &wave,
+                                         ThreadgroupContext &tg,
+                                         int ourStackIndex) {
   auto &ourEntry = lane.executionStack[ourStackIndex];
-  
+
   // Execute all statements from current position until case/switch completion
   while (ourEntry.caseIndex < cases_.size()) {
     const auto &caseBlock = cases_[ourEntry.caseIndex];
@@ -6139,8 +6463,8 @@ Result<Unit, ExecutionError> SwitchStmt::executeCaseStatements_result(LaneContex
                                 : "default";
 
     // Execute all statements in current case from saved position
-    for (size_t i = ourEntry.statementIndex;
-         i < caseBlock.statements.size(); i++) {
+    for (size_t i = ourEntry.statementIndex; i < caseBlock.statements.size();
+         i++) {
       lane.executionStack[ourStackIndex].statementIndex = i;
 
       std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
@@ -6149,7 +6473,8 @@ Result<Unit, ExecutionError> SwitchStmt::executeCaseStatements_result(LaneContex
 
       // Use Result-based execute_result instead of exception-based execute
       // Match exception-based semantics by calling execute_result directly
-      auto stmt_result = caseBlock.statements[i]->execute_result(lane, wave, tg);
+      auto stmt_result =
+          caseBlock.statements[i]->execute_result(lane, wave, tg);
       if (stmt_result.is_err()) {
         return stmt_result; // Propagate the error
       }
@@ -6188,8 +6513,8 @@ Result<Unit, ExecutionError> SwitchStmt::executeCaseStatements_result(LaneContex
 
     // Current case completed - move to next case (fallthrough)
     std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
-              << " completed case " << caseLabel
-              << ", falling through to next" << std::endl;
+              << " completed case " << caseLabel << ", falling through to next"
+              << std::endl;
 
     size_t nextCaseIndex = ourEntry.caseIndex + 1;
 
@@ -6209,8 +6534,7 @@ Result<Unit, ExecutionError> SwitchStmt::executeCaseStatements_result(LaneContex
                                               lane.laneId);
 
       // Remove from current case block
-      tg.removeThreadFromAllSets(currentCaseBlockId, wave.waveId,
-                                 lane.laneId);
+      tg.removeThreadFromAllSets(currentCaseBlockId, wave.waveId, lane.laneId);
     }
 
     // Move to next case
@@ -6222,7 +6546,7 @@ Result<Unit, ExecutionError> SwitchStmt::executeCaseStatements_result(LaneContex
   std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
             << " completed all cases, entering reconvergence" << std::endl;
   ourEntry.phase = LaneContext::ControlFlowPhase::Reconverging;
-  
+
   return Ok<Unit, ExecutionError>(Unit{});
 }
 
@@ -6243,82 +6567,87 @@ std::string SwitchStmt::toString() const {
 }
 
 // Specialized wrapper function for SwitchStmt-specific error handling
-Result<Unit, ExecutionError> SwitchStmt::execute_with_error_handling(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg) {
+Result<Unit, ExecutionError>
+SwitchStmt::execute_with_error_handling(LaneContext &lane, WaveContext &wave,
+                                        ThreadgroupContext &tg) {
   auto result = execute_result(lane, wave, tg);
   if (result.is_err()) {
     ExecutionError error = result.unwrap_err();
-    
+
     switch (error) {
-      case ExecutionError::WaveOperationWait:
-        // SwitchStmt-specific: Wave operation already set the lane to WaitingForWave
-        // Just propagate the error without changing state
-        return result; // Propagate for parent to handle
-        
-      case ExecutionError::ControlFlowBreak:
-        // SwitchStmt consumes break: exit switch cleanly
-        {
-          int ourStackIndex = findStackIndex(lane);
-          if (ourStackIndex >= 0) {
-            handleBreakException(lane, wave, tg, ourStackIndex);
-            if (!isProtectedState(lane.state)) {
-              lane.state = ThreadState::WaitingForResume;
-            }
-            
-            // Restore active state (reconvergence)
-            lane.isActive = lane.isActive && !lane.hasReturned;
+    case ExecutionError::WaveOperationWait:
+      // SwitchStmt-specific: Wave operation already set the lane to
+      // WaitingForWave Just propagate the error without changing state
+      return result; // Propagate for parent to handle
+
+    case ExecutionError::ControlFlowBreak:
+      // SwitchStmt consumes break: exit switch cleanly
+      {
+        int ourStackIndex = findStackIndex(lane);
+        if (ourStackIndex >= 0) {
+          handleBreakException(lane, wave, tg, ourStackIndex);
+          if (!isProtectedState(lane.state)) {
+            lane.state = ThreadState::WaitingForResume;
           }
+
+          // Restore active state (reconvergence)
+          lane.isActive = lane.isActive && !lane.hasReturned;
         }
-        return Ok<Unit, ExecutionError>(Unit{}); // Success - break handled
-        
-      case ExecutionError::ControlFlowContinue:
-        // SwitchStmt does NOT consume continue - propagate to enclosing loop
-        // Clean up our stack entry
-        {
-          int ourStackIndex = findStackIndex(lane);
-          if (ourStackIndex >= 0) {
-            lane.executionStack.pop_back();
-          }
+      }
+      return Ok<Unit, ExecutionError>(Unit{}); // Success - break handled
+
+    case ExecutionError::ControlFlowContinue:
+      // SwitchStmt does NOT consume continue - propagate to enclosing loop
+      // Clean up our stack entry
+      {
+        int ourStackIndex = findStackIndex(lane);
+        if (ourStackIndex >= 0) {
+          lane.executionStack.pop_back();
         }
-        return result; // Propagate to parent loop
-        
-      default:
-        return result; // Propagate unknown errors
+      }
+      return result; // Propagate to parent loop
+
+    default:
+      return result; // Propagate unknown errors
     }
   }
   return result; // Success case
 }
 
-
-Result<Unit, ExecutionError> ContinueStmt::execute_result(LaneContext &lane, WaveContext &wave,
-                                                        ThreadgroupContext &tg) {
+Result<Unit, ExecutionError>
+ContinueStmt::execute_result(LaneContext &lane, WaveContext &wave,
+                             ThreadgroupContext &tg) {
   if (!lane.isActive)
     return Ok<Unit, ExecutionError>(Unit{});
-  
+
   // Pure Result-based continue - no exceptions thrown!
   std::cout << "DEBUG: ContinueStmt - Lane " << lane.laneId
             << " executing continue via Result" << std::endl;
   return Err<Unit, ExecutionError>(ExecutionError::ControlFlowContinue);
 }
 
-Result<Unit, ExecutionError> BreakStmt::execute_result(LaneContext &lane, WaveContext &wave,
-                                                     ThreadgroupContext &tg) {
+Result<Unit, ExecutionError> BreakStmt::execute_result(LaneContext &lane,
+                                                       WaveContext &wave,
+                                                       ThreadgroupContext &tg) {
   if (!lane.isActive)
     return Ok<Unit, ExecutionError>(Unit{});
-  
+
   // Pure Result-based break - no exceptions thrown!
   std::cout << "DEBUG: BreakStmt - Lane " << lane.laneId
             << " executing break via Result" << std::endl;
-  
+
   // Debug: print execution stack to see nesting
-  std::cout << "DEBUG: BreakStmt - Execution stack size: " << lane.executionStack.size() << std::endl;
+  std::cout << "DEBUG: BreakStmt - Execution stack size: "
+            << lane.executionStack.size() << std::endl;
   for (size_t i = 0; i < lane.executionStack.size(); i++) {
-    std::cout << "  Stack[" << i << "]: statement=" << lane.executionStack[i].statement
-              << ", phase=" << static_cast<int>(lane.executionStack[i].phase) << std::endl;
+    std::cout << "  Stack[" << i
+              << "]: statement=" << lane.executionStack[i].statement
+              << ", phase=" << static_cast<int>(lane.executionStack[i].phase)
+              << std::endl;
   }
-  
+
   return Err<Unit, ExecutionError>(ExecutionError::ControlFlowBreak);
 }
-
 
 void ThreadgroupContext::assignLaneToBlock(WaveId waveId, LaneId laneId,
                                            uint32_t blockId) {
@@ -6385,22 +6714,22 @@ void ThreadgroupContext::assignLaneToBlock(WaveId waveId, LaneId laneId,
 
   // Remove lane from its current block if it's in one
   if (currentBlockId != 0) {
-    auto* oldBlock = getBlock(currentBlockId);
+    auto *oldBlock = getBlock(currentBlockId);
     if (oldBlock) {
       // NEW: Don't remove from arrivedLanes if moving from header to iteration
       // block This keeps lanes in header's arrivedLanes until they exit the
       // loop entirely
-      const auto* newBlock = getBlock(blockId);
+      const auto *newBlock = getBlock(blockId);
       bool isHeaderToLoopBody =
-          (oldBlock->getBlockType() == BlockType::LOOP_HEADER &&
-           newBlock &&
+          (oldBlock->getBlockType() == BlockType::LOOP_HEADER && newBlock &&
            newBlock->getBlockType() != BlockType::LOOP_EXIT);
 
       std::cout << "DEBUG: assignLaneToBlock - moving lane " << laneId
                 << " from block " << currentBlockId << " (type "
-                << (int)oldBlock->getBlockType() << ") to block "
-                << blockId << " (type "
-                << (int)(newBlock ? newBlock->getBlockType() : BlockType::REGULAR)
+                << (int)oldBlock->getBlockType() << ") to block " << blockId
+                << " (type "
+                << (int)(newBlock ? newBlock->getBlockType()
+                                  : BlockType::REGULAR)
                 << "), isHeaderToLoopBody=" << isHeaderToLoopBody << std::endl;
 
       if (!isHeaderToLoopBody) {
@@ -6509,7 +6838,7 @@ void ThreadgroupContext::mergeExecutionPaths(
   std::map<WaveId, std::set<LaneId>> mergedLanes;
 
   for (uint32_t blockId : blockIds) {
-    const auto* block = getBlock(blockId);
+    const auto *block = getBlock(blockId);
     if (block) {
       // Merge lanes from this block, organized by wave
       for (WaveId waveId = 0; waveId < waves.size(); ++waveId) {
@@ -6584,7 +6913,7 @@ void ThreadgroupContext::mergeExecutionPaths(
 // Cooperative scheduling methods
 void ThreadgroupContext::markLaneArrived(WaveId waveId, LaneId laneId,
                                          uint32_t blockId) {
-  const auto* block = getBlock(blockId);
+  const auto *block = getBlock(blockId);
   if (block) {
     // Update BlockMembershipRegistry: lane arrived and is no longer unknown
     // First check current status to handle the transition properly
@@ -6630,7 +6959,7 @@ void ThreadgroupContext::markLaneWaitingForWave(WaveId waveId, LaneId laneId,
   std::cout << "DEBUG: markLaneWaitingForWave - Lane " << laneId << " wave "
             << waveId << " in block " << blockId << std::endl;
 
-  const auto* block = getBlock(blockId);
+  const auto *block = getBlock(blockId);
   if (block) {
     // it->second.addWaitingLane(waveId, laneId);
     // Change lane state to waiting
@@ -6657,7 +6986,7 @@ bool ThreadgroupContext::canExecuteWaveOperation(WaveId waveId,
   if (blockId == 0) {
     return false; // Lane not in any block
   }
-  const auto* block = getBlock(blockId);
+  const auto *block = getBlock(blockId);
   if (!block) {
     return false; // Block not found
   }
@@ -6675,7 +7004,7 @@ ThreadgroupContext::getWaveOperationParticipants(WaveId waveId,
   if (blockId == 0) {
     return {}; // Lane not in any block
   }
-  const auto* block = getBlock(blockId);
+  const auto *block = getBlock(blockId);
   if (!block) {
     return {}; // Block not found
   }
@@ -6800,7 +7129,7 @@ bool ThreadgroupContext::canExecuteWaveInstruction(
       canExecuteWaveInstructionInBlock(currentBlockId, waveId, instrIdentity);
 
   // Debug unknown lanes state
-  const auto* block = getBlock(currentBlockId);
+  const auto *block = getBlock(currentBlockId);
   if (block) {
     auto unknownLanes =
         membershipRegistry.getUnknownLanes(waveId, currentBlockId);
@@ -6906,7 +7235,7 @@ bool ThreadgroupContext::areAllParticipantsKnownForWaveInstruction(
   if (it == waves[waveId]->activeSyncPoints.end()) {
     // No sync point created yet - check if only one lane is in the block
     uint32_t blockId = instructionKey.second;
-    const auto* block = getBlock(blockId);
+    const auto *block = getBlock(blockId);
     if (block) {
       auto arrivedLanes = membershipRegistry.getArrivedLanes(waveId, blockId);
       if (arrivedLanes.size() == 1) {
@@ -7096,7 +7425,7 @@ void ThreadgroupContext::updateMergeStack(
 void ThreadgroupContext::addInstructionToBlock(
     uint32_t blockId, const InstructionIdentity &instruction,
     const std::map<WaveId, std::set<LaneId>> &participants) {
-  auto* block = getBlock(blockId);
+  auto *block = getBlock(blockId);
   if (!block) {
     return; // Block doesn't exist
   }
@@ -7114,7 +7443,7 @@ void ThreadgroupContext::addInstructionToBlock(
     block->addInstruction(instruction);
   }
 
-  // Merge participants for this instruction (don't replace, add to existing)  
+  // Merge participants for this instruction (don't replace, add to existing)
   for (const auto &[waveId, newLanes] : participants) {
     for (LaneId laneId : newLanes) {
       block->addInstructionParticipant(instruction, waveId, laneId);
@@ -7134,7 +7463,7 @@ InstructionIdentity ThreadgroupContext::createInstructionIdentity(
 
 std::vector<InstructionIdentity>
 ThreadgroupContext::getBlockInstructions(uint32_t blockId) const {
-  const auto* block = getBlock(blockId);
+  const auto *block = getBlock(blockId);
   if (block) {
     return block->getInstructionList();
   }
@@ -7144,10 +7473,9 @@ ThreadgroupContext::getBlockInstructions(uint32_t blockId) const {
 std::map<WaveId, std::set<LaneId>>
 ThreadgroupContext::getInstructionParticipantsInBlock(
     uint32_t blockId, const InstructionIdentity &instruction) const {
-  const auto* block = getBlock(blockId);
+  const auto *block = getBlock(blockId);
   if (block) {
-    const auto &instructionParticipants =
-        block->getInstructionParticipants();
+    const auto &instructionParticipants = block->getInstructionParticipants();
     auto instrIt = instructionParticipants.find(instruction);
     if (instrIt != instructionParticipants.end()) {
       return instrIt->second;
@@ -7159,7 +7487,7 @@ ThreadgroupContext::getInstructionParticipantsInBlock(
 bool ThreadgroupContext::canExecuteWaveInstructionInBlock(
     uint32_t blockId, WaveId waveId,
     const InstructionIdentity &instruction) const {
-  const auto* block = getBlock(blockId);
+  const auto *block = getBlock(blockId);
   if (!block) {
     return false; // Block doesn't exist
   }
@@ -7176,7 +7504,7 @@ bool ThreadgroupContext::canExecuteWaveInstructionInBlock(
 
 bool ThreadgroupContext::canExecuteBarrierInstructionInBlock(
     uint32_t blockId, const InstructionIdentity &instruction) const {
-  const auto* block = getBlock(blockId);
+  const auto *block = getBlock(blockId);
   if (!block) {
     return false; // Block doesn't exist
   }
@@ -7274,7 +7602,7 @@ std::tuple<uint32_t, uint32_t, uint32_t> ThreadgroupContext::createIfBlocks(
 void ThreadgroupContext::moveThreadFromUnknownToParticipating(uint32_t blockId,
                                                               WaveId waveId,
                                                               LaneId laneId) {
-  auto* block = getBlock(blockId);
+  auto *block = getBlock(blockId);
   if (!block)
     return;
   // Update lane assignment
@@ -7290,7 +7618,7 @@ void ThreadgroupContext::moveThreadFromUnknownToParticipating(uint32_t blockId,
 
 void ThreadgroupContext::removeThreadFromUnknown(uint32_t blockId,
                                                  WaveId waveId, LaneId laneId) {
-  auto* block = getBlock(blockId);
+  auto *block = getBlock(blockId);
   if (!block)
     return;
 
@@ -7375,7 +7703,7 @@ void ThreadgroupContext::removeThreadFromUnknown(uint32_t blockId,
 void ThreadgroupContext::removeThreadFromAllSets(uint32_t blockId,
                                                  WaveId waveId, LaneId laneId) {
 
-  const auto* block = getBlock(blockId);
+  const auto *block = getBlock(blockId);
   if (block) {
     std::cout << "DEBUG: removeThreadFromAllSets - removing lane " << laneId
               << " from all sets of block " << blockId << std::endl;
@@ -7467,7 +7795,7 @@ void ThreadgroupContext::removeThreadFromNestedBlocks(uint32_t parentBlockId,
 
 std::map<WaveId, std::set<LaneId>>
 ThreadgroupContext::getCurrentBlockParticipants(uint32_t blockId) const {
-  const auto* block = getBlock(blockId);
+  const auto *block = getBlock(blockId);
   if (block) {
     // Return union of participating, arrived, waiting, and unknown lanes
     std::map<WaveId, std::set<LaneId>> allLanes;
@@ -7606,7 +7934,7 @@ void ThreadgroupContext::printDynamicExecutionGraph(bool verbose) const {
 
 void ThreadgroupContext::printBlockDetails(uint32_t blockId,
                                            bool verbose) const {
-  const auto* block = getBlock(blockId);
+  const auto *block = getBlock(blockId);
   if (!block) {
     INTERPRETER_DEBUG_LOG("Block " << blockId << ": NOT FOUND\n");
     return;
@@ -7655,11 +7983,14 @@ void ThreadgroupContext::printBlockDetails(uint32_t blockId,
     break;
   }
   INTERPRETER_DEBUG_LOG("  Block Type: " << blockTypeName << "\n");
-  INTERPRETER_DEBUG_LOG("  Parent Block: " << block->getParentBlockId() << "\n");
-  INTERPRETER_DEBUG_LOG("  Program Point: " << block->getProgramPoint() << "\n");
+  INTERPRETER_DEBUG_LOG("  Parent Block: " << block->getParentBlockId()
+                                           << "\n");
+  INTERPRETER_DEBUG_LOG("  Program Point: " << block->getProgramPoint()
+                                            << "\n");
   INTERPRETER_DEBUG_LOG(
       "  Is Converged: " << (block->getIsConverged() ? "Yes" : "No") << "\n");
-  INTERPRETER_DEBUG_LOG("  Nesting Level: " << block->getNestingLevel() << "\n");
+  INTERPRETER_DEBUG_LOG("  Nesting Level: " << block->getNestingLevel()
+                                            << "\n");
 
   // Source statement info
   if (block->getSourceStatement()) {
@@ -7818,7 +8149,7 @@ void ThreadgroupContext::printWaveState(WaveId waveId, bool verbose) const {
 }
 
 std::string ThreadgroupContext::getBlockSummary(uint32_t blockId) const {
-  const auto* block = getBlock(blockId);
+  const auto *block = getBlock(blockId);
   if (!block) {
     return "Block " + std::to_string(blockId) + ": NOT FOUND";
   }
@@ -7837,12 +8168,13 @@ std::string ThreadgroupContext::getBlockSummary(uint32_t blockId) const {
 }
 
 // Helper methods to safely get blocks and eliminate repetitive pattern
-DynamicExecutionBlock* ThreadgroupContext::getBlock(uint32_t blockId) {
+DynamicExecutionBlock *ThreadgroupContext::getBlock(uint32_t blockId) {
   auto it = executionBlocks.find(blockId);
   return (it != executionBlocks.end()) ? &it->second : nullptr;
 }
 
-const DynamicExecutionBlock* ThreadgroupContext::getBlock(uint32_t blockId) const {
+const DynamicExecutionBlock *
+ThreadgroupContext::getBlock(uint32_t blockId) const {
   auto it = executionBlocks.find(blockId);
   return (it != executionBlocks.end()) ? &it->second : nullptr;
 }

@@ -64,18 +64,17 @@ enum class ExecutionError {
 };
 
 // Result type implementation (Rust-like)
-template<typename T, typename E>
-class Result {
+template <typename T, typename E> class Result {
 private:
   bool is_ok_;
   union {
     T ok_value_;
-    E err_value_;  
+    E err_value_;
   };
 
 public:
   // Constructors
-  Result(const Result& other) : is_ok_(other.is_ok_) {
+  Result(const Result &other) : is_ok_(other.is_ok_) {
     if (is_ok_) {
       new (&ok_value_) T(other.ok_value_);
     } else {
@@ -83,7 +82,7 @@ public:
     }
   }
 
-  Result(Result&& other) noexcept : is_ok_(other.is_ok_) {
+  Result(Result &&other) noexcept : is_ok_(other.is_ok_) {
     if (is_ok_) {
       new (&ok_value_) T(std::move(other.ok_value_));
     } else {
@@ -101,7 +100,7 @@ public:
   }
 
   // Assignment operators
-  Result& operator=(const Result& other) {
+  Result &operator=(const Result &other) {
     if (this != &other) {
       this->~Result();
       is_ok_ = other.is_ok_;
@@ -114,7 +113,7 @@ public:
     return *this;
   }
 
-  Result& operator=(Result&& other) noexcept {
+  Result &operator=(Result &&other) noexcept {
     if (this != &other) {
       this->~Result();
       is_ok_ = other.is_ok_;
@@ -145,23 +144,27 @@ public:
   bool is_err() const { return !is_ok_; }
 
   // Access methods
-  T& unwrap() {
-    if (!is_ok_) throw std::runtime_error("Called unwrap on an error value");
+  T &unwrap() {
+    if (!is_ok_)
+      throw std::runtime_error("Called unwrap on an error value");
     return ok_value_;
   }
 
-  const T& unwrap() const {
-    if (!is_ok_) throw std::runtime_error("Called unwrap on an error value");
+  const T &unwrap() const {
+    if (!is_ok_)
+      throw std::runtime_error("Called unwrap on an error value");
     return ok_value_;
   }
 
-  E& unwrap_err() {
-    if (is_ok_) throw std::runtime_error("Called unwrap_err on an ok value");
+  E &unwrap_err() {
+    if (is_ok_)
+      throw std::runtime_error("Called unwrap_err on an ok value");
     return err_value_;
   }
 
-  const E& unwrap_err() const {
-    if (is_ok_) throw std::runtime_error("Called unwrap_err on an ok value");
+  const E &unwrap_err() const {
+    if (is_ok_)
+      throw std::runtime_error("Called unwrap_err on an ok value");
     return err_value_;
   }
 
@@ -171,24 +174,22 @@ private:
 };
 
 // Helper functions for creating Results
-template<typename T, typename E>
-Result<T, E> Ok(T value) {
+template <typename T, typename E> Result<T, E> Ok(T value) {
   return Result<T, E>::Ok(std::move(value));
 }
 
-template<typename T, typename E>
-Result<T, E> Err(E error) {
+template <typename T, typename E> Result<T, E> Err(E error) {
   return Result<T, E>::Err(std::move(error));
 }
 
 // Rust-like ? operator macro for Result handling
-#define TRY_RESULT(expr, ret_type, err_type) \
-  ({ \
-    auto _result = (expr); \
-    if (_result.is_err()) { \
-      return Err<ret_type, err_type>(_result.unwrap_err()); \
-    } \
-    _result.unwrap(); \
+#define TRY_RESULT(expr, ret_type, err_type)                                   \
+  ({                                                                           \
+    auto _result = (expr);                                                     \
+    if (_result.is_err()) {                                                    \
+      return Err<ret_type, err_type>(_result.unwrap_err());                    \
+    }                                                                          \
+    _result.unwrap();                                                          \
   })
 
 // Forward declarations
@@ -453,7 +454,7 @@ struct WaveOperationSyncPoint {
 
   Result<Value, ExecutionError> retrieveResult(LaneId lane) {
     if (state != SyncPointState::Executed) {
-        return Err<Value, ExecutionError>(ExecutionError::InvalidState);
+      return Err<Value, ExecutionError>(ExecutionError::InvalidState);
     }
     auto it = pendingResults.find(lane);
     if (it != pendingResults.end()) {
@@ -610,9 +611,9 @@ struct BlockIdentity {
 class DynamicExecutionBlock {
 private:
   uint32_t blockId_;
-  BlockIdentity identity_; // Unique identity for this execution path
-                           // by wave
-  uint32_t programPoint_;  // Current execution point within the block
+  BlockIdentity identity_;     // Unique identity for this execution path
+                               // by wave
+  uint32_t programPoint_;      // Current execution point within the block
   uint32_t parentBlockId_ = 0; // Parent block for nested control flow
   bool isConverged_ =
       true; // Whether all lanes in threadgroup are in this block
@@ -672,7 +673,6 @@ public:
   getInstructionParticipants() const {
     return instructionParticipants_;
   }
-
 
   // Setters
   void setBlockId(uint32_t id) { blockId_ = id; }
@@ -1026,9 +1026,9 @@ struct ThreadgroupContext {
                         const std::vector<MergeStackEntry> &mergeStack);
 
   // Helper methods
-  DynamicExecutionBlock* getBlock(uint32_t blockId);
-  const DynamicExecutionBlock* getBlock(uint32_t blockId) const;
-  
+  DynamicExecutionBlock *getBlock(uint32_t blockId);
+  const DynamicExecutionBlock *getBlock(uint32_t blockId) const;
+
   // Debug and visualization methods
   void printDynamicExecutionGraph(bool verbose = false) const;
   void printBlockDetails(uint32_t blockId, bool verbose = false) const;
@@ -1065,10 +1065,11 @@ struct ExecutionResult {
 class Expression {
 public:
   virtual ~Expression() = default;
-  
+
   // Primary evaluation method - all expressions must implement this
-  virtual Result<Value, ExecutionError> evaluate_result(LaneContext &lane, WaveContext &wave,
-                                                       ThreadgroupContext &tg) const = 0;
+  virtual Result<Value, ExecutionError>
+  evaluate_result(LaneContext &lane, WaveContext &wave,
+                  ThreadgroupContext &tg) const = 0;
   virtual bool isDeterministic() const = 0;
   virtual std::string toString() const = 0;
 };
@@ -1079,8 +1080,9 @@ class LiteralExpr : public Expression {
 
 public:
   explicit LiteralExpr(Value v) : value_(v) {}
-  Result<Value, ExecutionError> evaluate_result(LaneContext &, WaveContext &,
-                                               ThreadgroupContext &) const override {
+  Result<Value, ExecutionError>
+  evaluate_result(LaneContext &, WaveContext &,
+                  ThreadgroupContext &) const override {
     // Pure Result-based implementation - literals are always successful
     return Ok<Value, ExecutionError>(value_);
   }
@@ -1093,32 +1095,36 @@ class VariableExpr : public Expression {
 
 public:
   explicit VariableExpr(const std::string &name) : name_(name) {}
-  Result<Value, ExecutionError> evaluate_result(LaneContext &lane, WaveContext &,
-                                               ThreadgroupContext &) const override;
+  Result<Value, ExecutionError>
+  evaluate_result(LaneContext &lane, WaveContext &,
+                  ThreadgroupContext &) const override;
   bool isDeterministic() const override { return false; }
   std::string toString() const override { return name_; }
 };
 
 class LaneIndexExpr : public Expression {
 public:
-  Result<Value, ExecutionError> evaluate_result(LaneContext &lane, WaveContext &,
-                                               ThreadgroupContext &) const override;
+  Result<Value, ExecutionError>
+  evaluate_result(LaneContext &lane, WaveContext &,
+                  ThreadgroupContext &) const override;
   bool isDeterministic() const override { return true; }
   std::string toString() const override { return "WaveGetLaneIndex()"; }
 };
 
 class WaveIndexExpr : public Expression {
 public:
-  Result<Value, ExecutionError> evaluate_result(LaneContext &, WaveContext &wave,
-                                               ThreadgroupContext &) const override;
+  Result<Value, ExecutionError>
+  evaluate_result(LaneContext &, WaveContext &wave,
+                  ThreadgroupContext &) const override;
   bool isDeterministic() const override { return true; }
   std::string toString() const override { return "WaveGetWaveIndex()"; }
 };
 
 class ThreadIndexExpr : public Expression {
 public:
-  Result<Value, ExecutionError> evaluate_result(LaneContext &lane, WaveContext &,
-                                               ThreadgroupContext &) const override;
+  Result<Value, ExecutionError>
+  evaluate_result(LaneContext &lane, WaveContext &,
+                  ThreadgroupContext &) const override;
   bool isDeterministic() const override { return true; }
   std::string toString() const override { return "W()"; }
 };
@@ -1135,8 +1141,9 @@ private:
 public:
   BinaryOpExpr(std::unique_ptr<Expression> left,
                std::unique_ptr<Expression> right, OpType op);
-  Result<Value, ExecutionError> evaluate_result(LaneContext &lane, WaveContext &wave,
-                                               ThreadgroupContext &tg) const override;
+  Result<Value, ExecutionError>
+  evaluate_result(LaneContext &lane, WaveContext &wave,
+                  ThreadgroupContext &tg) const override;
   bool isDeterministic() const override;
   std::string toString() const override;
 };
@@ -1161,8 +1168,9 @@ private:
 
 public:
   UnaryOpExpr(std::unique_ptr<Expression> expr, OpType op);
-  Result<Value, ExecutionError> evaluate_result(LaneContext &lane, WaveContext &wave,
-                                               ThreadgroupContext &tg) const override;
+  Result<Value, ExecutionError>
+  evaluate_result(LaneContext &lane, WaveContext &wave,
+                  ThreadgroupContext &tg) const override;
   bool isDeterministic() const override;
   std::string toString() const override;
 };
@@ -1177,8 +1185,9 @@ public:
   ConditionalExpr(std::unique_ptr<Expression> condition,
                   std::unique_ptr<Expression> trueExpr,
                   std::unique_ptr<Expression> falseExpr);
-  Result<Value, ExecutionError> evaluate_result(LaneContext &lane, WaveContext &wave,
-                                               ThreadgroupContext &tg) const override;
+  Result<Value, ExecutionError>
+  evaluate_result(LaneContext &lane, WaveContext &wave,
+                  ThreadgroupContext &tg) const override;
   bool isDeterministic() const override;
   std::string toString() const override;
 };
@@ -1207,8 +1216,9 @@ private:
 
 public:
   WaveActiveOp(std::unique_ptr<Expression> expr, OpType op);
-  Result<Value, ExecutionError> evaluate_result(LaneContext &lane, WaveContext &wave,
-                                              ThreadgroupContext &tg) const override;
+  Result<Value, ExecutionError>
+  evaluate_result(LaneContext &lane, WaveContext &wave,
+                  ThreadgroupContext &tg) const override;
   bool isDeterministic() const override { return false; }
   std::string toString() const override;
 
@@ -1219,20 +1229,21 @@ public:
 
 class WaveGetLaneCountExpr : public Expression {
 public:
-  Result<Value, ExecutionError> evaluate_result(LaneContext &, WaveContext &wave,
-                                               ThreadgroupContext &) const override;
+  Result<Value, ExecutionError>
+  evaluate_result(LaneContext &, WaveContext &wave,
+                  ThreadgroupContext &) const override;
   bool isDeterministic() const override { return true; }
   std::string toString() const override { return "WaveGetLaneCount()"; }
 };
 
 class WaveIsFirstLaneExpr : public Expression {
 public:
-  Result<Value, ExecutionError> evaluate_result(LaneContext &lane, WaveContext &wave,
-                                               ThreadgroupContext &) const override;
+  Result<Value, ExecutionError>
+  evaluate_result(LaneContext &lane, WaveContext &wave,
+                  ThreadgroupContext &) const override;
   bool isDeterministic() const override { return false; }
   std::string toString() const override { return "WaveIsFirstLane()"; }
 };
-
 
 // Statement AST nodes
 class Statement {
@@ -1249,15 +1260,17 @@ protected:
 
 public:
   virtual ~Statement() = default;
-  
+
   // Primary execution method - all statements must implement this
-  virtual Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
-                                                    ThreadgroupContext &tg) = 0;
-  
+  virtual Result<Unit, ExecutionError>
+  execute_result(LaneContext &lane, WaveContext &wave,
+                 ThreadgroupContext &tg) = 0;
+
   // Default implementation that just calls execute_result
   // Control flow statements override this with specialized error handling
-  virtual Result<Unit, ExecutionError> execute_with_error_handling(LaneContext &lane, WaveContext &wave,
-                                                                  ThreadgroupContext &tg) {
+  virtual Result<Unit, ExecutionError>
+  execute_with_error_handling(LaneContext &lane, WaveContext &wave,
+                              ThreadgroupContext &tg) {
     return execute_result(lane, wave, tg);
   }
   virtual bool requiresAllLanesActive() const { return false; }
@@ -1270,8 +1283,9 @@ class VarDeclStmt : public Statement {
 
 public:
   VarDeclStmt(const std::string &name, std::unique_ptr<Expression> init);
-  Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
-                                            ThreadgroupContext &tg) override;
+  Result<Unit, ExecutionError> execute_result(LaneContext &lane,
+                                              WaveContext &wave,
+                                              ThreadgroupContext &tg) override;
   std::string toString() const override;
 };
 
@@ -1281,8 +1295,9 @@ class AssignStmt : public Statement {
 
 public:
   AssignStmt(const std::string &name, std::unique_ptr<Expression> expr);
-  Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
-                                            ThreadgroupContext &tg) override;
+  Result<Unit, ExecutionError> execute_result(LaneContext &lane,
+                                              WaveContext &wave,
+                                              ThreadgroupContext &tg) override;
   std::string toString() const override;
 };
 
@@ -1298,31 +1313,42 @@ public:
   IfStmt(std::unique_ptr<Expression> cond,
          std::vector<std::unique_ptr<Statement>> thenBlock,
          std::vector<std::unique_ptr<Statement>> elseBlock = {});
-  Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
-                                            ThreadgroupContext &tg) override;
+  Result<Unit, ExecutionError> execute_result(LaneContext &lane,
+                                              WaveContext &wave,
+                                              ThreadgroupContext &tg) override;
   bool requiresAllLanesActive() const override;
   std::string toString() const override;
-  
+
   // Helper methods for phase execution
-  void evaluateConditionAndSetup(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                                  int ourStackIndex, uint32_t parentBlockId, bool hasElse);
-  void executeThenBranch(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                         int ourStackIndex);
-  void executeElseBranch(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                         int ourStackIndex);
-  void performReconvergence(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                            int ourStackIndex, bool hasElse);
-  
+  void evaluateConditionAndSetup(LaneContext &lane, WaveContext &wave,
+                                 ThreadgroupContext &tg, int ourStackIndex,
+                                 uint32_t parentBlockId, bool hasElse);
+  void executeThenBranch(LaneContext &lane, WaveContext &wave,
+                         ThreadgroupContext &tg, int ourStackIndex);
+  void executeElseBranch(LaneContext &lane, WaveContext &wave,
+                         ThreadgroupContext &tg, int ourStackIndex);
+  void performReconvergence(LaneContext &lane, WaveContext &wave,
+                            ThreadgroupContext &tg, int ourStackIndex,
+                            bool hasElse);
+
   // Result-based versions of helper methods
-  Result<Unit, ExecutionError> evaluateConditionAndSetup_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                                int ourStackIndex, uint32_t parentBlockId, bool hasElse);
-  Result<Unit, ExecutionError> executeThenBranch_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                         int ourStackIndex);
-  Result<Unit, ExecutionError> executeElseBranch_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                         int ourStackIndex);
-  
+  Result<Unit, ExecutionError>
+  evaluateConditionAndSetup_result(LaneContext &lane, WaveContext &wave,
+                                   ThreadgroupContext &tg, int ourStackIndex,
+                                   uint32_t parentBlockId, bool hasElse);
+  Result<Unit, ExecutionError> executeThenBranch_result(LaneContext &lane,
+                                                        WaveContext &wave,
+                                                        ThreadgroupContext &tg,
+                                                        int ourStackIndex);
+  Result<Unit, ExecutionError> executeElseBranch_result(LaneContext &lane,
+                                                        WaveContext &wave,
+                                                        ThreadgroupContext &tg,
+                                                        int ourStackIndex);
+
   // Specialized wrapper function for IfStmt-specific error handling
-  Result<Unit, ExecutionError> execute_with_error_handling(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg) override;
+  Result<Unit, ExecutionError>
+  execute_with_error_handling(LaneContext &lane, WaveContext &wave,
+                              ThreadgroupContext &tg) override;
 };
 
 class ForStmt : public Statement {
@@ -1334,67 +1360,90 @@ class ForStmt : public Statement {
 
   // Result-based phase methods
   Result<Unit, ExecutionError> executeInit(LaneContext &lane, WaveContext &wave,
-                                          ThreadgroupContext &tg);
-  Result<bool, ExecutionError> evaluateCondition(LaneContext &lane, WaveContext &wave,
-                                                ThreadgroupContext &tg);
+                                           ThreadgroupContext &tg);
+  Result<bool, ExecutionError> evaluateCondition(LaneContext &lane,
+                                                 WaveContext &wave,
+                                                 ThreadgroupContext &tg);
   Result<Unit, ExecutionError> executeBody(LaneContext &lane, WaveContext &wave,
-                                          ThreadgroupContext &tg, size_t &statementIndex);
-  Result<Unit, ExecutionError> executeIncrement(LaneContext &lane, WaveContext &wave,
-                                               ThreadgroupContext &tg);
-  
+                                           ThreadgroupContext &tg,
+                                           size_t &statementIndex);
+  Result<Unit, ExecutionError> executeIncrement(LaneContext &lane,
+                                                WaveContext &wave,
+                                                ThreadgroupContext &tg);
+
   // Helper method for body execution (extracted for better readability)
-  void executeBodyStatements(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                            int ourStackIndex, uint32_t headerBlockId);
-  
+  void executeBodyStatements(LaneContext &lane, WaveContext &wave,
+                             ThreadgroupContext &tg, int ourStackIndex,
+                             uint32_t headerBlockId);
+
   // Helper method for setting up iteration-specific blocks
-  void setupIterationBlocks(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                           int ourStackIndex, uint32_t headerBlockId);
-  
+  void setupIterationBlocks(LaneContext &lane, WaveContext &wave,
+                            ThreadgroupContext &tg, int ourStackIndex,
+                            uint32_t headerBlockId);
+
   // Helper method for body completion cleanup
-  void cleanupAfterBodyExecution(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                                int ourStackIndex, uint32_t headerBlockId);
-  
+  void cleanupAfterBodyExecution(LaneContext &lane, WaveContext &wave,
+                                 ThreadgroupContext &tg, int ourStackIndex,
+                                 uint32_t headerBlockId);
+
   // Helper method for increment evaluation phase
-  void evaluateIncrementPhase(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                             int ourStackIndex);
-  
+  void evaluateIncrementPhase(LaneContext &lane, WaveContext &wave,
+                              ThreadgroupContext &tg, int ourStackIndex);
+
   // Helper method for loop exit/reconverging phase
-  void handleLoopExit(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                     int ourStackIndex, uint32_t mergeBlockId);
-  
+  void handleLoopExit(LaneContext &lane, WaveContext &wave,
+                      ThreadgroupContext &tg, int ourStackIndex,
+                      uint32_t mergeBlockId);
+
   // Helper methods for exception handling
-  void handleBreakException(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                           int ourStackIndex, uint32_t headerBlockId);
-  void handleContinueException(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                              int ourStackIndex, uint32_t headerBlockId);
-  
+  void handleBreakException(LaneContext &lane, WaveContext &wave,
+                            ThreadgroupContext &tg, int ourStackIndex,
+                            uint32_t headerBlockId);
+  void handleContinueException(LaneContext &lane, WaveContext &wave,
+                               ThreadgroupContext &tg, int ourStackIndex,
+                               uint32_t headerBlockId);
+
   // Helper methods for initialization and setup phases
-  void setupFreshExecution(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                          int ourStackIndex, uint32_t &headerBlockId, uint32_t &mergeBlockId);
-  void evaluateInitPhase(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                        int ourStackIndex, uint32_t headerBlockId);
-  void evaluateConditionPhase(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                             int ourStackIndex, uint32_t headerBlockId);
-  
+  void setupFreshExecution(LaneContext &lane, WaveContext &wave,
+                           ThreadgroupContext &tg, int ourStackIndex,
+                           uint32_t &headerBlockId, uint32_t &mergeBlockId);
+  void evaluateInitPhase(LaneContext &lane, WaveContext &wave,
+                         ThreadgroupContext &tg, int ourStackIndex,
+                         uint32_t headerBlockId);
+  void evaluateConditionPhase(LaneContext &lane, WaveContext &wave,
+                              ThreadgroupContext &tg, int ourStackIndex,
+                              uint32_t headerBlockId);
+
   // Result-based versions of helper methods
-  Result<Unit, ExecutionError> executeBodyStatements_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                                   int ourStackIndex, uint32_t headerBlockId);
-  Result<Unit, ExecutionError> evaluateInitPhase_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
-                               int ourStackIndex, uint32_t headerBlockId);
-  Result<Unit, ExecutionError> evaluateConditionPhase_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
-                                    int ourStackIndex, uint32_t headerBlockId);
-  Result<Unit, ExecutionError> evaluateIncrementPhase_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                             int ourStackIndex);
-  
+  Result<Unit, ExecutionError>
+  executeBodyStatements_result(LaneContext &lane, WaveContext &wave,
+                               ThreadgroupContext &tg, int ourStackIndex,
+                               uint32_t headerBlockId);
+  Result<Unit, ExecutionError> evaluateInitPhase_result(LaneContext &lane,
+                                                        WaveContext &wave,
+                                                        ThreadgroupContext &tg,
+                                                        int ourStackIndex,
+                                                        uint32_t headerBlockId);
+  Result<Unit, ExecutionError>
+  evaluateConditionPhase_result(LaneContext &lane, WaveContext &wave,
+                                ThreadgroupContext &tg, int ourStackIndex,
+                                uint32_t headerBlockId);
+  Result<Unit, ExecutionError>
+  evaluateIncrementPhase_result(LaneContext &lane, WaveContext &wave,
+                                ThreadgroupContext &tg, int ourStackIndex);
+
   // Specialized wrapper function for ForStmt-specific error handling
-  Result<Unit, ExecutionError> execute_with_error_handling(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg) override;
+  Result<Unit, ExecutionError>
+  execute_with_error_handling(LaneContext &lane, WaveContext &wave,
+                              ThreadgroupContext &tg) override;
 
 public:
   ForStmt(const std::string &var, std::unique_ptr<Expression> init,
           std::unique_ptr<Expression> cond, std::unique_ptr<Expression> inc,
           std::vector<std::unique_ptr<Statement>> body);
-  Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
-                                            ThreadgroupContext &tg) override;
+  Result<Unit, ExecutionError> execute_result(LaneContext &lane,
+                                              WaveContext &wave,
+                                              ThreadgroupContext &tg) override;
   std::string toString() const override;
 };
 
@@ -1403,43 +1452,59 @@ class WhileStmt : public Statement {
   std::vector<std::unique_ptr<Statement>> body_;
 
   // Result-based phase methods
-  Result<bool, ExecutionError> evaluateCondition(LaneContext &lane, WaveContext &wave,
-                                                ThreadgroupContext &tg);
+  Result<bool, ExecutionError> evaluateCondition(LaneContext &lane,
+                                                 WaveContext &wave,
+                                                 ThreadgroupContext &tg);
   Result<Unit, ExecutionError> executeBody(LaneContext &lane, WaveContext &wave,
-                                          ThreadgroupContext &tg);
-  
+                                           ThreadgroupContext &tg);
+
   // Helper methods for phase execution
-  void setupFreshExecution(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                          int ourStackIndex, uint32_t &headerBlockId, uint32_t &mergeBlockId);
-  void evaluateConditionPhase(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                             int ourStackIndex, uint32_t headerBlockId);
-  void setupIterationBlocks(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                           int ourStackIndex, uint32_t headerBlockId);
-  void executeBodyStatements(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                            int ourStackIndex, uint32_t headerBlockId);
-  void cleanupAfterBodyExecution(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                                int ourStackIndex, uint32_t headerBlockId);
-  void handleLoopExit(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                     int ourStackIndex, uint32_t mergeBlockId);
-  void handleBreakException(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                           int ourStackIndex, uint32_t headerBlockId);
-  void handleContinueException(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                              int ourStackIndex, uint32_t headerBlockId);
-  
+  void setupFreshExecution(LaneContext &lane, WaveContext &wave,
+                           ThreadgroupContext &tg, int ourStackIndex,
+                           uint32_t &headerBlockId, uint32_t &mergeBlockId);
+  void evaluateConditionPhase(LaneContext &lane, WaveContext &wave,
+                              ThreadgroupContext &tg, int ourStackIndex,
+                              uint32_t headerBlockId);
+  void setupIterationBlocks(LaneContext &lane, WaveContext &wave,
+                            ThreadgroupContext &tg, int ourStackIndex,
+                            uint32_t headerBlockId);
+  void executeBodyStatements(LaneContext &lane, WaveContext &wave,
+                             ThreadgroupContext &tg, int ourStackIndex,
+                             uint32_t headerBlockId);
+  void cleanupAfterBodyExecution(LaneContext &lane, WaveContext &wave,
+                                 ThreadgroupContext &tg, int ourStackIndex,
+                                 uint32_t headerBlockId);
+  void handleLoopExit(LaneContext &lane, WaveContext &wave,
+                      ThreadgroupContext &tg, int ourStackIndex,
+                      uint32_t mergeBlockId);
+  void handleBreakException(LaneContext &lane, WaveContext &wave,
+                            ThreadgroupContext &tg, int ourStackIndex,
+                            uint32_t headerBlockId);
+  void handleContinueException(LaneContext &lane, WaveContext &wave,
+                               ThreadgroupContext &tg, int ourStackIndex,
+                               uint32_t headerBlockId);
+
   // Result-based versions of helper methods
-  Result<Unit, ExecutionError> evaluateConditionPhase_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
-                                      int ourStackIndex, uint32_t headerBlockId);
-  Result<Unit, ExecutionError> executeBodyStatements_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg,
-                                     int ourStackIndex, uint32_t headerBlockId);
-  
+  Result<Unit, ExecutionError>
+  evaluateConditionPhase_result(LaneContext &lane, WaveContext &wave,
+                                ThreadgroupContext &tg, int ourStackIndex,
+                                uint32_t headerBlockId);
+  Result<Unit, ExecutionError>
+  executeBodyStatements_result(LaneContext &lane, WaveContext &wave,
+                               ThreadgroupContext &tg, int ourStackIndex,
+                               uint32_t headerBlockId);
+
   // Specialized wrapper function for WhileStmt-specific error handling
-  Result<Unit, ExecutionError> execute_with_error_handling(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg) override;
+  Result<Unit, ExecutionError>
+  execute_with_error_handling(LaneContext &lane, WaveContext &wave,
+                              ThreadgroupContext &tg) override;
 
 public:
   WhileStmt(std::unique_ptr<Expression> cond,
             std::vector<std::unique_ptr<Statement>> body);
-  Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
-                                            ThreadgroupContext &tg) override;
+  Result<Unit, ExecutionError> execute_result(LaneContext &lane,
+                                              WaveContext &wave,
+                                              ThreadgroupContext &tg) override;
   std::string toString() const override;
 };
 
@@ -1449,42 +1514,58 @@ class DoWhileStmt : public Statement {
 
   // Phase-based Result methods
   Result<Unit, ExecutionError> executeBody(LaneContext &lane, WaveContext &wave,
-                                          ThreadgroupContext &tg);
-  Result<bool, ExecutionError> evaluateCondition(LaneContext &lane, WaveContext &wave,
-                                                ThreadgroupContext &tg);
-  
+                                           ThreadgroupContext &tg);
+  Result<bool, ExecutionError> evaluateCondition(LaneContext &lane,
+                                                 WaveContext &wave,
+                                                 ThreadgroupContext &tg);
+
   // Helper methods for phase execution (following WhileStmt pattern)
-  void setupFreshExecution(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                          int ourStackIndex, uint32_t &headerBlockId, uint32_t &mergeBlockId);
-  void setupIterationBlocks(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                           int ourStackIndex, uint32_t headerBlockId);
-  void executeBodyStatements(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                            int ourStackIndex, uint32_t headerBlockId);
-  void cleanupAfterBodyExecution(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                                int ourStackIndex, uint32_t headerBlockId);
-  void evaluateConditionPhase(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                             int ourStackIndex, uint32_t headerBlockId);
-  void handleLoopExit(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                     int ourStackIndex, uint32_t mergeBlockId);
-  void handleBreakException(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                           int ourStackIndex, uint32_t headerBlockId, uint32_t mergeBlockId);
-  void handleContinueException(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                              int ourStackIndex, uint32_t headerBlockId);
-  
+  void setupFreshExecution(LaneContext &lane, WaveContext &wave,
+                           ThreadgroupContext &tg, int ourStackIndex,
+                           uint32_t &headerBlockId, uint32_t &mergeBlockId);
+  void setupIterationBlocks(LaneContext &lane, WaveContext &wave,
+                            ThreadgroupContext &tg, int ourStackIndex,
+                            uint32_t headerBlockId);
+  void executeBodyStatements(LaneContext &lane, WaveContext &wave,
+                             ThreadgroupContext &tg, int ourStackIndex,
+                             uint32_t headerBlockId);
+  void cleanupAfterBodyExecution(LaneContext &lane, WaveContext &wave,
+                                 ThreadgroupContext &tg, int ourStackIndex,
+                                 uint32_t headerBlockId);
+  void evaluateConditionPhase(LaneContext &lane, WaveContext &wave,
+                              ThreadgroupContext &tg, int ourStackIndex,
+                              uint32_t headerBlockId);
+  void handleLoopExit(LaneContext &lane, WaveContext &wave,
+                      ThreadgroupContext &tg, int ourStackIndex,
+                      uint32_t mergeBlockId);
+  void handleBreakException(LaneContext &lane, WaveContext &wave,
+                            ThreadgroupContext &tg, int ourStackIndex,
+                            uint32_t headerBlockId, uint32_t mergeBlockId);
+  void handleContinueException(LaneContext &lane, WaveContext &wave,
+                               ThreadgroupContext &tg, int ourStackIndex,
+                               uint32_t headerBlockId);
+
   // Result-based versions of helper methods
-  Result<Unit, ExecutionError> executeBodyStatements_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                                int ourStackIndex, uint32_t headerBlockId);
-  Result<Unit, ExecutionError> evaluateConditionPhase_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                                 int ourStackIndex, uint32_t headerBlockId);
-  
+  Result<Unit, ExecutionError>
+  executeBodyStatements_result(LaneContext &lane, WaveContext &wave,
+                               ThreadgroupContext &tg, int ourStackIndex,
+                               uint32_t headerBlockId);
+  Result<Unit, ExecutionError>
+  evaluateConditionPhase_result(LaneContext &lane, WaveContext &wave,
+                                ThreadgroupContext &tg, int ourStackIndex,
+                                uint32_t headerBlockId);
+
   // Specialized wrapper function for DoWhileStmt-specific error handling
-  Result<Unit, ExecutionError> execute_with_error_handling(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg) override;
+  Result<Unit, ExecutionError>
+  execute_with_error_handling(LaneContext &lane, WaveContext &wave,
+                              ThreadgroupContext &tg) override;
 
 public:
   DoWhileStmt(std::vector<std::unique_ptr<Statement>> body,
               std::unique_ptr<Expression> cond);
-  Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
-                                            ThreadgroupContext &tg) override;
+  Result<Unit, ExecutionError> execute_result(LaneContext &lane,
+                                              WaveContext &wave,
+                                              ThreadgroupContext &tg) override;
   std::string toString() const override;
 };
 
@@ -1497,55 +1578,63 @@ class SwitchStmt : public Statement {
   std::vector<CaseBlock> cases_;
 
   // Phase-based Result methods
-  Result<int, ExecutionError> evaluateCondition(LaneContext &lane, WaveContext &wave,
-                                               ThreadgroupContext &tg);
-  Result<Unit, ExecutionError> executeCase(size_t caseIndex, LaneContext &lane, 
-                                          WaveContext &wave, ThreadgroupContext &tg);
+  Result<int, ExecutionError> evaluateCondition(LaneContext &lane,
+                                                WaveContext &wave,
+                                                ThreadgroupContext &tg);
+  Result<Unit, ExecutionError> executeCase(size_t caseIndex, LaneContext &lane,
+                                           WaveContext &wave,
+                                           ThreadgroupContext &tg);
 
 public:
   SwitchStmt(std::unique_ptr<Expression> cond);
   void addCase(int value, std::vector<std::unique_ptr<Statement>> stmts);
   void addDefault(std::vector<std::unique_ptr<Statement>> stmts);
-  Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
-                                            ThreadgroupContext &tg) override;
+  Result<Unit, ExecutionError> execute_result(LaneContext &lane,
+                                              WaveContext &wave,
+                                              ThreadgroupContext &tg) override;
   std::string toString() const override;
-  
-  // Helper methods for phase execution
-  void setupSwitchExecution(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                            int ourStackIndex);
-  void evaluateSwitchValue(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                           int ourStackIndex);
-  void findMatchingCase(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                        int ourStackIndex);
-  void executeCaseStatements(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                             int ourStackIndex);
-  void handleReconvergence(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                           int ourStackIndex);
-  void handleBreakException(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                            int ourStackIndex);
-  
-  // Result-based versions of helper methods
-  Result<Unit, ExecutionError> executeCaseStatements_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                             int ourStackIndex);
-  Result<Unit, ExecutionError> evaluateSwitchValue_result(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg, 
-                           int ourStackIndex);
-  
-  // Specialized wrapper function for SwitchStmt-specific error handling
-  Result<Unit, ExecutionError> execute_with_error_handling(LaneContext &lane, WaveContext &wave, ThreadgroupContext &tg) override;
-};
 
+  // Helper methods for phase execution
+  void setupSwitchExecution(LaneContext &lane, WaveContext &wave,
+                            ThreadgroupContext &tg, int ourStackIndex);
+  void evaluateSwitchValue(LaneContext &lane, WaveContext &wave,
+                           ThreadgroupContext &tg, int ourStackIndex);
+  void findMatchingCase(LaneContext &lane, WaveContext &wave,
+                        ThreadgroupContext &tg, int ourStackIndex);
+  void executeCaseStatements(LaneContext &lane, WaveContext &wave,
+                             ThreadgroupContext &tg, int ourStackIndex);
+  void handleReconvergence(LaneContext &lane, WaveContext &wave,
+                           ThreadgroupContext &tg, int ourStackIndex);
+  void handleBreakException(LaneContext &lane, WaveContext &wave,
+                            ThreadgroupContext &tg, int ourStackIndex);
+
+  // Result-based versions of helper methods
+  Result<Unit, ExecutionError>
+  executeCaseStatements_result(LaneContext &lane, WaveContext &wave,
+                               ThreadgroupContext &tg, int ourStackIndex);
+  Result<Unit, ExecutionError>
+  evaluateSwitchValue_result(LaneContext &lane, WaveContext &wave,
+                             ThreadgroupContext &tg, int ourStackIndex);
+
+  // Specialized wrapper function for SwitchStmt-specific error handling
+  Result<Unit, ExecutionError>
+  execute_with_error_handling(LaneContext &lane, WaveContext &wave,
+                              ThreadgroupContext &tg) override;
+};
 
 class BreakStmt : public Statement {
 public:
-  Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
-                                            ThreadgroupContext &tg) override;
+  Result<Unit, ExecutionError> execute_result(LaneContext &lane,
+                                              WaveContext &wave,
+                                              ThreadgroupContext &tg) override;
   std::string toString() const override { return "break;"; }
 };
 
 class ContinueStmt : public Statement {
 public:
-  Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
-                                            ThreadgroupContext &tg) override;
+  Result<Unit, ExecutionError> execute_result(LaneContext &lane,
+                                              WaveContext &wave,
+                                              ThreadgroupContext &tg) override;
   std::string toString() const override { return "continue;"; }
 };
 
@@ -1554,8 +1643,9 @@ class ReturnStmt : public Statement {
 
 public:
   explicit ReturnStmt(std::unique_ptr<Expression> expr = nullptr);
-  Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
-                                            ThreadgroupContext &tg) override;
+  Result<Unit, ExecutionError> execute_result(LaneContext &lane,
+                                              WaveContext &wave,
+                                              ThreadgroupContext &tg) override;
   std::string toString() const override;
 
 private:
@@ -1570,8 +1660,9 @@ private:
 
 class BarrierStmt : public Statement {
 public:
-  Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
-                                            ThreadgroupContext &tg) override;
+  Result<Unit, ExecutionError> execute_result(LaneContext &lane,
+                                              WaveContext &wave,
+                                              ThreadgroupContext &tg) override;
   bool requiresAllLanesActive() const override { return true; }
   std::string toString() const override {
     return "GroupMemoryBarrierWithGroupSync();";
@@ -1583,8 +1674,9 @@ class ExprStmt : public Statement {
 
 public:
   explicit ExprStmt(std::unique_ptr<Expression> expr);
-  Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
-                                            ThreadgroupContext &tg) override;
+  Result<Unit, ExecutionError> execute_result(LaneContext &lane,
+                                              WaveContext &wave,
+                                              ThreadgroupContext &tg) override;
   std::string toString() const override;
 };
 
@@ -1594,8 +1686,9 @@ class SharedWriteStmt : public Statement {
 
 public:
   SharedWriteStmt(MemoryAddress addr, std::unique_ptr<Expression> expr);
-  Result<Unit, ExecutionError> execute_result(LaneContext &lane, WaveContext &wave,
-                                            ThreadgroupContext &tg) override;
+  Result<Unit, ExecutionError> execute_result(LaneContext &lane,
+                                              WaveContext &wave,
+                                              ThreadgroupContext &tg) override;
   std::string toString() const override;
 };
 
@@ -1604,8 +1697,9 @@ class SharedReadExpr : public Expression {
 
 public:
   explicit SharedReadExpr(MemoryAddress addr) : addr_(addr) {}
-  Result<Value, ExecutionError> evaluate_result(LaneContext &lane, WaveContext &wave,
-                                               ThreadgroupContext &tg) const override;
+  Result<Value, ExecutionError>
+  evaluate_result(LaneContext &lane, WaveContext &wave,
+                  ThreadgroupContext &tg) const override;
   bool isDeterministic() const override { return false; }
   std::string toString() const override;
 };
@@ -1618,8 +1712,9 @@ public:
   BufferAccessExpr(std::string bufferName,
                    std::unique_ptr<Expression> indexExpr)
       : bufferName_(std::move(bufferName)), indexExpr_(std::move(indexExpr)) {}
-  Result<Value, ExecutionError> evaluate_result(LaneContext &lane, WaveContext &wave,
-                                               ThreadgroupContext &tg) const override;
+  Result<Value, ExecutionError>
+  evaluate_result(LaneContext &lane, WaveContext &wave,
+                  ThreadgroupContext &tg) const override;
   bool isDeterministic() const override { return false; }
   std::string toString() const override;
 };
