@@ -1496,6 +1496,8 @@ public:
   // Getter methods for fuzzer access
   const std::vector<std::unique_ptr<Statement>>& getThenBlock() const { return thenBlock_; }
   const std::vector<std::unique_ptr<Statement>>& getElseBlock() const { return elseBlock_; }
+  const Expression* getCondition() const { return condition_.get(); }
+  bool hasElse() const { return !elseBlock_.empty(); }
 };
 
 class ForStmt : public Statement {

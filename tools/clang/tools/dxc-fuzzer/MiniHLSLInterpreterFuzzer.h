@@ -604,6 +604,12 @@ private:
     MutationStrategy* strategy,
     const ExecutionTrace& trace);
   
+  std::unique_ptr<interpreter::Statement> applyMutationToStatement(
+    const interpreter::Statement* stmt,
+    MutationStrategy* strategy,
+    const ExecutionTrace& trace,
+    bool& mutationApplied);
+  
   bool hasNewCoverage(const ExecutionTrace& trace);
   
   uint64_t hashBlockPattern(const ExecutionTrace::BlockExecutionRecord& block);

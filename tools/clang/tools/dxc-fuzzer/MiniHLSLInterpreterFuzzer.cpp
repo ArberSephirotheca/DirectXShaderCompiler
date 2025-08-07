@@ -1081,6 +1081,106 @@ std::unique_ptr<interpreter::Program> TraceGuidedFuzzer::mutateAST(
   return nullptr;
 }
 
+// Helper function to recursively apply mutations to statements
+std::unique_ptr<interpreter::Statement> TraceGuidedFuzzer::applyMutationToStatement(
+    const interpreter::Statement* stmt,
+    MutationStrategy* strategy,
+    const ExecutionTrace& trace,
+    bool& mutationApplied) {
+  
+  // First, try to apply mutation to this statement directly
+  if (strategy->canApply(stmt, trace)) {
+    auto mutated = strategy->apply(stmt, trace);
+    if (mutated) {
+      mutationApplied = true;
+      return mutated;
+    }
+  }
+  
+  // If no direct mutation, check for nested statements
+  if (auto ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt)) {
+    // Try to mutate statements in the then block
+    std::vector<std::unique_ptr<interpreter::Statement>> mutatedThenStmts;
+    bool foundMutation = false;
+    
+    for (const auto& thenStmt : ifStmt->getThenBlock()) {
+      if (!foundMutation) {
+        auto mutated = applyMutationToStatement(thenStmt.get(), strategy, trace, foundMutation);
+        if (foundMutation) {
+          mutatedThenStmts.push_back(std::move(mutated));
+          mutationApplied = true;
+        } else {
+          mutatedThenStmts.push_back(thenStmt->clone());
+        }
+      } else {
+        mutatedThenStmts.push_back(thenStmt->clone());
+      }
+    }
+    
+    // Try to mutate statements in the else block if we haven't found a mutation yet
+    std::vector<std::unique_ptr<interpreter::Statement>> mutatedElseStmts;
+    if (!foundMutation && ifStmt->hasElse()) {
+      for (const auto& elseStmt : ifStmt->getElseBlock()) {
+        if (!foundMutation) {
+          auto mutated = applyMutationToStatement(elseStmt.get(), strategy, trace, foundMutation);
+          if (foundMutation) {
+            mutatedElseStmts.push_back(std::move(mutated));
+            mutationApplied = true;
+          } else {
+            mutatedElseStmts.push_back(elseStmt->clone());
+          }
+        } else {
+          mutatedElseStmts.push_back(elseStmt->clone());
+        }
+      }
+    } else if (ifStmt->hasElse()) {
+      // Clone else statements if we already found a mutation
+      for (const auto& elseStmt : ifStmt->getElseBlock()) {
+        mutatedElseStmts.push_back(elseStmt->clone());
+      }
+    }
+    
+    // If we found a mutation in nested statements, create a new IfStmt
+    if (mutationApplied) {
+      return std::make_unique<interpreter::IfStmt>(
+          ifStmt->getCondition()->clone(),
+          std::move(mutatedThenStmts),
+          std::move(mutatedElseStmts));
+    }
+  } else if (auto forStmt = dynamic_cast<const interpreter::ForStmt*>(stmt)) {
+    // Try to mutate statements in the for loop body
+    std::vector<std::unique_ptr<interpreter::Statement>> mutatedBodyStmts;
+    bool foundMutation = false;
+    
+    for (const auto& bodyStmt : forStmt->getBody()) {
+      if (!foundMutation) {
+        auto mutated = applyMutationToStatement(bodyStmt.get(), strategy, trace, foundMutation);
+        if (foundMutation) {
+          mutatedBodyStmts.push_back(std::move(mutated));
+          mutationApplied = true;
+        } else {
+          mutatedBodyStmts.push_back(bodyStmt->clone());
+        }
+      } else {
+        mutatedBodyStmts.push_back(bodyStmt->clone());
+      }
+    }
+    
+    // If we found a mutation in the body, create a new ForStmt
+    if (mutationApplied) {
+      return std::make_unique<interpreter::ForStmt>(
+          forStmt->getLoopVar(),
+          forStmt->getInit() ? forStmt->getInit()->clone() : nullptr,
+          forStmt->getCondition() ? forStmt->getCondition()->clone() : nullptr,
+          forStmt->getIncrement() ? forStmt->getIncrement()->clone() : nullptr,
+          std::move(mutatedBodyStmts));
+    }
+  }
+  
+  // No mutation found, return clone
+  return stmt->clone();
+}
+
 std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
     const interpreter::Program& program,
     MutationStrategy* strategy,
@@ -1088,32 +1188,29 @@ std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
   
   std::vector<interpreter::Program> mutants;
   
-  // Try to apply the mutation strategy to each statement
+  // Try to apply the mutation strategy to each statement (including nested ones)
   for (size_t i = 0; i < program.statements.size(); ++i) {
-    const auto& stmt = program.statements[i];
+    bool mutationApplied = false;
+    auto mutatedStmt = applyMutationToStatement(
+        program.statements[i].get(), strategy, trace, mutationApplied);
     
-    if (strategy->canApply(stmt.get(), trace)) {
-      // Apply the mutation
-      auto mutatedStmt = strategy->apply(stmt.get(), trace);
+    if (mutationApplied) {
+      // Create a new program with the mutated statement
+      interpreter::Program mutant;
+      mutant.numThreadsX = program.numThreadsX;
+      mutant.numThreadsY = program.numThreadsY;
+      mutant.numThreadsZ = program.numThreadsZ;
       
-      if (mutatedStmt) {
-        // Create a new program with the mutated statement
-        interpreter::Program mutant;
-        mutant.numThreadsX = program.numThreadsX;
-        mutant.numThreadsY = program.numThreadsY;
-        mutant.numThreadsZ = program.numThreadsZ;
-        
-        // Clone all statements except the mutated one
-        for (size_t j = 0; j < program.statements.size(); ++j) {
-          if (j == i) {
-            mutant.statements.push_back(std::move(mutatedStmt));
-          } else {
-            mutant.statements.push_back(program.statements[j]->clone());
-          }
+      // Clone all statements except the mutated one
+      for (size_t j = 0; j < program.statements.size(); ++j) {
+        if (j == i) {
+          mutant.statements.push_back(std::move(mutatedStmt));
+        } else {
+          mutant.statements.push_back(program.statements[j]->clone());
         }
-        
-        mutants.push_back(std::move(mutant));
       }
+      
+      mutants.push_back(std::move(mutant));
     }
   }
   
