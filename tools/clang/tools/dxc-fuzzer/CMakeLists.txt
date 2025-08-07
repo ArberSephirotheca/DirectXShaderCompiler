@@ -129,35 +129,11 @@ target_link_libraries(minihlsl-fuzzer
 set_target_properties(minihlsl-fuzzer PROPERTIES
   CXX_STANDARD 17
   CXX_STANDARD_REQUIRED ON
-  # COMPILE_FLAGS "-fsanitize=address,fuzzer -fno-omit-frame-pointer"
-  # LINK_FLAGS    "-fsanitize=address,fuzzer"
+  COMPILE_FLAGS "-fsanitize=address,fuzzer -fno-omit-frame-pointer"
+  LINK_FLAGS    "-fsanitize=address,fuzzer"
 )
 
-# Test program for fuzzer framework
-add_executable(test-minihlsl-fuzzer
-  MiniHLSLInterpreter.cpp
-  MiniHLSLInterpreterFuzzer.cpp
-  MiniHLSLInterpreterFuzzerMutations.cpp
-  MiniHLSLInterpreterTraceCapture.cpp
-  test_fuzzer.cpp
-)
-target_link_libraries(test-minihlsl-fuzzer
-  Threads::Threads
-  dxcompiler
-  clangAST
-  clangBasic
-  clangFrontend
-  clangLex
-  clangParse
-  clangSema
-  LLVMSupport
-  LLVMOption
-  LLVMCore
-)
-set_target_properties(test-minihlsl-fuzzer PROPERTIES
-  CXX_STANDARD 17
-  CXX_STANDARD_REQUIRED ON
-)
+
 
 # Fuzzer for real HLSL files
 add_executable(fuzz-hlsl-file

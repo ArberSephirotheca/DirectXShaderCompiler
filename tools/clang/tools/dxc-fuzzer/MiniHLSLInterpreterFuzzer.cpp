@@ -4,6 +4,7 @@
 #include <sstream>
 #include <random>
 #include <algorithm>
+#include <cstring>
 
 namespace minihlsl {
 namespace fuzzer {
@@ -1077,8 +1078,37 @@ void TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& seedProgram,
 std::unique_ptr<interpreter::Program> TraceGuidedFuzzer::mutateAST(
     const interpreter::Program& program, 
     unsigned int seed) {
-  // TODO: Implement AST mutation for libFuzzer
-  return nullptr;
+  
+  // Create a random number generator with the provided seed
+  std::mt19937 rng(seed);
+  
+  // Execute the program to get a baseline trace
+  TraceCaptureInterpreter interpreter;
+  interpreter::ThreadOrdering ordering = interpreter::ThreadOrdering::sequential(program.getTotalThreads());
+  
+  interpreter.executeAndCaptureTrace(program, ordering, 32); // Default wave size
+  
+  ExecutionTrace trace = *interpreter.getTrace();
+  
+  // Randomly select a mutation strategy
+  if (mutationStrategies.empty()) {
+    return nullptr;
+  }
+  
+  std::uniform_int_distribution<size_t> strategyDist(0, mutationStrategies.size() - 1);
+  size_t strategyIndex = strategyDist(rng);
+  auto* strategy = mutationStrategies[strategyIndex].get();
+  
+  // Try to generate mutants with the selected strategy
+  auto mutants = generateMutants(program, strategy, trace);
+  
+  if (mutants.empty()) {
+    return nullptr;
+  }
+  
+  // Return the first valid mutant
+  // In the future, we could add more sophisticated selection logic
+  return std::make_unique<interpreter::Program>(std::move(mutants[0]));
 }
 
 // Helper function to recursively apply mutations to statements
@@ -1315,18 +1345,180 @@ void loadSeedCorpus(TraceGuidedFuzzer* fuzzer) {
 
 bool deserializeAST(const uint8_t* data, size_t size, 
                    interpreter::Program& program) {
-  // TODO: Implement AST deserialization
-  // For now, create a simple test program
-  program.numThreadsX = 32;
-  program.numThreadsY = 1;
-  program.numThreadsZ = 1;
+  if (size < 4) return false;
+  
+  // Simple approach: Use input bytes to select from predefined seed programs
+  // This gives libFuzzer meaningful starting points for mutation
+  
+  // Extract a seed selector from the first 4 bytes
+  uint32_t selector = 0;
+  memcpy(&selector, data, 4);
+  
+  // Create different seed programs based on the selector
+  switch (selector % 3) {
+    case 0: {
+      // Simple wave operation program
+      program.numThreadsX = 4;
+      program.numThreadsY = 1;
+      program.numThreadsZ = 1;
+      
+      // var x = WaveGetLaneIndex() + 1;
+      auto laneIndex = std::make_unique<interpreter::LaneIndexExpr>();
+      auto one = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(1));
+      auto xInit = std::make_unique<interpreter::BinaryOpExpr>(
+          std::move(laneIndex), std::move(one), interpreter::BinaryOpExpr::Add);
+      auto xDecl = std::make_unique<interpreter::VarDeclStmt>("x", std::move(xInit));
+      
+      // var sum = 0;
+      auto zero = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(0));
+      auto sumDecl = std::make_unique<interpreter::VarDeclStmt>("sum", std::move(zero));
+      
+      // sum = WaveActiveSum(x);
+      auto xRef = std::make_unique<interpreter::VariableExpr>("x");
+      auto waveSum = std::make_unique<interpreter::WaveActiveOp>(
+          std::move(xRef), interpreter::WaveActiveOp::Sum);
+      auto assignment = std::make_unique<interpreter::AssignStmt>("sum", std::move(waveSum));
+      
+      program.statements.push_back(std::move(xDecl));
+      program.statements.push_back(std::move(sumDecl));
+      program.statements.push_back(std::move(assignment));
+      break;
+    }
+    
+    case 1: {
+      // Divergent control flow program
+      program.numThreadsX = 4;
+      program.numThreadsY = 1;
+      program.numThreadsZ = 1;
+      
+      // var x = WaveGetLaneIndex() + 1;
+      auto laneIndex = std::make_unique<interpreter::LaneIndexExpr>();
+      auto one = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(1));
+      auto xInit = std::make_unique<interpreter::BinaryOpExpr>(
+          std::move(laneIndex), std::move(one), interpreter::BinaryOpExpr::Add);
+      auto xDecl = std::make_unique<interpreter::VarDeclStmt>("x", std::move(xInit));
+      
+      // var sum = 0;
+      auto zero = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(0));
+      auto sumDecl = std::make_unique<interpreter::VarDeclStmt>("sum", std::move(zero));
+      
+      // if (WaveGetLaneIndex() < 2) { sum = WaveActiveSum(x); } else { sum = 0; }
+      auto laneIndex2 = std::make_unique<interpreter::LaneIndexExpr>();
+      auto two = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(2));
+      auto condition = std::make_unique<interpreter::BinaryOpExpr>(
+          std::move(laneIndex2), std::move(two), interpreter::BinaryOpExpr::Lt);
+      
+      // Then block: sum = WaveActiveSum(x);
+      std::vector<std::unique_ptr<interpreter::Statement>> thenStmts;
+      auto xRef = std::make_unique<interpreter::VariableExpr>("x");
+      auto waveSum = std::make_unique<interpreter::WaveActiveOp>(
+          std::move(xRef), interpreter::WaveActiveOp::Sum);
+      auto thenAssign = std::make_unique<interpreter::AssignStmt>("sum", std::move(waveSum));
+      thenStmts.push_back(std::move(thenAssign));
+      
+      // Else block: sum = 0;
+      std::vector<std::unique_ptr<interpreter::Statement>> elseStmts;
+      auto zero2 = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(0));
+      auto elseAssign = std::make_unique<interpreter::AssignStmt>("sum", std::move(zero2));
+      elseStmts.push_back(std::move(elseAssign));
+      
+      auto ifStmt = std::make_unique<interpreter::IfStmt>(
+          std::move(condition), std::move(thenStmts), std::move(elseStmts));
+      
+      program.statements.push_back(std::move(xDecl));
+      program.statements.push_back(std::move(sumDecl));
+      program.statements.push_back(std::move(ifStmt));
+      break;
+    }
+    
+    default: {
+      // Loop-based program
+      program.numThreadsX = 8;
+      program.numThreadsY = 1;
+      program.numThreadsZ = 1;
+      
+      // var sum = 0;
+      auto zero = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(0));
+      auto sumDecl = std::make_unique<interpreter::VarDeclStmt>("sum", std::move(zero));
+      
+      // for (var i = 0; i < 4; i++) { sum = WaveActiveSum(i); }
+      auto iInit = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(0));
+      auto four = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(4));
+      auto iVar = std::make_unique<interpreter::VariableExpr>("i");
+      auto condition = std::make_unique<interpreter::BinaryOpExpr>(
+          std::move(iVar), std::move(four), interpreter::BinaryOpExpr::Lt);
+      auto iVar2 = std::make_unique<interpreter::VariableExpr>("i");
+      auto one = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(1));
+      auto increment = std::make_unique<interpreter::BinaryOpExpr>(
+          std::move(iVar2), std::move(one), interpreter::BinaryOpExpr::Add);
+      
+      std::vector<std::unique_ptr<interpreter::Statement>> bodyStmts;
+      auto iVar3 = std::make_unique<interpreter::VariableExpr>("i");
+      auto waveSum = std::make_unique<interpreter::WaveActiveOp>(
+          std::move(iVar3), interpreter::WaveActiveOp::Sum);
+      auto bodyAssign = std::make_unique<interpreter::AssignStmt>("sum", std::move(waveSum));
+      bodyStmts.push_back(std::move(bodyAssign));
+      
+      auto forStmt = std::make_unique<interpreter::ForStmt>(
+          "i", std::move(iInit), std::move(condition), std::move(increment), std::move(bodyStmts));
+      
+      program.statements.push_back(std::move(sumDecl));
+      program.statements.push_back(std::move(forStmt));
+      break;
+    }
+  }
+  
   return true;
 }
 
 size_t serializeAST(const interpreter::Program& program, 
                    uint8_t* data, size_t maxSize) {
-  // TODO: Implement AST serialization
-  return 0;
+  if (maxSize < 16) return 0; // Need at least 16 bytes
+  
+  // Simple approach: Create a fingerprint of the program that can guide future mutations
+  // This is not a full serialization but provides feedback for libFuzzer
+  
+  // Store thread configuration (12 bytes)
+  uint32_t threadInfo[3] = {
+    static_cast<uint32_t>(program.numThreadsX),
+    static_cast<uint32_t>(program.numThreadsY), 
+    static_cast<uint32_t>(program.numThreadsZ)
+  };
+  memcpy(data, threadInfo, 12);
+  
+  // Compute a simple hash based on program structure (4 bytes)
+  uint32_t hash = 0;
+  hash ^= static_cast<uint32_t>(program.statements.size()) << 16;
+  
+  // Add type information from statements
+  for (size_t i = 0; i < program.statements.size() && i < 8; ++i) {
+    const auto& stmt = program.statements[i];
+    uint32_t typeHash = 0;
+    
+    // Different statement types get different hash contributions
+    if (dynamic_cast<const interpreter::VarDeclStmt*>(stmt.get())) {
+      typeHash = 1;
+    } else if (dynamic_cast<const interpreter::AssignStmt*>(stmt.get())) {
+      typeHash = 2;
+      // Check if it contains a wave operation
+      auto* assign = static_cast<const interpreter::AssignStmt*>(stmt.get());
+      if (dynamic_cast<const interpreter::WaveActiveOp*>(assign->getExpression())) {
+        typeHash |= 0x10; // Wave operation flag
+      }
+    } else if (dynamic_cast<const interpreter::IfStmt*>(stmt.get())) {
+      typeHash = 3;
+    } else if (dynamic_cast<const interpreter::ForStmt*>(stmt.get())) {
+      typeHash = 4;
+    } else {
+      typeHash = 5;
+    }
+    
+    hash ^= typeHash << (i * 4);
+  }
+  
+  memcpy(data + 12, &hash, 4);
+  
+  return 16; // Return the number of bytes written
 }
 
 size_t hashAST(const interpreter::Program& program) {
