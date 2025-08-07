@@ -105,6 +105,7 @@ add_executable(minihlsl-fuzzer
   MiniHLSLInterpreterFuzzer.cpp
   MiniHLSLInterpreterFuzzerMutations.cpp
   MiniHLSLInterpreterTraceCapture.cpp
+  MiniHLSLValidator.cpp  # Added to support loadSeedCorpus
   # minihlsl_fuzzer_main.cpp  # Remove custom main - libFuzzer provides main
 )
 target_link_libraries(minihlsl-fuzzer

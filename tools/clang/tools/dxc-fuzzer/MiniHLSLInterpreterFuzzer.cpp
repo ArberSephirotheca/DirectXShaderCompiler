@@ -1,16 +1,42 @@
 #include "MiniHLSLInterpreterFuzzer.h"
 #include "MiniHLSLInterpreterTraceCapture.h"
+#include "MiniHLSLValidator.h"
 #include <fstream>
 #include <sstream>
 #include <random>
 #include <algorithm>
 #include <cstring>
+#include <cstdlib>
+#include <sys/stat.h>
+#include <dirent.h>
 
 namespace minihlsl {
 namespace fuzzer {
 
 // Global fuzzer instance
 std::unique_ptr<TraceGuidedFuzzer> g_fuzzer;
+
+// Global seed programs loaded from corpus
+std::unique_ptr<std::vector<interpreter::Program>> g_seedPrograms;
+
+// Helper function to serialize a program to string
+std::string serializeProgramToString(const interpreter::Program& program) {
+  std::stringstream ss;
+  
+  // Add thread configuration
+  ss << "[numthreads(" << program.numThreadsX << ", " 
+     << program.numThreadsY << ", " 
+     << program.numThreadsZ << ")]\n";
+  ss << "void main() {\n";
+  
+  // Add all statements
+  for (const auto& stmt : program.statements) {
+    ss << "  " << stmt->toString() << "\n";
+  }
+  
+  ss << "}\n";
+  return ss.str();
+}
 
 // ===== Mutation Strategy Implementations =====
 
@@ -254,14 +280,46 @@ std::unique_ptr<interpreter::Statement> PrecomputeWaveResultsMutation::apply(
     const interpreter::Statement* stmt, 
     const ExecutionTrace& trace) const {
   
-  // For this simple implementation, we'll just return nullptr
-  // A full implementation would need to:
-  // 1. Match the statement to a wave operation in the trace
-  // 2. Extract the computed result
-  // 3. Replace the wave operation with the literal value
+  // Precompute wave operation results and replace with literals
+  auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt);
+  if (!assign) {
+    return stmt->clone();
+  }
   
-  // TODO: Implement once we have proper statement-to-trace matching
-  return nullptr;
+  auto* waveOp = dynamic_cast<const interpreter::WaveActiveOp*>(assign->getExpression());
+  if (!waveOp) {
+    return stmt->clone();
+  }
+  
+  // Find this wave operation in the trace
+  for (const auto& waveRecord : trace.waveOperations) {
+    if (waveRecord.opType == waveOp->toString()) {
+      // Check if all participants have the same result value
+      bool allSame = true;
+      interpreter::Value commonValue;
+      bool firstValue = true;
+      
+      for (const auto& [laneId, value] : waveRecord.outputValues) {
+        if (firstValue) {
+          commonValue = value;
+          firstValue = false;
+        } else if (value.toString() != commonValue.toString()) {
+          allSame = false;
+          break;
+        }
+      }
+      
+      if (allSame && !firstValue) {
+        // Replace with literal - this precomputes the wave result
+        auto literal = std::make_unique<interpreter::LiteralExpr>(commonValue);
+        return std::make_unique<interpreter::AssignStmt>(
+            assign->getName(), std::move(literal));
+      }
+      break; // Only use the first matching wave op
+    }
+  }
+  
+  return stmt->clone();
 }
 
 bool PrecomputeWaveResultsMutation::validateSemanticPreservation(
@@ -344,8 +402,21 @@ bool RedundantWaveSyncMutation::validateSemanticPreservation(
 
 bool ForceBlockBoundariesMutation::canApply(const interpreter::Statement* stmt, 
                                           const ExecutionTrace& trace) const {
-  // Can apply to compound statements
-  return true; // TODO: Check for compound statements
+  // Can apply to any statement by wrapping it in an if(true) block
+  // This is most useful for compound statements or sequences of statements
+  
+  // Don't apply to statements that are already control flow
+  if (dynamic_cast<const interpreter::IfStmt*>(stmt) ||
+      dynamic_cast<const interpreter::ForStmt*>(stmt) ||
+      dynamic_cast<const interpreter::WhileStmt*>(stmt) ||
+      dynamic_cast<const interpreter::DoWhileStmt*>(stmt)) {
+    return false; // Already has block boundaries
+  }
+  
+  // Apply to assignment statements and expression statements
+  return dynamic_cast<const interpreter::AssignStmt*>(stmt) != nullptr ||
+         dynamic_cast<const interpreter::ExprStmt*>(stmt) != nullptr ||
+         dynamic_cast<const interpreter::VarDeclStmt*>(stmt) != nullptr;
 }
 
 std::unique_ptr<interpreter::Statement> ForceBlockBoundariesMutation::apply(
@@ -370,6 +441,23 @@ bool ForceBlockBoundariesMutation::validateSemanticPreservation(
     const interpreter::Statement* original,
     const interpreter::Statement* mutated,
     const ExecutionTrace& trace) const {
+  // Force block boundaries mutation adds explicit if statements with always-true conditions
+  // This should preserve semantics as the code always executes
+  
+  // Check that the mutated statement is an if statement
+  auto* ifStmt = dynamic_cast<const interpreter::IfStmt*>(mutated);
+  if (!ifStmt) {
+    return false; // Expected an if statement
+  }
+  
+  // Check that the condition is always true (literal 1)
+  auto* condition = ifStmt->getCondition();
+  auto* literal = dynamic_cast<const interpreter::LiteralExpr*>(condition);
+  if (!literal || literal->toString() != "1") {
+    return false; // Expected condition to be literal 1
+  }
+  
+  // The mutation preserves semantics by always executing the then block
   return true;
 }
 
@@ -382,7 +470,33 @@ bool SerializeMemoryAccessesMutation::canApply(const interpreter::Statement* stm
 std::unique_ptr<interpreter::Statement> SerializeMemoryAccessesMutation::apply(
     const interpreter::Statement* stmt, 
     const ExecutionTrace& trace) const {
-  // TODO: Add barriers between memory accesses
+  // This mutation adds barriers between memory accesses to serialize them
+  // This helps find race conditions by forcing deterministic ordering
+  
+  // First check if this statement performs a memory access
+  bool isMemoryAccess = false;
+  
+  for (const auto& access : trace.memoryAccesses) {
+    if (access.accessingThread == 0) { // Check if this access is from current thread
+      // For now, we'll just clone the original statement
+      // A full implementation would add memory barriers
+      isMemoryAccess = true;
+      break;
+    }
+  }
+  
+  if (!isMemoryAccess) {
+    return nullptr; // No mutation needed
+  }
+  
+  // Clone the original statement
+  if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
+    return std::make_unique<interpreter::AssignStmt>(
+        assign->getName(), 
+        assign->getExpression()->clone());
+  }
+  
+  // For other statement types, return nullptr for now
   return nullptr;
 }
 
@@ -876,9 +990,9 @@ void BugReporter::reportBug(const interpreter::Program& original,
   report.id = generateBugId();
   report.timestamp = std::chrono::system_clock::now();
   
-  // TODO: Serialize programs to strings
-  report.originalProgram = "// Original program";
-  report.mutantProgram = "// Mutant program";
+  // Serialize programs to strings
+  report.originalProgram = serializeProgramToString(original);
+  report.mutantProgram = serializeProgramToString(mutant);
   
   report.validation = validation;
   
@@ -918,10 +1032,84 @@ BugReporter::BugReport::TraceDivergence BugReporter::findTraceDivergence(
   
   BugReport::TraceDivergence divergence;
   
-  // TODO: Implement detailed divergence analysis
+  // Check block structure differences
+  if (golden.blocks.size() != mutant.blocks.size()) {
+    divergence.type = BugReport::TraceDivergence::BlockStructure;
+    divergence.divergencePoint = golden.blocks.size();
+    divergence.description = "Different number of blocks executed: " + 
+                            std::to_string(golden.blocks.size()) + " vs " + 
+                            std::to_string(mutant.blocks.size());
+    return divergence;
+  }
+  
+  // Check wave operation differences
+  if (golden.waveOperations.size() != mutant.waveOperations.size()) {
+    divergence.type = BugReport::TraceDivergence::WaveOperation;
+    divergence.divergencePoint = golden.waveOperations.size();
+    divergence.description = "Different number of wave operations: " + 
+                            std::to_string(golden.waveOperations.size()) + " vs " + 
+                            std::to_string(mutant.waveOperations.size());
+    return divergence;
+  }
+  
+  // Check for different wave operation results
+  for (size_t i = 0; i < golden.waveOperations.size(); ++i) {
+    const auto& goldenOp = golden.waveOperations[i];
+    const auto& mutantOp = mutant.waveOperations[i];
+    
+    if (goldenOp.opType != mutantOp.opType) {
+      divergence.type = BugReport::TraceDivergence::WaveOperation;
+      divergence.divergencePoint = i;
+      divergence.description = "Wave operation type mismatch at index " + 
+                              std::to_string(i) + ": " + goldenOp.opType + 
+                              " vs " + mutantOp.opType;
+      return divergence;
+    }
+    
+    // Check output values differ
+    if (goldenOp.outputValues != mutantOp.outputValues) {
+      divergence.type = BugReport::TraceDivergence::WaveOperation;
+      divergence.divergencePoint = i;
+      divergence.description = "Wave operation outputs differ at index " + 
+                              std::to_string(i);
+      return divergence;
+    }
+  }
+  
+  // Check control flow decisions
+  if (golden.controlFlowHistory.size() != mutant.controlFlowHistory.size()) {
+    divergence.type = BugReport::TraceDivergence::ControlFlow;
+    divergence.divergencePoint = golden.controlFlowHistory.size();
+    divergence.description = "Different number of control flow decisions: " + 
+                            std::to_string(golden.controlFlowHistory.size()) + " vs " + 
+                            std::to_string(mutant.controlFlowHistory.size());
+    return divergence;
+  }
+  
+  // Check barrier synchronization
+  if (golden.barriers.size() != mutant.barriers.size()) {
+    divergence.type = BugReport::TraceDivergence::Synchronization;
+    divergence.divergencePoint = golden.barriers.size();
+    divergence.description = "Different number of barriers: " + 
+                            std::to_string(golden.barriers.size()) + " vs " + 
+                            std::to_string(mutant.barriers.size());
+    return divergence;
+  }
+  
+  // Check memory accesses
+  if (golden.memoryAccesses.size() != mutant.memoryAccesses.size()) {
+    divergence.type = BugReport::TraceDivergence::Memory;
+    divergence.divergencePoint = golden.memoryAccesses.size();
+    divergence.description = "Different number of memory accesses: " + 
+                            std::to_string(golden.memoryAccesses.size()) + " vs " + 
+                            std::to_string(mutant.memoryAccesses.size());
+    return divergence;
+  }
+  
+  // Default case - no obvious divergence found
   divergence.type = BugReport::TraceDivergence::ControlFlow;
   divergence.divergencePoint = 0;
-  divergence.description = "Traces diverged";
+  divergence.description = "Subtle divergence in execution traces";
   
   return divergence;
 }
@@ -962,9 +1150,89 @@ std::string BugReporter::generateBugId() {
 }
 
 void BugReporter::saveBugReport(const BugReport& report) {
-  // TODO: Save to file
-  std::string filename = "./bugs/" + report.id + ".txt";
-  // Would write report details to file
+  // Create bugs directory if it doesn't exist
+  std::string bugDir = "./bugs";
+  struct stat st = {0};
+  if (stat(bugDir.c_str(), &st) == -1) {
+    mkdir(bugDir.c_str(), 0755);
+  }
+  
+  std::string filename = bugDir + "/" + report.id + ".txt";
+  std::ofstream file(filename);
+  
+  if (!file.is_open()) {
+    std::cerr << "Failed to create bug report file: " << filename << "\n";
+    return;
+  }
+  
+  // Write bug report header
+  file << "=== Bug Report " << report.id << " ===\n";
+  file << "Timestamp: " << std::chrono::system_clock::to_time_t(report.timestamp) << "\n";
+  file << "Bug Type: ";
+  switch (report.bugType) {
+    case BugReport::WaveOpInconsistency: file << "WaveOpInconsistency"; break;
+    case BugReport::ReconvergenceError: file << "ReconvergenceError"; break;
+    case BugReport::DeadlockOrRace: file << "DeadlockOrRace"; break;
+    case BugReport::MemoryCorruption: file << "MemoryCorruption"; break;
+    case BugReport::ControlFlowError: file << "ControlFlowError"; break;
+  }
+  file << "\n";
+  
+  file << "Severity: ";
+  switch (report.severity) {
+    case BugReport::Critical: file << "Critical"; break;
+    case BugReport::High: file << "High"; break;
+    case BugReport::Medium: file << "Medium"; break;
+    case BugReport::Low: file << "Low"; break;
+  }
+  file << "\n\n";
+  
+  // Write divergence information
+  file << "=== Divergence Information ===\n";
+  file << "Divergence Type: ";
+  switch (report.traceDivergence.type) {
+    case BugReport::TraceDivergence::BlockStructure: file << "BlockStructure"; break;
+    case BugReport::TraceDivergence::WaveOperation: file << "WaveOperation"; break;
+    case BugReport::TraceDivergence::ControlFlow: file << "ControlFlow"; break;
+    case BugReport::TraceDivergence::Synchronization: file << "Synchronization"; break;
+    case BugReport::TraceDivergence::Memory: file << "Memory"; break;
+  }
+  file << "\n";
+  file << "Divergence Point: " << report.traceDivergence.divergencePoint << "\n";
+  file << "Description: " << report.traceDivergence.description << "\n\n";
+  
+  // Write mutation information
+  file << "=== Mutation Information ===\n";
+  file << "Mutation Strategy: " << report.mutation << "\n\n";
+  
+  // Write validation results
+  file << "=== Validation Results ===\n";
+  file << "Is Equivalent: " << (report.validation.isEquivalent ? "Yes" : "No") << "\n";
+  file << "Divergence Reason: " << report.validation.divergenceReason << "\n";
+  if (!report.validation.differences.empty()) {
+    file << "Differences:\n";
+    for (const auto& diff : report.validation.differences) {
+      file << "  - " << diff << "\n";
+    }
+  }
+  file << "\n";
+  
+  // Write original program
+  file << "=== Original Program ===\n";
+  file << report.originalProgram << "\n\n";
+  
+  // Write mutant program
+  file << "=== Mutant Program ===\n";
+  file << report.mutantProgram << "\n\n";
+  
+  // Write minimal reproducer if available
+  if (!report.minimalReproducer.empty()) {
+    file << "=== Minimal Reproducer ===\n";
+    file << report.minimalReproducer << "\n";
+  }
+  
+  file.close();
+  std::cout << "Bug report saved to: " << filename << "\n";
 }
 
 void BugReporter::logBug(const BugReport& report) {
@@ -1331,30 +1599,137 @@ void TraceGuidedFuzzer::logSummary(size_t testedMutants, size_t bugsFound) {
 // ===== LibFuzzer Integration =====
 
 void loadSeedCorpus(TraceGuidedFuzzer* fuzzer) {
-  // Load seed HLSL programs
-  std::vector<std::string> seedFiles = {
-    "seeds/simple_divergence.hlsl",
-    "seeds/loop_divergence.hlsl",
-    "seeds/nested_control_flow.hlsl"
-  };
-  
-  for (const auto& file : seedFiles) {
-    // TODO: Load and add to corpus
+  // Check if HLSL_SEED_DIR environment variable is set
+  const char* seedDir = std::getenv("HLSL_SEED_DIR");
+  if (!seedDir) {
+    // Try default locations
+    std::vector<std::string> defaultDirs = {
+      "seeds",
+      "../seeds",
+      "../../tools/clang/tools/dxc-fuzzer/seeds",
+    };
+    
+    for (const auto& dir : defaultDirs) {
+      struct stat info;
+      if (stat(dir.c_str(), &info) == 0 && S_ISDIR(info.st_mode)) {
+        seedDir = dir.c_str();
+        break;
+      }
+    }
   }
+  
+  if (!seedDir) {
+    std::cerr << "No seed directory found. Set HLSL_SEED_DIR or create a 'seeds' directory.\n";
+    return;
+  }
+  
+  std::cout << "Loading seed corpus from: " << seedDir << "\n";
+  
+  // Load all .hlsl files from the seed directory
+  DIR* dir = opendir(seedDir);
+  if (!dir) {
+    std::cerr << "Failed to open seed directory: " << seedDir << "\n";
+    return;
+  }
+  
+  struct dirent* entry;
+  int seedCount = 0;
+  while ((entry = readdir(dir)) != nullptr) {
+    std::string filename = entry->d_name;
+    
+    // Check if it's an HLSL file
+    if (filename.size() > 5 && filename.substr(filename.size() - 5) == ".hlsl") {
+      std::string fullPath = std::string(seedDir) + "/" + filename;
+      
+      // Read the file
+      std::ifstream file(fullPath);
+      if (!file.is_open()) {
+        std::cerr << "Failed to open seed file: " << fullPath << "\n";
+        continue;
+      }
+      
+      std::stringstream buffer;
+      buffer << file.rdbuf();
+      std::string hlslContent = buffer.str();
+      
+      // Parse HLSL and convert to interpreter AST
+      std::cout << "  Loading seed: " << filename << " (" << hlslContent.size() << " bytes)";
+      
+      // Use the MiniHLSLValidator to parse HLSL
+      minihlsl::MiniHLSLValidator validator;
+      auto astResult = validator.validate_source_with_ast_ownership(hlslContent, fullPath);
+      
+      auto* astContext = astResult.get_ast_context();
+      auto* mainFunc = astResult.get_main_function();
+      
+      if (!astContext || !mainFunc) {
+        std::cout << " - Failed to parse or find main function\n";
+        continue;
+      }
+      
+      // Convert to interpreter program
+      minihlsl::interpreter::MiniHLSLInterpreter interpreter(0);
+      auto conversionResult = interpreter.convertFromHLSLAST(mainFunc, *astContext);
+      if (!conversionResult.success) {
+        std::cout << " - Failed to convert: " << conversionResult.errorMessage << "\n";
+        continue;
+      }
+      
+      // Add to fuzzer's seed programs (stored for mutation)
+      if (!g_seedPrograms) {
+        g_seedPrograms = std::make_unique<std::vector<interpreter::Program>>();
+      }
+      // Move the program - need to clone because Program can't be moved directly
+      interpreter::Program seedProgram;
+      seedProgram.numThreadsX = conversionResult.program.numThreadsX;
+      seedProgram.numThreadsY = conversionResult.program.numThreadsY;
+      seedProgram.numThreadsZ = conversionResult.program.numThreadsZ;
+      
+      for (auto& stmt : conversionResult.program.statements) {
+        seedProgram.statements.push_back(std::move(stmt));
+      }
+      
+      g_seedPrograms->push_back(std::move(seedProgram));
+      
+      seedCount++;
+      std::cout << " - Success!\n";
+    }
+  }
+  
+  closedir(dir);
+  std::cout << "Loaded " << seedCount << " seed files.\n";
 }
 
 bool deserializeAST(const uint8_t* data, size_t size, 
                    interpreter::Program& program) {
   if (size < 4) return false;
   
-  // Simple approach: Use input bytes to select from predefined seed programs
+  // Simple approach: Use input bytes to select from seed programs
   // This gives libFuzzer meaningful starting points for mutation
   
   // Extract a seed selector from the first 4 bytes
   uint32_t selector = 0;
   memcpy(&selector, data, 4);
   
-  // Create different seed programs based on the selector
+  // If we have loaded seed programs, use those
+  if (g_seedPrograms && !g_seedPrograms->empty()) {
+    size_t index = selector % g_seedPrograms->size();
+    const auto& seedProgram = (*g_seedPrograms)[index];
+    
+    // Clone the seed program (deep copy)
+    program.numThreadsX = seedProgram.numThreadsX;
+    program.numThreadsY = seedProgram.numThreadsY;
+    program.numThreadsZ = seedProgram.numThreadsZ;
+    program.statements.clear();
+    
+    for (const auto& stmt : seedProgram.statements) {
+      program.statements.push_back(stmt->clone());
+    }
+    
+    return true;
+  }
+  
+  // Otherwise, create different seed programs based on the selector
   switch (selector % 3) {
     case 0: {
       // Simple wave operation program
@@ -1585,8 +1960,55 @@ size_t LLVMFuzzerCustomCrossOver(const uint8_t* data1, size_t size1,
                                 const uint8_t* data2, size_t size2,
                                 uint8_t* out, size_t maxOutSize,
                                 unsigned int seed) {
-  // TODO: Implement crossover
-  return 0;
+  // Crossover two ASTs by combining statements from both programs
+  minihlsl::interpreter::Program prog1, prog2;
+  
+  // Deserialize both inputs
+  if (!minihlsl::fuzzer::deserializeAST(data1, size1, prog1) || 
+      !minihlsl::fuzzer::deserializeAST(data2, size2, prog2)) {
+    return 0; // Failed to deserialize
+  }
+  
+  // Create a new program with crossover
+  minihlsl::interpreter::Program crossover;
+  crossover.numThreadsX = prog1.numThreadsX;
+  crossover.numThreadsY = prog1.numThreadsY;
+  crossover.numThreadsZ = prog1.numThreadsZ;
+  
+  // Use a random number generator for crossover decisions
+  std::mt19937 rng(seed);
+  std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+  
+  // Crossover strategy: randomly select statements from both programs
+  size_t totalStatements = prog1.statements.size() + prog2.statements.size();
+  if (totalStatements == 0) return 0;
+  
+  // Take first half from prog1, second half from prog2 (with some randomness)
+  for (size_t i = 0; i < prog1.statements.size(); ++i) {
+    if (dist(rng) < 0.7f) { // 70% chance to take from prog1
+      crossover.statements.push_back(prog1.statements[i]->clone());
+    }
+  }
+  
+  for (size_t i = 0; i < prog2.statements.size(); ++i) {
+    if (dist(rng) < 0.3f) { // 30% chance to take from prog2
+      crossover.statements.push_back(prog2.statements[i]->clone());
+    }
+  }
+  
+  // If we ended up with no statements, take at least one from each
+  if (crossover.statements.empty()) {
+    if (!prog1.statements.empty()) {
+      crossover.statements.push_back(prog1.statements[0]->clone());
+    }
+    if (!prog2.statements.empty()) {
+      crossover.statements.push_back(prog2.statements[0]->clone());
+    }
+  }
+  
+  // Serialize the crossover result
+  size_t resultSize = minihlsl::fuzzer::serializeAST(crossover, out, maxOutSize);
+  return resultSize;
 }
 
 } // extern "C"
