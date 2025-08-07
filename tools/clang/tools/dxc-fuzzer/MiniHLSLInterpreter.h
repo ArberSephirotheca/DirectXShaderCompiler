@@ -239,6 +239,11 @@ struct Value {
   bool asBool() const;
 
   std::string toString() const;
+  
+  // Type checking for HLSL type inference
+  bool isInt() const { return std::holds_alternative<int32_t>(data); }
+  bool isFloat() const { return std::holds_alternative<float>(data); }
+  bool isBool() const { return std::holds_alternative<bool>(data); }
 };
 
 // Thread execution state for cooperative scheduling
@@ -1095,6 +1100,9 @@ public:
   std::unique_ptr<Expression> clone() const override {
     return std::make_unique<LiteralExpr>(value_);
   }
+  
+  // Getter for type inference
+  const Value& getValue() const { return value_; }
 };
 
 class VariableExpr : public Expression {
@@ -1379,10 +1387,15 @@ public:
 
 class VarDeclStmt : public Statement {
   std::string name_;
+  std::string type_;  // HLSL type (e.g., "uint", "float", "bool")
   std::unique_ptr<Expression> init_;
 
 public:
+  // Legacy constructor for backward compatibility
   VarDeclStmt(const std::string &name, std::unique_ptr<Expression> init);
+  // New constructor with type information
+  VarDeclStmt(const std::string &name, const std::string &type,
+              std::unique_ptr<Expression> init);
   Result<Unit, ExecutionError> execute_result(LaneContext &lane,
                                               WaveContext &wave,
                                               ThreadgroupContext &tg) override;
@@ -1391,11 +1404,13 @@ public:
   std::unique_ptr<Statement> clone() const override {
     return std::make_unique<VarDeclStmt>(
         name_,
+        type_,
         init_ ? init_->clone() : nullptr);
   }
   
   // Getter methods for fuzzer access
   const std::string& getName() const { return name_; }
+  const std::string& getType() const { return type_; }
   const Expression* getInit() const { return init_.get(); }
 };
 

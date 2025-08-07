@@ -1447,10 +1447,19 @@ std::string WaveActiveOp::toString() const {
   return std::string(opNames[op_]) + "(" + expr_->toString() + ")";
 }
 
+// Forward declaration
+static std::string inferHLSLType(const Expression* expr);
+
 // Statement implementations
+// Legacy constructor - infers type from init expression
 VarDeclStmt::VarDeclStmt(const std::string &name,
                          std::unique_ptr<Expression> init)
-    : name_(name), init_(std::move(init)) {}
+    : name_(name), type_(inferHLSLType(init.get())), init_(std::move(init)) {}
+
+// New constructor with explicit type
+VarDeclStmt::VarDeclStmt(const std::string &name, const std::string &type,
+                         std::unique_ptr<Expression> init)
+    : name_(name), type_(type), init_(std::move(init)) {}
 
 Result<Unit, ExecutionError>
 VarDeclStmt::execute_result(LaneContext &lane, WaveContext &wave,
@@ -1471,8 +1480,68 @@ VarDeclStmt::execute_result(LaneContext &lane, WaveContext &wave,
   return Ok<Unit, ExecutionError>(Unit{});
 }
 
+// Helper function to infer HLSL type from expression
+static std::string inferHLSLType(const Expression* expr) {
+  if (!expr) return "uint";
+  
+  // Check for specific expression types
+  if (auto literal = dynamic_cast<const LiteralExpr*>(expr)) {
+    const Value& val = literal->getValue();
+    if (val.isBool()) return "bool";
+    if (val.isFloat()) return "float";
+    return "uint"; // Default to uint for integers
+  }
+  
+  // WaveGetLaneIndex returns uint
+  if (dynamic_cast<const LaneIndexExpr*>(expr)) {
+    return "uint";
+  }
+  
+  // WaveGetWaveIndex returns uint  
+  if (dynamic_cast<const WaveIndexExpr*>(expr)) {
+    return "uint";
+  }
+  
+  // WaveGetLaneCount returns uint
+  if (dynamic_cast<const WaveGetLaneCountExpr*>(expr)) {
+    return "uint";
+  }
+  
+  // WaveIsFirstLane returns bool
+  if (dynamic_cast<const WaveIsFirstLaneExpr*>(expr)) {
+    return "bool";
+  }
+  
+  // Binary operations - check if it's a comparison
+  if (auto binOp = dynamic_cast<const BinaryOpExpr*>(expr)) {
+    // BinaryOpExpr doesn't expose getOp() method, so we can't check the operation type
+    // For now, we'll have to parse the toString() output or assume uint
+    std::string str = binOp->toString();
+    if (str.find("<") != std::string::npos || 
+        str.find(">") != std::string::npos ||
+        str.find("==") != std::string::npos ||
+        str.find("!=") != std::string::npos ||
+        str.find("<=") != std::string::npos ||
+        str.find(">=") != std::string::npos) {
+      return "bool";
+    }
+    return "uint";
+  }
+  
+  // Wave operations typically return the same type as input
+  // For now, assume uint
+  if (dynamic_cast<const WaveActiveOp*>(expr)) {
+    return "uint";
+  }
+  
+  // Default to uint for unknown expressions
+  return "uint";
+}
+
 std::string VarDeclStmt::toString() const {
-  return "var " + name_ + " = " + (init_ ? init_->toString() : "0") + ";";
+  // Use the stored type, or fall back to inference if type is empty
+  std::string actualType = type_.empty() ? inferHLSLType(init_.get()) : type_;
+  return actualType + " " + name_ + " = " + (init_ ? init_->toString() : "0") + ";";
 }
 
 AssignStmt::AssignStmt(const std::string &name,
@@ -3747,6 +3816,12 @@ std::unique_ptr<Statement> makeVarDecl(const std::string &name,
   return std::make_unique<VarDeclStmt>(name, std::move(init));
 }
 
+std::unique_ptr<Statement> makeVarDeclWithType(const std::string &name,
+                                               const std::string &type,
+                                               std::unique_ptr<Expression> init) {
+  return std::make_unique<VarDeclStmt>(name, type, std::move(init));
+}
+
 std::unique_ptr<Statement> makeAssign(const std::string &name,
                                       std::unique_ptr<Expression> expr) {
   return std::make_unique<AssignStmt>(name, std::move(expr));
@@ -4105,17 +4180,22 @@ std::unique_ptr<Statement> MiniHLSLInterpreter::convertDeclarationStatement(
   for (const auto *decl : declStmt->decls()) {
     if (auto varDecl = clang::dyn_cast<clang::VarDecl>(decl)) {
       std::string varName = varDecl->getName().str();
-      std::cout << "Declaring variable: " << varName << std::endl;
-
-      // Create a variable declaration with or without initializer
+      
+      // Get the actual type from Clang AST
+      clang::QualType qualType = varDecl->getType();
+      std::string typeName = qualType.getAsString();
+      
+      std::cout << "Declaring variable: " << varName << " of type: " << typeName << std::endl;
+      
+      // Create a variable declaration with type information
       if (varDecl->hasInit()) {
         auto initExpr = convertExpression(varDecl->getInit(), context);
         if (initExpr) {
-          return makeVarDecl(varName, std::move(initExpr));
+          return makeVarDeclWithType(varName, typeName, std::move(initExpr));
         }
       } else {
         // Variable declaration without initializer
-        return makeVarDecl(varName, nullptr);
+        return makeVarDeclWithType(varName, typeName, nullptr);
       }
     }
   }
