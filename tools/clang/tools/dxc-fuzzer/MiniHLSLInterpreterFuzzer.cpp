@@ -400,11 +400,15 @@ bool LanePermutationMutation::canApply(const interpreter::Statement* stmt,
     if (auto* waveOp = dynamic_cast<const interpreter::WaveActiveOp*>(assign->getExpression())) {
       // Check if this is an associative operation
       auto opType = waveOp->getOpType();
-      return opType == interpreter::WaveActiveOp::Sum ||
+      bool canApply = opType == interpreter::WaveActiveOp::Sum ||
              opType == interpreter::WaveActiveOp::Product ||
              opType == interpreter::WaveActiveOp::And ||
              opType == interpreter::WaveActiveOp::Or ||
              opType == interpreter::WaveActiveOp::Xor;
+      if (canApply) {
+        std::cout << "[LanePermutation] canApply returns true for " << waveOp->toString() << "\n";
+      }
+      return canApply;
     }
   }
   return false;
@@ -464,32 +468,63 @@ std::unique_ptr<interpreter::Statement> LanePermutationMutation::apply(
   }
   
   // Find the actual active lane count from the trace
-  // Look for the wave operation in the trace that matches this statement
+  // We need to find the specific dynamic block where this wave operation executes
   uint32_t activeLaneCount = 4; // default fallback
+  uint32_t blockIdForWaveOp = 0;
   
-  // Find wave operations that match this statement's location
+  // First, try to find the exact wave operation in the trace
   for (const auto& waveOpRecord : trace.waveOperations) {
     // Check if this wave operation record matches our statement
-    // by comparing the instruction pointer
-    if (waveOpRecord.instruction == static_cast<const void*>(waveOp)) {
-      // Use the actual participants from this specific wave operation
+    // The instruction pointer should match the wave operation we're mutating
+    if (waveOpRecord.instruction == static_cast<const void*>(waveOp) ||
+        waveOpRecord.opType == waveOp->toString()) {
+      // Found the matching wave operation
       activeLaneCount = waveOpRecord.arrivedParticipants.size();
+      blockIdForWaveOp = waveOpRecord.blockId;
+      
+      // Debug output
+      std::cout << "[LanePermutation] Found wave op in trace with " << activeLaneCount << " active lanes in block " << blockIdForWaveOp << "\n";
+      if (trace.blocks.count(blockIdForWaveOp)) {
+        const auto& block = trace.blocks.at(blockIdForWaveOp);
+        std::cout << "[LanePermutation] Block type: " 
+                  << static_cast<int>(block.blockType) << "\n";
+        // Find the wave participation info for wave 0 (assuming single wave for now)
+        if (block.waveParticipation.count(0)) {
+          const auto& waveInfo = block.waveParticipation.at(0);
+          std::cout << "[LanePermutation] Block " << blockIdForWaveOp << " wave 0 participating lanes: ";
+          for (auto laneId : waveInfo.participatingLanes) {
+            std::cout << laneId << " ";
+          }
+          std::cout << "\n";
+        }
+      }
       break;
     }
   }
   
-  // If we didn't find a match, look for any wave operation in the same block
-  if (activeLaneCount == 4) {
-    // Find the block containing this statement
-    for (const auto& [blockId, block] : trace.blocks) {
-      for (const auto& [waveId, participation] : block.waveParticipation) {
-        if (!participation.participatingLanes.empty()) {
-          activeLaneCount = participation.participatingLanes.size();
-          break;
+  // If we found the block, get more detailed participation info
+  if (blockIdForWaveOp > 0 && trace.blocks.count(blockIdForWaveOp)) {
+    const auto& block = trace.blocks.at(blockIdForWaveOp);
+    // Check wave participation in this specific block
+    for (const auto& [waveId, participation] : block.waveParticipation) {
+      if (!participation.participatingLanes.empty()) {
+        // This gives us the lanes that actually participated in this block
+        activeLaneCount = participation.participatingLanes.size();
+        std::cout << "[LanePermutation] Block " << blockIdForWaveOp 
+                  << " has participating lanes: ";
+        for (auto laneId : participation.participatingLanes) {
+          std::cout << laneId << " ";
         }
+        std::cout << "\n";
+        break;
       }
-      if (activeLaneCount > 4) break;
     }
+  }
+  
+  // Ensure we don't create invalid permutations
+  if (activeLaneCount == 0) {
+    std::cout << "[LanePermutation] Warning: No active lanes found, using default\n";
+    activeLaneCount = 4;
   }
   
   // Choose a random permutation type
@@ -558,11 +593,10 @@ std::unique_ptr<interpreter::Expression> LanePermutationMutation::createPermutat
     }
     
     case PermutationType::EvenOddSwap: {
-      // laneId ^ 1
-      auto one = std::make_unique<interpreter::LiteralExpr>(1);
-      // Use XOR which is represented as Ne (not equal) for integers
-      // Actually, we need proper XOR support. For now, use conditional:
-      // (laneId % 2 == 0) ? (laneId + 1) : (laneId - 1)
+      // For even/odd swap, we need to ensure we don't go out of bounds
+      // If activeLaneCount is odd, the last lane should map to itself
+      // Formula: (laneId % 2 == 0) ? min(laneId + 1, activeLaneCount - 1) : (laneId - 1)
+      
       auto two = std::make_unique<interpreter::LiteralExpr>(2);
       auto mod2 = std::make_unique<interpreter::BinaryOpExpr>(
           laneExpr->clone(), std::move(two), interpreter::BinaryOpExpr::Mod);
@@ -570,16 +604,28 @@ std::unique_ptr<interpreter::Expression> LanePermutationMutation::createPermutat
       auto isEven = std::make_unique<interpreter::BinaryOpExpr>(
           std::move(mod2), std::move(zero), interpreter::BinaryOpExpr::Eq);
       
+      // For even lanes: min(laneId + 1, activeLaneCount - 1)
       auto one1 = std::make_unique<interpreter::LiteralExpr>(1);
       auto addOne = std::make_unique<interpreter::BinaryOpExpr>(
           laneExpr->clone(), std::move(one1), interpreter::BinaryOpExpr::Add);
+      auto countMinus1Even = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(static_cast<int>(activeLaneCount - 1)));
+      auto minExpr = std::make_unique<interpreter::BinaryOpExpr>(
+          std::move(addOne), std::move(countMinus1Even), interpreter::BinaryOpExpr::Lt);
+      auto evenResult = std::make_unique<interpreter::ConditionalExpr>(
+          std::move(minExpr),
+          std::make_unique<interpreter::BinaryOpExpr>(
+              laneExpr->clone(), 
+              std::make_unique<interpreter::LiteralExpr>(1),
+              interpreter::BinaryOpExpr::Add),
+          std::make_unique<interpreter::LiteralExpr>(interpreter::Value(static_cast<int>(activeLaneCount - 1))));
       
+      // For odd lanes: laneId - 1
       auto one2 = std::make_unique<interpreter::LiteralExpr>(1);
       auto subOne = std::make_unique<interpreter::BinaryOpExpr>(
-          std::move(laneExpr), std::move(one2), interpreter::BinaryOpExpr::Sub);
+          laneExpr->clone(), std::move(one2), interpreter::BinaryOpExpr::Sub);
       
       return std::make_unique<interpreter::ConditionalExpr>(
-          std::move(isEven), std::move(addOne), std::move(subOne));
+          std::move(isEven), std::move(evenResult), std::move(subOne));
     }
     
     default:
