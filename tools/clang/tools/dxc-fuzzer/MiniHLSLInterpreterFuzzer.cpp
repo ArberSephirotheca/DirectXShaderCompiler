@@ -702,6 +702,19 @@ void TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& seedProgram,
       
       mutantsTested++;
       
+      // Print mutated program if logging is enabled
+      if (config.enableLogging) {
+        std::cout << "\n=== Mutant " << mutantsTested << " ===\n";
+        std::cout << "[numthreads(" << mutant.numThreadsX << ", " 
+                  << mutant.numThreadsY << ", " << mutant.numThreadsZ << ")]\n";
+        std::cout << "void main() {\n";
+        for (const auto& stmt : mutant.statements) {
+          std::cout << "  " << stmt->toString() << "\n";
+        }
+        std::cout << "}\n";
+        std::cout << "==================\n";
+      }
+      
       try {
         // Execute mutant
         TraceCaptureInterpreter mutantInterpreter;

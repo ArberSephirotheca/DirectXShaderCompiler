@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
         // todo: don't make it hardcode
         config.waveSize = 32; // Standard wave size
         config.maxMutants = 10;
-        config.enableLogging = false; // Disable verbose logging for cleaner output
+        config.enableLogging = true; // Enable logging to see mutated programs
         
         std::cout << "Starting trace-guided fuzzing...\n";
         std::cout << "Max mutants: " << config.maxMutants << "\n\n";
