@@ -40,8 +40,84 @@ bool ExplicitLaneDivergenceMutation::canApply(const interpreter::Statement* stmt
 std::unique_ptr<interpreter::Statement> ExplicitLaneDivergenceMutation::apply(
     const interpreter::Statement* stmt, 
     const ExecutionTrace& trace) const {
-  // TODO: Implement AST mutation
-  // This requires AST cloning infrastructure
+  
+  auto ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt);
+  if (!ifStmt) return nullptr;
+  
+  // Find the control flow decision for this statement
+  for (const auto& decision : trace.controlFlowHistory) {
+    if (decision.statement == stmt) {
+      // Collect lanes that took true branch and false branch
+      std::map<interpreter::WaveId, std::pair<std::vector<interpreter::LaneId>, std::vector<interpreter::LaneId>>> waveBranches;
+      
+      for (const auto& [waveId, laneDecisions] : decision.decisions) {
+        for (const auto& [laneId, dec] : laneDecisions) {
+          if (dec.branchTaken) {
+            waveBranches[waveId].first.push_back(laneId);
+          } else {
+            waveBranches[waveId].second.push_back(laneId);
+          }
+        }
+      }
+      
+      // Create explicit lane conditions
+      std::unique_ptr<interpreter::Expression> explicitCondition = nullptr;
+      
+      for (const auto& [waveId, branches] : waveBranches) {
+        const auto& [trueLanes, falseLanes] = branches;
+        
+        if (!trueLanes.empty()) {
+          // Create condition for lanes that take true branch
+          std::unique_ptr<interpreter::Expression> waveCondition = nullptr;
+          
+          // Create (waveIndex() == waveId && (laneIndex() == lane0 || laneIndex() == lane1 || ...))
+          auto waveCheck = createWaveIdCheck(waveId);
+          
+          std::unique_ptr<interpreter::Expression> laneCondition = nullptr;
+          for (auto laneId : trueLanes) {
+            auto laneCheck = createLaneIdCheck(laneId);
+            if (!laneCondition) {
+              laneCondition = std::move(laneCheck);
+            } else {
+              laneCondition = createDisjunction(std::move(laneCondition), std::move(laneCheck));
+            }
+          }
+          
+          waveCondition = createConjunction(std::move(waveCheck), std::move(laneCondition));
+          
+          if (!explicitCondition) {
+            explicitCondition = std::move(waveCondition);
+          } else {
+            explicitCondition = createDisjunction(std::move(explicitCondition), std::move(waveCondition));
+          }
+        }
+      }
+      
+      // Clone the if statement with the new explicit condition
+      // Deep copy then block
+      std::vector<std::unique_ptr<interpreter::Statement>> newThenBlock;
+      for (const auto& stmt : ifStmt->getThenBlock()) {
+        if (stmt) {
+          newThenBlock.push_back(stmt->clone());
+        }
+      }
+      
+      // Deep copy else block
+      std::vector<std::unique_ptr<interpreter::Statement>> newElseBlock;
+      for (const auto& stmt : ifStmt->getElseBlock()) {
+        if (stmt) {
+          newElseBlock.push_back(stmt->clone());
+        }
+      }
+      
+      return std::make_unique<interpreter::IfStmt>(
+          std::move(explicitCondition),
+          std::move(newThenBlock),
+          std::move(newElseBlock)
+      );
+    }
+  }
+  
   return nullptr;
 }
 
@@ -64,7 +140,98 @@ bool LoopUnrollingMutation::canApply(const interpreter::Statement* stmt,
 std::unique_ptr<interpreter::Statement> LoopUnrollingMutation::apply(
     const interpreter::Statement* stmt, 
     const ExecutionTrace& trace) const {
-  // TODO: Implement loop unrolling
+  
+  // For simplicity, we'll only handle ForStmt with simple bounds
+  auto forStmt = dynamic_cast<const interpreter::ForStmt*>(stmt);
+  if (!forStmt) {
+    return nullptr;
+  }
+  
+  // Find loop execution info in trace
+  for (const auto& [loopPtr, loopInfo] : trace.loops) {
+    if (loopPtr == stmt) {
+      // Create unrolled version based on max iterations observed
+      if (loopInfo.lanePatterns.empty()) {
+        return nullptr;
+      }
+      
+      // Get maximum iteration count across all lanes
+      uint32_t maxIterations = 0;
+      for (const auto& [waveId, laneMap] : loopInfo.lanePatterns) {
+        for (const auto& [laneId, pattern] : laneMap) {
+          maxIterations = std::max(maxIterations, pattern.totalIterations);
+        }
+      }
+      
+      // Don't unroll if too many iterations
+      if (maxIterations > 10) {
+        return nullptr;
+      }
+      
+      // Create a sequence of if statements that check iteration count
+      // This is a simplified unrolling that preserves semantics
+      std::vector<std::unique_ptr<interpreter::Statement>> unrolledStmts;
+      
+      // Add the loop variable initialization
+      unrolledStmts.push_back(std::make_unique<interpreter::VarDeclStmt>(
+          forStmt->getLoopVar(),
+          forStmt->getInit() ? forStmt->getInit()->clone() : nullptr
+      ));
+      
+      // For each iteration, add guarded body
+      for (uint32_t i = 0; i < maxIterations; i++) {
+        // Create condition: loop_var == i && original_condition
+        auto iterCheck = std::make_unique<interpreter::BinaryOpExpr>(
+            std::make_unique<interpreter::VariableExpr>(forStmt->getLoopVar()),
+            std::make_unique<interpreter::LiteralExpr>(interpreter::Value(static_cast<int>(i))),
+            interpreter::BinaryOpExpr::Eq
+        );
+        
+        std::unique_ptr<interpreter::Expression> combinedCond;
+        if (forStmt->getCondition()) {
+          combinedCond = createConjunction(
+              std::move(iterCheck),
+              forStmt->getCondition()->clone()
+          );
+        } else {
+          combinedCond = std::move(iterCheck);
+        }
+        
+        // Clone loop body
+        std::vector<std::unique_ptr<interpreter::Statement>> iterBody;
+        for (const auto& bodyStmt : forStmt->getBody()) {
+          if (bodyStmt) {
+            iterBody.push_back(bodyStmt->clone());
+          }
+        }
+        
+        // Add increment
+        if (forStmt->getIncrement()) {
+          iterBody.push_back(std::make_unique<interpreter::ExprStmt>(
+              forStmt->getIncrement()->clone()
+          ));
+        }
+        
+        // Wrap in if statement
+        unrolledStmts.push_back(std::make_unique<interpreter::IfStmt>(
+            std::move(combinedCond),
+            std::move(iterBody)
+        ));
+      }
+      
+      // Return first statement if only one, otherwise wrap in if(true)
+      if (unrolledStmts.size() == 1) {
+        return std::move(unrolledStmts[0]);
+      } else {
+        // Wrap multiple statements in if(true) block
+        return std::make_unique<interpreter::IfStmt>(
+            std::make_unique<interpreter::LiteralExpr>(interpreter::Value(1)),
+            std::move(unrolledStmts)
+        );
+      }
+    }
+  }
+  
   return nullptr;
 }
 
@@ -78,14 +245,21 @@ bool LoopUnrollingMutation::validateSemanticPreservation(
 bool PrecomputeWaveResultsMutation::canApply(const interpreter::Statement* stmt, 
                                            const ExecutionTrace& trace) const {
   // Can apply to statements containing wave operations
-  // TODO: Check if statement contains wave ops
-  return false;
+  // For now, check if there are any wave operations in the trace
+  return !trace.waveOperations.empty();
 }
 
 std::unique_ptr<interpreter::Statement> PrecomputeWaveResultsMutation::apply(
     const interpreter::Statement* stmt, 
     const ExecutionTrace& trace) const {
-  // TODO: Replace wave ops with precomputed values
+  
+  // For this simple implementation, we'll just return nullptr
+  // A full implementation would need to:
+  // 1. Match the statement to a wave operation in the trace
+  // 2. Extract the computed result
+  // 3. Replace the wave operation with the literal value
+  
+  // TODO: Implement once we have proper statement-to-trace matching
   return nullptr;
 }
 
@@ -125,8 +299,19 @@ bool ForceBlockBoundariesMutation::canApply(const interpreter::Statement* stmt,
 std::unique_ptr<interpreter::Statement> ForceBlockBoundariesMutation::apply(
     const interpreter::Statement* stmt, 
     const ExecutionTrace& trace) const {
-  // TODO: Make implicit blocks explicit
-  return nullptr;
+  
+  // Wrap the statement in an if(true) block to force a new block boundary
+  auto trueCondition = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(1));
+  
+  // Create the then-block with the original statement
+  std::vector<std::unique_ptr<interpreter::Statement>> thenBlock;
+  thenBlock.push_back(stmt->clone());
+  
+  // Create the if statement
+  return std::make_unique<interpreter::IfStmt>(
+    std::move(trueCondition),
+    std::move(thenBlock)
+  );
 }
 
 bool ForceBlockBoundariesMutation::validateSemanticPreservation(
@@ -560,8 +745,34 @@ std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
   
   std::vector<interpreter::Program> mutants;
   
-  // TODO: Implement once AST cloning is available
-  // For now, return empty vector
+  // Try to apply the mutation strategy to each statement
+  for (size_t i = 0; i < program.statements.size(); ++i) {
+    const auto& stmt = program.statements[i];
+    
+    if (strategy->canApply(stmt.get(), trace)) {
+      // Apply the mutation
+      auto mutatedStmt = strategy->apply(stmt.get(), trace);
+      
+      if (mutatedStmt) {
+        // Create a new program with the mutated statement
+        interpreter::Program mutant;
+        mutant.numThreadsX = program.numThreadsX;
+        mutant.numThreadsY = program.numThreadsY;
+        mutant.numThreadsZ = program.numThreadsZ;
+        
+        // Clone all statements except the mutated one
+        for (size_t j = 0; j < program.statements.size(); ++j) {
+          if (j == i) {
+            mutant.statements.push_back(std::move(mutatedStmt));
+          } else {
+            mutant.statements.push_back(program.statements[j]->clone());
+          }
+        }
+        
+        mutants.push_back(std::move(mutant));
+      }
+    }
+  }
   
   return mutants;
 }

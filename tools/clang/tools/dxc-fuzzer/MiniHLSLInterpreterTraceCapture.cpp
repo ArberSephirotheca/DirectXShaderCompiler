@@ -23,10 +23,12 @@ interpreter::ExecutionResult TraceCaptureInterpreter::executeAndCaptureTrace(
   // Execute with trace capture hooks enabled
   auto result = execute(program, ordering, waveSize);
   
-  // Capture final state
+  // Capture final state - shared memory
   for (const auto& [addr, value] : result.sharedMemoryState) {
     trace_.finalState.sharedMemory[addr] = value;
   }
+  
+  // Note: Thread variable states are captured in onExecutionComplete hook
   
   return result;
 }
@@ -186,6 +188,38 @@ void TraceCaptureInterpreter::recordWaveOperation(
   }
   
   trace_.waveOperations.push_back(record);
+}
+
+void TraceCaptureInterpreter::onExecutionComplete(const interpreter::ThreadgroupContext &tg) {
+  // Debug: Print what we're capturing
+  std::cout << "\n=== TraceCaptureInterpreter::onExecutionComplete ===\n";
+  
+  // Capture final variable states for all threads
+  for (size_t waveId = 0; waveId < tg.waves.size(); ++waveId) {
+    const auto& wave = *tg.waves[waveId];
+    
+    for (size_t laneId = 0; laneId < wave.lanes.size(); ++laneId) {
+      const auto& lane = *wave.lanes[laneId];
+      
+      std::cout << "Capturing Lane " << laneId << " state: " << static_cast<int>(lane.state) << "\n";
+      std::cout << "  Variables: ";
+      
+      // Copy all variables for this lane
+      for (const auto& [varName, value] : lane.variables) {
+        trace_.finalState.laneVariables[waveId][laneId][varName] = value;
+        std::cout << varName << "=" << value.toString() << " ";
+      }
+      std::cout << "\n";
+      
+      // Also capture return value
+      trace_.finalState.returnValues[waveId][laneId] = lane.returnValue;
+      
+      // Capture final thread state
+      trace_.finalState.finalThreadStates[waveId][laneId] = lane.state;
+    }
+  }
+  
+  std::cout << "=== End TraceCaptureInterpreter::onExecutionComplete ===\n\n";
 }
 
 } // namespace fuzzer

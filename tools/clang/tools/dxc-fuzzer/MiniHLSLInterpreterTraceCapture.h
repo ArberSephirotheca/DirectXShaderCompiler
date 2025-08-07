@@ -46,6 +46,9 @@ protected:
   void onVariableAccess(interpreter::LaneContext &lane, interpreter::WaveContext &wave,
                         interpreter::ThreadgroupContext &tg, const std::string &name,
                         bool isWrite, const interpreter::Value &value);
+  
+  // Override to capture final thread states
+  void onExecutionComplete(const interpreter::ThreadgroupContext &tg) override;
 
 public:
   TraceCaptureInterpreter();

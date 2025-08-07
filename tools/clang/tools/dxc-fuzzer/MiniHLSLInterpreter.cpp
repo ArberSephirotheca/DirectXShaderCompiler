@@ -1779,6 +1779,8 @@ Result<Unit, ExecutionError> IfStmt::evaluateConditionAndSetup_result(
     std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
               << " condition result=" << ourEntry.conditionResult
               << " (Result-based)" << std::endl;
+    
+    // Control flow hooks called from interpreter level
   } else {
     std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
               << " using cached condition result=" << ourEntry.conditionResult
@@ -3176,6 +3178,10 @@ ExecutionResult MiniHLSLInterpreter::executeWithOrdering(
     result.globalVariables = tgContext.waves[0]->lanes[0]->variables;
   }
 
+  
+  // Call hook to allow subclasses to capture final thread states
+  onExecutionComplete(tgContext);
+  
   // Print Dynamic Block Execution Graph (DBEG) for debugging merge blocks
   tgContext.printDynamicExecutionGraph(true);
 
@@ -3418,6 +3424,9 @@ MiniHLSLInterpreter::executeCollectiveWaveOperation(
     std::cout << laneId << " ";
     syncPoint.pendingResults[laneId] = result;
   }
+  
+  // Call hook for wave operation sync point created
+  onWaveOpSyncPointCreated(wave, tgContext, instructionKey.second, syncPoint.arrivedParticipants.size());
   // Mark sync point as executed using state machine
   syncPoint.markExecuted();
   std::cout << " (phase: " << (int)syncPoint.getPhase() << ")" << std::endl;

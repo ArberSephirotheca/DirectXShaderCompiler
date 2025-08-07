@@ -158,3 +158,33 @@ set_target_properties(test-minihlsl-fuzzer PROPERTIES
   CXX_STANDARD 17
   CXX_STANDARD_REQUIRED ON
 )
+
+# Fuzzer for real HLSL files
+add_executable(fuzz-hlsl-file
+  MiniHLSLInterpreter.cpp
+  MiniHLSLInterpreterFuzzer.cpp
+  MiniHLSLInterpreterFuzzerMutations.cpp
+  MiniHLSLInterpreterTraceCapture.cpp
+  MiniHLSLValidator.cpp
+  fuzz_hlsl_file.cpp
+)
+
+
+target_link_libraries(fuzz-hlsl-file
+  Threads::Threads
+  dxcompiler
+  clangAST
+  clangBasic
+  clangFrontend
+  clangLex
+  clangParse
+  clangSema
+  LLVMSupport
+  LLVMOption
+  LLVMCore
+)
+set_target_properties(fuzz-hlsl-file PROPERTIES
+  CXX_STANDARD 17
+  CXX_STANDARD_REQUIRED ON
+)
+

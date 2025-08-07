@@ -591,6 +591,16 @@ size_t serializeAST(const interpreter::Program& program,
 
 size_t hashAST(const interpreter::Program& program);
 
+// Helper functions for creating expressions
+std::unique_ptr<interpreter::Expression> createLaneIdCheck(interpreter::LaneId laneId);
+std::unique_ptr<interpreter::Expression> createWaveIdCheck(interpreter::WaveId waveId);
+std::unique_ptr<interpreter::Expression> createConjunction(
+    std::unique_ptr<interpreter::Expression> left,
+    std::unique_ptr<interpreter::Expression> right);
+std::unique_ptr<interpreter::Expression> createDisjunction(
+    std::unique_ptr<interpreter::Expression> left,
+    std::unique_ptr<interpreter::Expression> right);
+
 } // namespace fuzzer
 } // namespace minihlsl
 

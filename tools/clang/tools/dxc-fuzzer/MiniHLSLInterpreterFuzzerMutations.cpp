@@ -6,23 +6,38 @@ namespace fuzzer {
 
 // PrecomputeWaveResultsMutation Implementation
 
+// Helper to check if an expression is or contains a wave operation
+bool expressionContainsWaveOp(const interpreter::Expression* expr) {
+  if (!expr) return false;
+  
+  // Direct wave operation
+  if (dynamic_cast<const interpreter::WaveActiveOp*>(expr)) {
+    return true;
+  }
+  
+  // Check binary operations
+  if (auto binOp = dynamic_cast<const interpreter::BinaryOpExpr*>(expr)) {
+    // Would need getters for left_ and right_
+    return false; // TODO: Need getters
+  }
+  
+  // TODO: Check other expression types that might contain wave ops
+  return false;
+}
+
 // Check if statement contains wave operations
 bool containsWaveOps(const interpreter::Statement* stmt) {
   // Check if this is an expression statement containing a wave op
   if (auto exprStmt = dynamic_cast<const interpreter::ExprStmt*>(stmt)) {
-    // We need direct access to expr_ but it's private
-    // For now, return false as we need proper getters
-    return false;
+    return expressionContainsWaveOp(exprStmt->getExpression());
   }
   
   if (auto assignStmt = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
-    // We need direct access but it's private
-    return false;
+    return expressionContainsWaveOp(assignStmt->getExpression());
   }
   
   if (auto varDeclStmt = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
-    // We need direct access but it's private
-    return false;
+    return expressionContainsWaveOp(varDeclStmt->getInit());
   }
   
   return false;
@@ -84,9 +99,13 @@ std::unique_ptr<interpreter::Statement> ForceBlockBoundariesMutation::createBloc
     interpreter::BlockType type) const {
   
   // Create a no-op statement that marks a block boundary
-  // For now, we'll create an empty expression statement
-  // TODO: Need proper AST construction
-  return nullptr;
+  // We'll create a simple variable declaration that doesn't affect semantics
+  auto marker = std::make_unique<interpreter::VarDeclStmt>(
+    "_block_marker_" + std::to_string(blockId),
+    std::make_unique<interpreter::LiteralExpr>(interpreter::Value(0))
+  );
+  
+  return marker;
 }
 
 // SerializeMemoryAccessesMutation Implementation
@@ -118,31 +137,47 @@ std::unique_ptr<interpreter::Statement> SerializeMemoryAccessesMutation::createM
 std::unique_ptr<interpreter::Expression> createLaneIdCheck(
     interpreter::LaneId laneId) {
   // Create: laneIndex() == laneId
-  // TODO: Need proper AST construction
-  return nullptr;
+  auto laneIndexExpr = std::make_unique<interpreter::LaneIndexExpr>();
+  auto laneIdLiteral = std::make_unique<interpreter::LiteralExpr>(
+      interpreter::Value(static_cast<int>(laneId)));
+  
+  return std::make_unique<interpreter::BinaryOpExpr>(
+      std::move(laneIndexExpr),
+      std::move(laneIdLiteral),
+      interpreter::BinaryOpExpr::Eq);
 }
 
 std::unique_ptr<interpreter::Expression> createWaveIdCheck(
     interpreter::WaveId waveId) {
   // Create: waveIndex() == waveId
-  // TODO: Need proper AST construction
-  return nullptr;
+  auto waveIndexExpr = std::make_unique<interpreter::WaveIndexExpr>();
+  auto waveIdLiteral = std::make_unique<interpreter::LiteralExpr>(
+      interpreter::Value(static_cast<int>(waveId)));
+  
+  return std::make_unique<interpreter::BinaryOpExpr>(
+      std::move(waveIndexExpr),
+      std::move(waveIdLiteral),
+      interpreter::BinaryOpExpr::Eq);
 }
 
 std::unique_ptr<interpreter::Expression> createConjunction(
     std::unique_ptr<interpreter::Expression> left,
     std::unique_ptr<interpreter::Expression> right) {
   // Create: left && right
-  // TODO: Need proper AST construction
-  return nullptr;
+  return std::make_unique<interpreter::BinaryOpExpr>(
+      std::move(left),
+      std::move(right),
+      interpreter::BinaryOpExpr::And);
 }
 
 std::unique_ptr<interpreter::Expression> createDisjunction(
     std::unique_ptr<interpreter::Expression> left,
     std::unique_ptr<interpreter::Expression> right) {
   // Create: left || right
-  // TODO: Need proper AST construction
-  return nullptr;
+  return std::make_unique<interpreter::BinaryOpExpr>(
+      std::move(left),
+      std::move(right),
+      interpreter::BinaryOpExpr::Or);
 }
 
 // LoopUnrollingMutation Implementation

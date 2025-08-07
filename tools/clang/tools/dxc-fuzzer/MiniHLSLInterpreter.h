@@ -1072,6 +1072,9 @@ public:
                   ThreadgroupContext &tg) const = 0;
   virtual bool isDeterministic() const = 0;
   virtual std::string toString() const = 0;
+  
+  // Deep copy method for AST cloning
+  virtual std::unique_ptr<Expression> clone() const = 0;
 };
 
 // Pure expressions
@@ -1088,6 +1091,10 @@ public:
   }
   bool isDeterministic() const override { return true; }
   std::string toString() const override { return value_.toString(); }
+  
+  std::unique_ptr<Expression> clone() const override {
+    return std::make_unique<LiteralExpr>(value_);
+  }
 };
 
 class VariableExpr : public Expression {
@@ -1100,6 +1107,10 @@ public:
                   ThreadgroupContext &) const override;
   bool isDeterministic() const override { return false; }
   std::string toString() const override { return name_; }
+  
+  std::unique_ptr<Expression> clone() const override {
+    return std::make_unique<VariableExpr>(name_);
+  }
 };
 
 class LaneIndexExpr : public Expression {
@@ -1109,6 +1120,10 @@ public:
                   ThreadgroupContext &) const override;
   bool isDeterministic() const override { return true; }
   std::string toString() const override { return "WaveGetLaneIndex()"; }
+  
+  std::unique_ptr<Expression> clone() const override {
+    return std::make_unique<LaneIndexExpr>();
+  }
 };
 
 class WaveIndexExpr : public Expression {
@@ -1118,6 +1133,10 @@ public:
                   ThreadgroupContext &) const override;
   bool isDeterministic() const override { return true; }
   std::string toString() const override { return "WaveGetWaveIndex()"; }
+  
+  std::unique_ptr<Expression> clone() const override {
+    return std::make_unique<WaveIndexExpr>();
+  }
 };
 
 class ThreadIndexExpr : public Expression {
@@ -1127,6 +1146,10 @@ public:
                   ThreadgroupContext &) const override;
   bool isDeterministic() const override { return true; }
   std::string toString() const override { return "W()"; }
+  
+  std::unique_ptr<Expression> clone() const override {
+    return std::make_unique<ThreadIndexExpr>();
+  }
 };
 
 class BinaryOpExpr : public Expression {
@@ -1146,6 +1169,13 @@ public:
                   ThreadgroupContext &tg) const override;
   bool isDeterministic() const override;
   std::string toString() const override;
+  
+  std::unique_ptr<Expression> clone() const override {
+    return std::make_unique<BinaryOpExpr>(
+        left_ ? left_->clone() : nullptr,
+        right_ ? right_->clone() : nullptr,
+        op_);
+  }
 };
 
 class UnaryOpExpr : public Expression {
@@ -1173,6 +1203,12 @@ public:
                   ThreadgroupContext &tg) const override;
   bool isDeterministic() const override;
   std::string toString() const override;
+  
+  std::unique_ptr<Expression> clone() const override {
+    return std::make_unique<UnaryOpExpr>(
+        expr_ ? expr_->clone() : nullptr,
+        op_);
+  }
 };
 
 class ConditionalExpr : public Expression {
@@ -1190,6 +1226,13 @@ public:
                   ThreadgroupContext &tg) const override;
   bool isDeterministic() const override;
   std::string toString() const override;
+  
+  std::unique_ptr<Expression> clone() const override {
+    return std::make_unique<ConditionalExpr>(
+        condition_ ? condition_->clone() : nullptr,
+        trueExpr_ ? trueExpr_->clone() : nullptr,
+        falseExpr_ ? falseExpr_->clone() : nullptr);
+  }
 };
 
 // Wave operations
@@ -1225,6 +1268,12 @@ public:
   // Helper methods for collective execution
   const Expression *getExpression() const { return expr_.get(); }
   Value computeWaveOperation(const std::vector<Value> &values) const;
+  
+  std::unique_ptr<Expression> clone() const override {
+    return std::make_unique<WaveActiveOp>(
+        expr_ ? expr_->clone() : nullptr,
+        op_);
+  }
 };
 
 class WaveGetLaneCountExpr : public Expression {
@@ -1234,6 +1283,10 @@ public:
                   ThreadgroupContext &) const override;
   bool isDeterministic() const override { return true; }
   std::string toString() const override { return "WaveGetLaneCount()"; }
+  
+  std::unique_ptr<Expression> clone() const override {
+    return std::make_unique<WaveGetLaneCountExpr>();
+  }
 };
 
 class WaveIsFirstLaneExpr : public Expression {
@@ -1243,6 +1296,10 @@ public:
                   ThreadgroupContext &) const override;
   bool isDeterministic() const override { return false; }
   std::string toString() const override { return "WaveIsFirstLane()"; }
+  
+  std::unique_ptr<Expression> clone() const override {
+    return std::make_unique<WaveIsFirstLaneExpr>();
+  }
 };
 
 // Statement AST nodes
@@ -1275,6 +1332,9 @@ public:
   }
   virtual bool requiresAllLanesActive() const { return false; }
   virtual std::string toString() const = 0;
+  
+  // Deep copy method for AST cloning
+  virtual std::unique_ptr<Statement> clone() const = 0;
 
   // Trace capture hooks - override in TraceCaptureInterpreter
   virtual void onStatementExecute(LaneContext &lane, WaveContext &wave,
@@ -1293,6 +1353,16 @@ public:
                                               WaveContext &wave,
                                               ThreadgroupContext &tg) override;
   std::string toString() const override;
+  
+  std::unique_ptr<Statement> clone() const override {
+    return std::make_unique<VarDeclStmt>(
+        name_,
+        init_ ? init_->clone() : nullptr);
+  }
+  
+  // Getter methods for fuzzer access
+  const std::string& getName() const { return name_; }
+  const Expression* getInit() const { return init_.get(); }
 };
 
 class AssignStmt : public Statement {
@@ -1305,6 +1375,16 @@ public:
                                               WaveContext &wave,
                                               ThreadgroupContext &tg) override;
   std::string toString() const override;
+  
+  std::unique_ptr<Statement> clone() const override {
+    return std::make_unique<AssignStmt>(
+        name_,
+        expr_ ? expr_->clone() : nullptr);
+  }
+  
+  // Getter methods for fuzzer access
+  const std::string& getName() const { return name_; }
+  const Expression* getExpression() const { return expr_.get(); }
 };
 
 class IfStmt : public Statement {
@@ -1355,6 +1435,33 @@ public:
   Result<Unit, ExecutionError>
   execute_with_error_handling(LaneContext &lane, WaveContext &wave,
                               ThreadgroupContext &tg) override;
+  
+  std::unique_ptr<Statement> clone() const override {
+    auto cloned = std::make_unique<IfStmt>(
+        condition_ ? condition_->clone() : nullptr,
+        std::vector<std::unique_ptr<Statement>>{},
+        std::vector<std::unique_ptr<Statement>>{});
+    
+    // Deep copy then block statements
+    for (const auto& stmt : thenBlock_) {
+      if (stmt) {
+        cloned->thenBlock_.push_back(stmt->clone());
+      }
+    }
+    
+    // Deep copy else block statements
+    for (const auto& stmt : elseBlock_) {
+      if (stmt) {
+        cloned->elseBlock_.push_back(stmt->clone());
+      }
+    }
+    
+    return cloned;
+  }
+  
+  // Getter methods for fuzzer access
+  const std::vector<std::unique_ptr<Statement>>& getThenBlock() const { return thenBlock_; }
+  const std::vector<std::unique_ptr<Statement>>& getElseBlock() const { return elseBlock_; }
 };
 
 class ForStmt : public Statement {
@@ -1454,6 +1561,28 @@ public:
   
   // Getter methods for fuzzer access
   const std::vector<std::unique_ptr<Statement>>& getBody() const { return body_; }
+  const std::string& getLoopVar() const { return loopVar_; }
+  const Expression* getInit() const { return init_.get(); }
+  const Expression* getCondition() const { return condition_.get(); }
+  const Expression* getIncrement() const { return increment_.get(); }
+  
+  std::unique_ptr<Statement> clone() const override {
+    auto cloned = std::make_unique<ForStmt>(
+        loopVar_,
+        init_ ? init_->clone() : nullptr,
+        condition_ ? condition_->clone() : nullptr,
+        increment_ ? increment_->clone() : nullptr,
+        std::vector<std::unique_ptr<Statement>>{});
+    
+    // Deep copy body statements
+    for (const auto& stmt : body_) {
+      if (stmt) {
+        cloned->body_.push_back(stmt->clone());
+      }
+    }
+    
+    return cloned;
+  }
 };
 
 class WhileStmt : public Statement {
@@ -1518,6 +1647,21 @@ public:
   
   // Getter methods for fuzzer access
   const std::vector<std::unique_ptr<Statement>>& getBody() const { return body_; }
+  
+  std::unique_ptr<Statement> clone() const override {
+    auto cloned = std::make_unique<WhileStmt>(
+        condition_ ? condition_->clone() : nullptr,
+        std::vector<std::unique_ptr<Statement>>{});
+    
+    // Deep copy body statements
+    for (const auto& stmt : body_) {
+      if (stmt) {
+        cloned->body_.push_back(stmt->clone());
+      }
+    }
+    
+    return cloned;
+  }
 };
 
 class DoWhileStmt : public Statement {
@@ -1582,6 +1726,21 @@ public:
   
   // Getter methods for fuzzer access
   const std::vector<std::unique_ptr<Statement>>& getBody() const { return body_; }
+  
+  std::unique_ptr<Statement> clone() const override {
+    auto cloned = std::make_unique<DoWhileStmt>(
+        std::vector<std::unique_ptr<Statement>>{},
+        condition_ ? condition_->clone() : nullptr);
+    
+    // Deep copy body statements
+    for (const auto& stmt : body_) {
+      if (stmt) {
+        cloned->body_.push_back(stmt->clone());
+      }
+    }
+    
+    return cloned;
+  }
 };
 
 class SwitchStmt : public Statement {
@@ -1635,6 +1794,28 @@ public:
   Result<Unit, ExecutionError>
   execute_with_error_handling(LaneContext &lane, WaveContext &wave,
                               ThreadgroupContext &tg) override;
+  
+  std::unique_ptr<Statement> clone() const override {
+    auto cloned = std::make_unique<SwitchStmt>(
+        condition_ ? condition_->clone() : nullptr);
+    
+    // Deep copy case blocks
+    for (const auto& caseBlock : cases_) {
+      CaseBlock clonedCase;
+      clonedCase.value = caseBlock.value;
+      
+      // Deep copy statements in this case
+      for (const auto& stmt : caseBlock.statements) {
+        if (stmt) {
+          clonedCase.statements.push_back(stmt->clone());
+        }
+      }
+      
+      cloned->cases_.push_back(std::move(clonedCase));
+    }
+    
+    return cloned;
+  }
 };
 
 class BreakStmt : public Statement {
@@ -1643,6 +1824,10 @@ public:
                                               WaveContext &wave,
                                               ThreadgroupContext &tg) override;
   std::string toString() const override { return "break;"; }
+  
+  std::unique_ptr<Statement> clone() const override {
+    return std::make_unique<BreakStmt>();
+  }
 };
 
 class ContinueStmt : public Statement {
@@ -1651,6 +1836,10 @@ public:
                                               WaveContext &wave,
                                               ThreadgroupContext &tg) override;
   std::string toString() const override { return "continue;"; }
+  
+  std::unique_ptr<Statement> clone() const override {
+    return std::make_unique<ContinueStmt>();
+  }
 };
 
 class ReturnStmt : public Statement {
@@ -1671,6 +1860,12 @@ private:
   void updateWaveOperationStates(ThreadgroupContext &tg, WaveContext &wave,
                                  LaneId returningLaneId);
   void updateBarrierStates(ThreadgroupContext &tg, LaneId returningLaneId);
+  
+public:
+  std::unique_ptr<Statement> clone() const override {
+    return std::make_unique<ReturnStmt>(
+        expr_ ? expr_->clone() : nullptr);
+  }
 };
 
 class BarrierStmt : public Statement {
@@ -1681,6 +1876,10 @@ public:
   bool requiresAllLanesActive() const override { return true; }
   std::string toString() const override {
     return "GroupMemoryBarrierWithGroupSync();";
+  }
+  
+  std::unique_ptr<Statement> clone() const override {
+    return std::make_unique<BarrierStmt>();
   }
 };
 
@@ -1693,6 +1892,14 @@ public:
                                               WaveContext &wave,
                                               ThreadgroupContext &tg) override;
   std::string toString() const override;
+  
+  std::unique_ptr<Statement> clone() const override {
+    return std::make_unique<ExprStmt>(
+        expr_ ? expr_->clone() : nullptr);
+  }
+  
+  // Getter methods for fuzzer access
+  const Expression* getExpression() const { return expr_.get(); }
 };
 
 class SharedWriteStmt : public Statement {
@@ -1705,6 +1912,12 @@ public:
                                               WaveContext &wave,
                                               ThreadgroupContext &tg) override;
   std::string toString() const override;
+  
+  std::unique_ptr<Statement> clone() const override {
+    return std::make_unique<SharedWriteStmt>(
+        addr_,
+        expr_ ? expr_->clone() : nullptr);
+  }
 };
 
 class SharedReadExpr : public Expression {
@@ -1717,6 +1930,10 @@ public:
                   ThreadgroupContext &tg) const override;
   bool isDeterministic() const override { return false; }
   std::string toString() const override;
+  
+  std::unique_ptr<Expression> clone() const override {
+    return std::make_unique<SharedReadExpr>(addr_);
+  }
 };
 
 class BufferAccessExpr : public Expression {
@@ -1732,6 +1949,12 @@ public:
                   ThreadgroupContext &tg) const override;
   bool isDeterministic() const override { return false; }
   std::string toString() const override;
+  
+  std::unique_ptr<Expression> clone() const override {
+    return std::make_unique<BufferAccessExpr>(
+        bufferName_,
+        indexExpr_ ? indexExpr_->clone() : nullptr);
+  }
 };
 
 // Program representation
@@ -1766,6 +1989,9 @@ protected:
   virtual void onBarrierSync(ThreadgroupContext &tg, uint32_t barrierId) {}
   virtual void onThreadStateChange(LaneContext &lane, ThreadState oldState,
                                    ThreadState newState) {}
+  
+  // New method to capture final thread states - called after execution completes
+  virtual void onExecutionComplete(const ThreadgroupContext &tg) {}
 
   ExecutionResult executeWithOrdering(const Program &program,
                                       const ThreadOrdering &ordering,

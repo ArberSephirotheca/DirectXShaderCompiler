@@ -39,25 +39,36 @@ We have successfully implemented a trace-guided fuzzing framework for the MiniHL
 - FUZZER_README.md: Usage instructions
 - FUZZER_STATUS.md: Current implementation status
 
-## Current Limitations
+## Current Status
 
-### 1. AST Access
-- Many AST node members are private without getter methods
-- Added some getters to IfStmt, ForStmt, WhileStmt, DoWhileStmt
-- Need more comprehensive getter methods for full functionality
+### Completed ✓
+1. **AST Access**: Added getter methods to control flow statements (IfStmt, ForStmt, WhileStmt, DoWhileStmt)
+2. **Virtual Hook Methods**: Added virtual hooks to MiniHLSLInterpreter for trace capture
+3. **AST Cloning**: All AST nodes now have clone() methods
+4. **Build System**: Successfully builds and links
+5. **Basic Testing**: Test program runs and executes fuzzing framework
 
-### 2. Virtual Hook Methods
-- The base MiniHLSLInterpreter needs virtual hook methods for trace capture
-- Currently using placeholder implementations
+### Remaining Work
+1. **RedundantWaveSync**: Not yet implemented
+2. **LibFuzzer Integration**: Need to link with -fsanitize=fuzzer for feedback-driven fuzzing
+3. **Seed Corpus**: Need real HLSL programs for testing
+4. **Hook Implementation**: Some interpreter hooks need to be called in more places
 
-### 3. AST Cloning
-- No AST cloning infrastructure exists
-- This prevents implementing actual mutations
-- All mutation strategies return nullptr
-
-### 4. LibFuzzer Integration
-- Created placeholder main function
-- Proper libFuzzer integration requires linking with -fsanitize=fuzzer
+### Working Mutations
+- **ForceBlockBoundaries**: Wraps statements in `if(true)` blocks to force new block boundaries
+  - Successfully generates mutants
+  - Tested with control flow program
+  
+- **ExplicitLaneDivergence**: Converts implicit divergence to explicit lane tests
+  - Replaces if conditions with explicit lane/wave index checks
+  - Successfully generates mutants for divergent control flow
+  
+- **LoopUnrolling**: Unrolls loops with known iteration counts
+  - Creates guarded iterations based on trace data
+  - Limits unrolling to 10 iterations
+  
+- **PrecomputeWaveResults**: Placeholder for replacing wave ops with traced values
+  - Framework in place but needs implementation
 
 ## How It Works
 
@@ -80,6 +91,10 @@ We have successfully implemented a trace-guided fuzzing framework for the MiniHL
 cd ~/dxc_workspace/DirectXShaderCompiler/build-fuzzer
 cmake --build . --target minihlsl-fuzzer
 ./bin/minihlsl-fuzzer
+
+# To run the test program:
+cmake --build . --target test-minihlsl-fuzzer
+./bin/test-minihlsl-fuzzer
 ```
 
 ## Key Design Decisions
