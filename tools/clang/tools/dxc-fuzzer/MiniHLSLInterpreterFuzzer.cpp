@@ -272,15 +272,66 @@ bool PrecomputeWaveResultsMutation::validateSemanticPreservation(
 
 bool RedundantWaveSyncMutation::canApply(const interpreter::Statement* stmt, 
                                        const ExecutionTrace& trace) const {
-  // Can apply after any wave operation
-  return false; // TODO: Implement
+  // Can apply after most statements
+  // (Skip wave operation check since expr_ is private)
+  return dynamic_cast<const interpreter::VarDeclStmt*>(stmt) != nullptr ||
+         dynamic_cast<const interpreter::ExprStmt*>(stmt) != nullptr ||
+         dynamic_cast<const interpreter::IfStmt*>(stmt) != nullptr ||
+         dynamic_cast<const interpreter::ForStmt*>(stmt) != nullptr;
 }
 
 std::unique_ptr<interpreter::Statement> RedundantWaveSyncMutation::apply(
     const interpreter::Statement* stmt, 
     const ExecutionTrace& trace) const {
-  // TODO: Add redundant sync operations
-  return nullptr;
+  // Wrap the original statement and a redundant wave operation
+  // in a trivial if(true) block
+  
+  // Create the block containing original statement + redundant sync
+  std::vector<std::unique_ptr<interpreter::Statement>> thenBlock;
+  
+  // Clone the original statement
+  thenBlock.push_back(stmt->clone());
+  
+  // Add a redundant wave operation
+  // Choose randomly between different redundant operations
+  static std::mt19937 rng(std::random_device{}());
+  std::uniform_int_distribution<int> dist(0, 2);
+  
+  switch (dist(rng)) {
+    case 0: {
+      // Add WaveActiveBallot(true) - returns mask of active lanes
+      auto trueLit = std::make_unique<interpreter::LiteralExpr>(true);
+      auto ballotOp = std::make_unique<interpreter::WaveActiveOp>(
+          std::move(trueLit), interpreter::WaveActiveOp::Ballot);
+      auto ballotStmt = std::make_unique<interpreter::ExprStmt>(std::move(ballotOp));
+      thenBlock.push_back(std::move(ballotStmt));
+      break;
+    }
+    case 1: {
+      // Add WaveActiveAllTrue(true) - always returns true
+      auto trueLit = std::make_unique<interpreter::LiteralExpr>(true);
+      auto allTrueOp = std::make_unique<interpreter::WaveActiveOp>(
+          std::move(trueLit), interpreter::WaveActiveOp::AllTrue);
+      auto allTrueStmt = std::make_unique<interpreter::ExprStmt>(std::move(allTrueOp));
+      thenBlock.push_back(std::move(allTrueStmt));
+      break;
+    }
+    case 2: {
+      // Add WaveActiveSum(0) - sums zeros across lanes
+      auto zeroLit = std::make_unique<interpreter::LiteralExpr>(0);
+      auto sumOp = std::make_unique<interpreter::WaveActiveOp>(
+          std::move(zeroLit), interpreter::WaveActiveOp::Sum);
+      auto sumStmt = std::make_unique<interpreter::ExprStmt>(std::move(sumOp));
+      thenBlock.push_back(std::move(sumStmt));
+      break;
+    }
+  }
+  
+  // Create if(true) to wrap both statements
+  auto trueCond = std::make_unique<interpreter::LiteralExpr>(true);
+  return std::make_unique<interpreter::IfStmt>(
+      std::move(trueCond), 
+      std::move(thenBlock));
 }
 
 bool RedundantWaveSyncMutation::validateSemanticPreservation(
