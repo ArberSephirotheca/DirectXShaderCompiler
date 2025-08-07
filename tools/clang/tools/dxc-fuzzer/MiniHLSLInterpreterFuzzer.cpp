@@ -152,7 +152,7 @@ bool ExplicitLaneDivergenceMutation::validateSemanticPreservation(
     const interpreter::Statement* original,
     const interpreter::Statement* mutated,
     const ExecutionTrace& trace) const {
-  // Always returns true as mutations are designed to be semantics-preserving
+  // TODO: verify
   return true;
 }
 
@@ -326,6 +326,7 @@ bool PrecomputeWaveResultsMutation::validateSemanticPreservation(
     const interpreter::Statement* original,
     const interpreter::Statement* mutated,
     const ExecutionTrace& trace) const {
+  // TODO: validate
   return true;
 }
 

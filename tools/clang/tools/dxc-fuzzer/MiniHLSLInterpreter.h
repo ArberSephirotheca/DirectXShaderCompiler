@@ -1068,7 +1068,11 @@ struct ExecutionResult {
 
 // Expression AST nodes
 class Expression {
+protected:
+  std::string type_; // HLSL type extracted from Clang AST
+  
 public:
+  explicit Expression(const std::string& type = "") : type_(type) {}
   virtual ~Expression() = default;
 
   // Primary evaluation method - all expressions must implement this
@@ -1080,6 +1084,10 @@ public:
   
   // Deep copy method for AST cloning
   virtual std::unique_ptr<Expression> clone() const = 0;
+  
+  // Type information getter
+  const std::string& getType() const { return type_; }
+  void setType(const std::string& type) { type_ = type; }
 };
 
 // Pure expressions
@@ -1087,7 +1095,7 @@ class LiteralExpr : public Expression {
   Value value_;
 
 public:
-  explicit LiteralExpr(Value v) : value_(v) {}
+  explicit LiteralExpr(Value v, const std::string& type = "") : Expression(type), value_(v) {}
   Result<Value, ExecutionError>
   evaluate_result(LaneContext &, WaveContext &,
                   ThreadgroupContext &) const override {
@@ -1098,7 +1106,7 @@ public:
   std::string toString() const override { return value_.toString(); }
   
   std::unique_ptr<Expression> clone() const override {
-    return std::make_unique<LiteralExpr>(value_);
+    return std::make_unique<LiteralExpr>(value_, type_);
   }
   
   // Getter for type inference
@@ -1109,7 +1117,7 @@ class VariableExpr : public Expression {
   std::string name_;
 
 public:
-  explicit VariableExpr(const std::string &name) : name_(name) {}
+  explicit VariableExpr(const std::string &name, const std::string& type = "") : Expression(type), name_(name) {}
   Result<Value, ExecutionError>
   evaluate_result(LaneContext &lane, WaveContext &,
                   ThreadgroupContext &) const override;
@@ -1117,12 +1125,13 @@ public:
   std::string toString() const override { return name_; }
   
   std::unique_ptr<Expression> clone() const override {
-    return std::make_unique<VariableExpr>(name_);
+    return std::make_unique<VariableExpr>(name_, type_);
   }
 };
 
 class LaneIndexExpr : public Expression {
 public:
+  explicit LaneIndexExpr(const std::string& type = "uint") : Expression(type) {}
   Result<Value, ExecutionError>
   evaluate_result(LaneContext &lane, WaveContext &,
                   ThreadgroupContext &) const override;
@@ -1130,12 +1139,13 @@ public:
   std::string toString() const override { return "WaveGetLaneIndex()"; }
   
   std::unique_ptr<Expression> clone() const override {
-    return std::make_unique<LaneIndexExpr>();
+    return std::make_unique<LaneIndexExpr>(type_);
   }
 };
 
 class WaveIndexExpr : public Expression {
 public:
+  explicit WaveIndexExpr(const std::string& type = "uint") : Expression(type) {}
   Result<Value, ExecutionError>
   evaluate_result(LaneContext &, WaveContext &wave,
                   ThreadgroupContext &) const override;
@@ -1143,12 +1153,13 @@ public:
   std::string toString() const override { return "WaveGetWaveIndex()"; }
   
   std::unique_ptr<Expression> clone() const override {
-    return std::make_unique<WaveIndexExpr>();
+    return std::make_unique<WaveIndexExpr>(type_);
   }
 };
 
 class ThreadIndexExpr : public Expression {
 public:
+  explicit ThreadIndexExpr(const std::string& type = "uint") : Expression(type) {}
   Result<Value, ExecutionError>
   evaluate_result(LaneContext &lane, WaveContext &,
                   ThreadgroupContext &) const override;
@@ -1156,7 +1167,7 @@ public:
   std::string toString() const override { return "W()"; }
   
   std::unique_ptr<Expression> clone() const override {
-    return std::make_unique<ThreadIndexExpr>();
+    return std::make_unique<ThreadIndexExpr>(type_);
   }
 };
 
@@ -1280,14 +1291,17 @@ public:
   Value computeWaveOperation(const std::vector<Value> &values) const;
   
   std::unique_ptr<Expression> clone() const override {
-    return std::make_unique<WaveActiveOp>(
+    auto cloned = std::make_unique<WaveActiveOp>(
         expr_ ? expr_->clone() : nullptr,
         op_);
+    cloned->setType(type_);
+    return cloned;
   }
 };
 
 class WaveGetLaneCountExpr : public Expression {
 public:
+  explicit WaveGetLaneCountExpr(const std::string& type = "uint") : Expression(type) {}
   Result<Value, ExecutionError>
   evaluate_result(LaneContext &, WaveContext &wave,
                   ThreadgroupContext &) const override;
@@ -1295,12 +1309,13 @@ public:
   std::string toString() const override { return "WaveGetLaneCount()"; }
   
   std::unique_ptr<Expression> clone() const override {
-    return std::make_unique<WaveGetLaneCountExpr>();
+    return std::make_unique<WaveGetLaneCountExpr>(type_);
   }
 };
 
 class WaveIsFirstLaneExpr : public Expression {
 public:
+  explicit WaveIsFirstLaneExpr(const std::string& type = "bool") : Expression(type) {}
   Result<Value, ExecutionError>
   evaluate_result(LaneContext &lane, WaveContext &wave,
                   ThreadgroupContext &) const override;
@@ -1308,7 +1323,7 @@ public:
   std::string toString() const override { return "WaveIsFirstLane()"; }
   
   std::unique_ptr<Expression> clone() const override {
-    return std::make_unique<WaveIsFirstLaneExpr>();
+    return std::make_unique<WaveIsFirstLaneExpr>(type_);
   }
 };
 
@@ -1320,8 +1335,9 @@ private:
   
 public:
   WaveReadLaneAt(std::unique_ptr<Expression> value,
-                 std::unique_ptr<Expression> laneIndex)
-      : value_(std::move(value)), laneIndex_(std::move(laneIndex)) {}
+                 std::unique_ptr<Expression> laneIndex,
+                 const std::string& type = "")
+      : Expression(type), value_(std::move(value)), laneIndex_(std::move(laneIndex)) {}
   
   Result<Value, ExecutionError>
   evaluate_result(LaneContext &lane, WaveContext &wave,
@@ -1337,7 +1353,8 @@ public:
   std::unique_ptr<Expression> clone() const override {
     return std::make_unique<WaveReadLaneAt>(
         value_ ? value_->clone() : nullptr,
-        laneIndex_ ? laneIndex_->clone() : nullptr);
+        laneIndex_ ? laneIndex_->clone() : nullptr,
+        type_);
   }
   
   const Expression* getValue() const { return value_.get(); }
@@ -1975,7 +1992,7 @@ class SharedReadExpr : public Expression {
   MemoryAddress addr_;
 
 public:
-  explicit SharedReadExpr(MemoryAddress addr) : addr_(addr) {}
+  explicit SharedReadExpr(MemoryAddress addr, const std::string& type = "") : Expression(type), addr_(addr) {}
   Result<Value, ExecutionError>
   evaluate_result(LaneContext &lane, WaveContext &wave,
                   ThreadgroupContext &tg) const override;
@@ -1983,7 +2000,7 @@ public:
   std::string toString() const override;
   
   std::unique_ptr<Expression> clone() const override {
-    return std::make_unique<SharedReadExpr>(addr_);
+    return std::make_unique<SharedReadExpr>(addr_, type_);
   }
 };
 
@@ -1993,8 +2010,9 @@ class BufferAccessExpr : public Expression {
 
 public:
   BufferAccessExpr(std::string bufferName,
-                   std::unique_ptr<Expression> indexExpr)
-      : bufferName_(std::move(bufferName)), indexExpr_(std::move(indexExpr)) {}
+                   std::unique_ptr<Expression> indexExpr,
+                   const std::string& type = "")
+      : Expression(type), bufferName_(std::move(bufferName)), indexExpr_(std::move(indexExpr)) {}
   Result<Value, ExecutionError>
   evaluate_result(LaneContext &lane, WaveContext &wave,
                   ThreadgroupContext &tg) const override;
@@ -2004,7 +2022,8 @@ public:
   std::unique_ptr<Expression> clone() const override {
     return std::make_unique<BufferAccessExpr>(
         bufferName_,
-        indexExpr_ ? indexExpr_->clone() : nullptr);
+        indexExpr_ ? indexExpr_->clone() : nullptr,
+        type_);
   }
 };
 

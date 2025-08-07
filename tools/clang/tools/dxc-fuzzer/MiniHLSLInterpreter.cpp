@@ -950,7 +950,7 @@ ThreadOrdering ThreadOrdering::waveInterleaved(uint32_t threadCount,
 
 BinaryOpExpr::BinaryOpExpr(std::unique_ptr<Expression> left,
                            std::unique_ptr<Expression> right, OpType op)
-    : left_(std::move(left)), right_(std::move(right)), op_(op) {}
+    : Expression(""), left_(std::move(left)), right_(std::move(right)), op_(op) {}
 
 bool BinaryOpExpr::isDeterministic() const {
   return left_->isDeterministic() && right_->isDeterministic();
@@ -964,7 +964,7 @@ std::string BinaryOpExpr::toString() const {
 }
 
 UnaryOpExpr::UnaryOpExpr(std::unique_ptr<Expression> expr, OpType op)
-    : expr_(std::move(expr)), op_(op) {}
+    : Expression(""), expr_(std::move(expr)), op_(op) {}
 
 bool UnaryOpExpr::isDeterministic() const { return expr_->isDeterministic(); }
 
@@ -1219,7 +1219,7 @@ BufferAccessExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
 
 // Wave operation implementations
 WaveActiveOp::WaveActiveOp(std::unique_ptr<Expression> expr, OpType op)
-    : expr_(std::move(expr)), op_(op) {}
+    : Expression(""), expr_(std::move(expr)), op_(op) {}
 
 Result<Value, ExecutionError>
 WaveActiveOp::evaluate_result(LaneContext &lane, WaveContext &wave,
@@ -1447,14 +1447,13 @@ std::string WaveActiveOp::toString() const {
   return std::string(opNames[op_]) + "(" + expr_->toString() + ")";
 }
 
-// Forward declaration
-static std::string inferHLSLType(const Expression* expr);
+// Forward declaration removed - no longer needed
 
 // Statement implementations
-// Legacy constructor - infers type from init expression
+// Legacy constructor - tries to get type from init expression
 VarDeclStmt::VarDeclStmt(const std::string &name,
                          std::unique_ptr<Expression> init)
-    : name_(name), type_(inferHLSLType(init.get())), init_(std::move(init)) {}
+    : name_(name), type_(init ? init->getType() : "uint"), init_(std::move(init)) {}
 
 // New constructor with explicit type
 VarDeclStmt::VarDeclStmt(const std::string &name, const std::string &type,
@@ -1480,67 +1479,20 @@ VarDeclStmt::execute_result(LaneContext &lane, WaveContext &wave,
   return Ok<Unit, ExecutionError>(Unit{});
 }
 
-// Helper function to infer HLSL type from expression
-static std::string inferHLSLType(const Expression* expr) {
-  if (!expr) return "uint";
-  
-  // Check for specific expression types
-  if (auto literal = dynamic_cast<const LiteralExpr*>(expr)) {
-    const Value& val = literal->getValue();
-    if (val.isBool()) return "bool";
-    if (val.isFloat()) return "float";
-    return "uint"; // Default to uint for integers
-  }
-  
-  // WaveGetLaneIndex returns uint
-  if (dynamic_cast<const LaneIndexExpr*>(expr)) {
-    return "uint";
-  }
-  
-  // WaveGetWaveIndex returns uint  
-  if (dynamic_cast<const WaveIndexExpr*>(expr)) {
-    return "uint";
-  }
-  
-  // WaveGetLaneCount returns uint
-  if (dynamic_cast<const WaveGetLaneCountExpr*>(expr)) {
-    return "uint";
-  }
-  
-  // WaveIsFirstLane returns bool
-  if (dynamic_cast<const WaveIsFirstLaneExpr*>(expr)) {
-    return "bool";
-  }
-  
-  // Binary operations - check if it's a comparison
-  if (auto binOp = dynamic_cast<const BinaryOpExpr*>(expr)) {
-    // BinaryOpExpr doesn't expose getOp() method, so we can't check the operation type
-    // For now, we'll have to parse the toString() output or assume uint
-    std::string str = binOp->toString();
-    if (str.find("<") != std::string::npos || 
-        str.find(">") != std::string::npos ||
-        str.find("==") != std::string::npos ||
-        str.find("!=") != std::string::npos ||
-        str.find("<=") != std::string::npos ||
-        str.find(">=") != std::string::npos) {
-      return "bool";
-    }
-    return "uint";
-  }
-  
-  // Wave operations typically return the same type as input
-  // For now, assume uint
-  if (dynamic_cast<const WaveActiveOp*>(expr)) {
-    return "uint";
-  }
-  
-  // Default to uint for unknown expressions
-  return "uint";
-}
-
 std::string VarDeclStmt::toString() const {
-  // Use the stored type, or fall back to inference if type is empty
-  std::string actualType = type_.empty() ? inferHLSLType(init_.get()) : type_;
+  // Use the stored type if available
+  std::string actualType = type_;
+  
+  // If no type was stored, try to get it from the init expression
+  if (actualType.empty() && init_) {
+    actualType = init_->getType();
+  }
+  
+  // Last resort: default to uint
+  if (actualType.empty()) {
+    actualType = "uint";
+  }
+  
   return actualType + " " + name_ + " = " + (init_ ? init_->toString() : "0") + ";";
 }
 
@@ -3781,12 +3733,12 @@ MiniHLSLInterpreter::generateTestOrderings(uint32_t threadCount,
 }
 
 // Helper function implementations
-std::unique_ptr<Expression> makeLiteral(Value v) {
-  return std::make_unique<LiteralExpr>(v);
+std::unique_ptr<Expression> makeLiteral(Value v, const std::string& type = "") {
+  return std::make_unique<LiteralExpr>(v, type);
 }
 
-std::unique_ptr<Expression> makeVariable(const std::string &name) {
-  return std::make_unique<VariableExpr>(name);
+std::unique_ptr<Expression> makeVariable(const std::string &name, const std::string& type = "") {
+  return std::make_unique<VariableExpr>(name, type);
 }
 
 std::unique_ptr<Expression> makeLaneIndex() {
@@ -4561,24 +4513,29 @@ MiniHLSLInterpreter::convertExpression(const clang::Expr *expr,
   if (!expr)
     return nullptr;
 
+  // Extract type information from the expression
+  std::string exprType = expr->getType().getAsString();
+  
   std::cout << "Converting expression: " << expr->getStmtClassName()
-            << std::endl;
+            << " of type: " << exprType << std::endl;
 
   // Handle different expression types
   if (auto binOp = clang::dyn_cast<clang::BinaryOperator>(expr)) {
-    return convertBinaryExpression(binOp, context);
+    auto result = convertBinaryExpression(binOp, context);
+    if (result) result->setType(exprType);
+    return result;
   } else if (auto declRef = clang::dyn_cast<clang::DeclRefExpr>(expr)) {
     std::string varName = declRef->getDecl()->getName().str();
-    return makeVariable(varName);
+    return makeVariable(varName, exprType);
   } else if (auto intLit = clang::dyn_cast<clang::IntegerLiteral>(expr)) {
     int64_t value = intLit->getValue().getSExtValue();
-    return makeLiteral(Value(static_cast<int>(value)));
+    return makeLiteral(Value(static_cast<int>(value)), exprType);
   } else if (auto floatLit = clang::dyn_cast<clang::FloatingLiteral>(expr)) {
     double value = floatLit->getValueAsApproximateDouble();
-    return makeLiteral(Value(static_cast<float>(value)));
+    return makeLiteral(Value(static_cast<float>(value)), exprType);
   } else if (auto boolLit = clang::dyn_cast<clang::CXXBoolLiteralExpr>(expr)) {
     bool value = boolLit->getValue();
-    return makeLiteral(Value(value));
+    return makeLiteral(Value(value), exprType);
   } else if (auto parenExpr = clang::dyn_cast<clang::ParenExpr>(expr)) {
     return convertExpression(parenExpr->getSubExpr(), context);
   } else if (auto implicitCast =
@@ -4586,13 +4543,21 @@ MiniHLSLInterpreter::convertExpression(const clang::Expr *expr,
     return convertExpression(implicitCast->getSubExpr(), context);
   } else if (auto operatorCall =
                  clang::dyn_cast<clang::CXXOperatorCallExpr>(expr)) {
-    return convertOperatorCall(operatorCall, context);
+    auto result = convertOperatorCall(operatorCall, context);
+    if (result) result->setType(exprType);
+    return result;
   } else if (auto callExpr = clang::dyn_cast<clang::CallExpr>(expr)) {
-    return convertCallExpressionToExpression(callExpr, context);
+    auto result = convertCallExpressionToExpression(callExpr, context);
+    if (result) result->setType(exprType);
+    return result;
   } else if (auto condOp = clang::dyn_cast<clang::ConditionalOperator>(expr)) {
-    return convertConditionalOperator(condOp, context);
+    auto result = convertConditionalOperator(condOp, context);
+    if (result) result->setType(exprType);
+    return result;
   } else if (auto unaryOp = clang::dyn_cast<clang::UnaryOperator>(expr)) {
-    return convertUnaryExpression(unaryOp, context);
+    auto result = convertUnaryExpression(unaryOp, context);
+    if (result) result->setType(exprType);
+    return result;
   } else if (auto vecElem = clang::dyn_cast<clang::HLSLVectorElementExpr>(expr)) {
     // Handle vector element access like tid.x, tid.y, tid.z
     // For now, we'll map tid.x to thread index (lane index for 1D dispatch)
@@ -4605,10 +4570,10 @@ MiniHLSLInterpreter::convertExpression(const clang::Expr *expr,
         std::string accessor = vecElem->getAccessor().getName().str();
         if (accessor == "x") {
           // Return the thread index expression which maps to lane index
-          return std::make_unique<ThreadIndexExpr>();
+          return std::make_unique<ThreadIndexExpr>(exprType);
         } else if (accessor == "y" || accessor == "z") {
           // For y and z components in 1D dispatch, return 0
-          return makeLiteral(Value(0));
+          return makeLiteral(Value(0), exprType);
         }
       }
     }
@@ -4893,7 +4858,7 @@ std::unique_ptr<Expression> MiniHLSLInterpreter::convertOperatorCall(
 ConditionalExpr::ConditionalExpr(std::unique_ptr<Expression> condition,
                                  std::unique_ptr<Expression> trueExpr,
                                  std::unique_ptr<Expression> falseExpr)
-    : condition_(std::move(condition)), trueExpr_(std::move(trueExpr)),
+    : Expression(""), condition_(std::move(condition)), trueExpr_(std::move(trueExpr)),
       falseExpr_(std::move(falseExpr)) {}
 
 bool ConditionalExpr::isDeterministic() const {

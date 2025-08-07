@@ -59,12 +59,12 @@ const ExecutionTrace::WaveOpRecord* findWaveOpRecord(
 // Extract variable name that stores wave op result
 std::string extractTargetVariable(const interpreter::Statement* stmt) {
   if (auto assignStmt = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
-    // We need getter for varName_
+    //TODO: We need getter for varName_
     return "";
   }
   
   if (auto varDeclStmt = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
-    // We need getter for name_
+    // TODO: We need getter for name_
     return "";
   }
   

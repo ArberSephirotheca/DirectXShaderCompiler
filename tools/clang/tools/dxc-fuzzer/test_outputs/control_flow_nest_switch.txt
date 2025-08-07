@@ -16,33 +16,33 @@ Found numthreads attribute: [4, 1, 1]
 Converting compound statement with 5 child statements
 Converting statement: DeclStmt
 Converting declaration statement
-Declaring variable: laneId
-Converting expression: CallExpr
+Declaring variable: laneId of type: uint
+Converting expression: CallExpr of type: unsigned int
 Converting function call to expression: WaveGetLaneIndex
 Converting statement: DeclStmt
 Converting declaration statement
-Declaring variable: result
-Converting expression: ImplicitCastExpr
-Converting expression: IntegerLiteral
+Declaring variable: result of type: uint
+Converting expression: ImplicitCastExpr of type: uint
+Converting expression: IntegerLiteral of type: literal int
 Converting statement: DeclStmt
 Converting declaration statement
-Declaring variable: i
-Converting expression: ImplicitCastExpr
-Converting expression: IntegerLiteral
+Declaring variable: i of type: int
+Converting expression: ImplicitCastExpr of type: int
+Converting expression: IntegerLiteral of type: literal int
 Converting statement: SwitchStmt
 Converting switch statement
-Converting expression: ImplicitCastExpr
-Converting expression: DeclRefExpr
+Converting expression: ImplicitCastExpr of type: uint
+Converting expression: DeclRefExpr of type: uint
 DEBUG: Switch parsing - processing AST node: CaseStmt
 DEBUG: Switch parsing - LHS type: ImplicitCastExpr
 DEBUG: Switch parsing - found case 0
 Converting statement: CompoundAssignOperator
 Converting compound assignment operator: +=
-Converting expression: DeclRefExpr
-Converting expression: ImplicitCastExpr
-Converting expression: CallExpr
+Converting expression: DeclRefExpr of type: uint
+Converting expression: ImplicitCastExpr of type: uint
+Converting expression: CallExpr of type: literal int
 Converting function call to expression: WaveActiveSum
-Converting expression: IntegerLiteral
+Converting expression: IntegerLiteral of type: literal int
 DEBUG: Creating AssignStmt for compound assignment: result = (result + WaveActiveSum(0))
 DEBUG: Created statement type: AssignStmt with toString: result = (result + WaveActiveSum(0));
 DEBUG: Switch parsing - processing AST node: CaseStmt
@@ -51,11 +51,11 @@ DEBUG: Switch parsing - LHS type: ImplicitCastExpr
 DEBUG: Switch parsing - found case 1
 Converting statement: CompoundAssignOperator
 Converting compound assignment operator: +=
-Converting expression: DeclRefExpr
-Converting expression: ImplicitCastExpr
-Converting expression: CallExpr
+Converting expression: DeclRefExpr of type: uint
+Converting expression: ImplicitCastExpr of type: uint
+Converting expression: CallExpr of type: literal int
 Converting function call to expression: WaveActiveSum
-Converting expression: IntegerLiteral
+Converting expression: IntegerLiteral of type: literal int
 DEBUG: Creating AssignStmt for compound assignment: result = (result + WaveActiveSum(1))
 DEBUG: Created statement type: AssignStmt with toString: result = (result + WaveActiveSum(1));
 DEBUG: Switch parsing - processing AST node: CaseStmt
@@ -67,11 +67,11 @@ DEBUG: SwitchStmt::addCase - adding case 2
 DEBUG: Switch parsing - found nested case 3
 Converting statement: CompoundAssignOperator
 Converting compound assignment operator: +=
-Converting expression: DeclRefExpr
-Converting expression: ImplicitCastExpr
-Converting expression: CallExpr
+Converting expression: DeclRefExpr of type: uint
+Converting expression: ImplicitCastExpr of type: uint
+Converting expression: CallExpr of type: literal int
 Converting function call to expression: WaveActiveSum
-Converting expression: IntegerLiteral
+Converting expression: IntegerLiteral of type: literal int
 DEBUG: Creating AssignStmt for compound assignment: result = (result + WaveActiveSum(3))
 DEBUG: Created statement type: AssignStmt with toString: result = (result + WaveActiveSum(3));
 DEBUG: Switch parsing - processing AST node: DefaultStmt
@@ -79,21 +79,21 @@ DEBUG: Switch parsing - found default case
 DEBUG: SwitchStmt::addCase - adding case 3
 Converting statement: CompoundAssignOperator
 Converting compound assignment operator: +=
-Converting expression: DeclRefExpr
-Converting expression: ImplicitCastExpr
-Converting expression: CallExpr
+Converting expression: DeclRefExpr of type: uint
+Converting expression: ImplicitCastExpr of type: uint
+Converting expression: CallExpr of type: literal int
 Converting function call to expression: WaveActiveSum
-Converting expression: IntegerLiteral
+Converting expression: IntegerLiteral of type: literal int
 DEBUG: Creating AssignStmt for compound assignment: result = (result + WaveActiveSum(10))
 DEBUG: Created statement type: AssignStmt with toString: result = (result + WaveActiveSum(10));
 DEBUG: SwitchStmt::addDefault - adding default case
 Converting statement: DeclStmt
 Converting declaration statement
-Declaring variable: totalSum
-Converting expression: CallExpr
+Declaring variable: totalSum of type: uint
+Converting expression: CallExpr of type: unsigned int
 Converting function call to expression: WaveActiveSum
-Converting expression: ImplicitCastExpr
-Converting expression: DeclRefExpr
+Converting expression: ImplicitCastExpr of type: uint
+Converting expression: DeclRefExpr of type: uint
 Converted AST to interpreter program with 5 statements
 Thread configuration: [4, 1, 1]
 
@@ -108,7 +108,7 @@ DEBUG: Lane 2 assigned to block 1
 DEBUG: markLaneArrived - Lane 3 transitioned from Unknown to Participating in block 1
 DEBUG: Lane 3 assigned to block 1
 DEBUG: SwitchStmt - Lane 0 starting Result-based switch statement
-DEBUG: SwitchStmt - Lane 0 starting fresh execution (pushed to stack depth=1, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 0 starting fresh execution (pushed to stack depth=1, this=0x504000004150)
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 2
@@ -160,7 +160,7 @@ DEBUG: Removed lane 0 from block 1
 DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (0), 0 waiting lanes, 3 unknown lanes (1 2 3)
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 2
-DEBUG: SwitchStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 0 evaluating switch condition (Result-based)
 DEBUG: SwitchStmt - Lane 0 evaluating condition for first time
 DEBUG: VariableExpr - Lane 0 evaluating variable 'laneId' (Result-based)
@@ -181,7 +181,7 @@ DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 2
 DEBUG: removeThreadFromAllSets - block 2 had 0 participating lanes before removal
 DEBUG: removeThreadFromAllSets - block 2 has 0 participating lanes after removal
 DEBUG: SwitchStmt - Lane 1 starting Result-based switch statement
-DEBUG: SwitchStmt - Lane 1 starting fresh execution (pushed to stack depth=1, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 1 starting fresh execution (pushed to stack depth=1, this=0x504000004150)
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {1 2 3 } (3 lanes)
 DEBUG: Found existing block 2 - not modifying unknown lanes
@@ -212,7 +212,7 @@ DEBUG: Removed lane 1 from block 1
 DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (1), 0 waiting lanes, 2 unknown lanes (2 3)
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 2
-DEBUG: SwitchStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 1 evaluating switch condition (Result-based)
 DEBUG: SwitchStmt - Lane 1 evaluating condition for first time
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
@@ -238,7 +238,7 @@ DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 2
 DEBUG: removeThreadFromAllSets - block 2 had 0 participating lanes before removal
 DEBUG: removeThreadFromAllSets - block 2 has 0 participating lanes after removal
 DEBUG: SwitchStmt - Lane 2 starting Result-based switch statement
-DEBUG: SwitchStmt - Lane 2 starting fresh execution (pushed to stack depth=1, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 2 starting fresh execution (pushed to stack depth=1, this=0x504000004150)
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {2 3 } (2 lanes)
 DEBUG: Found existing block 2 - not modifying unknown lanes
@@ -269,7 +269,7 @@ DEBUG: Removed lane 2 from block 1
 DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (2), 0 waiting lanes, 1 unknown lanes (3)
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 2
-DEBUG: SwitchStmt - Lane 2 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 2 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 2 evaluating switch condition (Result-based)
 DEBUG: SwitchStmt - Lane 2 evaluating condition for first time
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
@@ -300,7 +300,7 @@ DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 2
 DEBUG: removeThreadFromAllSets - block 2 had 0 participating lanes before removal
 DEBUG: removeThreadFromAllSets - block 2 has 0 participating lanes after removal
 DEBUG: SwitchStmt - Lane 3 starting Result-based switch statement
-DEBUG: SwitchStmt - Lane 3 starting fresh execution (pushed to stack depth=1, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 3 starting fresh execution (pushed to stack depth=1, this=0x504000004150)
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {3 } (1 lanes)
 DEBUG: Found existing block 2 - not modifying unknown lanes
@@ -331,7 +331,7 @@ DEBUG: Removed lane 3 from block 1
 DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 2
-DEBUG: SwitchStmt - Lane 3 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 3 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 3 evaluating switch condition (Result-based)
 DEBUG: SwitchStmt - Lane 3 evaluating condition for first time
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
@@ -368,12 +368,12 @@ DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 2
 DEBUG: removeThreadFromAllSets - block 2 had 0 participating lanes before removal
 DEBUG: removeThreadFromAllSets - block 2 has 0 participating lanes after removal
 DEBUG: SwitchStmt - Lane 0 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 0 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 0 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 0 executing statement 0 in case 0 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 0 at 0x50f000000040)
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 3, instruction key=(0x503000001a50,3)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 3, instruction key=(0x506000001880,3)
 DEBUG: markLaneWaitingForWave - Lane 0 wave 0 in block 3
 DEBUG: markLaneWaitingForWave - Successfully set lane 0 to WaitingForWave in block 3
 DEBUG: WAVE_OP: Lane 0 cannot execute, starting to wait in block 3
@@ -384,12 +384,12 @@ DEBUG: WAVE_OP: After lane 0 started waiting, wave operation can now execute!
 DEBUG: WAVE_WAIT: Lane 0 received WaveOperationWait error, state=2
 DEBUG: WAVE_OP: Storing collective result for lanes: 0  (phase: 2)
 DEBUG: SwitchStmt - Lane 1 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 1 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 1 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 1 executing statement 0 in case 1 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 1 at 0x50f000000130)
-DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 4, instruction key=(0x503000001b40,4)
+DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 4, instruction key=(0x506000001940,4)
 DEBUG: markLaneWaitingForWave - Lane 1 wave 0 in block 4
 DEBUG: markLaneWaitingForWave - Successfully set lane 1 to WaitingForWave in block 4
 DEBUG: WAVE_OP: Lane 1 cannot execute, starting to wait in block 4
@@ -403,8 +403,8 @@ DEBUG: onLaneFinishWaveOp - Current status in block 3: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 0 to Participating in block 3
 DEBUG: isAllParticipantsKnown - Block 4 wave 0 has 1 unknown lanes: 0  - These lanes need to be resolved to Participating or Left
 DEBUG: SwitchStmt - Lane 2 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 2 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 2 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 2 completed case 2, falling through to next
 DEBUG: SwitchStmt - Lane 2 moving from case block 5 to case block 6 (fallthrough)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 6
@@ -421,7 +421,7 @@ DEBUG: removeThreadFromAllSets - block 5 has 0 participating lanes after removal
 DEBUG: SwitchStmt - Lane 2 executing statement 0 in case 3 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 2 at 0x50f000000220)
-DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 6, instruction key=(0x503000001c00,6)
+DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 6, instruction key=(0x506000001a60,6)
 DEBUG: markLaneWaitingForWave - Lane 2 wave 0 in block 6
 DEBUG: markLaneWaitingForWave - Successfully set lane 2 to WaitingForWave in block 6
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 6
@@ -433,12 +433,12 @@ DEBUG: WAVE_WAIT: Lane 2 received WaveOperationWait error, state=2
 DEBUG: isAllParticipantsKnown - Block 4 wave 0 has 1 unknown lanes: 0  - These lanes need to be resolved to Participating or Left
 DEBUG: isAllParticipantsKnown - Block 6 wave 0 has 2 unknown lanes: 0 1  - These lanes need to be resolved to Participating or Left
 DEBUG: SwitchStmt - Lane 3 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 3 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 3 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 3 executing statement 0 in case 3 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 3 at 0x50f000000310)
-DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 6, instruction key=(0x503000001c00,6)
+DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 6, instruction key=(0x506000001a60,6)
 DEBUG: markLaneWaitingForWave - Lane 3 wave 0 in block 6
 DEBUG: markLaneWaitingForWave - Successfully set lane 3 to WaitingForWave in block 6
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 6
@@ -450,12 +450,12 @@ DEBUG: WAVE_WAIT: Lane 3 received WaveOperationWait error, state=2
 DEBUG: isAllParticipantsKnown - Block 4 wave 0 has 1 unknown lanes: 0  - These lanes need to be resolved to Participating or Left
 DEBUG: isAllParticipantsKnown - Block 6 wave 0 has 2 unknown lanes: 0 1  - These lanes need to be resolved to Participating or Left
 DEBUG: SwitchStmt - Lane 0 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 0 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 0 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 0 executing statement 0 in case 0 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 0 at 0x50f000000040)
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 3, instruction key=(0x503000001a50,3)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 3, instruction key=(0x506000001880,3)
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
@@ -475,7 +475,7 @@ DEBUG: removeThreadFromAllSets - block 3 has 0 participating lanes after removal
 DEBUG: SwitchStmt - Lane 0 executing statement 0 in case 1 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 0 at 0x50f000000040)
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 4, instruction key=(0x503000001b40,4)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 4, instruction key=(0x506000001940,4)
 DEBUG: markLaneWaitingForWave - Lane 0 wave 0 in block 4
 DEBUG: markLaneWaitingForWave - Successfully set lane 0 to WaitingForWave in block 4
 DEBUG: WAVE_OP: Lane 0 cannot execute, starting to wait in block 4
@@ -494,12 +494,12 @@ DEBUG: onLaneFinishWaveOp - Current status in block 4: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 1 to Participating in block 4
 DEBUG: isAllParticipantsKnown - Block 6 wave 0 has 2 unknown lanes: 0 1  - These lanes need to be resolved to Participating or Left
 DEBUG: SwitchStmt - Lane 1 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 1 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 1 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 1 executing statement 0 in case 1 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 1 at 0x50f000000130)
-DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 4, instruction key=(0x503000001b40,4)
+DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 4, instruction key=(0x506000001940,4)
 DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 2 (phase: Executed)
 DEBUG: AssignStmt - Lane 1 assigned value 2 to variable 'result'
@@ -532,7 +532,7 @@ DEBUG: removeThreadFromAllSets - block 5 has 0 participating lanes after removal
 DEBUG: SwitchStmt - Lane 1 executing statement 0 in case 3 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 2 (lane 1 at 0x50f000000130)
-DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 6, instruction key=(0x503000001c00,6)
+DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 6, instruction key=(0x506000001a60,6)
 DEBUG: markLaneWaitingForWave - Lane 1 wave 0 in block 6
 DEBUG: markLaneWaitingForWave - Successfully set lane 1 to WaitingForWave in block 6
 DEBUG: WAVE_OP: Lane 1 cannot execute, starting to wait in block 6
@@ -546,12 +546,12 @@ DEBUG: onLaneFinishWaveOp - Current status in block 6: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 1 to Participating in block 6
 DEBUG: isAllParticipantsKnown - Block 6 wave 0 has 1 unknown lanes: 0  - These lanes need to be resolved to Participating or Left
 DEBUG: SwitchStmt - Lane 0 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 0 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 0 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 0 executing statement 0 in case 1 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 0 at 0x50f000000040)
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 4, instruction key=(0x503000001b40,4)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 4, instruction key=(0x506000001940,4)
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 2 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 2 to variable 'result'
@@ -584,7 +584,7 @@ DEBUG: removeThreadFromAllSets - block 5 has 0 participating lanes after removal
 DEBUG: SwitchStmt - Lane 0 executing statement 0 in case 3 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 2 (lane 0 at 0x50f000000040)
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 6, instruction key=(0x503000001c00,6)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 6, instruction key=(0x506000001a60,6)
 DEBUG: markLaneWaitingForWave - Lane 0 wave 0 in block 6
 DEBUG: markLaneWaitingForWave - Successfully set lane 0 to WaitingForWave in block 6
 DEBUG: WAVE_OP: Lane 0 cannot execute, starting to wait in block 6
@@ -596,12 +596,12 @@ DEBUG: WAVE_WAIT: Lane 0 received WaveOperationWait error, state=2
 DEBUG: WAVE_OP: Updated participants before execution to include all current block lanes: 0 1 2 3 
 DEBUG: WAVE_OP: Storing collective result for lanes: 0 1 2 3  (phase: 2)
 DEBUG: SwitchStmt - Lane 1 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 1 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 1 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 1 executing statement 0 in case 3 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 2 (lane 1 at 0x50f000000130)
-DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 6, instruction key=(0x503000001c00,6)
+DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 6, instruction key=(0x506000001a60,6)
 DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 12 (phase: Executed)
 DEBUG: AssignStmt - Lane 1 assigned value 14 to variable 'result'
@@ -621,7 +621,7 @@ DEBUG: removeThreadFromAllSets - block 6 has 3 participating lanes after removal
 DEBUG: SwitchStmt - Lane 1 executing statement 0 in case default (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 14 (lane 1 at 0x50f000000130)
-DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 7, instruction key=(0x503000001cc0,7)
+DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 7, instruction key=(0x506000001b20,7)
 DEBUG: markLaneWaitingForWave - Lane 1 wave 0 in block 7
 DEBUG: markLaneWaitingForWave - Successfully set lane 1 to WaitingForWave in block 7
 DEBUG: WAVE_OP: Lane 1 cannot execute, starting to wait in block 7
@@ -644,12 +644,12 @@ DEBUG: onLaneFinishWaveOp - Current status in block 6: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 3 to Participating in block 6
 DEBUG: isAllParticipantsKnown - Block 7 wave 0 has 3 unknown lanes: 0 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: SwitchStmt - Lane 2 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 2 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 2 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 2 executing statement 0 in case 3 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 2 at 0x50f000000220)
-DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 6, instruction key=(0x503000001c00,6)
+DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 6, instruction key=(0x506000001a60,6)
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 12 (phase: Executed)
 DEBUG: AssignStmt - Lane 2 assigned value 12 to variable 'result'
@@ -669,7 +669,7 @@ DEBUG: removeThreadFromAllSets - block 6 has 2 participating lanes after removal
 DEBUG: SwitchStmt - Lane 2 executing statement 0 in case default (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 12 (lane 2 at 0x50f000000220)
-DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 7, instruction key=(0x503000001cc0,7)
+DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 7, instruction key=(0x506000001b20,7)
 DEBUG: markLaneWaitingForWave - Lane 2 wave 0 in block 7
 DEBUG: markLaneWaitingForWave - Successfully set lane 2 to WaitingForWave in block 7
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 7
@@ -683,12 +683,12 @@ DEBUG: onLaneFinishWaveOp - Current status in block 7: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 2 to Participating in block 7
 DEBUG: isAllParticipantsKnown - Block 7 wave 0 has 2 unknown lanes: 0 3  - These lanes need to be resolved to Participating or Left
 DEBUG: SwitchStmt - Lane 3 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 3 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 3 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 3 executing statement 0 in case 3 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 3 at 0x50f000000310)
-DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 6, instruction key=(0x503000001c00,6)
+DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 6, instruction key=(0x506000001a60,6)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 12 (phase: Executed)
 DEBUG: AssignStmt - Lane 3 assigned value 12 to variable 'result'
@@ -708,7 +708,7 @@ DEBUG: removeThreadFromAllSets - block 6 has 1 participating lanes after removal
 DEBUG: SwitchStmt - Lane 3 executing statement 0 in case default (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 12 (lane 3 at 0x50f000000310)
-DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 7, instruction key=(0x503000001cc0,7)
+DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 7, instruction key=(0x506000001b20,7)
 DEBUG: markLaneWaitingForWave - Lane 3 wave 0 in block 7
 DEBUG: markLaneWaitingForWave - Successfully set lane 3 to WaitingForWave in block 7
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 7
@@ -722,12 +722,12 @@ DEBUG: onLaneFinishWaveOp - Current status in block 7: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 3 to Participating in block 7
 DEBUG: isAllParticipantsKnown - Block 7 wave 0 has 1 unknown lanes: 0  - These lanes need to be resolved to Participating or Left
 DEBUG: SwitchStmt - Lane 0 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 0 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 0 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 0 executing statement 0 in case 3 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 2 (lane 0 at 0x50f000000040)
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 6, instruction key=(0x503000001c00,6)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 6, instruction key=(0x506000001a60,6)
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 12 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 14 to variable 'result'
@@ -747,7 +747,7 @@ DEBUG: removeThreadFromAllSets - block 6 has 0 participating lanes after removal
 DEBUG: SwitchStmt - Lane 0 executing statement 0 in case default (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 14 (lane 0 at 0x50f000000040)
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 7, instruction key=(0x503000001cc0,7)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 7, instruction key=(0x506000001b20,7)
 DEBUG: markLaneWaitingForWave - Lane 0 wave 0 in block 7
 DEBUG: markLaneWaitingForWave - Successfully set lane 0 to WaitingForWave in block 7
 DEBUG: WAVE_OP: Lane 0 cannot execute, starting to wait in block 7
@@ -759,12 +759,12 @@ DEBUG: WAVE_WAIT: Lane 0 received WaveOperationWait error, state=2
 DEBUG: WAVE_OP: Updated participants before execution to include all current block lanes: 0 1 2 3 
 DEBUG: WAVE_OP: Storing collective result for lanes: 0 1 2 3  (phase: 2)
 DEBUG: SwitchStmt - Lane 1 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 1 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 1 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 1 executing statement 0 in case default (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 14 (lane 1 at 0x50f000000130)
-DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 7, instruction key=(0x503000001cc0,7)
+DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 7, instruction key=(0x506000001b20,7)
 DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 40 (phase: Executed)
 DEBUG: AssignStmt - Lane 1 assigned value 54 to variable 'result'
@@ -774,44 +774,44 @@ DEBUG: onLaneFinishWaveOp - Lane 0 finishing wave op in block 7
 DEBUG: onLaneFinishWaveOp - Current status in block 7: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 0 to Participating in block 7
 DEBUG: SwitchStmt - Lane 2 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 2 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 2 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 2 executing statement 0 in case default (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 12 (lane 2 at 0x50f000000220)
-DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 7, instruction key=(0x503000001cc0,7)
+DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 7, instruction key=(0x506000001b20,7)
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 40 (phase: Executed)
 DEBUG: AssignStmt - Lane 2 assigned value 52 to variable 'result'
 DEBUG: SwitchStmt - Lane 2 completed case default, falling through to next
 DEBUG: SwitchStmt - Lane 2 completed all cases, entering reconvergence
 DEBUG: SwitchStmt - Lane 3 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 3 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 3 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 3 executing statement 0 in case default (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 12 (lane 3 at 0x50f000000310)
-DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 7, instruction key=(0x503000001cc0,7)
+DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 7, instruction key=(0x506000001b20,7)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 40 (phase: Executed)
 DEBUG: AssignStmt - Lane 3 assigned value 52 to variable 'result'
 DEBUG: SwitchStmt - Lane 3 completed case default, falling through to next
 DEBUG: SwitchStmt - Lane 3 completed all cases, entering reconvergence
 DEBUG: SwitchStmt - Lane 0 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 0 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 0 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 0 executing statement 0 in case default (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 14 (lane 0 at 0x50f000000040)
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 7, instruction key=(0x503000001cc0,7)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 7, instruction key=(0x506000001b20,7)
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 40 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 54 to variable 'result'
 DEBUG: SwitchStmt - Lane 0 completed case default, falling through to next
 DEBUG: SwitchStmt - Lane 0 completed all cases, entering reconvergence
 DEBUG: SwitchStmt - Lane 1 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 1 in phase Reconverging (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 1 in phase Reconverging (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 1 reconverging from switch
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 8
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 8
@@ -822,8 +822,8 @@ DEBUG: assignLaneToBlock - AFTER: block 8 has 1 participating lanes (1), 0 waiti
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 8
 DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 8
 DEBUG: SwitchStmt - Lane 2 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 2 in phase Reconverging (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 2 in phase Reconverging (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 2 reconverging from switch
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 8
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 8
@@ -834,8 +834,8 @@ DEBUG: assignLaneToBlock - AFTER: block 8 has 2 participating lanes (1 2), 0 wai
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 8
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 8
 DEBUG: SwitchStmt - Lane 3 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 3 in phase Reconverging (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 3 in phase Reconverging (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 3 reconverging from switch
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 8
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 8
@@ -846,8 +846,8 @@ DEBUG: assignLaneToBlock - AFTER: block 8 has 3 participating lanes (1 2 3), 0 w
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 8
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 8
 DEBUG: SwitchStmt - Lane 0 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 0 in phase Reconverging (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 0 in phase Reconverging (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 0 reconverging from switch
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 8
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 8
@@ -857,7 +857,7 @@ DEBUG: Removed lane 0 from block 7
 DEBUG: assignLaneToBlock - AFTER: block 8 has 4 participating lanes (0 1 2 3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 8
 DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 8
-DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 8, instruction key=(0x503000001d80,8)
+DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 8, instruction key=(0x506000001be0,8)
 DEBUG: markLaneWaitingForWave - Lane 1 wave 0 in block 8
 DEBUG: markLaneWaitingForWave - Successfully set lane 1 to WaitingForWave in block 8
 DEBUG: WAVE_OP: Lane 1 cannot execute, starting to wait in block 8
@@ -865,7 +865,7 @@ DEBUG: Block 8 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 1 in block 8: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=0, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: WAVE_WAIT: Lane 1 received WaveOperationWait error, state=2
-DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 8, instruction key=(0x503000001d80,8)
+DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 8, instruction key=(0x506000001be0,8)
 DEBUG: markLaneWaitingForWave - Lane 2 wave 0 in block 8
 DEBUG: markLaneWaitingForWave - Successfully set lane 2 to WaitingForWave in block 8
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 8
@@ -873,7 +873,7 @@ DEBUG: Block 8 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 2 in block 8: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=0, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: WAVE_WAIT: Lane 2 received WaveOperationWait error, state=2
-DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 8, instruction key=(0x503000001d80,8)
+DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 8, instruction key=(0x506000001be0,8)
 DEBUG: markLaneWaitingForWave - Lane 3 wave 0 in block 8
 DEBUG: markLaneWaitingForWave - Successfully set lane 3 to WaitingForWave in block 8
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 8
@@ -881,7 +881,7 @@ DEBUG: Block 8 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 3 in block 8: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=0, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: WAVE_WAIT: Lane 3 received WaveOperationWait error, state=2
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 8, instruction key=(0x503000001d80,8)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 8, instruction key=(0x506000001be0,8)
 DEBUG: markLaneWaitingForWave - Lane 0 wave 0 in block 8
 DEBUG: markLaneWaitingForWave - Successfully set lane 0 to WaitingForWave in block 8
 DEBUG: WAVE_OP: Lane 0 cannot execute, starting to wait in block 8
@@ -911,16 +911,16 @@ DEBUG: onLaneFinishWaveOp - Updated lane 2 to Participating in block 8
 DEBUG: onLaneFinishWaveOp - Lane 3 finishing wave op in block 8
 DEBUG: onLaneFinishWaveOp - Current status in block 8: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 3 to Participating in block 8
-DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 8, instruction key=(0x503000001d80,8)
+DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 8, instruction key=(0x506000001be0,8)
 DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 212 (phase: Executed)
-DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 8, instruction key=(0x503000001d80,8)
+DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 8, instruction key=(0x506000001be0,8)
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 212 (phase: Executed)
-DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 8, instruction key=(0x503000001d80,8)
+DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 8, instruction key=(0x506000001be0,8)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 212 (phase: Executed)
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 8, instruction key=(0x503000001d80,8)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 8, instruction key=(0x506000001be0,8)
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 212 (phase: Consumed)
 lane 1 have completed execution
@@ -946,7 +946,7 @@ DEBUG: Lane 2 assigned to block 1
 DEBUG: markLaneArrived - Lane 3 transitioned from Unknown to Participating in block 1
 DEBUG: Lane 3 assigned to block 1
 DEBUG: SwitchStmt - Lane 0 starting Result-based switch statement
-DEBUG: SwitchStmt - Lane 0 starting fresh execution (pushed to stack depth=1, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 0 starting fresh execution (pushed to stack depth=1, this=0x504000004150)
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
 DEBUG: addUnknownLane - adding lane 0 to new block 2
@@ -998,7 +998,7 @@ DEBUG: Removed lane 0 from block 1
 DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (0), 0 waiting lanes, 3 unknown lanes (1 2 3)
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 2
-DEBUG: SwitchStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 0 evaluating switch condition (Result-based)
 DEBUG: SwitchStmt - Lane 0 evaluating condition for first time
 DEBUG: VariableExpr - Lane 0 evaluating variable 'laneId' (Result-based)
@@ -1019,7 +1019,7 @@ DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 2
 DEBUG: removeThreadFromAllSets - block 2 had 0 participating lanes before removal
 DEBUG: removeThreadFromAllSets - block 2 has 0 participating lanes after removal
 DEBUG: SwitchStmt - Lane 1 starting Result-based switch statement
-DEBUG: SwitchStmt - Lane 1 starting fresh execution (pushed to stack depth=1, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 1 starting fresh execution (pushed to stack depth=1, this=0x504000004150)
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {1 2 3 } (3 lanes)
 DEBUG: Found existing block 2 - not modifying unknown lanes
@@ -1050,7 +1050,7 @@ DEBUG: Removed lane 1 from block 1
 DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (1), 0 waiting lanes, 2 unknown lanes (2 3)
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 2
-DEBUG: SwitchStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 1 evaluating switch condition (Result-based)
 DEBUG: SwitchStmt - Lane 1 evaluating condition for first time
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
@@ -1076,7 +1076,7 @@ DEBUG: removeThreadFromAllSets - removing lane 1 from all sets of block 2
 DEBUG: removeThreadFromAllSets - block 2 had 0 participating lanes before removal
 DEBUG: removeThreadFromAllSets - block 2 has 0 participating lanes after removal
 DEBUG: SwitchStmt - Lane 2 starting Result-based switch statement
-DEBUG: SwitchStmt - Lane 2 starting fresh execution (pushed to stack depth=1, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 2 starting fresh execution (pushed to stack depth=1, this=0x504000004150)
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {2 3 } (2 lanes)
 DEBUG: Found existing block 2 - not modifying unknown lanes
@@ -1107,7 +1107,7 @@ DEBUG: Removed lane 2 from block 1
 DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (2), 0 waiting lanes, 1 unknown lanes (3)
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 2
-DEBUG: SwitchStmt - Lane 2 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 2 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 2 evaluating switch condition (Result-based)
 DEBUG: SwitchStmt - Lane 2 evaluating condition for first time
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
@@ -1138,7 +1138,7 @@ DEBUG: removeThreadFromAllSets - removing lane 2 from all sets of block 2
 DEBUG: removeThreadFromAllSets - block 2 had 0 participating lanes before removal
 DEBUG: removeThreadFromAllSets - block 2 has 0 participating lanes after removal
 DEBUG: SwitchStmt - Lane 3 starting Result-based switch statement
-DEBUG: SwitchStmt - Lane 3 starting fresh execution (pushed to stack depth=1, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 3 starting fresh execution (pushed to stack depth=1, this=0x504000004150)
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {3 } (1 lanes)
 DEBUG: Found existing block 2 - not modifying unknown lanes
@@ -1169,7 +1169,7 @@ DEBUG: Removed lane 3 from block 1
 DEBUG: assignLaneToBlock - AFTER: block 2 has 1 participating lanes (3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 2
-DEBUG: SwitchStmt - Lane 3 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 3 in phase EvaluatingCondition (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 3 evaluating switch condition (Result-based)
 DEBUG: SwitchStmt - Lane 3 evaluating condition for first time
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
@@ -1206,12 +1206,12 @@ DEBUG: removeThreadFromAllSets - removing lane 3 from all sets of block 2
 DEBUG: removeThreadFromAllSets - block 2 had 0 participating lanes before removal
 DEBUG: removeThreadFromAllSets - block 2 has 0 participating lanes after removal
 DEBUG: SwitchStmt - Lane 0 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 0 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 0 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 0 executing statement 0 in case 0 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 0 at 0x50f000000400)
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 3, instruction key=(0x503000001a50,3)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 3, instruction key=(0x506000001880,3)
 DEBUG: markLaneWaitingForWave - Lane 0 wave 0 in block 3
 DEBUG: markLaneWaitingForWave - Successfully set lane 0 to WaitingForWave in block 3
 DEBUG: WAVE_OP: Lane 0 cannot execute, starting to wait in block 3
@@ -1222,12 +1222,12 @@ DEBUG: WAVE_OP: After lane 0 started waiting, wave operation can now execute!
 DEBUG: WAVE_WAIT: Lane 0 received WaveOperationWait error, state=2
 DEBUG: WAVE_OP: Storing collective result for lanes: 0  (phase: 2)
 DEBUG: SwitchStmt - Lane 1 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 1 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 1 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 1 executing statement 0 in case 1 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 1 at 0x50f0000004f0)
-DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 4, instruction key=(0x503000001b40,4)
+DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 4, instruction key=(0x506000001940,4)
 DEBUG: markLaneWaitingForWave - Lane 1 wave 0 in block 4
 DEBUG: markLaneWaitingForWave - Successfully set lane 1 to WaitingForWave in block 4
 DEBUG: WAVE_OP: Lane 1 cannot execute, starting to wait in block 4
@@ -1241,8 +1241,8 @@ DEBUG: onLaneFinishWaveOp - Current status in block 3: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 0 to Participating in block 3
 DEBUG: isAllParticipantsKnown - Block 4 wave 0 has 1 unknown lanes: 0  - These lanes need to be resolved to Participating or Left
 DEBUG: SwitchStmt - Lane 2 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 2 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 2 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 2 completed case 2, falling through to next
 DEBUG: SwitchStmt - Lane 2 moving from case block 5 to case block 6 (fallthrough)
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 6
@@ -1259,7 +1259,7 @@ DEBUG: removeThreadFromAllSets - block 5 has 0 participating lanes after removal
 DEBUG: SwitchStmt - Lane 2 executing statement 0 in case 3 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 2 at 0x50f0000005e0)
-DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 6, instruction key=(0x503000001c00,6)
+DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 6, instruction key=(0x506000001a60,6)
 DEBUG: markLaneWaitingForWave - Lane 2 wave 0 in block 6
 DEBUG: markLaneWaitingForWave - Successfully set lane 2 to WaitingForWave in block 6
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 6
@@ -1271,12 +1271,12 @@ DEBUG: WAVE_WAIT: Lane 2 received WaveOperationWait error, state=2
 DEBUG: isAllParticipantsKnown - Block 4 wave 0 has 1 unknown lanes: 0  - These lanes need to be resolved to Participating or Left
 DEBUG: isAllParticipantsKnown - Block 6 wave 0 has 2 unknown lanes: 0 1  - These lanes need to be resolved to Participating or Left
 DEBUG: SwitchStmt - Lane 3 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 3 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 3 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 3 executing statement 0 in case 3 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 3 at 0x50f0000006d0)
-DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 6, instruction key=(0x503000001c00,6)
+DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 6, instruction key=(0x506000001a60,6)
 DEBUG: markLaneWaitingForWave - Lane 3 wave 0 in block 6
 DEBUG: markLaneWaitingForWave - Successfully set lane 3 to WaitingForWave in block 6
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 6
@@ -1288,12 +1288,12 @@ DEBUG: WAVE_WAIT: Lane 3 received WaveOperationWait error, state=2
 DEBUG: isAllParticipantsKnown - Block 4 wave 0 has 1 unknown lanes: 0  - These lanes need to be resolved to Participating or Left
 DEBUG: isAllParticipantsKnown - Block 6 wave 0 has 2 unknown lanes: 0 1  - These lanes need to be resolved to Participating or Left
 DEBUG: SwitchStmt - Lane 0 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 0 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 0 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 0 executing statement 0 in case 0 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 0 at 0x50f000000400)
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 3, instruction key=(0x503000001a50,3)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 3, instruction key=(0x506000001880,3)
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 0 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 0 to variable 'result'
@@ -1313,7 +1313,7 @@ DEBUG: removeThreadFromAllSets - block 3 has 0 participating lanes after removal
 DEBUG: SwitchStmt - Lane 0 executing statement 0 in case 1 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 0 at 0x50f000000400)
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 4, instruction key=(0x503000001b40,4)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 4, instruction key=(0x506000001940,4)
 DEBUG: markLaneWaitingForWave - Lane 0 wave 0 in block 4
 DEBUG: markLaneWaitingForWave - Successfully set lane 0 to WaitingForWave in block 4
 DEBUG: WAVE_OP: Lane 0 cannot execute, starting to wait in block 4
@@ -1332,12 +1332,12 @@ DEBUG: onLaneFinishWaveOp - Current status in block 4: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 1 to Participating in block 4
 DEBUG: isAllParticipantsKnown - Block 6 wave 0 has 2 unknown lanes: 0 1  - These lanes need to be resolved to Participating or Left
 DEBUG: SwitchStmt - Lane 1 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 1 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 1 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 1 executing statement 0 in case 1 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 1 at 0x50f0000004f0)
-DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 4, instruction key=(0x503000001b40,4)
+DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 4, instruction key=(0x506000001940,4)
 DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 2 (phase: Executed)
 DEBUG: AssignStmt - Lane 1 assigned value 2 to variable 'result'
@@ -1370,7 +1370,7 @@ DEBUG: removeThreadFromAllSets - block 5 has 0 participating lanes after removal
 DEBUG: SwitchStmt - Lane 1 executing statement 0 in case 3 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 2 (lane 1 at 0x50f0000004f0)
-DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 6, instruction key=(0x503000001c00,6)
+DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 6, instruction key=(0x506000001a60,6)
 DEBUG: markLaneWaitingForWave - Lane 1 wave 0 in block 6
 DEBUG: markLaneWaitingForWave - Successfully set lane 1 to WaitingForWave in block 6
 DEBUG: WAVE_OP: Lane 1 cannot execute, starting to wait in block 6
@@ -1384,12 +1384,12 @@ DEBUG: onLaneFinishWaveOp - Current status in block 6: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 1 to Participating in block 6
 DEBUG: isAllParticipantsKnown - Block 6 wave 0 has 1 unknown lanes: 0  - These lanes need to be resolved to Participating or Left
 DEBUG: SwitchStmt - Lane 0 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 0 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 0 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 0 executing statement 0 in case 1 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 0 at 0x50f000000400)
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 4, instruction key=(0x503000001b40,4)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 4, instruction key=(0x506000001940,4)
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 2 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 2 to variable 'result'
@@ -1422,7 +1422,7 @@ DEBUG: removeThreadFromAllSets - block 5 has 0 participating lanes after removal
 DEBUG: SwitchStmt - Lane 0 executing statement 0 in case 3 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 2 (lane 0 at 0x50f000000400)
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 6, instruction key=(0x503000001c00,6)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 6, instruction key=(0x506000001a60,6)
 DEBUG: markLaneWaitingForWave - Lane 0 wave 0 in block 6
 DEBUG: markLaneWaitingForWave - Successfully set lane 0 to WaitingForWave in block 6
 DEBUG: WAVE_OP: Lane 0 cannot execute, starting to wait in block 6
@@ -1434,12 +1434,12 @@ DEBUG: WAVE_WAIT: Lane 0 received WaveOperationWait error, state=2
 DEBUG: WAVE_OP: Updated participants before execution to include all current block lanes: 0 1 2 3 
 DEBUG: WAVE_OP: Storing collective result for lanes: 0 1 2 3  (phase: 2)
 DEBUG: SwitchStmt - Lane 1 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 1 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 1 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 1 executing statement 0 in case 3 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 2 (lane 1 at 0x50f0000004f0)
-DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 6, instruction key=(0x503000001c00,6)
+DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 6, instruction key=(0x506000001a60,6)
 DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 12 (phase: Executed)
 DEBUG: AssignStmt - Lane 1 assigned value 14 to variable 'result'
@@ -1459,7 +1459,7 @@ DEBUG: removeThreadFromAllSets - block 6 has 3 participating lanes after removal
 DEBUG: SwitchStmt - Lane 1 executing statement 0 in case default (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 14 (lane 1 at 0x50f0000004f0)
-DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 7, instruction key=(0x503000001cc0,7)
+DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 7, instruction key=(0x506000001b20,7)
 DEBUG: markLaneWaitingForWave - Lane 1 wave 0 in block 7
 DEBUG: markLaneWaitingForWave - Successfully set lane 1 to WaitingForWave in block 7
 DEBUG: WAVE_OP: Lane 1 cannot execute, starting to wait in block 7
@@ -1482,12 +1482,12 @@ DEBUG: onLaneFinishWaveOp - Current status in block 6: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 3 to Participating in block 6
 DEBUG: isAllParticipantsKnown - Block 7 wave 0 has 3 unknown lanes: 0 2 3  - These lanes need to be resolved to Participating or Left
 DEBUG: SwitchStmt - Lane 2 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 2 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 2 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 2 executing statement 0 in case 3 (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 2 at 0x50f0000005e0)
-DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 6, instruction key=(0x503000001c00,6)
+DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 6, instruction key=(0x506000001a60,6)
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 12 (phase: Executed)
 DEBUG: AssignStmt - Lane 2 assigned value 12 to variable 'result'
@@ -1507,7 +1507,7 @@ DEBUG: removeThreadFromAllSets - block 6 has 2 participating lanes after removal
 DEBUG: SwitchStmt - Lane 2 executing statement 0 in case default (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 12 (lane 2 at 0x50f0000005e0)
-DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 7, instruction key=(0x503000001cc0,7)
+DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 7, instruction key=(0x506000001b20,7)
 DEBUG: markLaneWaitingForWave - Lane 2 wave 0 in block 7
 DEBUG: markLaneWaitingForWave - Successfully set lane 2 to WaitingForWave in block 7
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 7
@@ -1521,12 +1521,12 @@ DEBUG: onLaneFinishWaveOp - Current status in block 7: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 2 to Participating in block 7
 DEBUG: isAllParticipantsKnown - Block 7 wave 0 has 2 unknown lanes: 0 3  - These lanes need to be resolved to Participating or Left
 DEBUG: SwitchStmt - Lane 3 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 3 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 3 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 3 executing statement 0 in case 3 (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 3 at 0x50f0000006d0)
-DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 6, instruction key=(0x503000001c00,6)
+DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 6, instruction key=(0x506000001a60,6)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 12 (phase: Executed)
 DEBUG: AssignStmt - Lane 3 assigned value 12 to variable 'result'
@@ -1546,7 +1546,7 @@ DEBUG: removeThreadFromAllSets - block 6 has 1 participating lanes after removal
 DEBUG: SwitchStmt - Lane 3 executing statement 0 in case default (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 12 (lane 3 at 0x50f0000006d0)
-DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 7, instruction key=(0x503000001cc0,7)
+DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 7, instruction key=(0x506000001b20,7)
 DEBUG: markLaneWaitingForWave - Lane 3 wave 0 in block 7
 DEBUG: markLaneWaitingForWave - Successfully set lane 3 to WaitingForWave in block 7
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 7
@@ -1560,12 +1560,12 @@ DEBUG: onLaneFinishWaveOp - Current status in block 7: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 3 to Participating in block 7
 DEBUG: isAllParticipantsKnown - Block 7 wave 0 has 1 unknown lanes: 0  - These lanes need to be resolved to Participating or Left
 DEBUG: SwitchStmt - Lane 0 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 0 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 0 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 0 executing statement 0 in case 3 (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 2 (lane 0 at 0x50f000000400)
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 6, instruction key=(0x503000001c00,6)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 6, instruction key=(0x506000001a60,6)
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 12 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 14 to variable 'result'
@@ -1585,7 +1585,7 @@ DEBUG: removeThreadFromAllSets - block 6 has 0 participating lanes after removal
 DEBUG: SwitchStmt - Lane 0 executing statement 0 in case default (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 14 (lane 0 at 0x50f000000400)
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 7, instruction key=(0x503000001cc0,7)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 7, instruction key=(0x506000001b20,7)
 DEBUG: markLaneWaitingForWave - Lane 0 wave 0 in block 7
 DEBUG: markLaneWaitingForWave - Successfully set lane 0 to WaitingForWave in block 7
 DEBUG: WAVE_OP: Lane 0 cannot execute, starting to wait in block 7
@@ -1597,12 +1597,12 @@ DEBUG: WAVE_WAIT: Lane 0 received WaveOperationWait error, state=2
 DEBUG: WAVE_OP: Updated participants before execution to include all current block lanes: 0 1 2 3 
 DEBUG: WAVE_OP: Storing collective result for lanes: 0 1 2 3  (phase: 2)
 DEBUG: SwitchStmt - Lane 1 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 1 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 1 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 1 executing statement 0 in case default (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 14 (lane 1 at 0x50f0000004f0)
-DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 7, instruction key=(0x503000001cc0,7)
+DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 7, instruction key=(0x506000001b20,7)
 DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 40 (phase: Executed)
 DEBUG: AssignStmt - Lane 1 assigned value 54 to variable 'result'
@@ -1612,44 +1612,44 @@ DEBUG: onLaneFinishWaveOp - Lane 0 finishing wave op in block 7
 DEBUG: onLaneFinishWaveOp - Current status in block 7: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 0 to Participating in block 7
 DEBUG: SwitchStmt - Lane 2 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 2 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 2 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 2 executing statement 0 in case default (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 12 (lane 2 at 0x50f0000005e0)
-DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 7, instruction key=(0x503000001cc0,7)
+DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 7, instruction key=(0x506000001b20,7)
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 40 (phase: Executed)
 DEBUG: AssignStmt - Lane 2 assigned value 52 to variable 'result'
 DEBUG: SwitchStmt - Lane 2 completed case default, falling through to next
 DEBUG: SwitchStmt - Lane 2 completed all cases, entering reconvergence
 DEBUG: SwitchStmt - Lane 3 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 3 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 3 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 3 executing statement 0 in case default (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 12 (lane 3 at 0x50f0000006d0)
-DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 7, instruction key=(0x503000001cc0,7)
+DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 7, instruction key=(0x506000001b20,7)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 40 (phase: Executed)
 DEBUG: AssignStmt - Lane 3 assigned value 52 to variable 'result'
 DEBUG: SwitchStmt - Lane 3 completed case default, falling through to next
 DEBUG: SwitchStmt - Lane 3 completed all cases, entering reconvergence
 DEBUG: SwitchStmt - Lane 0 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 0 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 0 in phase ExecutingCase (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 0 executing statement 0 in case default (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 14 (lane 0 at 0x50f000000400)
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 7, instruction key=(0x503000001cc0,7)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 7, instruction key=(0x506000001b20,7)
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 40 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 54 to variable 'result'
 DEBUG: SwitchStmt - Lane 0 completed case default, falling through to next
 DEBUG: SwitchStmt - Lane 0 completed all cases, entering reconvergence
 DEBUG: SwitchStmt - Lane 1 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 1 in phase Reconverging (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 1 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 1 in phase Reconverging (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 1 reconverging from switch
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 8
 DEBUG: assignLaneToBlock - START: lane 1 being assigned to block 8
@@ -1660,8 +1660,8 @@ DEBUG: assignLaneToBlock - AFTER: block 8 has 1 participating lanes (1), 0 waiti
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 8
 DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 8
 DEBUG: SwitchStmt - Lane 2 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 2 in phase Reconverging (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 2 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 2 in phase Reconverging (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 2 reconverging from switch
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 8
 DEBUG: assignLaneToBlock - START: lane 2 being assigned to block 8
@@ -1672,8 +1672,8 @@ DEBUG: assignLaneToBlock - AFTER: block 8 has 2 participating lanes (1 2), 0 wai
 DEBUG: assignLaneToBlock - END: lane 2 successfully assigned to block 8
 DEBUG: moveThreadFromUnknownToParticipating - lane 2 is now in block 8
 DEBUG: SwitchStmt - Lane 3 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 3 in phase Reconverging (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 3 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 3 in phase Reconverging (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 3 reconverging from switch
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 8
 DEBUG: assignLaneToBlock - START: lane 3 being assigned to block 8
@@ -1684,8 +1684,8 @@ DEBUG: assignLaneToBlock - AFTER: block 8 has 3 participating lanes (1 2 3), 0 w
 DEBUG: assignLaneToBlock - END: lane 3 successfully assigned to block 8
 DEBUG: moveThreadFromUnknownToParticipating - lane 3 is now in block 8
 DEBUG: SwitchStmt - Lane 0 resuming Result-based switch statement
-DEBUG: SwitchStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004190)
-DEBUG: SwitchStmt - Lane 0 in phase Reconverging (Result-based, stack depth=1, our index=0, this=0x504000004190)
+DEBUG: SwitchStmt - Lane 0 resuming execution (found at stack index=0, current stack depth=1, this=0x504000004150)
+DEBUG: SwitchStmt - Lane 0 in phase Reconverging (Result-based, stack depth=1, our index=0, this=0x504000004150)
 DEBUG: SwitchStmt - Lane 0 reconverging from switch
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 8
 DEBUG: assignLaneToBlock - START: lane 0 being assigned to block 8
@@ -1695,7 +1695,7 @@ DEBUG: Removed lane 0 from block 7
 DEBUG: assignLaneToBlock - AFTER: block 8 has 4 participating lanes (0 1 2 3), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 0 successfully assigned to block 8
 DEBUG: moveThreadFromUnknownToParticipating - lane 0 is now in block 8
-DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 8, instruction key=(0x503000001d80,8)
+DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 8, instruction key=(0x506000001be0,8)
 DEBUG: markLaneWaitingForWave - Lane 1 wave 0 in block 8
 DEBUG: markLaneWaitingForWave - Successfully set lane 1 to WaitingForWave in block 8
 DEBUG: WAVE_OP: Lane 1 cannot execute, starting to wait in block 8
@@ -1703,7 +1703,7 @@ DEBUG: Block 8 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 1 in block 8: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=0, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: WAVE_WAIT: Lane 1 received WaveOperationWait error, state=2
-DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 8, instruction key=(0x503000001d80,8)
+DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 8, instruction key=(0x506000001be0,8)
 DEBUG: markLaneWaitingForWave - Lane 2 wave 0 in block 8
 DEBUG: markLaneWaitingForWave - Successfully set lane 2 to WaitingForWave in block 8
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 8
@@ -1711,7 +1711,7 @@ DEBUG: Block 8 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 2 in block 8: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=0, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: WAVE_WAIT: Lane 2 received WaveOperationWait error, state=2
-DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 8, instruction key=(0x503000001d80,8)
+DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 8, instruction key=(0x506000001be0,8)
 DEBUG: markLaneWaitingForWave - Lane 3 wave 0 in block 8
 DEBUG: markLaneWaitingForWave - Successfully set lane 3 to WaitingForWave in block 8
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 8
@@ -1719,7 +1719,7 @@ DEBUG: Block 8 wave 0 unknown lanes: {}
 DEBUG: areAllParticipantsKnownForWaveInstruction - All participants known for sync point
 DEBUG: canExecuteWaveInstruction for lane 3 in block 8: canExecuteInBlock=1, allParticipantsKnown=1, allParticipantsArrived=0, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: WAVE_WAIT: Lane 3 received WaveOperationWait error, state=2
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 8, instruction key=(0x503000001d80,8)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 8, instruction key=(0x506000001be0,8)
 DEBUG: markLaneWaitingForWave - Lane 0 wave 0 in block 8
 DEBUG: markLaneWaitingForWave - Successfully set lane 0 to WaitingForWave in block 8
 DEBUG: WAVE_OP: Lane 0 cannot execute, starting to wait in block 8
@@ -1749,16 +1749,16 @@ DEBUG: onLaneFinishWaveOp - Updated lane 2 to Participating in block 8
 DEBUG: onLaneFinishWaveOp - Lane 3 finishing wave op in block 8
 DEBUG: onLaneFinishWaveOp - Current status in block 8: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 3 to Participating in block 8
-DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 8, instruction key=(0x503000001d80,8)
+DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 8, instruction key=(0x506000001be0,8)
 DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 212 (phase: Executed)
-DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 8, instruction key=(0x503000001d80,8)
+DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 8, instruction key=(0x506000001be0,8)
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 212 (phase: Executed)
-DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 8, instruction key=(0x503000001d80,8)
+DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 8, instruction key=(0x506000001be0,8)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 212 (phase: Executed)
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 8, instruction key=(0x503000001d80,8)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 8, instruction key=(0x506000001be0,8)
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 212 (phase: Consumed)
 lane 1 have completed execution
@@ -2175,20 +2175,20 @@ Direct ParseAST complete
   Waking up lane 1 from WaitingForResume to Ready
   Waking up lane 2 from WaitingForResume to Ready
   Waking up lane 3 from WaitingForResume to Ready
-Executing collective wave operation for wave 0 at instruction 0x503000001a50 block 3
+Executing collective wave operation for wave 0 at instruction 0x506000001880 block 3
 Collective wave operation result: 0
 Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 0 from WaitingForWave to Ready
 Waking up lanes to retrieve wave operation results for wave 0
 Waking up lanes to retrieve wave operation results for wave 0
-Executing collective wave operation for wave 0 at instruction 0x503000001b40 block 4
+Executing collective wave operation for wave 0 at instruction 0x506000001940 block 4
 Collective wave operation result: 2
 Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 0 from WaitingForWave to Ready
   Waking up lane 1 from WaitingForWave to Ready
 Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 1 from WaitingForWave to Ready
-Executing collective wave operation for wave 0 at instruction 0x503000001c00 block 6
+Executing collective wave operation for wave 0 at instruction 0x506000001a60 block 6
 Collective wave operation result: 12
 Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 0 from WaitingForWave to Ready
@@ -2199,7 +2199,7 @@ Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 2 from WaitingForWave to Ready
 Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 3 from WaitingForWave to Ready
-Executing collective wave operation for wave 0 at instruction 0x503000001cc0 block 7
+Executing collective wave operation for wave 0 at instruction 0x506000001b20 block 7
 Collective wave operation result: 40
 Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 0 from WaitingForWave to Ready
@@ -2209,7 +2209,7 @@ Waking up lanes to retrieve wave operation results for wave 0
 Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 3 from WaitingForResume to Ready
   Waking up lane 0 from WaitingForResume to Ready
-Executing collective wave operation for wave 0 at instruction 0x503000001d80 block 8
+Executing collective wave operation for wave 0 at instruction 0x506000001be0 block 8
 Collective wave operation result: 212
 Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 0 from WaitingForWave to Ready
@@ -2245,7 +2245,7 @@ Dynamic Block 2:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x504000004190
+  Source Statement: 0x504000004150
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
@@ -2257,12 +2257,12 @@ Dynamic Block 3:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x504000004191
+  Source Statement: 0x504000004151
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
   Instructions (1):
-    0: WaveActiveOp (ptr: 0x503000001a50)
+    0: WaveActiveOp (ptr: 0x506000001880)
 
 Dynamic Block 4:
   Block ID: 4
@@ -2271,12 +2271,12 @@ Dynamic Block 4:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x504000004192
+  Source Statement: 0x504000004152
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
   Instructions (1):
-    0: WaveActiveOp (ptr: 0x503000001b40)
+    0: WaveActiveOp (ptr: 0x506000001940)
 
 Dynamic Block 5:
   Block ID: 5
@@ -2285,7 +2285,7 @@ Dynamic Block 5:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x504000004193
+  Source Statement: 0x504000004153
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
@@ -2297,12 +2297,12 @@ Dynamic Block 6:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x504000004194
+  Source Statement: 0x504000004154
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
   Instructions (1):
-    0: WaveActiveOp (ptr: 0x503000001c00)
+    0: WaveActiveOp (ptr: 0x506000001a60)
 
 Dynamic Block 7:
   Block ID: 7
@@ -2311,12 +2311,12 @@ Dynamic Block 7:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x504000004190
+  Source Statement: 0x504000004150
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
   Instructions (1):
-    0: WaveActiveOp (ptr: 0x503000001cc0)
+    0: WaveActiveOp (ptr: 0x506000001b20)
 
 Dynamic Block 8:
   Block ID: 8
@@ -2325,14 +2325,14 @@ Dynamic Block 8:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x504000004190
+  Source Statement: 0x504000004150
   Participating Lanes by Wave:
     Wave 0: {0, 1, 2, 3} (4 lanes)
   Total Participating Lanes: 4
   Arrived Lanes by Wave:
     Wave 0: {0, 1, 2, 3} (4 lanes)
   Instructions (1):
-    0: WaveActiveOp (ptr: 0x503000001d80)
+    0: WaveActiveOp (ptr: 0x506000001be0)
 
 === Wave States ===
 Wave 0:
@@ -2346,23 +2346,23 @@ Wave 0:
     Lane 2 -> Block 8
     Lane 3 -> Block 8
   Active Sync Points (5):
-    Instruction 0x503000001a50 block 3 (WaveActiveOp):
+    Instruction 0x506000001880 block 3 (WaveActiveOp):
       Expected: 1 lanes
       Arrived: 1 lanes
       Ready to execute: No
-    Instruction 0x503000001b40 block 4 (WaveActiveOp):
+    Instruction 0x506000001940 block 4 (WaveActiveOp):
       Expected: 2 lanes
       Arrived: 2 lanes
       Ready to execute: No
-    Instruction 0x503000001c00 block 6 (WaveActiveOp):
+    Instruction 0x506000001a60 block 6 (WaveActiveOp):
       Expected: 4 lanes
       Arrived: 4 lanes
       Ready to execute: No
-    Instruction 0x503000001cc0 block 7 (WaveActiveOp):
+    Instruction 0x506000001b20 block 7 (WaveActiveOp):
       Expected: 4 lanes
       Arrived: 4 lanes
       Ready to execute: No
-    Instruction 0x503000001d80 block 8 (WaveActiveOp):
+    Instruction 0x506000001be0 block 8 (WaveActiveOp):
       Expected: 4 lanes
       Arrived: 4 lanes
       Ready to execute: No
@@ -2402,20 +2402,20 @@ Wave 0:
   Waking up lane 1 from WaitingForResume to Ready
   Waking up lane 2 from WaitingForResume to Ready
   Waking up lane 3 from WaitingForResume to Ready
-Executing collective wave operation for wave 0 at instruction 0x503000001a50 block 3
+Executing collective wave operation for wave 0 at instruction 0x506000001880 block 3
 Collective wave operation result: 0
 Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 0 from WaitingForWave to Ready
 Waking up lanes to retrieve wave operation results for wave 0
 Waking up lanes to retrieve wave operation results for wave 0
-Executing collective wave operation for wave 0 at instruction 0x503000001b40 block 4
+Executing collective wave operation for wave 0 at instruction 0x506000001940 block 4
 Collective wave operation result: 2
 Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 0 from WaitingForWave to Ready
   Waking up lane 1 from WaitingForWave to Ready
 Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 1 from WaitingForWave to Ready
-Executing collective wave operation for wave 0 at instruction 0x503000001c00 block 6
+Executing collective wave operation for wave 0 at instruction 0x506000001a60 block 6
 Collective wave operation result: 12
 Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 0 from WaitingForWave to Ready
@@ -2426,7 +2426,7 @@ Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 2 from WaitingForWave to Ready
 Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 3 from WaitingForWave to Ready
-Executing collective wave operation for wave 0 at instruction 0x503000001cc0 block 7
+Executing collective wave operation for wave 0 at instruction 0x506000001b20 block 7
 Collective wave operation result: 40
 Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 0 from WaitingForWave to Ready
@@ -2436,7 +2436,7 @@ Waking up lanes to retrieve wave operation results for wave 0
 Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 3 from WaitingForResume to Ready
   Waking up lane 0 from WaitingForResume to Ready
-Executing collective wave operation for wave 0 at instruction 0x503000001d80 block 8
+Executing collective wave operation for wave 0 at instruction 0x506000001be0 block 8
 Collective wave operation result: 212
 Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 0 from WaitingForWave to Ready
@@ -2472,7 +2472,7 @@ Dynamic Block 2:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x504000004190
+  Source Statement: 0x504000004150
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
@@ -2484,12 +2484,12 @@ Dynamic Block 3:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x504000004191
+  Source Statement: 0x504000004151
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
   Instructions (1):
-    0: WaveActiveOp (ptr: 0x503000001a50)
+    0: WaveActiveOp (ptr: 0x506000001880)
 
 Dynamic Block 4:
   Block ID: 4
@@ -2498,12 +2498,12 @@ Dynamic Block 4:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x504000004192
+  Source Statement: 0x504000004152
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
   Instructions (1):
-    0: WaveActiveOp (ptr: 0x503000001b40)
+    0: WaveActiveOp (ptr: 0x506000001940)
 
 Dynamic Block 5:
   Block ID: 5
@@ -2512,7 +2512,7 @@ Dynamic Block 5:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x504000004193
+  Source Statement: 0x504000004153
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
@@ -2524,12 +2524,12 @@ Dynamic Block 6:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x504000004194
+  Source Statement: 0x504000004154
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
   Instructions (1):
-    0: WaveActiveOp (ptr: 0x503000001c00)
+    0: WaveActiveOp (ptr: 0x506000001a60)
 
 Dynamic Block 7:
   Block ID: 7
@@ -2538,12 +2538,12 @@ Dynamic Block 7:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x504000004190
+  Source Statement: 0x504000004150
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
   Instructions (1):
-    0: WaveActiveOp (ptr: 0x503000001cc0)
+    0: WaveActiveOp (ptr: 0x506000001b20)
 
 Dynamic Block 8:
   Block ID: 8
@@ -2552,14 +2552,14 @@ Dynamic Block 8:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x504000004190
+  Source Statement: 0x504000004150
   Participating Lanes by Wave:
     Wave 0: {0, 1, 2, 3} (4 lanes)
   Total Participating Lanes: 4
   Arrived Lanes by Wave:
     Wave 0: {0, 1, 2, 3} (4 lanes)
   Instructions (1):
-    0: WaveActiveOp (ptr: 0x503000001d80)
+    0: WaveActiveOp (ptr: 0x506000001be0)
 
 === Wave States ===
 Wave 0:
@@ -2573,23 +2573,23 @@ Wave 0:
     Lane 2 -> Block 8
     Lane 3 -> Block 8
   Active Sync Points (5):
-    Instruction 0x503000001a50 block 3 (WaveActiveOp):
+    Instruction 0x506000001880 block 3 (WaveActiveOp):
       Expected: 1 lanes
       Arrived: 1 lanes
       Ready to execute: No
-    Instruction 0x503000001b40 block 4 (WaveActiveOp):
+    Instruction 0x506000001940 block 4 (WaveActiveOp):
       Expected: 2 lanes
       Arrived: 2 lanes
       Ready to execute: No
-    Instruction 0x503000001c00 block 6 (WaveActiveOp):
+    Instruction 0x506000001a60 block 6 (WaveActiveOp):
       Expected: 4 lanes
       Arrived: 4 lanes
       Ready to execute: No
-    Instruction 0x503000001cc0 block 7 (WaveActiveOp):
+    Instruction 0x506000001b20 block 7 (WaveActiveOp):
       Expected: 4 lanes
       Arrived: 4 lanes
       Ready to execute: No
-    Instruction 0x503000001d80 block 8 (WaveActiveOp):
+    Instruction 0x506000001be0 block 8 (WaveActiveOp):
       Expected: 4 lanes
       Arrived: 4 lanes
       Ready to execute: No

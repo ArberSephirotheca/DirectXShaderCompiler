@@ -16,66 +16,66 @@ Found numthreads attribute: [4, 1, 1]
 Converting compound statement with 4 child statements
 Converting statement: DeclStmt
 Converting declaration statement
-Declaring variable: laneId
-Converting expression: CallExpr
+Declaring variable: laneId of type: uint
+Converting expression: CallExpr of type: unsigned int
 Converting function call to expression: WaveGetLaneIndex
 Converting statement: DeclStmt
 Converting declaration statement
-Declaring variable: result
-Converting expression: ImplicitCastExpr
-Converting expression: IntegerLiteral
+Declaring variable: result of type: uint
+Converting expression: ImplicitCastExpr of type: uint
+Converting expression: IntegerLiteral of type: literal int
 Converting statement: ForStmt
 Converting for statement
-Converting expression: ImplicitCastExpr
-Converting expression: IntegerLiteral
-Converting expression: BinaryOperator
-Converting expression: ImplicitCastExpr
-Converting expression: DeclRefExpr
-Converting expression: ImplicitCastExpr
-Converting expression: IntegerLiteral
-Converting expression: UnaryOperator
-Converting expression: DeclRefExpr
+Converting expression: ImplicitCastExpr of type: int
+Converting expression: IntegerLiteral of type: literal int
+Converting expression: BinaryOperator of type: const bool
+Converting expression: ImplicitCastExpr of type: int
+Converting expression: DeclRefExpr of type: int
+Converting expression: ImplicitCastExpr of type: int
+Converting expression: IntegerLiteral of type: literal int
+Converting expression: UnaryOperator of type: int
+Converting expression: DeclRefExpr of type: int
 Converting statement: IfStmt
 Converting if statement
-Converting expression: BinaryOperator
-Converting expression: ImplicitCastExpr
-Converting expression: DeclRefExpr
-Converting expression: ImplicitCastExpr
-Converting expression: IntegerLiteral
+Converting expression: BinaryOperator of type: const bool
+Converting expression: ImplicitCastExpr of type: uint
+Converting expression: DeclRefExpr of type: uint
+Converting expression: ImplicitCastExpr of type: uint
+Converting expression: IntegerLiteral of type: literal int
 Converting statement: IfStmt
 Converting if statement
-Converting expression: BinaryOperator
-Converting expression: ImplicitCastExpr
-Converting expression: DeclRefExpr
-Converting expression: ImplicitCastExpr
-Converting expression: IntegerLiteral
+Converting expression: BinaryOperator of type: const bool
+Converting expression: ImplicitCastExpr of type: uint
+Converting expression: DeclRefExpr of type: uint
+Converting expression: ImplicitCastExpr of type: uint
+Converting expression: IntegerLiteral of type: literal int
 Converting statement: CompoundAssignOperator
 Converting compound assignment operator: +=
-Converting expression: DeclRefExpr
-Converting expression: ImplicitCastExpr
-Converting expression: CallExpr
+Converting expression: DeclRefExpr of type: uint
+Converting expression: ImplicitCastExpr of type: uint
+Converting expression: CallExpr of type: literal int
 Converting function call to expression: WaveActiveSum
-Converting expression: IntegerLiteral
+Converting expression: IntegerLiteral of type: literal int
 DEBUG: Creating AssignStmt for compound assignment: result = (result + WaveActiveSum(10))
 DEBUG: Created statement type: AssignStmt with toString: result = (result + WaveActiveSum(10));
 Converting statement: CompoundAssignOperator
 Converting compound assignment operator: +=
-Converting expression: DeclRefExpr
-Converting expression: ImplicitCastExpr
-Converting expression: IntegerLiteral
+Converting expression: DeclRefExpr of type: uint
+Converting expression: ImplicitCastExpr of type: uint
+Converting expression: IntegerLiteral of type: literal int
 DEBUG: Creating AssignStmt for compound assignment: result = (result + 1)
 DEBUG: Created statement type: AssignStmt with toString: result = (result + 1);
 Converting statement: BinaryOperator
-Converting expression: DeclRefExpr
-Converting expression: ImplicitCastExpr
-Converting expression: IntegerLiteral
+Converting expression: DeclRefExpr of type: uint
+Converting expression: ImplicitCastExpr of type: uint
+Converting expression: IntegerLiteral of type: literal int
 Converting statement: DeclStmt
 Converting declaration statement
-Declaring variable: totalSum
-Converting expression: CallExpr
+Declaring variable: totalSum of type: uint
+Converting expression: CallExpr of type: unsigned int
 Converting function call to expression: WaveActiveSum
-Converting expression: ImplicitCastExpr
-Converting expression: DeclRefExpr
+Converting expression: ImplicitCastExpr of type: uint
+Converting expression: DeclRefExpr of type: uint
 Converted AST to interpreter program with 4 statements
 Thread configuration: [4, 1, 1]
 
@@ -202,18 +202,18 @@ DEBUG: ForStmt - Lane 0 merge stack size: 1
 DEBUG: ForStmt - Lane 0 pushed iteration merge point 0x508000007820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 2 (Result-based)
 DEBUG: IfStmt - Lane 0 starting Result-based if statement
-DEBUG: IfStmt - Lane 0 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
-DEBUG: IfStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 0 starting fresh execution (pushed to stack depth=2, this=0x5060000018e0)
+DEBUG: IfStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 0 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 0 evaluating condition for first time (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 0 (lane 0 at 0x50f000000040)
 DEBUG: IfStmt - Lane 0 condition result=1 (Result-based)
-DEBUG: createIfBlocks - ifStmt=0x506000001640, parentBlockId=2, hasElse=1
+DEBUG: createIfBlocks - ifStmt=0x5060000018e0, parentBlockId=2, hasElse=1
 DEBUG: createIfBlocks - mergeStack size=3
   MergeStack[0]: sourceStatement=0x508000002820
   MergeStack[1]: sourceStatement=0x508000007820
-  MergeStack[2]: sourceStatement=0x506000001640
+  MergeStack[2]: sourceStatement=0x5060000018e0
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
@@ -262,18 +262,18 @@ DEBUG: ForStmt - Lane 1 merge stack size: 1
 DEBUG: ForStmt - Lane 1 pushed iteration merge point 0x508000007820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 2 (Result-based)
 DEBUG: IfStmt - Lane 1 starting Result-based if statement
-DEBUG: IfStmt - Lane 1 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
-DEBUG: IfStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 1 starting fresh execution (pushed to stack depth=2, this=0x5060000018e0)
+DEBUG: IfStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 1 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 1 evaluating condition for first time (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 1 (lane 1 at 0x50f000000130)
 DEBUG: IfStmt - Lane 1 condition result=1 (Result-based)
-DEBUG: createIfBlocks - ifStmt=0x506000001640, parentBlockId=2, hasElse=1
+DEBUG: createIfBlocks - ifStmt=0x5060000018e0, parentBlockId=2, hasElse=1
 DEBUG: createIfBlocks - mergeStack size=3
   MergeStack[0]: sourceStatement=0x508000002820
   MergeStack[1]: sourceStatement=0x508000007820
-  MergeStack[2]: sourceStatement=0x506000001640
+  MergeStack[2]: sourceStatement=0x5060000018e0
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
@@ -313,18 +313,18 @@ DEBUG: ForStmt - Lane 2 merge stack size: 1
 DEBUG: ForStmt - Lane 2 pushed iteration merge point 0x508000007820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 2 (Result-based)
 DEBUG: IfStmt - Lane 2 starting Result-based if statement
-DEBUG: IfStmt - Lane 2 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
-DEBUG: IfStmt - Lane 2 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 2 starting fresh execution (pushed to stack depth=2, this=0x5060000018e0)
+DEBUG: IfStmt - Lane 2 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 2 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 2 evaluating condition for first time (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 2 (lane 2 at 0x50f000000220)
 DEBUG: IfStmt - Lane 2 condition result=0 (Result-based)
-DEBUG: createIfBlocks - ifStmt=0x506000001640, parentBlockId=2, hasElse=1
+DEBUG: createIfBlocks - ifStmt=0x5060000018e0, parentBlockId=2, hasElse=1
 DEBUG: createIfBlocks - mergeStack size=3
   MergeStack[0]: sourceStatement=0x508000002820
   MergeStack[1]: sourceStatement=0x508000007820
-  MergeStack[2]: sourceStatement=0x506000001640
+  MergeStack[2]: sourceStatement=0x5060000018e0
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
@@ -364,18 +364,18 @@ DEBUG: ForStmt - Lane 3 merge stack size: 1
 DEBUG: ForStmt - Lane 3 pushed iteration merge point 0x508000007820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 2 (Result-based)
 DEBUG: IfStmt - Lane 3 starting Result-based if statement
-DEBUG: IfStmt - Lane 3 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
-DEBUG: IfStmt - Lane 3 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 3 starting fresh execution (pushed to stack depth=2, this=0x5060000018e0)
+DEBUG: IfStmt - Lane 3 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 3 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 3 evaluating condition for first time (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 3 (lane 3 at 0x50f000000310)
 DEBUG: IfStmt - Lane 3 condition result=0 (Result-based)
-DEBUG: createIfBlocks - ifStmt=0x506000001640, parentBlockId=2, hasElse=1
+DEBUG: createIfBlocks - ifStmt=0x5060000018e0, parentBlockId=2, hasElse=1
 DEBUG: createIfBlocks - mergeStack size=3
   MergeStack[0]: sourceStatement=0x508000002820
   MergeStack[1]: sourceStatement=0x508000007820
-  MergeStack[2]: sourceStatement=0x506000001640
+  MergeStack[2]: sourceStatement=0x5060000018e0
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
@@ -413,14 +413,14 @@ DEBUG: ForStmt - Lane 0 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 0 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 4 (Result-based)
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4 (registry returned: 4)
-DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
     result = (result + WaveActiveSum(10));
@@ -429,20 +429,20 @@ DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
 }
 DEBUG: IfStmt - Lane 0 variables BEFORE statement: i=0 laneId=0 result=0 
 DEBUG: IfStmt - Lane 0 starting Result-based if statement
-DEBUG: IfStmt - Lane 0 starting fresh execution (pushed to stack depth=3, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 0 starting fresh execution (pushed to stack depth=3, this=0x506000001880)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4 (registry returned: 4)
-DEBUG: IfStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=3, our index=2, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=3, our index=2, this=0x506000001880)
 DEBUG: IfStmt - Lane 0 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 0 evaluating condition for first time (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 0 (lane 0 at 0x50f000000040)
 DEBUG: IfStmt - Lane 0 condition result=1 (Result-based)
-DEBUG: createIfBlocks - ifStmt=0x5060000015e0, parentBlockId=4, hasElse=1
+DEBUG: createIfBlocks - ifStmt=0x506000001880, parentBlockId=4, hasElse=1
 DEBUG: createIfBlocks - mergeStack size=4
   MergeStack[0]: sourceStatement=0x508000002820
   MergeStack[1]: sourceStatement=0x508000007820
-  MergeStack[2]: sourceStatement=0x506000001640
-  MergeStack[3]: sourceStatement=0x5060000015e0
+  MergeStack[2]: sourceStatement=0x5060000018e0
+  MergeStack[3]: sourceStatement=0x506000001880
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 } (2 lanes)
@@ -483,14 +483,14 @@ DEBUG: ForStmt - Lane 1 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 1 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 4 (Result-based)
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
-DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 1 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
     result = (result + WaveActiveSum(10));
@@ -499,20 +499,20 @@ DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
 }
 DEBUG: IfStmt - Lane 1 variables BEFORE statement: i=0 laneId=1 result=0 
 DEBUG: IfStmt - Lane 1 starting Result-based if statement
-DEBUG: IfStmt - Lane 1 starting fresh execution (pushed to stack depth=3, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 1 starting fresh execution (pushed to stack depth=3, this=0x506000001880)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
-DEBUG: IfStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=3, our index=2, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=3, our index=2, this=0x506000001880)
 DEBUG: IfStmt - Lane 1 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 1 evaluating condition for first time (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 1 (lane 1 at 0x50f000000130)
 DEBUG: IfStmt - Lane 1 condition result=0 (Result-based)
-DEBUG: createIfBlocks - ifStmt=0x5060000015e0, parentBlockId=4, hasElse=1
+DEBUG: createIfBlocks - ifStmt=0x506000001880, parentBlockId=4, hasElse=1
 DEBUG: createIfBlocks - mergeStack size=4
   MergeStack[0]: sourceStatement=0x508000002820
   MergeStack[1]: sourceStatement=0x508000007820
-  MergeStack[2]: sourceStatement=0x506000001640
-  MergeStack[3]: sourceStatement=0x5060000015e0
+  MergeStack[2]: sourceStatement=0x5060000018e0
+  MergeStack[3]: sourceStatement=0x506000001880
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {1 } (1 lanes)
@@ -551,14 +551,14 @@ DEBUG: ForStmt - Lane 2 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 2 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 2 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 5 (Result-based)
 DEBUG: IfStmt - Lane 2 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
-DEBUG: IfStmt - Lane 2 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 2 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 2 executing else block from statement 0 (Result-based)
 DEBUG: AssignStmt - Lane 2 assigned value 2 to variable 'result'
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
@@ -572,14 +572,14 @@ DEBUG: ForStmt - Lane 3 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 3 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 5 (Result-based)
 DEBUG: IfStmt - Lane 3 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
-DEBUG: IfStmt - Lane 3 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 3 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 3 executing else block from statement 0 (Result-based)
 DEBUG: AssignStmt - Lane 3 assigned value 2 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
@@ -593,15 +593,15 @@ DEBUG: ForStmt - Lane 0 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 0 merge stack size: 4
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
-  Stack[3]: sourceStatement=0x5060000015e0
+  Stack[2]: sourceStatement=0x5060000018e0
+  Stack[3]: sourceStatement=0x506000001880
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 7 (Result-based)
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
-DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
     result = (result + WaveActiveSum(10));
@@ -611,14 +611,14 @@ DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
 DEBUG: IfStmt - Lane 0 variables BEFORE statement: i=0 laneId=0 result=0 
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
-DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=2, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=2, this=0x506000001880)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: result = (result + WaveActiveSum(10));
 DEBUG: IfStmt - Lane 0 variables BEFORE statement: i=0 laneId=0 result=0 
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 0 at 0x50f000000040)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 7, instruction key=(0x503000001a20,7)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 7, instruction key=(0x506000001760,7)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: markLaneWaitingForWave - Lane 0 wave 0 in block 7
@@ -640,15 +640,15 @@ DEBUG: ForStmt - Lane 1 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 1 merge stack size: 4
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
-  Stack[3]: sourceStatement=0x5060000015e0
+  Stack[2]: sourceStatement=0x5060000018e0
+  Stack[3]: sourceStatement=0x506000001880
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 8 (registry returned: 8)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 8 (Result-based)
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 8 (registry returned: 8)
-DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 1 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
     result = (result + WaveActiveSum(10));
@@ -658,7 +658,7 @@ DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
 DEBUG: IfStmt - Lane 1 variables BEFORE statement: i=0 laneId=1 result=0 
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 8 (registry returned: 8)
-DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=3, our index=2, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=3, our index=2, this=0x506000001880)
 DEBUG: IfStmt - Lane 1 executing else block from statement 0 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 1 at 0x50f000000130)
@@ -679,21 +679,21 @@ DEBUG: ForStmt - Lane 2 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 2 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 2 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 5 (Result-based)
 DEBUG: IfStmt - Lane 2 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
-DEBUG: IfStmt - Lane 2 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 2 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: IfStmt - Lane 2 performing reconvergence from block 5 to laneSpecificMergeBlockId=6
 DEBUG: IfStmt - Lane 2 merge stack before reconvergence (size=3):
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
-DEBUG: IfStmt - Lane 2 popping stack at reconvergence (depth 2->1, this=0x506000001640)
+  Stack[2]: sourceStatement=0x5060000018e0
+DEBUG: IfStmt - Lane 2 popping stack at reconvergence (depth 2->1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 2 popping merge point before assigning to block 6
 DEBUG: IfStmt - Lane 2 assigning to merge block 6
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 6
@@ -745,21 +745,21 @@ DEBUG: ForStmt - Lane 3 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 3 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 5 (Result-based)
 DEBUG: IfStmt - Lane 3 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
-DEBUG: IfStmt - Lane 3 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 3 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: IfStmt - Lane 3 performing reconvergence from block 5 to laneSpecificMergeBlockId=6
 DEBUG: IfStmt - Lane 3 merge stack before reconvergence (size=3):
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
-DEBUG: IfStmt - Lane 3 popping stack at reconvergence (depth 2->1, this=0x506000001640)
+  Stack[2]: sourceStatement=0x5060000018e0
+DEBUG: IfStmt - Lane 3 popping stack at reconvergence (depth 2->1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 3 popping merge point before assigning to block 6
 DEBUG: IfStmt - Lane 3 assigning to merge block 6
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 6
@@ -811,15 +811,15 @@ DEBUG: ForStmt - Lane 0 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 0 merge stack size: 4
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
-  Stack[3]: sourceStatement=0x5060000015e0
+  Stack[2]: sourceStatement=0x5060000018e0
+  Stack[3]: sourceStatement=0x506000001880
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 7 (Result-based)
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
-DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
     result = (result + WaveActiveSum(10));
@@ -829,14 +829,14 @@ DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
 DEBUG: IfStmt - Lane 0 variables BEFORE statement: i=0 laneId=0 result=0 
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
-DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=2, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=2, this=0x506000001880)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: result = (result + WaveActiveSum(10));
 DEBUG: IfStmt - Lane 0 variables BEFORE statement: i=0 laneId=0 result=0 
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 0 at 0x50f000000040)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 7, instruction key=(0x503000001a20,7)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 7, instruction key=(0x506000001760,7)
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 10 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 10 to variable 'result'
@@ -853,15 +853,15 @@ DEBUG: ForStmt - Lane 1 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 1 merge stack size: 4
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
-  Stack[3]: sourceStatement=0x5060000015e0
+  Stack[2]: sourceStatement=0x5060000018e0
+  Stack[3]: sourceStatement=0x506000001880
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 8 (registry returned: 8)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 8 (Result-based)
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 8 (registry returned: 8)
-DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 1 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
     result = (result + WaveActiveSum(10));
@@ -871,15 +871,15 @@ DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
 DEBUG: IfStmt - Lane 1 variables BEFORE statement: i=0 laneId=1 result=1 
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 8 (registry returned: 8)
-DEBUG: IfStmt - Lane 1 in phase Reconverging (Result-based, stack depth=3, our index=2, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 1 in phase Reconverging (Result-based, stack depth=3, our index=2, this=0x506000001880)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 8 (registry returned: 8)
 DEBUG: IfStmt - Lane 1 performing reconvergence from block 8 to laneSpecificMergeBlockId=9
 DEBUG: IfStmt - Lane 1 merge stack before reconvergence (size=4):
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
-  Stack[3]: sourceStatement=0x5060000015e0
-DEBUG: IfStmt - Lane 1 popping stack at reconvergence (depth 3->2, this=0x5060000015e0)
+  Stack[2]: sourceStatement=0x5060000018e0
+  Stack[3]: sourceStatement=0x506000001880
+DEBUG: IfStmt - Lane 1 popping stack at reconvergence (depth 3->2, this=0x506000001880)
 DEBUG: IfStmt - Lane 1 popping merge point before assigning to block 9
 DEBUG: IfStmt - Lane 1 assigning to merge block 9
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 9
@@ -922,15 +922,15 @@ DEBUG: ForStmt - Lane 0 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 0 merge stack size: 4
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
-  Stack[3]: sourceStatement=0x5060000015e0
+  Stack[2]: sourceStatement=0x5060000018e0
+  Stack[3]: sourceStatement=0x506000001880
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 7 (Result-based)
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
-DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
     result = (result + WaveActiveSum(10));
@@ -940,15 +940,15 @@ DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
 DEBUG: IfStmt - Lane 0 variables BEFORE statement: i=0 laneId=0 result=10 
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
-DEBUG: IfStmt - Lane 0 in phase Reconverging (Result-based, stack depth=3, our index=2, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 0 in phase Reconverging (Result-based, stack depth=3, our index=2, this=0x506000001880)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: IfStmt - Lane 0 performing reconvergence from block 7 to laneSpecificMergeBlockId=9
 DEBUG: IfStmt - Lane 0 merge stack before reconvergence (size=4):
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
-  Stack[3]: sourceStatement=0x5060000015e0
-DEBUG: IfStmt - Lane 0 popping stack at reconvergence (depth 3->2, this=0x5060000015e0)
+  Stack[2]: sourceStatement=0x5060000018e0
+  Stack[3]: sourceStatement=0x506000001880
+DEBUG: IfStmt - Lane 0 popping stack at reconvergence (depth 3->2, this=0x506000001880)
 DEBUG: IfStmt - Lane 0 popping merge point before assigning to block 9
 DEBUG: IfStmt - Lane 0 assigning to merge block 9
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
@@ -979,21 +979,21 @@ DEBUG: ForStmt - Lane 1 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 1 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 9 (Result-based)
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 9 (registry returned: 9)
-DEBUG: IfStmt - Lane 1 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 1 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: IfStmt - Lane 1 performing reconvergence from block 9 to laneSpecificMergeBlockId=6
 DEBUG: IfStmt - Lane 1 merge stack before reconvergence (size=3):
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
-DEBUG: IfStmt - Lane 1 popping stack at reconvergence (depth 2->1, this=0x506000001640)
+  Stack[2]: sourceStatement=0x5060000018e0
+DEBUG: IfStmt - Lane 1 popping stack at reconvergence (depth 2->1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 1 popping merge point before assigning to block 6
 DEBUG: IfStmt - Lane 1 assigning to merge block 6
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 6
@@ -1057,21 +1057,21 @@ DEBUG: ForStmt - Lane 0 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 0 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 9 (Result-based)
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry returned: 9)
-DEBUG: IfStmt - Lane 0 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 0 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: IfStmt - Lane 0 performing reconvergence from block 9 to laneSpecificMergeBlockId=6
 DEBUG: IfStmt - Lane 0 merge stack before reconvergence (size=3):
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
-DEBUG: IfStmt - Lane 0 popping stack at reconvergence (depth 2->1, this=0x506000001640)
+  Stack[2]: sourceStatement=0x5060000018e0
+DEBUG: IfStmt - Lane 0 popping stack at reconvergence (depth 2->1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 0 popping merge point before assigning to block 6
 DEBUG: IfStmt - Lane 0 assigning to merge block 6
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 6
@@ -1132,18 +1132,18 @@ DEBUG: ForStmt - Lane 2 merge stack size: 1
 DEBUG: ForStmt - Lane 2 pushed iteration merge point 0x508000017820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 2 (Result-based)
 DEBUG: IfStmt - Lane 2 starting Result-based if statement
-DEBUG: IfStmt - Lane 2 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
-DEBUG: IfStmt - Lane 2 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 2 starting fresh execution (pushed to stack depth=2, this=0x5060000018e0)
+DEBUG: IfStmt - Lane 2 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 2 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 2 evaluating condition for first time (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 2 (lane 2 at 0x50f000000220)
 DEBUG: IfStmt - Lane 2 condition result=0 (Result-based)
-DEBUG: createIfBlocks - ifStmt=0x506000001640, parentBlockId=2, hasElse=1
+DEBUG: createIfBlocks - ifStmt=0x5060000018e0, parentBlockId=2, hasElse=1
 DEBUG: createIfBlocks - mergeStack size=3
   MergeStack[0]: sourceStatement=0x508000002820
   MergeStack[1]: sourceStatement=0x508000017820
-  MergeStack[2]: sourceStatement=0x506000001640
+  MergeStack[2]: sourceStatement=0x5060000018e0
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
@@ -1192,18 +1192,18 @@ DEBUG: ForStmt - Lane 3 merge stack size: 1
 DEBUG: ForStmt - Lane 3 pushed iteration merge point 0x508000017820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 2 (Result-based)
 DEBUG: IfStmt - Lane 3 starting Result-based if statement
-DEBUG: IfStmt - Lane 3 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
-DEBUG: IfStmt - Lane 3 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 3 starting fresh execution (pushed to stack depth=2, this=0x5060000018e0)
+DEBUG: IfStmt - Lane 3 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 3 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 3 evaluating condition for first time (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 3 (lane 3 at 0x50f000000310)
 DEBUG: IfStmt - Lane 3 condition result=0 (Result-based)
-DEBUG: createIfBlocks - ifStmt=0x506000001640, parentBlockId=2, hasElse=1
+DEBUG: createIfBlocks - ifStmt=0x5060000018e0, parentBlockId=2, hasElse=1
 DEBUG: createIfBlocks - mergeStack size=3
   MergeStack[0]: sourceStatement=0x508000002820
   MergeStack[1]: sourceStatement=0x508000017820
-  MergeStack[2]: sourceStatement=0x506000001640
+  MergeStack[2]: sourceStatement=0x5060000018e0
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
@@ -1252,14 +1252,14 @@ DEBUG: ForStmt - Lane 2 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 2 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 2 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 11 (Result-based)
 DEBUG: IfStmt - Lane 2 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
-DEBUG: IfStmt - Lane 2 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 2 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 2 executing else block from statement 0 (Result-based)
 DEBUG: AssignStmt - Lane 2 assigned value 2 to variable 'result'
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
@@ -1273,14 +1273,14 @@ DEBUG: ForStmt - Lane 3 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 3 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 11 (Result-based)
 DEBUG: IfStmt - Lane 3 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 11 (registry returned: 11)
-DEBUG: IfStmt - Lane 3 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 3 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 3 executing else block from statement 0 (Result-based)
 DEBUG: AssignStmt - Lane 3 assigned value 2 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 11 (registry returned: 11)
@@ -1303,18 +1303,18 @@ DEBUG: ForStmt - Lane 1 merge stack size: 1
 DEBUG: ForStmt - Lane 1 pushed iteration merge point 0x508000017820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 2 (Result-based)
 DEBUG: IfStmt - Lane 1 starting Result-based if statement
-DEBUG: IfStmt - Lane 1 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
-DEBUG: IfStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 1 starting fresh execution (pushed to stack depth=2, this=0x5060000018e0)
+DEBUG: IfStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 1 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 1 evaluating condition for first time (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 1 (lane 1 at 0x50f000000130)
 DEBUG: IfStmt - Lane 1 condition result=1 (Result-based)
-DEBUG: createIfBlocks - ifStmt=0x506000001640, parentBlockId=2, hasElse=1
+DEBUG: createIfBlocks - ifStmt=0x5060000018e0, parentBlockId=2, hasElse=1
 DEBUG: createIfBlocks - mergeStack size=3
   MergeStack[0]: sourceStatement=0x508000002820
   MergeStack[1]: sourceStatement=0x508000017820
-  MergeStack[2]: sourceStatement=0x506000001640
+  MergeStack[2]: sourceStatement=0x5060000018e0
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
@@ -1351,21 +1351,21 @@ DEBUG: ForStmt - Lane 2 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 2 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 2 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 11 (Result-based)
 DEBUG: IfStmt - Lane 2 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
-DEBUG: IfStmt - Lane 2 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 2 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: IfStmt - Lane 2 performing reconvergence from block 11 to laneSpecificMergeBlockId=12
 DEBUG: IfStmt - Lane 2 merge stack before reconvergence (size=3):
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
-DEBUG: IfStmt - Lane 2 popping stack at reconvergence (depth 2->1, this=0x506000001640)
+  Stack[2]: sourceStatement=0x5060000018e0
+DEBUG: IfStmt - Lane 2 popping stack at reconvergence (depth 2->1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 2 popping merge point before assigning to block 12
 DEBUG: IfStmt - Lane 2 assigning to merge block 12
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 12
@@ -1405,21 +1405,21 @@ DEBUG: ForStmt - Lane 3 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 3 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 11 (Result-based)
 DEBUG: IfStmt - Lane 3 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 11 (registry returned: 11)
-DEBUG: IfStmt - Lane 3 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 3 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: IfStmt - Lane 3 performing reconvergence from block 11 to laneSpecificMergeBlockId=12
 DEBUG: IfStmt - Lane 3 merge stack before reconvergence (size=3):
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
-DEBUG: IfStmt - Lane 3 popping stack at reconvergence (depth 2->1, this=0x506000001640)
+  Stack[2]: sourceStatement=0x5060000018e0
+DEBUG: IfStmt - Lane 3 popping stack at reconvergence (depth 2->1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 3 popping merge point before assigning to block 12
 DEBUG: IfStmt - Lane 3 assigning to merge block 12
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 12
@@ -1462,18 +1462,18 @@ DEBUG: ForStmt - Lane 0 merge stack size: 1
 DEBUG: ForStmt - Lane 0 pushed iteration merge point 0x508000017820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 2 (Result-based)
 DEBUG: IfStmt - Lane 0 starting Result-based if statement
-DEBUG: IfStmt - Lane 0 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
-DEBUG: IfStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 0 starting fresh execution (pushed to stack depth=2, this=0x5060000018e0)
+DEBUG: IfStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 0 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 0 evaluating condition for first time (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 0 (lane 0 at 0x50f000000040)
 DEBUG: IfStmt - Lane 0 condition result=1 (Result-based)
-DEBUG: createIfBlocks - ifStmt=0x506000001640, parentBlockId=2, hasElse=1
+DEBUG: createIfBlocks - ifStmt=0x5060000018e0, parentBlockId=2, hasElse=1
 DEBUG: createIfBlocks - mergeStack size=3
   MergeStack[0]: sourceStatement=0x508000002820
   MergeStack[1]: sourceStatement=0x508000017820
-  MergeStack[2]: sourceStatement=0x506000001640
+  MergeStack[2]: sourceStatement=0x5060000018e0
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
@@ -1511,14 +1511,14 @@ DEBUG: ForStmt - Lane 1 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 1 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 10 (Result-based)
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 10 (registry returned: 10)
-DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 1 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
     result = (result + WaveActiveSum(10));
@@ -1527,20 +1527,20 @@ DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
 }
 DEBUG: IfStmt - Lane 1 variables BEFORE statement: i=1 laneId=1 result=1 
 DEBUG: IfStmt - Lane 1 starting Result-based if statement
-DEBUG: IfStmt - Lane 1 starting fresh execution (pushed to stack depth=3, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 1 starting fresh execution (pushed to stack depth=3, this=0x506000001880)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 10 (registry returned: 10)
-DEBUG: IfStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=3, our index=2, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=3, our index=2, this=0x506000001880)
 DEBUG: IfStmt - Lane 1 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 1 evaluating condition for first time (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 1 (lane 1 at 0x50f000000130)
 DEBUG: IfStmt - Lane 1 condition result=0 (Result-based)
-DEBUG: createIfBlocks - ifStmt=0x5060000015e0, parentBlockId=10, hasElse=1
+DEBUG: createIfBlocks - ifStmt=0x506000001880, parentBlockId=10, hasElse=1
 DEBUG: createIfBlocks - mergeStack size=4
   MergeStack[0]: sourceStatement=0x508000002820
   MergeStack[1]: sourceStatement=0x508000017820
-  MergeStack[2]: sourceStatement=0x506000001640
-  MergeStack[3]: sourceStatement=0x5060000015e0
+  MergeStack[2]: sourceStatement=0x5060000018e0
+  MergeStack[3]: sourceStatement=0x506000001880
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 } (2 lanes)
@@ -1593,14 +1593,14 @@ DEBUG: ForStmt - Lane 0 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 0 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 10 (Result-based)
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 10 (registry returned: 10)
-DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
     result = (result + WaveActiveSum(10));
@@ -1609,20 +1609,20 @@ DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
 }
 DEBUG: IfStmt - Lane 0 variables BEFORE statement: i=1 laneId=0 result=10 
 DEBUG: IfStmt - Lane 0 starting Result-based if statement
-DEBUG: IfStmt - Lane 0 starting fresh execution (pushed to stack depth=3, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 0 starting fresh execution (pushed to stack depth=3, this=0x506000001880)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 10 (registry returned: 10)
-DEBUG: IfStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=3, our index=2, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=3, our index=2, this=0x506000001880)
 DEBUG: IfStmt - Lane 0 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 0 evaluating condition for first time (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 0 (lane 0 at 0x50f000000040)
 DEBUG: IfStmt - Lane 0 condition result=1 (Result-based)
-DEBUG: createIfBlocks - ifStmt=0x5060000015e0, parentBlockId=10, hasElse=1
+DEBUG: createIfBlocks - ifStmt=0x506000001880, parentBlockId=10, hasElse=1
 DEBUG: createIfBlocks - mergeStack size=4
   MergeStack[0]: sourceStatement=0x508000002820
   MergeStack[1]: sourceStatement=0x508000017820
-  MergeStack[2]: sourceStatement=0x506000001640
-  MergeStack[3]: sourceStatement=0x5060000015e0
+  MergeStack[2]: sourceStatement=0x5060000018e0
+  MergeStack[3]: sourceStatement=0x506000001880
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 } (1 lanes)
@@ -1661,15 +1661,15 @@ DEBUG: ForStmt - Lane 1 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 1 merge stack size: 4
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
-  Stack[3]: sourceStatement=0x5060000015e0
+  Stack[2]: sourceStatement=0x5060000018e0
+  Stack[3]: sourceStatement=0x506000001880
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 14 (registry returned: 14)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 14 (Result-based)
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 14 (registry returned: 14)
-DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 1 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
     result = (result + WaveActiveSum(10));
@@ -1679,7 +1679,7 @@ DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
 DEBUG: IfStmt - Lane 1 variables BEFORE statement: i=1 laneId=1 result=1 
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 14 (registry returned: 14)
-DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=3, our index=2, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=3, our index=2, this=0x506000001880)
 DEBUG: IfStmt - Lane 1 executing else block from statement 0 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 1 (lane 1 at 0x50f000000130)
@@ -1812,15 +1812,15 @@ DEBUG: ForStmt - Lane 0 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 0 merge stack size: 4
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
-  Stack[3]: sourceStatement=0x5060000015e0
+  Stack[2]: sourceStatement=0x5060000018e0
+  Stack[3]: sourceStatement=0x506000001880
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 13 (Result-based)
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
-DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
     result = (result + WaveActiveSum(10));
@@ -1830,14 +1830,14 @@ DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
 DEBUG: IfStmt - Lane 0 variables BEFORE statement: i=1 laneId=0 result=10 
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
-DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=2, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=2, this=0x506000001880)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: result = (result + WaveActiveSum(10));
 DEBUG: IfStmt - Lane 0 variables BEFORE statement: i=1 laneId=0 result=10 
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 10 (lane 0 at 0x50f000000040)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 13, instruction key=(0x503000001a20,13)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 13, instruction key=(0x506000001760,13)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
 DEBUG: markLaneWaitingForWave - Lane 0 wave 0 in block 13
@@ -1859,15 +1859,15 @@ DEBUG: ForStmt - Lane 1 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 1 merge stack size: 4
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
-  Stack[3]: sourceStatement=0x5060000015e0
+  Stack[2]: sourceStatement=0x5060000018e0
+  Stack[3]: sourceStatement=0x506000001880
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 14 (registry returned: 14)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 14 (Result-based)
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 14 (registry returned: 14)
-DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 1 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
     result = (result + WaveActiveSum(10));
@@ -1877,15 +1877,15 @@ DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
 DEBUG: IfStmt - Lane 1 variables BEFORE statement: i=1 laneId=1 result=2 
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 14 (registry returned: 14)
-DEBUG: IfStmt - Lane 1 in phase Reconverging (Result-based, stack depth=3, our index=2, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 1 in phase Reconverging (Result-based, stack depth=3, our index=2, this=0x506000001880)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 14 (registry returned: 14)
 DEBUG: IfStmt - Lane 1 performing reconvergence from block 14 to laneSpecificMergeBlockId=15
 DEBUG: IfStmt - Lane 1 merge stack before reconvergence (size=4):
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
-  Stack[3]: sourceStatement=0x5060000015e0
-DEBUG: IfStmt - Lane 1 popping stack at reconvergence (depth 3->2, this=0x5060000015e0)
+  Stack[2]: sourceStatement=0x5060000018e0
+  Stack[3]: sourceStatement=0x506000001880
+DEBUG: IfStmt - Lane 1 popping stack at reconvergence (depth 3->2, this=0x506000001880)
 DEBUG: IfStmt - Lane 1 popping merge point before assigning to block 15
 DEBUG: IfStmt - Lane 1 assigning to merge block 15
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 15
@@ -1940,15 +1940,15 @@ DEBUG: ForStmt - Lane 0 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 0 merge stack size: 4
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
-  Stack[3]: sourceStatement=0x5060000015e0
+  Stack[2]: sourceStatement=0x5060000018e0
+  Stack[3]: sourceStatement=0x506000001880
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 13 (Result-based)
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
-DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
     result = (result + WaveActiveSum(10));
@@ -1958,14 +1958,14 @@ DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
 DEBUG: IfStmt - Lane 0 variables BEFORE statement: i=1 laneId=0 result=10 
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
-DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=2, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=2, this=0x506000001880)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: result = (result + WaveActiveSum(10));
 DEBUG: IfStmt - Lane 0 variables BEFORE statement: i=1 laneId=0 result=10 
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 10 (lane 0 at 0x50f000000040)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 13, instruction key=(0x503000001a20,13)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 13, instruction key=(0x506000001760,13)
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 10 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 20 to variable 'result'
@@ -1982,21 +1982,21 @@ DEBUG: ForStmt - Lane 1 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 1 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 15 (registry returned: 15)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 15 (Result-based)
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 15 (registry returned: 15)
-DEBUG: IfStmt - Lane 1 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 1 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 15 (registry returned: 15)
 DEBUG: IfStmt - Lane 1 performing reconvergence from block 15 to laneSpecificMergeBlockId=12
 DEBUG: IfStmt - Lane 1 merge stack before reconvergence (size=3):
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
-DEBUG: IfStmt - Lane 1 popping stack at reconvergence (depth 2->1, this=0x506000001640)
+  Stack[2]: sourceStatement=0x5060000018e0
+DEBUG: IfStmt - Lane 1 popping stack at reconvergence (depth 2->1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 1 popping merge point before assigning to block 12
 DEBUG: IfStmt - Lane 1 assigning to merge block 12
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 12
@@ -2040,7 +2040,7 @@ DEBUG: Removed lane 1 from block 12
 DEBUG: assignLaneToBlock - AFTER: block 2 has 2 participating lanes (0 1), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 2
-DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 3, instruction key=(0x503000001b70,3)
+DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 3, instruction key=(0x506000001940,3)
 DEBUG: markLaneWaitingForWave - Lane 2 wave 0 in block 3
 DEBUG: markLaneWaitingForWave - Successfully set lane 2 to WaitingForWave in block 3
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 3
@@ -2050,7 +2050,7 @@ DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 0 1  - These
 DEBUG: canExecuteWaveInstruction for lane 2 in block 3: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=0, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: WAVE_WAIT: Lane 2 received WaveOperationWait error, state=2
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 0 1  - These lanes need to be resolved to Participating or Left
-DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 3, instruction key=(0x503000001b70,3)
+DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 3, instruction key=(0x506000001940,3)
 DEBUG: markLaneWaitingForWave - Lane 3 wave 0 in block 3
 DEBUG: markLaneWaitingForWave - Successfully set lane 3 to WaitingForWave in block 3
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 3
@@ -2068,15 +2068,15 @@ DEBUG: ForStmt - Lane 0 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 0 merge stack size: 4
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
-  Stack[3]: sourceStatement=0x5060000015e0
+  Stack[2]: sourceStatement=0x5060000018e0
+  Stack[3]: sourceStatement=0x506000001880
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 13 (Result-based)
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
-DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
     result = (result + WaveActiveSum(10));
@@ -2086,15 +2086,15 @@ DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
 DEBUG: IfStmt - Lane 0 variables BEFORE statement: i=1 laneId=0 result=20 
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
-DEBUG: IfStmt - Lane 0 in phase Reconverging (Result-based, stack depth=3, our index=2, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 0 in phase Reconverging (Result-based, stack depth=3, our index=2, this=0x506000001880)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
 DEBUG: IfStmt - Lane 0 performing reconvergence from block 13 to laneSpecificMergeBlockId=15
 DEBUG: IfStmt - Lane 0 merge stack before reconvergence (size=4):
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
-  Stack[3]: sourceStatement=0x5060000015e0
-DEBUG: IfStmt - Lane 0 popping stack at reconvergence (depth 3->2, this=0x5060000015e0)
+  Stack[2]: sourceStatement=0x5060000018e0
+  Stack[3]: sourceStatement=0x506000001880
+DEBUG: IfStmt - Lane 0 popping stack at reconvergence (depth 3->2, this=0x506000001880)
 DEBUG: IfStmt - Lane 0 popping merge point before assigning to block 15
 DEBUG: IfStmt - Lane 0 assigning to merge block 15
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 15
@@ -2133,21 +2133,21 @@ DEBUG: ForStmt - Lane 0 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 0 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 15 (registry returned: 15)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 15 (Result-based)
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 15 (registry returned: 15)
-DEBUG: IfStmt - Lane 0 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 0 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 15 (registry returned: 15)
 DEBUG: IfStmt - Lane 0 performing reconvergence from block 15 to laneSpecificMergeBlockId=12
 DEBUG: IfStmt - Lane 0 merge stack before reconvergence (size=3):
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
-DEBUG: IfStmt - Lane 0 popping stack at reconvergence (depth 2->1, this=0x506000001640)
+  Stack[2]: sourceStatement=0x5060000018e0
+DEBUG: IfStmt - Lane 0 popping stack at reconvergence (depth 2->1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 0 popping merge point before assigning to block 12
 DEBUG: IfStmt - Lane 0 assigning to merge block 12
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 12
@@ -2328,7 +2328,7 @@ DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 12
 DEBUG: removeThreadFromAllSets - block 12 had 0 participating lanes before removal
 DEBUG: removeThreadFromAllSets - block 12 has 0 participating lanes after removal
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 1 unknown lanes: 0  - These lanes need to be resolved to Participating or Left
-DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 3, instruction key=(0x503000001b70,3)
+DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 3, instruction key=(0x506000001940,3)
 DEBUG: markLaneWaitingForWave - Lane 1 wave 0 in block 3
 DEBUG: markLaneWaitingForWave - Successfully set lane 1 to WaitingForWave in block 3
 DEBUG: WAVE_OP: Lane 1 cannot execute, starting to wait in block 3
@@ -2358,7 +2358,7 @@ DEBUG: VariableExpr - Variable 'result' = 2 (lane 2 at 0x50f000000220)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 2 (lane 3 at 0x50f000000310)
 DEBUG: WAVE_OP: Storing collective result for lanes: 0 1 2 3  (phase: 2)
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 3, instruction key=(0x503000001b70,3)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 3, instruction key=(0x506000001940,3)
 DEBUG: onLaneFinishWaveOp - Lane 1 finishing wave op in block 3
 DEBUG: onLaneFinishWaveOp - Current status in block 3: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 1 to Participating in block 3
@@ -2368,13 +2368,13 @@ DEBUG: onLaneFinishWaveOp - Updated lane 2 to Participating in block 3
 DEBUG: onLaneFinishWaveOp - Lane 3 finishing wave op in block 3
 DEBUG: onLaneFinishWaveOp - Current status in block 3: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 3 to Participating in block 3
-DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 3, instruction key=(0x503000001b70,3)
+DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 3, instruction key=(0x506000001940,3)
 DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 26 (phase: Executed)
-DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 3, instruction key=(0x503000001b70,3)
+DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 3, instruction key=(0x506000001940,3)
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 26 (phase: Executed)
-DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 3, instruction key=(0x503000001b70,3)
+DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 3, instruction key=(0x506000001940,3)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 26 (phase: Consumed)
 lane 0 have completed execution
@@ -2512,18 +2512,18 @@ DEBUG: ForStmt - Lane 0 merge stack size: 1
 DEBUG: ForStmt - Lane 0 pushed iteration merge point 0x508000007820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 2 (Result-based)
 DEBUG: IfStmt - Lane 0 starting Result-based if statement
-DEBUG: IfStmt - Lane 0 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
-DEBUG: IfStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 0 starting fresh execution (pushed to stack depth=2, this=0x5060000018e0)
+DEBUG: IfStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 0 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 0 evaluating condition for first time (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 0 (lane 0 at 0x50f000000400)
 DEBUG: IfStmt - Lane 0 condition result=1 (Result-based)
-DEBUG: createIfBlocks - ifStmt=0x506000001640, parentBlockId=2, hasElse=1
+DEBUG: createIfBlocks - ifStmt=0x5060000018e0, parentBlockId=2, hasElse=1
 DEBUG: createIfBlocks - mergeStack size=3
   MergeStack[0]: sourceStatement=0x508000002820
   MergeStack[1]: sourceStatement=0x508000007820
-  MergeStack[2]: sourceStatement=0x506000001640
+  MergeStack[2]: sourceStatement=0x5060000018e0
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
@@ -2572,18 +2572,18 @@ DEBUG: ForStmt - Lane 1 merge stack size: 1
 DEBUG: ForStmt - Lane 1 pushed iteration merge point 0x508000007820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 2 (Result-based)
 DEBUG: IfStmt - Lane 1 starting Result-based if statement
-DEBUG: IfStmt - Lane 1 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
-DEBUG: IfStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 1 starting fresh execution (pushed to stack depth=2, this=0x5060000018e0)
+DEBUG: IfStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 1 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 1 evaluating condition for first time (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 1 (lane 1 at 0x50f0000004f0)
 DEBUG: IfStmt - Lane 1 condition result=1 (Result-based)
-DEBUG: createIfBlocks - ifStmt=0x506000001640, parentBlockId=2, hasElse=1
+DEBUG: createIfBlocks - ifStmt=0x5060000018e0, parentBlockId=2, hasElse=1
 DEBUG: createIfBlocks - mergeStack size=3
   MergeStack[0]: sourceStatement=0x508000002820
   MergeStack[1]: sourceStatement=0x508000007820
-  MergeStack[2]: sourceStatement=0x506000001640
+  MergeStack[2]: sourceStatement=0x5060000018e0
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
@@ -2623,18 +2623,18 @@ DEBUG: ForStmt - Lane 2 merge stack size: 1
 DEBUG: ForStmt - Lane 2 pushed iteration merge point 0x508000007820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 2 (Result-based)
 DEBUG: IfStmt - Lane 2 starting Result-based if statement
-DEBUG: IfStmt - Lane 2 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
-DEBUG: IfStmt - Lane 2 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 2 starting fresh execution (pushed to stack depth=2, this=0x5060000018e0)
+DEBUG: IfStmt - Lane 2 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 2 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 2 evaluating condition for first time (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 2 (lane 2 at 0x50f0000005e0)
 DEBUG: IfStmt - Lane 2 condition result=0 (Result-based)
-DEBUG: createIfBlocks - ifStmt=0x506000001640, parentBlockId=2, hasElse=1
+DEBUG: createIfBlocks - ifStmt=0x5060000018e0, parentBlockId=2, hasElse=1
 DEBUG: createIfBlocks - mergeStack size=3
   MergeStack[0]: sourceStatement=0x508000002820
   MergeStack[1]: sourceStatement=0x508000007820
-  MergeStack[2]: sourceStatement=0x506000001640
+  MergeStack[2]: sourceStatement=0x5060000018e0
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
@@ -2674,18 +2674,18 @@ DEBUG: ForStmt - Lane 3 merge stack size: 1
 DEBUG: ForStmt - Lane 3 pushed iteration merge point 0x508000007820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 2 (Result-based)
 DEBUG: IfStmt - Lane 3 starting Result-based if statement
-DEBUG: IfStmt - Lane 3 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
-DEBUG: IfStmt - Lane 3 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 3 starting fresh execution (pushed to stack depth=2, this=0x5060000018e0)
+DEBUG: IfStmt - Lane 3 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 3 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 3 evaluating condition for first time (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 3 (lane 3 at 0x50f0000006d0)
 DEBUG: IfStmt - Lane 3 condition result=0 (Result-based)
-DEBUG: createIfBlocks - ifStmt=0x506000001640, parentBlockId=2, hasElse=1
+DEBUG: createIfBlocks - ifStmt=0x5060000018e0, parentBlockId=2, hasElse=1
 DEBUG: createIfBlocks - mergeStack size=3
   MergeStack[0]: sourceStatement=0x508000002820
   MergeStack[1]: sourceStatement=0x508000007820
-  MergeStack[2]: sourceStatement=0x506000001640
+  MergeStack[2]: sourceStatement=0x5060000018e0
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
@@ -2723,14 +2723,14 @@ DEBUG: ForStmt - Lane 0 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 0 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 4 (Result-based)
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4 (registry returned: 4)
-DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
     result = (result + WaveActiveSum(10));
@@ -2739,20 +2739,20 @@ DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
 }
 DEBUG: IfStmt - Lane 0 variables BEFORE statement: i=0 laneId=0 result=0 
 DEBUG: IfStmt - Lane 0 starting Result-based if statement
-DEBUG: IfStmt - Lane 0 starting fresh execution (pushed to stack depth=3, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 0 starting fresh execution (pushed to stack depth=3, this=0x506000001880)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 4 (registry returned: 4)
-DEBUG: IfStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=3, our index=2, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=3, our index=2, this=0x506000001880)
 DEBUG: IfStmt - Lane 0 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 0 evaluating condition for first time (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 0 (lane 0 at 0x50f000000400)
 DEBUG: IfStmt - Lane 0 condition result=1 (Result-based)
-DEBUG: createIfBlocks - ifStmt=0x5060000015e0, parentBlockId=4, hasElse=1
+DEBUG: createIfBlocks - ifStmt=0x506000001880, parentBlockId=4, hasElse=1
 DEBUG: createIfBlocks - mergeStack size=4
   MergeStack[0]: sourceStatement=0x508000002820
   MergeStack[1]: sourceStatement=0x508000007820
-  MergeStack[2]: sourceStatement=0x506000001640
-  MergeStack[3]: sourceStatement=0x5060000015e0
+  MergeStack[2]: sourceStatement=0x5060000018e0
+  MergeStack[3]: sourceStatement=0x506000001880
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 } (2 lanes)
@@ -2793,14 +2793,14 @@ DEBUG: ForStmt - Lane 1 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 1 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 4 (Result-based)
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
-DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 1 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
     result = (result + WaveActiveSum(10));
@@ -2809,20 +2809,20 @@ DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
 }
 DEBUG: IfStmt - Lane 1 variables BEFORE statement: i=0 laneId=1 result=0 
 DEBUG: IfStmt - Lane 1 starting Result-based if statement
-DEBUG: IfStmt - Lane 1 starting fresh execution (pushed to stack depth=3, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 1 starting fresh execution (pushed to stack depth=3, this=0x506000001880)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 4 (registry returned: 4)
-DEBUG: IfStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=3, our index=2, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=3, our index=2, this=0x506000001880)
 DEBUG: IfStmt - Lane 1 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 1 evaluating condition for first time (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 1 (lane 1 at 0x50f0000004f0)
 DEBUG: IfStmt - Lane 1 condition result=0 (Result-based)
-DEBUG: createIfBlocks - ifStmt=0x5060000015e0, parentBlockId=4, hasElse=1
+DEBUG: createIfBlocks - ifStmt=0x506000001880, parentBlockId=4, hasElse=1
 DEBUG: createIfBlocks - mergeStack size=4
   MergeStack[0]: sourceStatement=0x508000002820
   MergeStack[1]: sourceStatement=0x508000007820
-  MergeStack[2]: sourceStatement=0x506000001640
-  MergeStack[3]: sourceStatement=0x5060000015e0
+  MergeStack[2]: sourceStatement=0x5060000018e0
+  MergeStack[3]: sourceStatement=0x506000001880
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {1 } (1 lanes)
@@ -2861,14 +2861,14 @@ DEBUG: ForStmt - Lane 2 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 2 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 2 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 5 (Result-based)
 DEBUG: IfStmt - Lane 2 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
-DEBUG: IfStmt - Lane 2 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 2 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 2 executing else block from statement 0 (Result-based)
 DEBUG: AssignStmt - Lane 2 assigned value 2 to variable 'result'
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
@@ -2882,14 +2882,14 @@ DEBUG: ForStmt - Lane 3 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 3 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 5 (Result-based)
 DEBUG: IfStmt - Lane 3 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
-DEBUG: IfStmt - Lane 3 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 3 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 3 executing else block from statement 0 (Result-based)
 DEBUG: AssignStmt - Lane 3 assigned value 2 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
@@ -2903,15 +2903,15 @@ DEBUG: ForStmt - Lane 0 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 0 merge stack size: 4
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
-  Stack[3]: sourceStatement=0x5060000015e0
+  Stack[2]: sourceStatement=0x5060000018e0
+  Stack[3]: sourceStatement=0x506000001880
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 7 (Result-based)
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
-DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
     result = (result + WaveActiveSum(10));
@@ -2921,14 +2921,14 @@ DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
 DEBUG: IfStmt - Lane 0 variables BEFORE statement: i=0 laneId=0 result=0 
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
-DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=2, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=2, this=0x506000001880)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: result = (result + WaveActiveSum(10));
 DEBUG: IfStmt - Lane 0 variables BEFORE statement: i=0 laneId=0 result=0 
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 0 at 0x50f000000400)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 7, instruction key=(0x503000001a20,7)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 7, instruction key=(0x506000001760,7)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: markLaneWaitingForWave - Lane 0 wave 0 in block 7
@@ -2950,15 +2950,15 @@ DEBUG: ForStmt - Lane 1 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 1 merge stack size: 4
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
-  Stack[3]: sourceStatement=0x5060000015e0
+  Stack[2]: sourceStatement=0x5060000018e0
+  Stack[3]: sourceStatement=0x506000001880
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 8 (registry returned: 8)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 8 (Result-based)
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 8 (registry returned: 8)
-DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 1 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
     result = (result + WaveActiveSum(10));
@@ -2968,7 +2968,7 @@ DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
 DEBUG: IfStmt - Lane 1 variables BEFORE statement: i=0 laneId=1 result=0 
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 8 (registry returned: 8)
-DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=3, our index=2, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=3, our index=2, this=0x506000001880)
 DEBUG: IfStmt - Lane 1 executing else block from statement 0 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 1 at 0x50f0000004f0)
@@ -2989,21 +2989,21 @@ DEBUG: ForStmt - Lane 2 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 2 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 2 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 5 (Result-based)
 DEBUG: IfStmt - Lane 2 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
-DEBUG: IfStmt - Lane 2 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 2 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: IfStmt - Lane 2 performing reconvergence from block 5 to laneSpecificMergeBlockId=6
 DEBUG: IfStmt - Lane 2 merge stack before reconvergence (size=3):
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
-DEBUG: IfStmt - Lane 2 popping stack at reconvergence (depth 2->1, this=0x506000001640)
+  Stack[2]: sourceStatement=0x5060000018e0
+DEBUG: IfStmt - Lane 2 popping stack at reconvergence (depth 2->1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 2 popping merge point before assigning to block 6
 DEBUG: IfStmt - Lane 2 assigning to merge block 6
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 6
@@ -3055,21 +3055,21 @@ DEBUG: ForStmt - Lane 3 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 3 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 5 (Result-based)
 DEBUG: IfStmt - Lane 3 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
-DEBUG: IfStmt - Lane 3 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 3 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 5 (registry returned: 5)
 DEBUG: IfStmt - Lane 3 performing reconvergence from block 5 to laneSpecificMergeBlockId=6
 DEBUG: IfStmt - Lane 3 merge stack before reconvergence (size=3):
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
-DEBUG: IfStmt - Lane 3 popping stack at reconvergence (depth 2->1, this=0x506000001640)
+  Stack[2]: sourceStatement=0x5060000018e0
+DEBUG: IfStmt - Lane 3 popping stack at reconvergence (depth 2->1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 3 popping merge point before assigning to block 6
 DEBUG: IfStmt - Lane 3 assigning to merge block 6
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 6
@@ -3121,15 +3121,15 @@ DEBUG: ForStmt - Lane 0 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 0 merge stack size: 4
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
-  Stack[3]: sourceStatement=0x5060000015e0
+  Stack[2]: sourceStatement=0x5060000018e0
+  Stack[3]: sourceStatement=0x506000001880
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 7 (Result-based)
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
-DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
     result = (result + WaveActiveSum(10));
@@ -3139,14 +3139,14 @@ DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
 DEBUG: IfStmt - Lane 0 variables BEFORE statement: i=0 laneId=0 result=0 
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
-DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=2, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=2, this=0x506000001880)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: result = (result + WaveActiveSum(10));
 DEBUG: IfStmt - Lane 0 variables BEFORE statement: i=0 laneId=0 result=0 
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 0 (lane 0 at 0x50f000000400)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 7, instruction key=(0x503000001a20,7)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 7, instruction key=(0x506000001760,7)
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 10 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 10 to variable 'result'
@@ -3163,15 +3163,15 @@ DEBUG: ForStmt - Lane 1 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 1 merge stack size: 4
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
-  Stack[3]: sourceStatement=0x5060000015e0
+  Stack[2]: sourceStatement=0x5060000018e0
+  Stack[3]: sourceStatement=0x506000001880
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 8 (registry returned: 8)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 8 (Result-based)
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 8 (registry returned: 8)
-DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 1 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
     result = (result + WaveActiveSum(10));
@@ -3181,15 +3181,15 @@ DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
 DEBUG: IfStmt - Lane 1 variables BEFORE statement: i=0 laneId=1 result=1 
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 8 (registry returned: 8)
-DEBUG: IfStmt - Lane 1 in phase Reconverging (Result-based, stack depth=3, our index=2, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 1 in phase Reconverging (Result-based, stack depth=3, our index=2, this=0x506000001880)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 8 (registry returned: 8)
 DEBUG: IfStmt - Lane 1 performing reconvergence from block 8 to laneSpecificMergeBlockId=9
 DEBUG: IfStmt - Lane 1 merge stack before reconvergence (size=4):
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
-  Stack[3]: sourceStatement=0x5060000015e0
-DEBUG: IfStmt - Lane 1 popping stack at reconvergence (depth 3->2, this=0x5060000015e0)
+  Stack[2]: sourceStatement=0x5060000018e0
+  Stack[3]: sourceStatement=0x506000001880
+DEBUG: IfStmt - Lane 1 popping stack at reconvergence (depth 3->2, this=0x506000001880)
 DEBUG: IfStmt - Lane 1 popping merge point before assigning to block 9
 DEBUG: IfStmt - Lane 1 assigning to merge block 9
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 9
@@ -3232,15 +3232,15 @@ DEBUG: ForStmt - Lane 0 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 0 merge stack size: 4
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
-  Stack[3]: sourceStatement=0x5060000015e0
+  Stack[2]: sourceStatement=0x5060000018e0
+  Stack[3]: sourceStatement=0x506000001880
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 7 (Result-based)
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
-DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
     result = (result + WaveActiveSum(10));
@@ -3250,15 +3250,15 @@ DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
 DEBUG: IfStmt - Lane 0 variables BEFORE statement: i=0 laneId=0 result=10 
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
-DEBUG: IfStmt - Lane 0 in phase Reconverging (Result-based, stack depth=3, our index=2, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 0 in phase Reconverging (Result-based, stack depth=3, our index=2, this=0x506000001880)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 7 (registry returned: 7)
 DEBUG: IfStmt - Lane 0 performing reconvergence from block 7 to laneSpecificMergeBlockId=9
 DEBUG: IfStmt - Lane 0 merge stack before reconvergence (size=4):
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
-  Stack[3]: sourceStatement=0x5060000015e0
-DEBUG: IfStmt - Lane 0 popping stack at reconvergence (depth 3->2, this=0x5060000015e0)
+  Stack[2]: sourceStatement=0x5060000018e0
+  Stack[3]: sourceStatement=0x506000001880
+DEBUG: IfStmt - Lane 0 popping stack at reconvergence (depth 3->2, this=0x506000001880)
 DEBUG: IfStmt - Lane 0 popping merge point before assigning to block 9
 DEBUG: IfStmt - Lane 0 assigning to merge block 9
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 9
@@ -3289,21 +3289,21 @@ DEBUG: ForStmt - Lane 1 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 1 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 9 (Result-based)
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 9 (registry returned: 9)
-DEBUG: IfStmt - Lane 1 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 1 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: IfStmt - Lane 1 performing reconvergence from block 9 to laneSpecificMergeBlockId=6
 DEBUG: IfStmt - Lane 1 merge stack before reconvergence (size=3):
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
-DEBUG: IfStmt - Lane 1 popping stack at reconvergence (depth 2->1, this=0x506000001640)
+  Stack[2]: sourceStatement=0x5060000018e0
+DEBUG: IfStmt - Lane 1 popping stack at reconvergence (depth 2->1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 1 popping merge point before assigning to block 6
 DEBUG: IfStmt - Lane 1 assigning to merge block 6
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 6
@@ -3367,21 +3367,21 @@ DEBUG: ForStmt - Lane 0 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 0 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000007820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 9 (Result-based)
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry returned: 9)
-DEBUG: IfStmt - Lane 0 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 0 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 9 (registry returned: 9)
 DEBUG: IfStmt - Lane 0 performing reconvergence from block 9 to laneSpecificMergeBlockId=6
 DEBUG: IfStmt - Lane 0 merge stack before reconvergence (size=3):
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000007820
-  Stack[2]: sourceStatement=0x506000001640
-DEBUG: IfStmt - Lane 0 popping stack at reconvergence (depth 2->1, this=0x506000001640)
+  Stack[2]: sourceStatement=0x5060000018e0
+DEBUG: IfStmt - Lane 0 popping stack at reconvergence (depth 2->1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 0 popping merge point before assigning to block 6
 DEBUG: IfStmt - Lane 0 assigning to merge block 6
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 6
@@ -3442,18 +3442,18 @@ DEBUG: ForStmt - Lane 2 merge stack size: 1
 DEBUG: ForStmt - Lane 2 pushed iteration merge point 0x508000017820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 2 (Result-based)
 DEBUG: IfStmt - Lane 2 starting Result-based if statement
-DEBUG: IfStmt - Lane 2 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
-DEBUG: IfStmt - Lane 2 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 2 starting fresh execution (pushed to stack depth=2, this=0x5060000018e0)
+DEBUG: IfStmt - Lane 2 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 2 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 2 evaluating condition for first time (Result-based)
 DEBUG: VariableExpr - Lane 2 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 2 (lane 2 at 0x50f0000005e0)
 DEBUG: IfStmt - Lane 2 condition result=0 (Result-based)
-DEBUG: createIfBlocks - ifStmt=0x506000001640, parentBlockId=2, hasElse=1
+DEBUG: createIfBlocks - ifStmt=0x5060000018e0, parentBlockId=2, hasElse=1
 DEBUG: createIfBlocks - mergeStack size=3
   MergeStack[0]: sourceStatement=0x508000002820
   MergeStack[1]: sourceStatement=0x508000017820
-  MergeStack[2]: sourceStatement=0x506000001640
+  MergeStack[2]: sourceStatement=0x5060000018e0
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
@@ -3502,18 +3502,18 @@ DEBUG: ForStmt - Lane 3 merge stack size: 1
 DEBUG: ForStmt - Lane 3 pushed iteration merge point 0x508000017820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 2 (Result-based)
 DEBUG: IfStmt - Lane 3 starting Result-based if statement
-DEBUG: IfStmt - Lane 3 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
-DEBUG: IfStmt - Lane 3 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 3 starting fresh execution (pushed to stack depth=2, this=0x5060000018e0)
+DEBUG: IfStmt - Lane 3 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 3 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 3 evaluating condition for first time (Result-based)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 3 (lane 3 at 0x50f0000006d0)
 DEBUG: IfStmt - Lane 3 condition result=0 (Result-based)
-DEBUG: createIfBlocks - ifStmt=0x506000001640, parentBlockId=2, hasElse=1
+DEBUG: createIfBlocks - ifStmt=0x5060000018e0, parentBlockId=2, hasElse=1
 DEBUG: createIfBlocks - mergeStack size=3
   MergeStack[0]: sourceStatement=0x508000002820
   MergeStack[1]: sourceStatement=0x508000017820
-  MergeStack[2]: sourceStatement=0x506000001640
+  MergeStack[2]: sourceStatement=0x5060000018e0
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
@@ -3562,14 +3562,14 @@ DEBUG: ForStmt - Lane 2 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 2 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 2 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 11 (Result-based)
 DEBUG: IfStmt - Lane 2 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
-DEBUG: IfStmt - Lane 2 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 2 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 2 executing else block from statement 0 (Result-based)
 DEBUG: AssignStmt - Lane 2 assigned value 2 to variable 'result'
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
@@ -3583,14 +3583,14 @@ DEBUG: ForStmt - Lane 3 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 3 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 11 (Result-based)
 DEBUG: IfStmt - Lane 3 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 11 (registry returned: 11)
-DEBUG: IfStmt - Lane 3 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 3 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 3 executing else block from statement 0 (Result-based)
 DEBUG: AssignStmt - Lane 3 assigned value 2 to variable 'result'
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 11 (registry returned: 11)
@@ -3613,18 +3613,18 @@ DEBUG: ForStmt - Lane 1 merge stack size: 1
 DEBUG: ForStmt - Lane 1 pushed iteration merge point 0x508000017820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 2 (Result-based)
 DEBUG: IfStmt - Lane 1 starting Result-based if statement
-DEBUG: IfStmt - Lane 1 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
-DEBUG: IfStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 1 starting fresh execution (pushed to stack depth=2, this=0x5060000018e0)
+DEBUG: IfStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 1 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 1 evaluating condition for first time (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 1 (lane 1 at 0x50f0000004f0)
 DEBUG: IfStmt - Lane 1 condition result=1 (Result-based)
-DEBUG: createIfBlocks - ifStmt=0x506000001640, parentBlockId=2, hasElse=1
+DEBUG: createIfBlocks - ifStmt=0x5060000018e0, parentBlockId=2, hasElse=1
 DEBUG: createIfBlocks - mergeStack size=3
   MergeStack[0]: sourceStatement=0x508000002820
   MergeStack[1]: sourceStatement=0x508000017820
-  MergeStack[2]: sourceStatement=0x506000001640
+  MergeStack[2]: sourceStatement=0x5060000018e0
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
@@ -3661,21 +3661,21 @@ DEBUG: ForStmt - Lane 2 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 2 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 2 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: ForStmt - Lane 2 executing statement 0 in block 11 (Result-based)
 DEBUG: IfStmt - Lane 2 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
-DEBUG: IfStmt - Lane 2 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 2 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 WARNING: getCurrentBlock - Lane 2 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: IfStmt - Lane 2 performing reconvergence from block 11 to laneSpecificMergeBlockId=12
 DEBUG: IfStmt - Lane 2 merge stack before reconvergence (size=3):
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
-DEBUG: IfStmt - Lane 2 popping stack at reconvergence (depth 2->1, this=0x506000001640)
+  Stack[2]: sourceStatement=0x5060000018e0
+DEBUG: IfStmt - Lane 2 popping stack at reconvergence (depth 2->1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 2 popping merge point before assigning to block 12
 DEBUG: IfStmt - Lane 2 assigning to merge block 12
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 2 to block 12
@@ -3715,21 +3715,21 @@ DEBUG: ForStmt - Lane 3 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 3 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 3 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: ForStmt - Lane 3 executing statement 0 in block 11 (Result-based)
 DEBUG: IfStmt - Lane 3 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 11 (registry returned: 11)
-DEBUG: IfStmt - Lane 3 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 3 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 WARNING: getCurrentBlock - Lane 3 found in multiple blocks: 2, 11 (registry returned: 11)
 DEBUG: IfStmt - Lane 3 performing reconvergence from block 11 to laneSpecificMergeBlockId=12
 DEBUG: IfStmt - Lane 3 merge stack before reconvergence (size=3):
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
-DEBUG: IfStmt - Lane 3 popping stack at reconvergence (depth 2->1, this=0x506000001640)
+  Stack[2]: sourceStatement=0x5060000018e0
+DEBUG: IfStmt - Lane 3 popping stack at reconvergence (depth 2->1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 3 popping merge point before assigning to block 12
 DEBUG: IfStmt - Lane 3 assigning to merge block 12
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 3 to block 12
@@ -3772,18 +3772,18 @@ DEBUG: ForStmt - Lane 0 merge stack size: 1
 DEBUG: ForStmt - Lane 0 pushed iteration merge point 0x508000017820 (no iteration block needed, but merge stack modified)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 2 (Result-based)
 DEBUG: IfStmt - Lane 0 starting Result-based if statement
-DEBUG: IfStmt - Lane 0 starting fresh execution (pushed to stack depth=2, this=0x506000001640)
-DEBUG: IfStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 0 starting fresh execution (pushed to stack depth=2, this=0x5060000018e0)
+DEBUG: IfStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 0 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 0 evaluating condition for first time (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 0 (lane 0 at 0x50f000000400)
 DEBUG: IfStmt - Lane 0 condition result=1 (Result-based)
-DEBUG: createIfBlocks - ifStmt=0x506000001640, parentBlockId=2, hasElse=1
+DEBUG: createIfBlocks - ifStmt=0x5060000018e0, parentBlockId=2, hasElse=1
 DEBUG: createIfBlocks - mergeStack size=3
   MergeStack[0]: sourceStatement=0x508000002820
   MergeStack[1]: sourceStatement=0x508000017820
-  MergeStack[2]: sourceStatement=0x506000001640
+  MergeStack[2]: sourceStatement=0x5060000018e0
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 2 3 } (4 lanes)
@@ -3821,14 +3821,14 @@ DEBUG: ForStmt - Lane 1 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 1 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 10 (Result-based)
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 10 (registry returned: 10)
-DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 1 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
     result = (result + WaveActiveSum(10));
@@ -3837,20 +3837,20 @@ DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
 }
 DEBUG: IfStmt - Lane 1 variables BEFORE statement: i=1 laneId=1 result=1 
 DEBUG: IfStmt - Lane 1 starting Result-based if statement
-DEBUG: IfStmt - Lane 1 starting fresh execution (pushed to stack depth=3, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 1 starting fresh execution (pushed to stack depth=3, this=0x506000001880)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 10 (registry returned: 10)
-DEBUG: IfStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=3, our index=2, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 1 in phase EvaluatingCondition (Result-based, stack depth=3, our index=2, this=0x506000001880)
 DEBUG: IfStmt - Lane 1 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 1 evaluating condition for first time (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 1 (lane 1 at 0x50f0000004f0)
 DEBUG: IfStmt - Lane 1 condition result=0 (Result-based)
-DEBUG: createIfBlocks - ifStmt=0x5060000015e0, parentBlockId=10, hasElse=1
+DEBUG: createIfBlocks - ifStmt=0x506000001880, parentBlockId=10, hasElse=1
 DEBUG: createIfBlocks - mergeStack size=4
   MergeStack[0]: sourceStatement=0x508000002820
   MergeStack[1]: sourceStatement=0x508000017820
-  MergeStack[2]: sourceStatement=0x506000001640
-  MergeStack[3]: sourceStatement=0x5060000015e0
+  MergeStack[2]: sourceStatement=0x5060000018e0
+  MergeStack[3]: sourceStatement=0x506000001880
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 1 } (2 lanes)
@@ -3903,14 +3903,14 @@ DEBUG: ForStmt - Lane 0 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 0 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 10 (registry returned: 10)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 10 (Result-based)
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 10 (registry returned: 10)
-DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
     result = (result + WaveActiveSum(10));
@@ -3919,20 +3919,20 @@ DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
 }
 DEBUG: IfStmt - Lane 0 variables BEFORE statement: i=1 laneId=0 result=10 
 DEBUG: IfStmt - Lane 0 starting Result-based if statement
-DEBUG: IfStmt - Lane 0 starting fresh execution (pushed to stack depth=3, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 0 starting fresh execution (pushed to stack depth=3, this=0x506000001880)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 10 (registry returned: 10)
-DEBUG: IfStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=3, our index=2, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 0 in phase EvaluatingCondition (Result-based, stack depth=3, our index=2, this=0x506000001880)
 DEBUG: IfStmt - Lane 0 evaluating condition (Result-based)
 DEBUG: IfStmt - Lane 0 evaluating condition for first time (Result-based)
 DEBUG: VariableExpr - Lane 0 evaluating variable 'laneId' (Result-based)
 DEBUG: VariableExpr - Variable 'laneId' = 0 (lane 0 at 0x50f000000400)
 DEBUG: IfStmt - Lane 0 condition result=1 (Result-based)
-DEBUG: createIfBlocks - ifStmt=0x5060000015e0, parentBlockId=10, hasElse=1
+DEBUG: createIfBlocks - ifStmt=0x506000001880, parentBlockId=10, hasElse=1
 DEBUG: createIfBlocks - mergeStack size=4
   MergeStack[0]: sourceStatement=0x508000002820
   MergeStack[1]: sourceStatement=0x508000017820
-  MergeStack[2]: sourceStatement=0x506000001640
-  MergeStack[3]: sourceStatement=0x5060000015e0
+  MergeStack[2]: sourceStatement=0x5060000018e0
+  MergeStack[3]: sourceStatement=0x506000001880
 DEBUG: createIfBlocks - executionPath size=0
 DEBUG: findOrCreateBlockForPath called with 1 waves of unknown lanes
   Wave 0: {0 } (1 lanes)
@@ -3971,15 +3971,15 @@ DEBUG: ForStmt - Lane 1 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 1 merge stack size: 4
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
-  Stack[3]: sourceStatement=0x5060000015e0
+  Stack[2]: sourceStatement=0x5060000018e0
+  Stack[3]: sourceStatement=0x506000001880
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 14 (registry returned: 14)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 14 (Result-based)
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 14 (registry returned: 14)
-DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 1 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
     result = (result + WaveActiveSum(10));
@@ -3989,7 +3989,7 @@ DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
 DEBUG: IfStmt - Lane 1 variables BEFORE statement: i=1 laneId=1 result=1 
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 14 (registry returned: 14)
-DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=3, our index=2, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=3, our index=2, this=0x506000001880)
 DEBUG: IfStmt - Lane 1 executing else block from statement 0 (Result-based)
 DEBUG: VariableExpr - Lane 1 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 1 (lane 1 at 0x50f0000004f0)
@@ -4122,15 +4122,15 @@ DEBUG: ForStmt - Lane 0 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 0 merge stack size: 4
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
-  Stack[3]: sourceStatement=0x5060000015e0
+  Stack[2]: sourceStatement=0x5060000018e0
+  Stack[3]: sourceStatement=0x506000001880
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 13 (Result-based)
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
-DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
     result = (result + WaveActiveSum(10));
@@ -4140,14 +4140,14 @@ DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
 DEBUG: IfStmt - Lane 0 variables BEFORE statement: i=1 laneId=0 result=10 
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
-DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=2, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=2, this=0x506000001880)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: result = (result + WaveActiveSum(10));
 DEBUG: IfStmt - Lane 0 variables BEFORE statement: i=1 laneId=0 result=10 
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 10 (lane 0 at 0x50f000000400)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 13, instruction key=(0x503000001a20,13)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 13, instruction key=(0x506000001760,13)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
 DEBUG: markLaneWaitingForWave - Lane 0 wave 0 in block 13
@@ -4169,15 +4169,15 @@ DEBUG: ForStmt - Lane 1 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 1 merge stack size: 4
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
-  Stack[3]: sourceStatement=0x5060000015e0
+  Stack[2]: sourceStatement=0x5060000018e0
+  Stack[3]: sourceStatement=0x506000001880
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 14 (registry returned: 14)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 14 (Result-based)
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 14 (registry returned: 14)
-DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 1 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 1 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
     result = (result + WaveActiveSum(10));
@@ -4187,15 +4187,15 @@ DEBUG: IfStmt - Lane 1 executing then block statement 0: if ((laneId == 0)) {
 DEBUG: IfStmt - Lane 1 variables BEFORE statement: i=1 laneId=1 result=2 
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 14 (registry returned: 14)
-DEBUG: IfStmt - Lane 1 in phase Reconverging (Result-based, stack depth=3, our index=2, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 1 in phase Reconverging (Result-based, stack depth=3, our index=2, this=0x506000001880)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 14 (registry returned: 14)
 DEBUG: IfStmt - Lane 1 performing reconvergence from block 14 to laneSpecificMergeBlockId=15
 DEBUG: IfStmt - Lane 1 merge stack before reconvergence (size=4):
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
-  Stack[3]: sourceStatement=0x5060000015e0
-DEBUG: IfStmt - Lane 1 popping stack at reconvergence (depth 3->2, this=0x5060000015e0)
+  Stack[2]: sourceStatement=0x5060000018e0
+  Stack[3]: sourceStatement=0x506000001880
+DEBUG: IfStmt - Lane 1 popping stack at reconvergence (depth 3->2, this=0x506000001880)
 DEBUG: IfStmt - Lane 1 popping merge point before assigning to block 15
 DEBUG: IfStmt - Lane 1 assigning to merge block 15
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 15
@@ -4250,15 +4250,15 @@ DEBUG: ForStmt - Lane 0 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 0 merge stack size: 4
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
-  Stack[3]: sourceStatement=0x5060000015e0
+  Stack[2]: sourceStatement=0x5060000018e0
+  Stack[3]: sourceStatement=0x506000001880
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 13 (Result-based)
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
-DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
     result = (result + WaveActiveSum(10));
@@ -4268,14 +4268,14 @@ DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
 DEBUG: IfStmt - Lane 0 variables BEFORE statement: i=1 laneId=0 result=10 
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
-DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=2, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=2, this=0x506000001880)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: result = (result + WaveActiveSum(10));
 DEBUG: IfStmt - Lane 0 variables BEFORE statement: i=1 laneId=0 result=10 
 DEBUG: VariableExpr - Lane 0 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 10 (lane 0 at 0x50f000000400)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 13, instruction key=(0x503000001a20,13)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 13, instruction key=(0x506000001760,13)
 DEBUG: WAVE_OP: Lane 0 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 0 retrieving stored wave result: 10 (phase: Consumed)
 DEBUG: AssignStmt - Lane 0 assigned value 20 to variable 'result'
@@ -4292,21 +4292,21 @@ DEBUG: ForStmt - Lane 1 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 1 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 1 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 15 (registry returned: 15)
 DEBUG: ForStmt - Lane 1 executing statement 0 in block 15 (Result-based)
 DEBUG: IfStmt - Lane 1 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 15 (registry returned: 15)
-DEBUG: IfStmt - Lane 1 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 1 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 WARNING: getCurrentBlock - Lane 1 found in multiple blocks: 2, 15 (registry returned: 15)
 DEBUG: IfStmt - Lane 1 performing reconvergence from block 15 to laneSpecificMergeBlockId=12
 DEBUG: IfStmt - Lane 1 merge stack before reconvergence (size=3):
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
-DEBUG: IfStmt - Lane 1 popping stack at reconvergence (depth 2->1, this=0x506000001640)
+  Stack[2]: sourceStatement=0x5060000018e0
+DEBUG: IfStmt - Lane 1 popping stack at reconvergence (depth 2->1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 1 popping merge point before assigning to block 12
 DEBUG: IfStmt - Lane 1 assigning to merge block 12
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 1 to block 12
@@ -4350,7 +4350,7 @@ DEBUG: Removed lane 1 from block 12
 DEBUG: assignLaneToBlock - AFTER: block 2 has 2 participating lanes (0 1), 0 waiting lanes, 0 unknown lanes
 DEBUG: assignLaneToBlock - END: lane 1 successfully assigned to block 2
 DEBUG: moveThreadFromUnknownToParticipating - lane 1 is now in block 2
-DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 3, instruction key=(0x503000001b70,3)
+DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 3, instruction key=(0x506000001940,3)
 DEBUG: markLaneWaitingForWave - Lane 2 wave 0 in block 3
 DEBUG: markLaneWaitingForWave - Successfully set lane 2 to WaitingForWave in block 3
 DEBUG: WAVE_OP: Lane 2 cannot execute, starting to wait in block 3
@@ -4360,7 +4360,7 @@ DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 0 1  - These
 DEBUG: canExecuteWaveInstruction for lane 2 in block 3: canExecuteInBlock=0, allParticipantsKnown=0, allParticipantsArrived=0, canExecuteGlobal=0, syncPointPhase=phase_0
 DEBUG: WAVE_WAIT: Lane 2 received WaveOperationWait error, state=2
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 2 unknown lanes: 0 1  - These lanes need to be resolved to Participating or Left
-DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 3, instruction key=(0x503000001b70,3)
+DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 3, instruction key=(0x506000001940,3)
 DEBUG: markLaneWaitingForWave - Lane 3 wave 0 in block 3
 DEBUG: markLaneWaitingForWave - Successfully set lane 3 to WaitingForWave in block 3
 DEBUG: WAVE_OP: Lane 3 cannot execute, starting to wait in block 3
@@ -4378,15 +4378,15 @@ DEBUG: ForStmt - Lane 0 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 0 merge stack size: 4
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
-  Stack[3]: sourceStatement=0x5060000015e0
+  Stack[2]: sourceStatement=0x5060000018e0
+  Stack[3]: sourceStatement=0x506000001880
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 13 (Result-based)
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
-DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 0 in phase ExecutingBody (Result-based, stack depth=3, our index=1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 0 executing then block from statement 0 of 1 total statements (Result-based)
 DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
     result = (result + WaveActiveSum(10));
@@ -4396,15 +4396,15 @@ DEBUG: IfStmt - Lane 0 executing then block statement 0: if ((laneId == 0)) {
 DEBUG: IfStmt - Lane 0 variables BEFORE statement: i=1 laneId=0 result=20 
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
-DEBUG: IfStmt - Lane 0 in phase Reconverging (Result-based, stack depth=3, our index=2, this=0x5060000015e0)
+DEBUG: IfStmt - Lane 0 in phase Reconverging (Result-based, stack depth=3, our index=2, this=0x506000001880)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 13 (registry returned: 13)
 DEBUG: IfStmt - Lane 0 performing reconvergence from block 13 to laneSpecificMergeBlockId=15
 DEBUG: IfStmt - Lane 0 merge stack before reconvergence (size=4):
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
-  Stack[3]: sourceStatement=0x5060000015e0
-DEBUG: IfStmt - Lane 0 popping stack at reconvergence (depth 3->2, this=0x5060000015e0)
+  Stack[2]: sourceStatement=0x5060000018e0
+  Stack[3]: sourceStatement=0x506000001880
+DEBUG: IfStmt - Lane 0 popping stack at reconvergence (depth 3->2, this=0x506000001880)
 DEBUG: IfStmt - Lane 0 popping merge point before assigning to block 15
 DEBUG: IfStmt - Lane 0 assigning to merge block 15
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 15
@@ -4443,21 +4443,21 @@ DEBUG: ForStmt - Lane 0 no iteration block needed (first statement is control fl
 DEBUG: ForStmt - Lane 0 merge stack size: 3
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
+  Stack[2]: sourceStatement=0x5060000018e0
   Looking for iterationMarker=0x508000017820
 DEBUG: ForStmt - Lane 0 iteration merge point already found in merge stack
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 15 (registry returned: 15)
 DEBUG: ForStmt - Lane 0 executing statement 0 in block 15 (Result-based)
 DEBUG: IfStmt - Lane 0 resuming Result-based if statement
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 15 (registry returned: 15)
-DEBUG: IfStmt - Lane 0 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x506000001640)
+DEBUG: IfStmt - Lane 0 in phase Reconverging (Result-based, stack depth=2, our index=1, this=0x5060000018e0)
 WARNING: getCurrentBlock - Lane 0 found in multiple blocks: 2, 15 (registry returned: 15)
 DEBUG: IfStmt - Lane 0 performing reconvergence from block 15 to laneSpecificMergeBlockId=12
 DEBUG: IfStmt - Lane 0 merge stack before reconvergence (size=3):
   Stack[0]: sourceStatement=0x508000002820
   Stack[1]: sourceStatement=0x508000017820
-  Stack[2]: sourceStatement=0x506000001640
-DEBUG: IfStmt - Lane 0 popping stack at reconvergence (depth 2->1, this=0x506000001640)
+  Stack[2]: sourceStatement=0x5060000018e0
+DEBUG: IfStmt - Lane 0 popping stack at reconvergence (depth 2->1, this=0x5060000018e0)
 DEBUG: IfStmt - Lane 0 popping merge point before assigning to block 12
 DEBUG: IfStmt - Lane 0 assigning to merge block 12
 DEBUG: moveThreadFromUnknownToParticipating - moving lane 0 to block 12
@@ -4638,7 +4638,7 @@ DEBUG: removeThreadFromAllSets - removing lane 0 from all sets of block 12
 DEBUG: removeThreadFromAllSets - block 12 had 0 participating lanes before removal
 DEBUG: removeThreadFromAllSets - block 12 has 0 participating lanes after removal
 DEBUG: isAllParticipantsKnown - Block 3 wave 0 has 1 unknown lanes: 0  - These lanes need to be resolved to Participating or Left
-DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 3, instruction key=(0x503000001b70,3)
+DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 3, instruction key=(0x506000001940,3)
 DEBUG: markLaneWaitingForWave - Lane 1 wave 0 in block 3
 DEBUG: markLaneWaitingForWave - Successfully set lane 1 to WaitingForWave in block 3
 DEBUG: WAVE_OP: Lane 1 cannot execute, starting to wait in block 3
@@ -4668,7 +4668,7 @@ DEBUG: VariableExpr - Variable 'result' = 2 (lane 2 at 0x50f0000005e0)
 DEBUG: VariableExpr - Lane 3 evaluating variable 'result' (Result-based)
 DEBUG: VariableExpr - Variable 'result' = 2 (lane 3 at 0x50f0000006d0)
 DEBUG: WAVE_OP: Storing collective result for lanes: 0 1 2 3  (phase: 2)
-DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 3, instruction key=(0x503000001b70,3)
+DEBUG: WAVE_OP: Lane 0 executing WaveActiveSum in block 3, instruction key=(0x506000001940,3)
 DEBUG: onLaneFinishWaveOp - Lane 1 finishing wave op in block 3
 DEBUG: onLaneFinishWaveOp - Current status in block 3: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 1 to Participating in block 3
@@ -4678,13 +4678,13 @@ DEBUG: onLaneFinishWaveOp - Updated lane 2 to Participating in block 3
 DEBUG: onLaneFinishWaveOp - Lane 3 finishing wave op in block 3
 DEBUG: onLaneFinishWaveOp - Current status in block 3: 2
 DEBUG: onLaneFinishWaveOp - Updated lane 3 to Participating in block 3
-DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 3, instruction key=(0x503000001b70,3)
+DEBUG: WAVE_OP: Lane 1 executing WaveActiveSum in block 3, instruction key=(0x506000001940,3)
 DEBUG: WAVE_OP: Lane 1 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 1 retrieving stored wave result: 26 (phase: Executed)
-DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 3, instruction key=(0x503000001b70,3)
+DEBUG: WAVE_OP: Lane 2 executing WaveActiveSum in block 3, instruction key=(0x506000001940,3)
 DEBUG: WAVE_OP: Lane 2 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 2 retrieving stored wave result: 26 (phase: Executed)
-DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 3, instruction key=(0x503000001b70,3)
+DEBUG: WAVE_OP: Lane 3 executing WaveActiveSum in block 3, instruction key=(0x506000001940,3)
 DEBUG: WAVE_OP: Lane 3 is resuming from wave operation, checking for stored result
 DEBUG: WAVE_OP: Lane 3 retrieving stored wave result: 26 (phase: Consumed)
 lane 0 have completed execution
@@ -5002,7 +5002,7 @@ Direct ParseAST complete
   Waking up lane 1 from WaitingForResume to Ready
   Waking up lane 2 from WaitingForResume to Ready
   Waking up lane 3 from WaitingForResume to Ready
-Executing collective wave operation for wave 0 at instruction 0x503000001a20 block 7
+Executing collective wave operation for wave 0 at instruction 0x506000001760 block 7
 Collective wave operation result: 10
 Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 0 from WaitingForWave to Ready
@@ -5039,7 +5039,7 @@ Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 1 from WaitingForResume to Ready
   Waking up lane 2 from WaitingForResume to Ready
   Waking up lane 3 from WaitingForResume to Ready
-Executing collective wave operation for wave 0 at instruction 0x503000001a20 block 13
+Executing collective wave operation for wave 0 at instruction 0x506000001760 block 13
 Collective wave operation result: 10
 Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 0 from WaitingForWave to Ready
@@ -5054,7 +5054,7 @@ Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 1 from WaitingForResume to Ready
   Waking up lane 0 from WaitingForResume to Ready
   Waking up lane 0 from WaitingForResume to Ready
-Executing collective wave operation for wave 0 at instruction 0x503000001b70 block 3
+Executing collective wave operation for wave 0 at instruction 0x506000001940 block 3
 Collective wave operation result: 26
 Lane 0 retrieving stored wave result: 26 (phase: 2)
 Waking up lanes to retrieve wave operation results for wave 0
@@ -5108,7 +5108,7 @@ Dynamic Block 3:
   Arrived Lanes by Wave:
     Wave 0: {0, 1, 2, 3} (4 lanes)
   Instructions (1):
-    0: WaveActiveOp (ptr: 0x503000001b70)
+    0: WaveActiveOp (ptr: 0x506000001940)
 
 Dynamic Block 4:
   Block ID: 4
@@ -5117,7 +5117,7 @@ Dynamic Block 4:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x506000001640
+  Source Statement: 0x5060000018e0
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
@@ -5129,7 +5129,7 @@ Dynamic Block 5:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x506000001640
+  Source Statement: 0x5060000018e0
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
@@ -5141,7 +5141,7 @@ Dynamic Block 6:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x506000001640
+  Source Statement: 0x5060000018e0
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
@@ -5153,12 +5153,12 @@ Dynamic Block 7:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x5060000015e0
+  Source Statement: 0x506000001880
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
   Instructions (1):
-    0: WaveActiveOp (ptr: 0x503000001a20)
+    0: WaveActiveOp (ptr: 0x506000001760)
 
 Dynamic Block 8:
   Block ID: 8
@@ -5167,7 +5167,7 @@ Dynamic Block 8:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x5060000015e0
+  Source Statement: 0x506000001880
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
@@ -5179,7 +5179,7 @@ Dynamic Block 9:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x5060000015e0
+  Source Statement: 0x506000001880
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
@@ -5191,7 +5191,7 @@ Dynamic Block 10:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x506000001640
+  Source Statement: 0x5060000018e0
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
@@ -5203,7 +5203,7 @@ Dynamic Block 11:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x506000001640
+  Source Statement: 0x5060000018e0
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
@@ -5215,7 +5215,7 @@ Dynamic Block 12:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x506000001640
+  Source Statement: 0x5060000018e0
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
@@ -5227,12 +5227,12 @@ Dynamic Block 13:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x5060000015e0
+  Source Statement: 0x506000001880
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
   Instructions (1):
-    0: WaveActiveOp (ptr: 0x503000001a20)
+    0: WaveActiveOp (ptr: 0x506000001760)
 
 Dynamic Block 14:
   Block ID: 14
@@ -5241,7 +5241,7 @@ Dynamic Block 14:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x5060000015e0
+  Source Statement: 0x506000001880
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
@@ -5253,7 +5253,7 @@ Dynamic Block 15:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x5060000015e0
+  Source Statement: 0x506000001880
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
@@ -5270,15 +5270,15 @@ Wave 0:
     Lane 2 -> Block 3
     Lane 3 -> Block 3
   Active Sync Points (3):
-    Instruction 0x503000001a20 block 7 (WaveActiveOp):
+    Instruction 0x506000001760 block 7 (WaveActiveOp):
       Expected: 1 lanes
       Arrived: 1 lanes
       Ready to execute: No
-    Instruction 0x503000001a20 block 13 (WaveActiveOp):
+    Instruction 0x506000001760 block 13 (WaveActiveOp):
       Expected: 1 lanes
       Arrived: 1 lanes
       Ready to execute: No
-    Instruction 0x503000001b70 block 3 (WaveActiveOp):
+    Instruction 0x506000001940 block 3 (WaveActiveOp):
       Expected: 4 lanes
       Arrived: 4 lanes
       Ready to execute: No
@@ -5330,7 +5330,7 @@ Wave 0:
   Waking up lane 1 from WaitingForResume to Ready
   Waking up lane 2 from WaitingForResume to Ready
   Waking up lane 3 from WaitingForResume to Ready
-Executing collective wave operation for wave 0 at instruction 0x503000001a20 block 7
+Executing collective wave operation for wave 0 at instruction 0x506000001760 block 7
 Collective wave operation result: 10
 Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 0 from WaitingForWave to Ready
@@ -5367,7 +5367,7 @@ Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 1 from WaitingForResume to Ready
   Waking up lane 2 from WaitingForResume to Ready
   Waking up lane 3 from WaitingForResume to Ready
-Executing collective wave operation for wave 0 at instruction 0x503000001a20 block 13
+Executing collective wave operation for wave 0 at instruction 0x506000001760 block 13
 Collective wave operation result: 10
 Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 0 from WaitingForWave to Ready
@@ -5382,7 +5382,7 @@ Waking up lanes to retrieve wave operation results for wave 0
   Waking up lane 1 from WaitingForResume to Ready
   Waking up lane 0 from WaitingForResume to Ready
   Waking up lane 0 from WaitingForResume to Ready
-Executing collective wave operation for wave 0 at instruction 0x503000001b70 block 3
+Executing collective wave operation for wave 0 at instruction 0x506000001940 block 3
 Collective wave operation result: 26
 Lane 0 retrieving stored wave result: 26 (phase: 2)
 Waking up lanes to retrieve wave operation results for wave 0
@@ -5436,7 +5436,7 @@ Dynamic Block 3:
   Arrived Lanes by Wave:
     Wave 0: {0, 1, 2, 3} (4 lanes)
   Instructions (1):
-    0: WaveActiveOp (ptr: 0x503000001b70)
+    0: WaveActiveOp (ptr: 0x506000001940)
 
 Dynamic Block 4:
   Block ID: 4
@@ -5445,7 +5445,7 @@ Dynamic Block 4:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x506000001640
+  Source Statement: 0x5060000018e0
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
@@ -5457,7 +5457,7 @@ Dynamic Block 5:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x506000001640
+  Source Statement: 0x5060000018e0
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
@@ -5469,7 +5469,7 @@ Dynamic Block 6:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x506000001640
+  Source Statement: 0x5060000018e0
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
@@ -5481,12 +5481,12 @@ Dynamic Block 7:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x5060000015e0
+  Source Statement: 0x506000001880
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
   Instructions (1):
-    0: WaveActiveOp (ptr: 0x503000001a20)
+    0: WaveActiveOp (ptr: 0x506000001760)
 
 Dynamic Block 8:
   Block ID: 8
@@ -5495,7 +5495,7 @@ Dynamic Block 8:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x5060000015e0
+  Source Statement: 0x506000001880
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
@@ -5507,7 +5507,7 @@ Dynamic Block 9:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x5060000015e0
+  Source Statement: 0x506000001880
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
@@ -5519,7 +5519,7 @@ Dynamic Block 10:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x506000001640
+  Source Statement: 0x5060000018e0
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
@@ -5528,10 +5528,10 @@ Dynamic Block 11:
   Block ID: 11
   Block Type: BRANCH_ELSE
   Parent Block: 2
-  Program Point: 62371
+  Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x506000001640
+  Source Statement: 0x5060000018e0
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
@@ -5540,10 +5540,10 @@ Dynamic Block 12:
   Block ID: 12
   Block Type: MERGE
   Parent Block: 2
-  Program Point: 335887008
+  Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x506000001640
+  Source Statement: 0x5060000018e0
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
@@ -5555,12 +5555,12 @@ Dynamic Block 13:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x5060000015e0
+  Source Statement: 0x506000001880
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
   Instructions (1):
-    0: WaveActiveOp (ptr: 0x503000001a20)
+    0: WaveActiveOp (ptr: 0x506000001760)
 
 Dynamic Block 14:
   Block ID: 14
@@ -5569,7 +5569,7 @@ Dynamic Block 14:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x5060000015e0
+  Source Statement: 0x506000001880
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
@@ -5581,7 +5581,7 @@ Dynamic Block 15:
   Program Point: 0
   Is Converged: No
   Nesting Level: 0
-  Source Statement: 0x5060000015e0
+  Source Statement: 0x506000001880
   Participating Lanes by Wave:
     Wave 0: {} (0 lanes)
   Total Participating Lanes: 0
@@ -5598,15 +5598,15 @@ Wave 0:
     Lane 2 -> Block 3
     Lane 3 -> Block 3
   Active Sync Points (3):
-    Instruction 0x503000001a20 block 7 (WaveActiveOp):
+    Instruction 0x506000001760 block 7 (WaveActiveOp):
       Expected: 1 lanes
       Arrived: 1 lanes
       Ready to execute: No
-    Instruction 0x503000001a20 block 13 (WaveActiveOp):
+    Instruction 0x506000001760 block 13 (WaveActiveOp):
       Expected: 1 lanes
       Arrived: 1 lanes
       Ready to execute: No
-    Instruction 0x503000001b70 block 3 (WaveActiveOp):
+    Instruction 0x506000001940 block 3 (WaveActiveOp):
       Expected: 4 lanes
       Arrived: 4 lanes
       Ready to execute: No
