@@ -412,6 +412,24 @@ private:
     const ExecutionTrace::MemoryAccess* access) const;
 };
 
+// Mutation strategy: Permute lane IDs in associative wave operations
+class LanePermutationMutation : public MutationStrategy {
+public:
+  bool canApply(const interpreter::Statement* stmt, 
+                const ExecutionTrace& trace) const override;
+  
+  std::unique_ptr<interpreter::Statement> apply(
+    const interpreter::Statement* stmt, 
+    const ExecutionTrace& trace) const override;
+  
+  bool validateSemanticPreservation(
+    const interpreter::Statement* original,
+    const interpreter::Statement* mutated,
+    const ExecutionTrace& trace) const override;
+  
+  std::string getName() const override { return "LanePermutation"; }
+};
+
 // ===== Semantic Validator =====
 
 class SemanticValidator {

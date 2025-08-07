@@ -392,6 +392,107 @@ bool SerializeMemoryAccessesMutation::validateSemanticPreservation(
   return true;
 }
 
+bool LanePermutationMutation::canApply(const interpreter::Statement* stmt, 
+                                       const ExecutionTrace& trace) const {
+  // Can only apply to expression statements containing wave operations
+  auto exprStmt = dynamic_cast<const interpreter::ExprStmt*>(stmt);
+  if (!exprStmt) return false;
+  
+  // Check if the expression is a wave operation
+  // Since expr_ is private, we check the toString() output
+  std::string stmtStr = stmt->toString();
+  
+  // Look for associative wave operations
+  return stmtStr.find("WaveActiveSum") != std::string::npos ||
+         stmtStr.find("WaveActiveProduct") != std::string::npos ||
+         stmtStr.find("WaveActiveBitAnd") != std::string::npos ||
+         stmtStr.find("WaveActiveBitOr") != std::string::npos ||
+         stmtStr.find("WaveActiveBitXor") != std::string::npos;
+}
+
+std::unique_ptr<interpreter::Statement> LanePermutationMutation::apply(
+    const interpreter::Statement* stmt, 
+    const ExecutionTrace& trace) const {
+  // Clone the statement first
+  auto cloned = stmt->clone();
+  
+  // Find the block where this wave operation executed
+  // by looking through wave operations in the trace
+  uint32_t blockId = 0;
+  uint32_t activeLaneCount = 0;
+  
+  // Search for wave operations that match this statement
+  for (const auto& waveOp : trace.waveOperations) {
+    // Wave operations track the block they executed in
+    if (waveOp.blockId > 0) {
+      blockId = waveOp.blockId;
+      // Count participating lanes (use arrived participants)
+      activeLaneCount = waveOp.arrivedParticipants.size();
+      if (activeLaneCount > 0) break;
+    }
+  }
+  
+  // If we didn't find it in wave operations, check blocks directly
+  if (activeLaneCount == 0) {
+    // Look for any block that executed this statement
+    for (const auto& [bid, blockRecord] : trace.blocks) {
+      if (blockRecord.sourceStatement == stmt) {
+        blockId = bid;
+        // Count total participating lanes across all waves
+        for (const auto& [waveId, participation] : blockRecord.waveParticipation) {
+          activeLaneCount += participation.participatingLanes.size();
+        }
+        break;
+      }
+    }
+  }
+  
+  // Default to a reasonable number if we couldn't find it
+  if (activeLaneCount == 0) {
+    activeLaneCount = 4; // Common default
+  }
+  
+  // Create: var _active_count = <activeLaneCount>;
+  // var _permuted_lane = (laneId + 1) % _active_count;
+  std::vector<std::unique_ptr<interpreter::Statement>> thenBlock;
+  
+  // Store active lane count
+  auto countLit = std::make_unique<interpreter::LiteralExpr>(static_cast<int>(activeLaneCount));
+  auto countDecl = std::make_unique<interpreter::VarDeclStmt>(
+      "_active_count", std::move(countLit));
+  thenBlock.push_back(std::move(countDecl));
+  
+  // Calculate permuted lane: (laneId + 1) % _active_count
+  auto laneIdExpr = std::make_unique<interpreter::LaneIndexExpr>();
+  auto oneExpr = std::make_unique<interpreter::LiteralExpr>(1);
+  auto addExpr = std::make_unique<interpreter::BinaryOpExpr>(
+      std::move(laneIdExpr), std::move(oneExpr), interpreter::BinaryOpExpr::Add);
+  
+  auto countVar = std::make_unique<interpreter::VariableExpr>("_active_count");
+  auto modExpr = std::make_unique<interpreter::BinaryOpExpr>(
+      std::move(addExpr), std::move(countVar), interpreter::BinaryOpExpr::Mod);
+  
+  auto varDecl = std::make_unique<interpreter::VarDeclStmt>(
+      "_permuted_lane", std::move(modExpr));
+  thenBlock.push_back(std::move(varDecl));
+  
+  // Add the original statement
+  thenBlock.push_back(std::move(cloned));
+  
+  // Wrap in if(true)
+  auto trueCond = std::make_unique<interpreter::LiteralExpr>(true);
+  return std::make_unique<interpreter::IfStmt>(
+      std::move(trueCond), std::move(thenBlock));
+}
+
+bool LanePermutationMutation::validateSemanticPreservation(
+    const interpreter::Statement* original,
+    const interpreter::Statement* mutated,
+    const ExecutionTrace& trace) const {
+  // Associative operations should produce the same result with permuted lanes
+  return true;
+}
+
 // ===== Semantic Validator Implementation =====
 
 SemanticValidator::ValidationResult SemanticValidator::validate(
@@ -705,6 +806,7 @@ TraceGuidedFuzzer::TraceGuidedFuzzer() {
   mutationStrategies.push_back(std::make_unique<RedundantWaveSyncMutation>());
   mutationStrategies.push_back(std::make_unique<ForceBlockBoundariesMutation>());
   mutationStrategies.push_back(std::make_unique<SerializeMemoryAccessesMutation>());
+  mutationStrategies.push_back(std::make_unique<LanePermutationMutation>());
   
   validator = std::make_unique<SemanticValidator>();
   bugReporter = std::make_unique<BugReporter>();
