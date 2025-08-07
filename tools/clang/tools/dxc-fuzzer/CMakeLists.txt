@@ -105,7 +105,7 @@ add_executable(minihlsl-fuzzer
   MiniHLSLInterpreterFuzzer.cpp
   MiniHLSLInterpreterFuzzerMutations.cpp
   MiniHLSLInterpreterTraceCapture.cpp
-  minihlsl_fuzzer_main.cpp
+  # minihlsl_fuzzer_main.cpp  # Remove custom main - libFuzzer provides main
 )
 target_link_libraries(minihlsl-fuzzer
   # Use pthread for std::thread and std::mutex

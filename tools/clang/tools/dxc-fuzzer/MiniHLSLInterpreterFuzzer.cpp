@@ -1574,7 +1574,11 @@ size_t LLVMFuzzerCustomMutator(uint8_t* data, size_t size,
     return 0;
   }
   
-  return minihlsl::fuzzer::serializeAST(*mutated, data, maxSize);
+  size_t result = minihlsl::fuzzer::serializeAST(*mutated, data, maxSize);
+  if (result > 0 && minihlsl::fuzzer::g_fuzzer) {
+    // Success - our custom mutator is working
+  }
+  return result;
 }
 
 size_t LLVMFuzzerCustomCrossOver(const uint8_t* data1, size_t size1,
