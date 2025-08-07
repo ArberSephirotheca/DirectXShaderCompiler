@@ -1302,6 +1302,38 @@ public:
   }
 };
 
+// WaveReadLaneAt - reads a value from a specific lane
+class WaveReadLaneAt : public Expression {
+private:
+  std::unique_ptr<Expression> value_;
+  std::unique_ptr<Expression> laneIndex_;
+  
+public:
+  WaveReadLaneAt(std::unique_ptr<Expression> value,
+                 std::unique_ptr<Expression> laneIndex)
+      : value_(std::move(value)), laneIndex_(std::move(laneIndex)) {}
+  
+  Result<Value, ExecutionError>
+  evaluate_result(LaneContext &lane, WaveContext &wave,
+                  ThreadgroupContext &tg) const override;
+  
+  bool isDeterministic() const override { return false; }
+  
+  std::string toString() const override {
+    return "WaveReadLaneAt(" + value_->toString() + ", " + 
+           laneIndex_->toString() + ")";
+  }
+  
+  std::unique_ptr<Expression> clone() const override {
+    return std::make_unique<WaveReadLaneAt>(
+        value_ ? value_->clone() : nullptr,
+        laneIndex_ ? laneIndex_->clone() : nullptr);
+  }
+  
+  const Expression* getValue() const { return value_.get(); }
+  const Expression* getLaneIndex() const { return laneIndex_.get(); }
+};
+
 // Statement AST nodes
 class Statement {
 protected:

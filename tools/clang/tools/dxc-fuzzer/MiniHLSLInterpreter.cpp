@@ -995,18 +995,10 @@ BinaryOpExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
                               ThreadgroupContext &tg) const {
 
   // Evaluate left operand
-  auto leftResult = left_->evaluate_result(lane, wave, tg);
-  if (leftResult.is_err()) {
-    return leftResult;
-  }
-  Value leftVal = leftResult.unwrap();
+  auto leftVal = TRY_RESULT(left_->evaluate_result(lane, wave, tg), Value, ExecutionError);
 
   // Evaluate right operand
-  auto rightResult = right_->evaluate_result(lane, wave, tg);
-  if (rightResult.is_err()) {
-    return rightResult;
-  }
-  Value rightVal = rightResult.unwrap();
+  auto rightVal = TRY_RESULT(right_->evaluate_result(lane, wave, tg), Value, ExecutionError);
 
   // Perform operation
   switch (op_) {
@@ -1046,11 +1038,7 @@ Result<Value, ExecutionError>
 UnaryOpExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
                              ThreadgroupContext &tg) const {
 
-  auto exprResult = expr_->evaluate_result(lane, wave, tg);
-  if (exprResult.is_err()) {
-    return exprResult;
-  }
-  Value val = exprResult.unwrap();
+  auto val = TRY_RESULT(expr_->evaluate_result(lane, wave, tg), Value, ExecutionError);
 
   switch (op_) {
   case Neg:
@@ -1151,12 +1139,9 @@ ThreadIndexExpr::evaluate_result(LaneContext &lane, WaveContext &,
 Result<Value, ExecutionError>
 ConditionalExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
                                  ThreadgroupContext &tg) const {
-  auto condResult = condition_->evaluate_result(lane, wave, tg);
-  if (condResult.is_err()) {
-    return condResult;
-  }
+  auto condResult = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), Value, ExecutionError);
 
-  if (condResult.unwrap().asInt()) {
+  if (condResult.asInt()) {
     return trueExpr_->evaluate_result(lane, wave, tg);
   } else {
     return falseExpr_->evaluate_result(lane, wave, tg);
@@ -1183,6 +1168,30 @@ WaveIsFirstLaneExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
   }
 
   return Err<Value, ExecutionError>(ExecutionError::InvalidState);
+}
+
+Result<Value, ExecutionError>
+WaveReadLaneAt::evaluate_result(LaneContext &lane, WaveContext &wave,
+                               ThreadgroupContext &tg) const {
+  if (!lane.isActive)
+    return Err<Value, ExecutionError>(ExecutionError::InvalidState);
+  
+  // Evaluate the lane index
+  auto laneIndexResult = TRY_RESULT(laneIndex_->evaluate_result(lane, wave, tg), Value, ExecutionError);
+  
+  LaneId targetLane = laneIndexResult.asInt();
+  
+  // Check if target lane is valid
+  if (targetLane >= wave.lanes.size())
+    return Err<Value, ExecutionError>(ExecutionError::InvalidState);
+  
+  // Check if target lane is active
+  if (!wave.lanes[targetLane]->isActive)
+    return Err<Value, ExecutionError>(ExecutionError::InvalidState);
+  
+  // Evaluate the value expression in the context of the target lane
+  // This is the key: we evaluate the expression using the target lane's context
+  return value_->evaluate_result(*wave.lanes[targetLane], wave, tg);
 }
 
 Result<Value, ExecutionError>
@@ -2972,11 +2981,8 @@ ReturnStmt::execute_result(LaneContext &lane, WaveContext &wave,
             << " executing return (Result-based)" << std::endl;
 
   if (expr_) {
-    auto exprResult = expr_->evaluate_result(lane, wave, tg);
-    if (exprResult.is_err()) {
-      return Err<Unit, ExecutionError>(exprResult.unwrap_err());
-    }
-    lane.returnValue = exprResult.unwrap();
+    Value exprResult = TRY_RESULT(expr_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+    lane.returnValue = exprResult;
   }
 
   // Handle comprehensive global cleanup for early return
@@ -3064,12 +3070,7 @@ SharedWriteStmt::execute_result(LaneContext &lane, WaveContext &wave,
   std::cout << "DEBUG: SharedWriteStmt - Lane " << lane.laneId
             << " executing shared write (Result-based)" << std::endl;
 
-  auto valueResult = expr_->evaluate_result(lane, wave, tg);
-  if (valueResult.is_err()) {
-    return Err<Unit, ExecutionError>(valueResult.unwrap_err());
-  }
-
-  Value value = valueResult.unwrap();
+  auto value = TRY_RESULT(expr_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
   ThreadId tid = tg.getGlobalThreadId(wave.waveId, lane.laneId);
   tg.sharedMemory->write(addr_, value, tid);
 
@@ -5754,12 +5755,7 @@ DoWhileStmt::evaluateCondition(LaneContext &lane, WaveContext &wave,
   std::cout << "DEBUG: DoWhileStmt - Lane " << lane.laneId
             << " evaluating condition (Result-based)" << std::endl;
 
-  auto condResult = condition_->evaluate_result(lane, wave, tg);
-  if (condResult.is_err()) {
-    return Err<bool, ExecutionError>(condResult.unwrap_err());
-  }
-
-  Value condVal = condResult.unwrap();
+  auto condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), bool, ExecutionError);
   bool shouldContinue = condVal.asBool();
 
   std::cout << "DEBUG: DoWhileStmt - Condition result: " << shouldContinue
@@ -6224,12 +6220,7 @@ SwitchStmt::evaluateCondition(LaneContext &lane, WaveContext &wave,
   std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
             << " evaluating condition (Result-based)" << std::endl;
 
-  auto condResult = condition_->evaluate_result(lane, wave, tg);
-  if (condResult.is_err()) {
-    return Err<int, ExecutionError>(condResult.unwrap_err());
-  }
-
-  Value condVal = condResult.unwrap();
+  auto condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), int, ExecutionError);
   int switchValue = condVal.asInt();
 
   std::cout << "DEBUG: SwitchStmt - Switch value: " << switchValue << std::endl;
@@ -6373,16 +6364,13 @@ SwitchStmt::evaluateSwitchValue_result(LaneContext &lane, WaveContext &wave,
     std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
               << " evaluating condition for first time" << std::endl;
 
-    auto condValue = condition_->evaluate_result(lane, wave, tg);
-    if (condValue.is_err()) {
-      return Err<Unit, ExecutionError>(condValue.unwrap_err());
-    }
+    auto condValue = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
 
-    lane.executionStack[ourStackIndex].switchValue = condValue.unwrap();
+    lane.executionStack[ourStackIndex].switchValue = condValue;
     lane.executionStack[ourStackIndex].conditionEvaluated = true;
     std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
               << " switch condition evaluated to: "
-              << condValue.unwrap().asInt() << std::endl;
+              << condValue.asInt() << std::endl;
   } else {
     std::cout << "DEBUG: SwitchStmt - Lane " << lane.laneId
               << " using cached condition result="
