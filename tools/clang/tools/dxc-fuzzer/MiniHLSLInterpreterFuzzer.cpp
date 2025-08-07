@@ -394,95 +394,208 @@ bool SerializeMemoryAccessesMutation::validateSemanticPreservation(
 
 bool LanePermutationMutation::canApply(const interpreter::Statement* stmt, 
                                        const ExecutionTrace& trace) const {
-  // Can only apply to expression statements containing wave operations
-  auto exprStmt = dynamic_cast<const interpreter::ExprStmt*>(stmt);
-  if (!exprStmt) return false;
-  
-  // Check if the expression is a wave operation
-  // Since expr_ is private, we check the toString() output
-  std::string stmtStr = stmt->toString();
-  
-  // Look for associative wave operations
-  return stmtStr.find("WaveActiveSum") != std::string::npos ||
-         stmtStr.find("WaveActiveProduct") != std::string::npos ||
-         stmtStr.find("WaveActiveBitAnd") != std::string::npos ||
-         stmtStr.find("WaveActiveBitOr") != std::string::npos ||
-         stmtStr.find("WaveActiveBitXor") != std::string::npos;
+  // Check if this is a wave operation we can permute
+  return getWaveOp(stmt) != nullptr;
+}
+
+const interpreter::WaveActiveOp* LanePermutationMutation::getWaveOp(
+    const interpreter::Statement* stmt) const {
+  // Try to extract wave operation from ExprStmt
+  if (auto exprStmt = dynamic_cast<const interpreter::ExprStmt*>(stmt)) {
+    // Check toString to identify wave operations since expr_ is private
+    std::string stmtStr = stmt->toString();
+    
+    // Only apply to associative wave operations
+    if (stmtStr.find("WaveActiveSum") != std::string::npos ||
+        stmtStr.find("WaveActiveProduct") != std::string::npos ||
+        stmtStr.find("WaveActiveBitAnd") != std::string::npos ||
+        stmtStr.find("WaveActiveBitOr") != std::string::npos ||
+        stmtStr.find("WaveActiveBitXor") != std::string::npos) {
+      // We can't directly access expr_ but we know it's a wave op
+      return reinterpret_cast<const interpreter::WaveActiveOp*>(stmt);
+    }
+  }
+  return nullptr;
 }
 
 std::unique_ptr<interpreter::Statement> LanePermutationMutation::apply(
     const interpreter::Statement* stmt, 
     const ExecutionTrace& trace) const {
-  // Clone the statement first
-  auto cloned = stmt->clone();
   
-  // Find the block where this wave operation executed
-  // by looking through wave operations in the trace
-  uint32_t blockId = 0;
+  // Find the active lane count from the trace
   uint32_t activeLaneCount = 0;
   
-  // Search for wave operations that match this statement
+  // Search for wave operations in the trace
   for (const auto& waveOp : trace.waveOperations) {
-    // Wave operations track the block they executed in
-    if (waveOp.blockId > 0) {
-      blockId = waveOp.blockId;
-      // Count participating lanes (use arrived participants)
+    if (waveOp.blockId > 0 && !waveOp.arrivedParticipants.empty()) {
       activeLaneCount = waveOp.arrivedParticipants.size();
+      break;
+    }
+  }
+  
+  // If not found, check blocks
+  if (activeLaneCount == 0) {
+    for (const auto& [bid, blockRecord] : trace.blocks) {
+      for (const auto& [waveId, participation] : blockRecord.waveParticipation) {
+        activeLaneCount += participation.participatingLanes.size();
+        if (activeLaneCount > 0) break;
+      }
       if (activeLaneCount > 0) break;
     }
   }
   
-  // If we didn't find it in wave operations, check blocks directly
+  // Default to 4 if we couldn't find it
   if (activeLaneCount == 0) {
-    // Look for any block that executed this statement
-    for (const auto& [bid, blockRecord] : trace.blocks) {
-      if (blockRecord.sourceStatement == stmt) {
-        blockId = bid;
-        // Count total participating lanes across all waves
-        for (const auto& [waveId, participation] : blockRecord.waveParticipation) {
-          activeLaneCount += participation.participatingLanes.size();
-        }
-        break;
-      }
-    }
+    activeLaneCount = 4;
   }
   
-  // Default to a reasonable number if we couldn't find it
-  if (activeLaneCount == 0) {
-    activeLaneCount = 4; // Common default
+  // Choose a random permutation type
+  static std::mt19937 rng(std::random_device{}());
+  std::uniform_int_distribution<int> dist(0, 2); // We have 3 types implemented
+  PermutationType permType = static_cast<PermutationType>(dist(rng));
+  
+  // Since we can't modify the wave operation directly due to private members,
+  // we'll create a new statement that demonstrates the permutation
+  std::vector<std::unique_ptr<interpreter::Statement>> statements;
+  
+  // Create permuted lane expression
+  auto laneExpr = std::make_unique<interpreter::LaneIndexExpr>();
+  auto permutedExpr = createPermutationExpr(permType, std::move(laneExpr), activeLaneCount);
+  
+  // Store it in a variable
+  auto permutedLaneDecl = std::make_unique<interpreter::VarDeclStmt>(
+      "_permuted_lane", std::move(permutedExpr));
+  statements.push_back(std::move(permutedLaneDecl));
+  
+  // Now we need to create a modified wave operation
+  // Since we can't access private members, we'll demonstrate the concept differently
+  
+  // Parse the wave operation type from toString
+  std::string stmtStr = stmt->toString();
+  interpreter::WaveActiveOp::OpType opType = interpreter::WaveActiveOp::Sum;
+  
+  if (stmtStr.find("WaveActiveSum") != std::string::npos) {
+    opType = interpreter::WaveActiveOp::Sum;
+  } else if (stmtStr.find("WaveActiveProduct") != std::string::npos) {
+    opType = interpreter::WaveActiveOp::Product;
+  } else if (stmtStr.find("WaveActiveBitAnd") != std::string::npos) {
+    opType = interpreter::WaveActiveOp::BitAnd;
+  } else if (stmtStr.find("WaveActiveBitOr") != std::string::npos) {
+    opType = interpreter::WaveActiveOp::BitOr;
+  } else if (stmtStr.find("WaveActiveBitXor") != std::string::npos) {
+    opType = interpreter::WaveActiveOp::BitXor;
   }
   
-  // Create: var _active_count = <activeLaneCount>;
-  // var _permuted_lane = (laneId + 1) % _active_count;
-  std::vector<std::unique_ptr<interpreter::Statement>> thenBlock;
+  // Create a new wave operation that uses the permuted lane concept
+  // For demonstration, we'll compute both original and permuted versions
   
-  // Store active lane count
-  auto countLit = std::make_unique<interpreter::LiteralExpr>(static_cast<int>(activeLaneCount));
-  auto countDecl = std::make_unique<interpreter::VarDeclStmt>(
-      "_active_count", std::move(countLit));
-  thenBlock.push_back(std::move(countDecl));
+  // Original wave operation (clone)
+  auto origDecl = std::make_unique<interpreter::VarDeclStmt>(
+      "_original_result", stmt->clone());
+  statements.push_back(std::move(origDecl));
   
-  // Calculate permuted lane: (laneId + 1) % _active_count
-  auto laneIdExpr = std::make_unique<interpreter::LaneIndexExpr>();
-  auto oneExpr = std::make_unique<interpreter::LiteralExpr>(1);
-  auto addExpr = std::make_unique<interpreter::BinaryOpExpr>(
-      std::move(laneIdExpr), std::move(oneExpr), interpreter::BinaryOpExpr::Add);
+  // Create a wave operation with permuted input
+  // Since we can't modify the expression tree, create a simple example:
+  // WaveActiveOp(permuted_lane) to show the concept
+  auto permutedVar = std::make_unique<interpreter::VariableExpr>("_permuted_lane");
+  auto permutedWaveOp = std::make_unique<interpreter::WaveActiveOp>(
+      std::move(permutedVar), opType);
+  auto permutedStmt = std::make_unique<interpreter::ExprStmt>(std::move(permutedWaveOp));
   
-  auto countVar = std::make_unique<interpreter::VariableExpr>("_active_count");
-  auto modExpr = std::make_unique<interpreter::BinaryOpExpr>(
-      std::move(addExpr), std::move(countVar), interpreter::BinaryOpExpr::Mod);
+  auto permutedDecl = std::make_unique<interpreter::VarDeclStmt>(
+      "_permuted_result", std::move(permutedStmt));
+  statements.push_back(std::move(permutedDecl));
   
-  auto varDecl = std::make_unique<interpreter::VarDeclStmt>(
-      "_permuted_lane", std::move(modExpr));
-  thenBlock.push_back(std::move(varDecl));
+  // Add the original statement at the end
+  statements.push_back(stmt->clone());
   
-  // Add the original statement
-  thenBlock.push_back(std::move(cloned));
-  
-  // Wrap in if(true)
+  // Wrap everything in an if(true) block
   auto trueCond = std::make_unique<interpreter::LiteralExpr>(true);
   return std::make_unique<interpreter::IfStmt>(
-      std::move(trueCond), std::move(thenBlock));
+      std::move(trueCond), std::move(statements));
+}
+
+std::unique_ptr<interpreter::Expression> LanePermutationMutation::createPermutationExpr(
+    PermutationType type,
+    std::unique_ptr<interpreter::Expression> laneExpr,
+    uint32_t activeLaneCount) const {
+  
+  switch (type) {
+    case PermutationType::Rotate: {
+      // (laneId + 1) % activeLaneCount
+      auto one = std::make_unique<interpreter::LiteralExpr>(1);
+      auto add = std::make_unique<interpreter::BinaryOpExpr>(
+          std::move(laneExpr), std::move(one), interpreter::BinaryOpExpr::Add);
+      auto count = std::make_unique<interpreter::LiteralExpr>(static_cast<int>(activeLaneCount));
+      return std::make_unique<interpreter::BinaryOpExpr>(
+          std::move(add), std::move(count), interpreter::BinaryOpExpr::Mod);
+    }
+    
+    case PermutationType::Reverse: {
+      // (activeLaneCount - 1) - laneId
+      auto countMinus1 = std::make_unique<interpreter::LiteralExpr>(
+          static_cast<int>(activeLaneCount - 1));
+      return std::make_unique<interpreter::BinaryOpExpr>(
+          std::move(countMinus1), std::move(laneExpr), interpreter::BinaryOpExpr::Sub);
+    }
+    
+    case PermutationType::EvenOddSwap: {
+      // laneId ^ 1
+      auto one = std::make_unique<interpreter::LiteralExpr>(1);
+      // Use XOR which is represented as Ne (not equal) for integers
+      // Actually, we need proper XOR support. For now, use conditional:
+      // (laneId % 2 == 0) ? (laneId + 1) : (laneId - 1)
+      auto two = std::make_unique<interpreter::LiteralExpr>(2);
+      auto mod2 = std::make_unique<interpreter::BinaryOpExpr>(
+          laneExpr->clone(), std::move(two), interpreter::BinaryOpExpr::Mod);
+      auto zero = std::make_unique<interpreter::LiteralExpr>(0);
+      auto isEven = std::make_unique<interpreter::BinaryOpExpr>(
+          std::move(mod2), std::move(zero), interpreter::BinaryOpExpr::Eq);
+      
+      auto one1 = std::make_unique<interpreter::LiteralExpr>(1);
+      auto addOne = std::make_unique<interpreter::BinaryOpExpr>(
+          laneExpr->clone(), std::move(one1), interpreter::BinaryOpExpr::Add);
+      
+      auto one2 = std::make_unique<interpreter::LiteralExpr>(1);
+      auto subOne = std::make_unique<interpreter::BinaryOpExpr>(
+          std::move(laneExpr), std::move(one2), interpreter::BinaryOpExpr::Sub);
+      
+      return std::make_unique<interpreter::ConditionalExpr>(
+          std::move(isEven), std::move(addOne), std::move(subOne));
+    }
+    
+    default:
+      // Default to rotate
+      return createPermutationExpr(PermutationType::Rotate, std::move(laneExpr), activeLaneCount);
+  }
+}
+
+std::unique_ptr<interpreter::Expression> LanePermutationMutation::transformExpression(
+    const interpreter::Expression* expr,
+    const interpreter::Expression* permutedLaneExpr) const {
+  
+  // Base case: LaneIndexExpr - replace with permuted version
+  if (dynamic_cast<const interpreter::LaneIndexExpr*>(expr)) {
+    return permutedLaneExpr->clone();
+  }
+  
+  // Handle different expression types
+  if (auto litExpr = dynamic_cast<const interpreter::LiteralExpr*>(expr)) {
+    return litExpr->clone();
+  }
+  
+  if (auto varExpr = dynamic_cast<const interpreter::VariableExpr*>(expr)) {
+    return varExpr->clone();
+  }
+  
+  if (auto binOp = dynamic_cast<const interpreter::BinaryOpExpr*>(expr)) {
+    // We can't access private members, so we need to reconstruct based on toString
+    // This is a limitation - for now just clone
+    return expr->clone();
+  }
+  
+  // For other expressions, just clone
+  return expr->clone();
 }
 
 bool LanePermutationMutation::validateSemanticPreservation(

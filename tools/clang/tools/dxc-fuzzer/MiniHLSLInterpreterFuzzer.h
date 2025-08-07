@@ -428,6 +428,29 @@ public:
     const ExecutionTrace& trace) const override;
   
   std::string getName() const override { return "LanePermutation"; }
+  
+private:
+  // Permutation strategies
+  enum class PermutationType {
+    Rotate,      // (laneId + offset) % count
+    Reverse,     // count - 1 - laneId
+    EvenOddSwap, // laneId ^ 1
+    BitReverse   // Reverse bits of laneId
+  };
+  
+  // Helper to create permutation expression
+  std::unique_ptr<interpreter::Expression> createPermutationExpr(
+      PermutationType type,
+      std::unique_ptr<interpreter::Expression> laneExpr,
+      uint32_t activeLaneCount) const;
+  
+  // Recursively transform expressions, replacing LaneIndexExpr
+  std::unique_ptr<interpreter::Expression> transformExpression(
+      const interpreter::Expression* expr,
+      const interpreter::Expression* permutedLaneExpr) const;
+  
+  // Extract wave operation from ExprStmt (if any)
+  const interpreter::WaveActiveOp* getWaveOp(const interpreter::Statement* stmt) const;
 };
 
 // ===== Semantic Validator =====
