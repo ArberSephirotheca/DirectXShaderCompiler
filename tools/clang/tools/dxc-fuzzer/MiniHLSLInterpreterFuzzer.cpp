@@ -394,8 +394,20 @@ bool SerializeMemoryAccessesMutation::validateSemanticPreservation(
 
 bool LanePermutationMutation::canApply(const interpreter::Statement* stmt, 
                                        const ExecutionTrace& trace) const {
-  // Check if this is a wave operation we can permute
-  return getWaveOp(stmt) != nullptr;
+  // Check if this is an assignment with a wave operation
+  if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
+    // Use dynamic_cast to check for wave operations instead of string matching
+    if (auto* waveOp = dynamic_cast<const interpreter::WaveActiveOp*>(assign->getExpression())) {
+      // Check if this is an associative operation
+      auto opType = waveOp->getOpType();
+      return opType == interpreter::WaveActiveOp::Sum ||
+             opType == interpreter::WaveActiveOp::Product ||
+             opType == interpreter::WaveActiveOp::And ||
+             opType == interpreter::WaveActiveOp::Or ||
+             opType == interpreter::WaveActiveOp::Xor;
+    }
+  }
+  return false;
 }
 
 const interpreter::WaveActiveOp* LanePermutationMutation::getWaveOp(
@@ -428,38 +440,55 @@ std::unique_ptr<interpreter::Statement> LanePermutationMutation::apply(
     return stmt->clone();
   }
   
-  std::string exprStr = assign->getExpr()->toString();
-  
-  // Check if this is an associative wave operation
-  bool hasAssociativeOp = false;
-  if (exprStr.find("WaveActiveSum") != std::string::npos ||
-      exprStr.find("WaveActiveProduct") != std::string::npos ||
-      exprStr.find("WaveActiveBitAnd") != std::string::npos ||
-      exprStr.find("WaveActiveBitOr") != std::string::npos ||
-      exprStr.find("WaveActiveBitXor") != std::string::npos) {
-    hasAssociativeOp = true;
-  }
-  
-  if (!hasAssociativeOp) {
+  auto* waveOp = dynamic_cast<const interpreter::WaveActiveOp*>(assign->getExpression());
+  if (!waveOp) {
     return stmt->clone();
   }
   
-  // Extract the input variable from the wave operation
-  // For example, from "WaveActiveSum(x)" extract "x"
-  size_t start = exprStr.find('(');
-  size_t end = exprStr.find(')');
-  if (start == std::string::npos || end == std::string::npos) {
+  // Get the operation type and verify it's associative
+  auto opType = waveOp->getOpType();
+  bool isAssociative = (opType == interpreter::WaveActiveOp::Sum ||
+                        opType == interpreter::WaveActiveOp::Product ||
+                        opType == interpreter::WaveActiveOp::And ||
+                        opType == interpreter::WaveActiveOp::Or ||
+                        opType == interpreter::WaveActiveOp::Xor);
+  
+  if (!isAssociative) {
     return stmt->clone();
   }
   
-  std::string inputVar = exprStr.substr(start + 1, end - start - 1);
+  // Get the input expression from the wave operation
+  const auto* inputExpr = waveOp->getInput();
+  if (!inputExpr) {
+    return stmt->clone();
+  }
   
-  // Find active lane count from trace
-  uint32_t activeLaneCount = 32; // default
-  for (const auto& waveOp : trace.waveOperations) {
-    if (!waveOp.arrivedParticipants.empty()) {
-      activeLaneCount = waveOp.arrivedParticipants.size();
+  // Find the actual active lane count from the trace
+  // Look for the wave operation in the trace that matches this statement
+  uint32_t activeLaneCount = 4; // default fallback
+  
+  // Find wave operations that match this statement's location
+  for (const auto& waveOpRecord : trace.waveOperations) {
+    // Check if this wave operation record matches our statement
+    // by comparing the instruction pointer
+    if (waveOpRecord.instruction == static_cast<const void*>(waveOp)) {
+      // Use the actual participants from this specific wave operation
+      activeLaneCount = waveOpRecord.arrivedParticipants.size();
       break;
+    }
+  }
+  
+  // If we didn't find a match, look for any wave operation in the same block
+  if (activeLaneCount == 4) {
+    // Find the block containing this statement
+    for (const auto& [blockId, block] : trace.blocks) {
+      for (const auto& [waveId, participation] : block.waveParticipation) {
+        if (!participation.participatingLanes.empty()) {
+          activeLaneCount = participation.participatingLanes.size();
+          break;
+        }
+      }
+      if (activeLaneCount > 4) break;
     }
   }
   
@@ -477,33 +506,24 @@ std::unique_ptr<interpreter::Statement> LanePermutationMutation::apply(
   statements.push_back(std::make_unique<interpreter::VarDeclStmt>(
       "_perm_lane", std::move(permutedLaneExpr)));
   
-  // 2. Use WaveReadLaneAt to read the value from the permuted lane
-  auto inputExpr = std::make_unique<interpreter::VariableExpr>(inputVar);
+  // 2. Clone the input expression and create the WaveReadLaneAt
+  auto clonedInput = inputExpr->clone();
   auto permLaneVar = std::make_unique<interpreter::VariableExpr>("_perm_lane");
   auto readLaneAt = std::make_unique<interpreter::WaveReadLaneAt>(
-      std::move(inputExpr), std::move(permLaneVar));
+      std::move(clonedInput), std::move(permLaneVar));
+  
+  // Create a unique variable name for the permuted value
+  static int permVarCounter = 0;
+  std::string permVarName = "_perm_val_" + std::to_string(permVarCounter++);
+  
   statements.push_back(std::make_unique<interpreter::VarDeclStmt>(
-      "_perm_" + inputVar, std::move(readLaneAt)));
+      permVarName, std::move(readLaneAt)));
   
   // 3. Create the wave operation with the permuted input
-  // We need to recreate the wave operation with the new input
-  interpreter::WaveActiveOp::OpType opType = interpreter::WaveActiveOp::Sum;
-  if (exprStr.find("WaveActiveSum") != std::string::npos) {
-    opType = interpreter::WaveActiveOp::Sum;
-  } else if (exprStr.find("WaveActiveProduct") != std::string::npos) {
-    opType = interpreter::WaveActiveOp::Product;
-  } else if (exprStr.find("WaveActiveBitAnd") != std::string::npos) {
-    opType = interpreter::WaveActiveOp::And;
-  } else if (exprStr.find("WaveActiveBitOr") != std::string::npos) {
-    opType = interpreter::WaveActiveOp::Or;
-  } else if (exprStr.find("WaveActiveBitXor") != std::string::npos) {
-    opType = interpreter::WaveActiveOp::Xor;
-  }
-  
-  auto permutedInput = std::make_unique<interpreter::VariableExpr>("_perm_" + inputVar);
-  auto waveOp = std::make_unique<interpreter::WaveActiveOp>(std::move(permutedInput), opType);
+  auto permutedInput = std::make_unique<interpreter::VariableExpr>(permVarName);
+  auto newWaveOp = std::make_unique<interpreter::WaveActiveOp>(std::move(permutedInput), opType);
   auto newAssign = std::make_unique<interpreter::AssignStmt>(
-      assign->getVarName(), std::move(waveOp));
+      assign->getName(), std::move(newWaveOp));
   statements.push_back(std::move(newAssign));
   
   // Wrap in if(true) block to create single statement

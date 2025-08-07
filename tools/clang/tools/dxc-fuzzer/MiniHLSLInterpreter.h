@@ -1267,6 +1267,8 @@ public:
 
   // Helper methods for collective execution
   const Expression *getExpression() const { return expr_.get(); }
+  const Expression *getInput() const { return expr_.get(); } // Alias for clarity
+  OpType getOpType() const { return op_; }
   Value computeWaveOperation(const std::vector<Value> &values) const;
   
   std::unique_ptr<Expression> clone() const override {
