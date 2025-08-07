@@ -917,6 +917,9 @@ struct ThreadgroupContext {
 
   // PHASE 2: Simplified lane-block membership tracking
   BlockMembershipRegistry membershipRegistry;
+  
+  // Pointer to interpreter for hook callbacks
+  class MiniHLSLInterpreter* interpreter = nullptr;
 
   ThreadgroupContext(uint32_t tgSize, uint32_t wSize);
   ThreadId getGlobalThreadId(WaveId wid, LaneId lid) const;
@@ -2045,6 +2048,7 @@ protected:
   static constexpr uint32_t DEFAULT_NUM_ORDERINGS = 10;
   std::mt19937 rng_;
 
+public:
   // Virtual methods for trace capture hooks
   virtual void onLaneEnterBlock(LaneContext &lane, WaveContext &wave,
                                 ThreadgroupContext &tg, uint32_t blockId) {}
@@ -2060,8 +2064,21 @@ protected:
   virtual void onThreadStateChange(LaneContext &lane, ThreadState oldState,
                                    ThreadState newState) {}
   
+  // Additional hooks for comprehensive trace capture
+  virtual void onWaveOpSync(WaveContext &wave, ThreadgroupContext &tg,
+                            const SyncPointState &syncState) {}
+  virtual void onControlFlow(LaneContext &lane, WaveContext &wave,
+                             ThreadgroupContext &tg, const Statement *stmt,
+                             bool branchTaken) {}
+  virtual void onVariableAccess(LaneContext &lane, WaveContext &wave,
+                                ThreadgroupContext &tg, const std::string &name,
+                                bool isWrite, const Value &value) {}
+  virtual void onBarrier(ThreadgroupContext &tg) {}
+  
   // New method to capture final thread states - called after execution completes
   virtual void onExecutionComplete(const ThreadgroupContext &tg) {}
+
+protected:
 
   ExecutionResult executeWithOrdering(const Program &program,
                                       const ThreadOrdering &ordering,

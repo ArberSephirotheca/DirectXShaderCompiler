@@ -212,5 +212,47 @@ void TraceCaptureInterpreter::onExecutionComplete(const interpreter::Threadgroup
   }
 }
 
+void TraceCaptureInterpreter::onLaneEnterBlock(interpreter::LaneContext &lane, 
+                                               interpreter::WaveContext &wave,
+                                               interpreter::ThreadgroupContext &tg, 
+                                               uint32_t blockId) {
+  // Record when a lane enters a block
+  if (tg.executionBlocks.find(blockId) != tg.executionBlocks.end()) {
+    auto& block = tg.executionBlocks[blockId];
+    
+    // Record block execution if not already recorded
+    if (trace_.blocks.find(blockId) == trace_.blocks.end()) {
+      recordBlockExecution(blockId, block, tg);
+    }
+    
+    // Update participation info
+    auto& record = trace_.blocks[blockId];
+    record.waveParticipation[wave.waveId].participatingLanes.insert(lane.laneId);
+    record.waveParticipation[wave.waveId].entryTimestamps[lane.laneId].push_back(
+        trace_.variableAccesses.size()); // Use variable access count as timestamp
+  }
+}
+
+void TraceCaptureInterpreter::onWaveOpExecuted(interpreter::WaveContext &wave, 
+                                               interpreter::ThreadgroupContext &tg,
+                                               const std::string &opName, 
+                                               const interpreter::Value &result) {
+  // Record wave operation execution
+  ExecutionTrace::WaveOpRecord record;
+  record.waveId = wave.waveId;
+  record.opType = opName;
+  
+  // Record participating lanes
+  for (size_t laneId = 0; laneId < wave.lanes.size(); ++laneId) {
+    if (wave.lanes[laneId]->isActive) {
+      record.expectedParticipants.insert(laneId);
+      record.arrivedParticipants.insert(laneId);
+      record.outputValues[laneId] = result;
+    }
+  }
+  
+  trace_.waveOperations.push_back(record);
+}
+
 } // namespace fuzzer
 } // namespace minihlsl

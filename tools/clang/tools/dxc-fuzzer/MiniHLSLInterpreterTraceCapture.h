@@ -26,7 +26,7 @@ private:
                           uint32_t blockId);
   
   // Additional trace capture methods
-  void onBarrier(interpreter::ThreadgroupContext& tg);
+  void onBarrier(interpreter::ThreadgroupContext& tg) override;
 
 protected:
   // Hook methods (these may or may not be virtual in base class)
@@ -37,18 +37,26 @@ protected:
                           interpreter::ThreadgroupContext &tg);
   
   void onWaveOpSync(interpreter::WaveContext &wave, interpreter::ThreadgroupContext &tg,
-                    const interpreter::SyncPointState &syncState);
+                    const interpreter::SyncPointState &syncState) override;
   
   void onControlFlow(interpreter::LaneContext &lane, interpreter::WaveContext &wave,
                      interpreter::ThreadgroupContext &tg, const interpreter::Statement *stmt,
-                     bool branchTaken);
+                     bool branchTaken) override;
   
   void onVariableAccess(interpreter::LaneContext &lane, interpreter::WaveContext &wave,
                         interpreter::ThreadgroupContext &tg, const std::string &name,
-                        bool isWrite, const interpreter::Value &value);
+                        bool isWrite, const interpreter::Value &value) override;
   
   // Override to capture final thread states
   void onExecutionComplete(const interpreter::ThreadgroupContext &tg) override;
+  
+  // Override block entry tracking
+  void onLaneEnterBlock(interpreter::LaneContext &lane, interpreter::WaveContext &wave,
+                        interpreter::ThreadgroupContext &tg, uint32_t blockId) override;
+  
+  // Override wave operation tracking  
+  void onWaveOpExecuted(interpreter::WaveContext &wave, interpreter::ThreadgroupContext &tg,
+                        const std::string &opName, const interpreter::Value &result) override;
 
 public:
   TraceCaptureInterpreter();

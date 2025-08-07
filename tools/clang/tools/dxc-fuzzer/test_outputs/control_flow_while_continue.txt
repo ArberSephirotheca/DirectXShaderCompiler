@@ -5339,7 +5339,7 @@ Dynamic Block 4:
   Block ID: 4
   Block Type: BRANCH_THEN
   Parent Block: 2
-  Program Point: 28200
+  Program Point: 0
   Is Converged: No
   Nesting Level: 0
   Source Statement: 0x506000001880
@@ -5351,7 +5351,7 @@ Dynamic Block 5:
   Block ID: 5
   Block Type: MERGE
   Parent Block: 2
-  Program Point: 0
+  Program Point: 62371
   Is Converged: No
   Nesting Level: 0
   Source Statement: 0x506000001880
@@ -5429,7 +5429,7 @@ Dynamic Block 11:
   Block ID: 11
   Block Type: MERGE
   Parent Block: 2
-  Program Point: 84456
+  Program Point: 0
   Is Converged: No
   Nesting Level: 0
   Source Statement: 0x506000001880

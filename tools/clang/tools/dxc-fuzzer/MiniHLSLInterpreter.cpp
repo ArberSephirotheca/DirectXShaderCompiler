@@ -971,8 +971,8 @@ bool UnaryOpExpr::isDeterministic() const { return expr_->isDeterministic(); }
 // Pure Result-based implementations for key expression types
 
 Result<Value, ExecutionError>
-VariableExpr::evaluate_result(LaneContext &lane, WaveContext &,
-                              ThreadgroupContext &) const {
+VariableExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
+                              ThreadgroupContext &tg) const {
   std::cout << "DEBUG: VariableExpr - Lane " << lane.laneId
             << " evaluating variable '" << name_ << "' (Result-based)"
             << std::endl;
@@ -987,6 +987,12 @@ VariableExpr::evaluate_result(LaneContext &lane, WaveContext &,
   std::cout << "DEBUG: VariableExpr - Variable '" << name_
             << "' = " << it->second.toString() << " (lane " << lane.laneId
             << " at " << &lane << ")" << std::endl;
+  
+  // Call hook for variable read access
+  if (tg.interpreter) {
+    tg.interpreter->onVariableAccess(lane, wave, tg, name_, false, it->second);
+  }
+  
   return Ok<Value, ExecutionError>(it->second);
 }
 
@@ -1476,6 +1482,12 @@ VarDeclStmt::execute_result(LaneContext &lane, WaveContext &wave,
   }
 
   lane.variables[name_] = initVal;
+  
+  // Call hook for variable write access
+  if (tg.interpreter) {
+    tg.interpreter->onVariableAccess(lane, wave, tg, name_, true, initVal);
+  }
+  
   return Ok<Unit, ExecutionError>(Unit{});
 }
 
@@ -1514,6 +1526,12 @@ AssignStmt::execute_result(LaneContext &lane, WaveContext &wave,
             << val.toString() << " to variable '" << name_ << "'" << std::endl;
 
   lane.variables[name_] = val;
+  
+  // Call hook for variable write access
+  if (tg.interpreter) {
+    tg.interpreter->onVariableAccess(lane, wave, tg, name_, true, val);
+  }
+  
   return Ok<Unit, ExecutionError>(Unit{});
 }
 
@@ -1810,7 +1828,10 @@ Result<Unit, ExecutionError> IfStmt::evaluateConditionAndSetup_result(
               << " condition result=" << ourEntry.conditionResult
               << " (Result-based)" << std::endl;
     
-    // Control flow hooks called from interpreter level
+    // Call control flow hook
+    if (tg.interpreter) {
+      tg.interpreter->onControlFlow(lane, wave, tg, this, conditionResult);
+    }
   } else {
     std::cout << "DEBUG: IfStmt - Lane " << lane.laneId
               << " using cached condition result=" << ourEntry.conditionResult
@@ -2018,7 +2039,9 @@ ForStmt::evaluateCondition(LaneContext &lane, WaveContext &wave,
   Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), bool,
                              ExecutionError);
   bool shouldContinue = condVal.asBool();
-
+    if (tg.interpreter) {
+      tg.interpreter->onControlFlow(lane, wave, tg, this, shouldContinue);
+    }
   return Ok<bool, ExecutionError>(shouldContinue);
 }
 
@@ -2595,7 +2618,9 @@ Result<Unit, ExecutionError> ForStmt::evaluateConditionPhase_result(
   Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), Unit,
                              ExecutionError);
   bool shouldContinue = condVal.asBool();
-
+    if (tg.interpreter) {
+      tg.interpreter->onControlFlow(lane, wave, tg, this, shouldContinue);
+    }
   if (!shouldContinue) {
     // Lane is exiting loop - comprehensive cleanup from header and all
     // iteration blocks
@@ -3115,6 +3140,7 @@ ExecutionResult MiniHLSLInterpreter::executeWithOrdering(
 
   // Create threadgroup context
   ThreadgroupContext tgContext(program.getTotalThreads(), waveSize);
+  tgContext.interpreter = this;  // Set interpreter pointer for callbacks
 
   uint32_t orderingIndex = 0;
   uint32_t maxIterations = program.getTotalThreads() *
@@ -3451,6 +3477,10 @@ MiniHLSLInterpreter::executeCollectiveWaveOperation(
   
   // Call hook for wave operation sync point created
   onWaveOpSyncPointCreated(wave, tgContext, instructionKey.second, syncPoint.arrivedParticipants.size());
+  
+  // Call hook for wave operation executed
+  onWaveOpExecuted(wave, tgContext, waveOp->toString(), result);
+  
   // Mark sync point as executed using state machine
   syncPoint.markExecuted();
   std::cout << " (phase: " << (int)syncPoint.getPhase() << ")" << std::endl;
@@ -4886,7 +4916,9 @@ WhileStmt::evaluateCondition(LaneContext &lane, WaveContext &wave,
   Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), bool,
                              ExecutionError);
   bool shouldContinue = condVal.asBool();
-
+    if (tg.interpreter) {
+      tg.interpreter->onControlFlow(lane, wave, tg, this, shouldContinue);
+    }
   return Ok<bool, ExecutionError>(shouldContinue);
 }
 
@@ -5407,7 +5439,9 @@ Result<Unit, ExecutionError> WhileStmt::evaluateConditionPhase_result(
   Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), Unit,
                              ExecutionError);
   bool shouldContinue = condVal.asBool();
-
+    if (tg.interpreter) {
+      tg.interpreter->onControlFlow(lane, wave, tg, this, shouldContinue);
+    }
   if (!shouldContinue) {
     // Lane is exiting loop - comprehensive cleanup from header and all
     // iteration blocks
@@ -5824,7 +5858,9 @@ DoWhileStmt::evaluateCondition(LaneContext &lane, WaveContext &wave,
 
   auto condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), bool, ExecutionError);
   bool shouldContinue = condVal.asBool();
-
+    if (tg.interpreter) {
+      tg.interpreter->onControlFlow(lane, wave, tg, this, shouldContinue);
+    }
   std::cout << "DEBUG: DoWhileStmt - Condition result: " << shouldContinue
             << std::endl;
   return Ok<bool, ExecutionError>(shouldContinue);
@@ -6048,7 +6084,9 @@ Result<Unit, ExecutionError> DoWhileStmt::evaluateConditionPhase_result(
   Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), Unit,
                              ExecutionError);
   bool shouldContinue = condVal.asBool();
-
+    if (tg.interpreter) {
+      tg.interpreter->onControlFlow(lane, wave, tg, this, shouldContinue);
+    }
   if (!shouldContinue) {
     // Lane is exiting loop - comprehensive cleanup from header and all
     // iteration blocks
@@ -6789,6 +6827,11 @@ void ThreadgroupContext::assignLaneToBlock(WaveId waveId, LaneId laneId,
 
   std::cout << "DEBUG: assignLaneToBlock - END: lane " << laneId
             << " successfully assigned to block " << blockId << std::endl;
+
+  // Call hook for trace capture
+  if (interpreter && waveId < waves.size() && laneId < waves[waveId]->lanes.size()) {
+    interpreter->onLaneEnterBlock(*waves[waveId]->lanes[laneId], *waves[waveId], *this, blockId);
+  }
 
   membershipRegistry.getCurrentBlock(waveId, laneId);
 }

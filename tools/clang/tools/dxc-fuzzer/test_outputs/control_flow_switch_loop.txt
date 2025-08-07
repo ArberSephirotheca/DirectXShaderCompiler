@@ -3770,7 +3770,7 @@ Dynamic Block 1:
   Block ID: 1
   Block Type: REGULAR
   Parent Block: 0
-  Program Point: 807781461
+  Program Point: 0
   Is Converged: No
   Nesting Level: 0
   Participating Lanes by Wave:
@@ -3805,7 +3805,7 @@ Dynamic Block 4:
   Block ID: 4
   Block Type: SWITCH_CASE
   Parent Block: 2
-  Program Point: 807765820
+  Program Point: 0
   Is Converged: No
   Nesting Level: 0
   Source Statement: 0x5040000048d2
@@ -3861,7 +3861,7 @@ Dynamic Block 8:
   Block ID: 8
   Block Type: SWITCH_MERGE
   Parent Block: 2
-  Program Point: 0
+  Program Point: 62371
   Is Converged: No
   Nesting Level: 0
   Source Statement: 0x5040000048d0
@@ -3877,7 +3877,7 @@ Dynamic Block 9:
   Block ID: 9
   Block Type: LOOP_HEADER
   Parent Block: 3
-  Program Point: 62371
+  Program Point: 0
   Is Converged: No
   Nesting Level: 0
   Source Statement: 0x5080000027a0
@@ -3889,7 +3889,7 @@ Dynamic Block 10:
   Block ID: 10
   Block Type: LOOP_EXIT
   Parent Block: 9
-  Program Point: 0
+  Program Point: 62371
   Is Converged: No
   Nesting Level: 0
   Source Statement: 0x5080000027a0
