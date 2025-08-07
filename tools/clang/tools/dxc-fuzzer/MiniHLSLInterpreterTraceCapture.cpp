@@ -191,9 +191,6 @@ void TraceCaptureInterpreter::recordWaveOperation(
 }
 
 void TraceCaptureInterpreter::onExecutionComplete(const interpreter::ThreadgroupContext &tg) {
-  // Debug: Print what we're capturing
-  std::cout << "\n=== TraceCaptureInterpreter::onExecutionComplete ===\n";
-  
   // Capture final variable states for all threads
   for (size_t waveId = 0; waveId < tg.waves.size(); ++waveId) {
     const auto& wave = *tg.waves[waveId];
@@ -201,15 +198,10 @@ void TraceCaptureInterpreter::onExecutionComplete(const interpreter::Threadgroup
     for (size_t laneId = 0; laneId < wave.lanes.size(); ++laneId) {
       const auto& lane = *wave.lanes[laneId];
       
-      std::cout << "Capturing Lane " << laneId << " state: " << static_cast<int>(lane.state) << "\n";
-      std::cout << "  Variables: ";
-      
       // Copy all variables for this lane
       for (const auto& [varName, value] : lane.variables) {
         trace_.finalState.laneVariables[waveId][laneId][varName] = value;
-        std::cout << varName << "=" << value.toString() << " ";
       }
-      std::cout << "\n";
       
       // Also capture return value
       trace_.finalState.returnValues[waveId][laneId] = lane.returnValue;
@@ -218,8 +210,6 @@ void TraceCaptureInterpreter::onExecutionComplete(const interpreter::Threadgroup
       trace_.finalState.finalThreadStates[waveId][laneId] = lane.state;
     }
   }
-  
-  std::cout << "=== End TraceCaptureInterpreter::onExecutionComplete ===\n\n";
 }
 
 } // namespace fuzzer

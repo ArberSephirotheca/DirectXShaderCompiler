@@ -3131,6 +3131,8 @@ ExecutionResult MiniHLSLInterpreter::executeWithOrdering(
       }
 
       if (allCompleted) {
+        // All threads have completed - safe to capture final state
+        onExecutionComplete(tgContext);
         break; // All threads finished
       }
 
@@ -3179,8 +3181,8 @@ ExecutionResult MiniHLSLInterpreter::executeWithOrdering(
   }
 
   
-  // Call hook to allow subclasses to capture final thread states
-  onExecutionComplete(tgContext);
+  // Note: onExecutionComplete hook is now called inside the execution loop
+  // when allCompleted is true, ensuring all threads have finished
   
   // Print Dynamic Block Execution Graph (DBEG) for debugging merge blocks
   tgContext.printDynamicExecutionGraph(true);
