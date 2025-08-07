@@ -183,7 +183,7 @@ int main(int argc, char* argv[]) {
         std::cout << "=== End Variable Values ===\n\n";
         
         // Run the fuzzer only if baseline is valid
-        // fuzzer.fuzzProgram(conversionResult.program, config);
+        fuzzer.fuzzProgram(conversionResult.program, config);
         
         // Verification check: All mutations should preserve semantics
         std::cout << "\n=== Fuzzing Correctness Verification ===\n";
