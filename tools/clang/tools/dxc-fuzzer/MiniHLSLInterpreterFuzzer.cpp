@@ -116,6 +116,7 @@ std::unique_ptr<interpreter::Statement> LanePermutationMutation::apply(
   // We need to find the specific dynamic block where this wave operation executes
   uint32_t activeLaneCount = 4; // default fallback
   uint32_t blockIdForWaveOp = 0;
+  std::set<interpreter::LaneId> participatingLanes; // Actual lane IDs that participate
   
   // Debug: print what we're looking for
   std::cout << "[LanePermutation] Looking for wave op: " << waveOp->toString() 
@@ -133,6 +134,7 @@ std::unique_ptr<interpreter::Statement> LanePermutationMutation::apply(
       // Found a matching wave operation type by enum
       activeLaneCount = waveOpRecord.arrivedParticipants.size();
       blockIdForWaveOp = waveOpRecord.blockId;
+      participatingLanes = waveOpRecord.arrivedParticipants;
       std::cout << "[LanePermutation] Found match by enum! Active lanes: " << activeLaneCount << "\n";
       std::cout << "[LanePermutation] Participants: ";
       for (auto laneId : waveOpRecord.arrivedParticipants) {
@@ -146,6 +148,7 @@ std::unique_ptr<interpreter::Statement> LanePermutationMutation::apply(
       // Found a matching wave operation type
       activeLaneCount = waveOpRecord.arrivedParticipants.size();
       blockIdForWaveOp = waveOpRecord.blockId;
+      participatingLanes = waveOpRecord.arrivedParticipants;
       std::cout << "[LanePermutation] Found match by string! Active lanes: " << activeLaneCount << "\n";
       std::cout << "[LanePermutation] Participants: ";
       for (auto laneId : waveOpRecord.arrivedParticipants) {
@@ -164,6 +167,9 @@ std::unique_ptr<interpreter::Statement> LanePermutationMutation::apply(
       if (!participation.participatingLanes.empty()) {
         // This gives us the lanes that actually participated in this block
         activeLaneCount = participation.participatingLanes.size();
+        if (participatingLanes.empty()) {
+          participatingLanes = participation.participatingLanes;
+        }
         break;
       }
     }
@@ -172,6 +178,13 @@ std::unique_ptr<interpreter::Statement> LanePermutationMutation::apply(
   // Ensure we don't create invalid permutations
   if (activeLaneCount == 0) {
     activeLaneCount = 4; // Default fallback
+  }
+  
+  // If we didn't find specific participating lanes, use default consecutive lanes
+  if (participatingLanes.empty()) {
+    for (uint32_t i = 0; i < activeLaneCount; ++i) {
+      participatingLanes.insert(i);
+    }
   }
   
   // Choose a random permutation type
@@ -184,7 +197,8 @@ std::unique_ptr<interpreter::Statement> LanePermutationMutation::apply(
   
   // 1. Create permuted lane index
   auto laneExpr = std::make_unique<interpreter::LaneIndexExpr>();
-  auto permutedLaneExpr = createPermutationExpr(permType, std::move(laneExpr), activeLaneCount);
+  auto permutedLaneExpr = createPermutationExpr(permType, std::move(laneExpr), 
+                                                 activeLaneCount, participatingLanes);
   statements.push_back(std::make_unique<interpreter::VarDeclStmt>(
       "_perm_lane", std::move(permutedLaneExpr)));
   
@@ -218,76 +232,120 @@ std::unique_ptr<interpreter::Statement> LanePermutationMutation::apply(
 std::unique_ptr<interpreter::Expression> LanePermutationMutation::createPermutationExpr(
     PermutationType type,
     std::unique_ptr<interpreter::Expression> laneExpr,
-    uint32_t activeLaneCount) const {
+    uint32_t activeLaneCount,
+    const std::set<interpreter::LaneId>& participatingLanes) const {
+  
+  // Convert set to vector for indexed access
+  std::vector<interpreter::LaneId> laneList(participatingLanes.begin(), participatingLanes.end());
+  std::sort(laneList.begin(), laneList.end());
   
   switch (type) {
     case PermutationType::Rotate: {
-      // For now, use a simple rotation that works for 2 participating lanes
-      // This assumes lanes 0 and 1 participate (common case)
-      // TODO: Make this more general by computing participating lanes at runtime
-      if (activeLaneCount == 2) {
-        // For 2 lanes: lane 0 -> 1, lane 1 -> 0
-        auto one = std::make_unique<interpreter::LiteralExpr>(1);
-        return std::make_unique<interpreter::BinaryOpExpr>(
-            std::move(one), std::move(laneExpr), interpreter::BinaryOpExpr::Sub);
-      } else {
-        // Fallback: (laneId + 1) % activeLaneCount
-        auto one = std::make_unique<interpreter::LiteralExpr>(1);
-        auto add = std::make_unique<interpreter::BinaryOpExpr>(
-            std::move(laneExpr), std::move(one), interpreter::BinaryOpExpr::Add);
-        auto count = std::make_unique<interpreter::LiteralExpr>(static_cast<int>(activeLaneCount));
-        return std::make_unique<interpreter::BinaryOpExpr>(
-            std::move(add), std::move(count), interpreter::BinaryOpExpr::Mod);
+      // General rotation that works for any set of participating lanes
+      // We need to create a conditional chain that maps each lane to its rotated partner
+      
+      if (laneList.size() < 2) {
+        // If only one lane participates, return the same lane
+        return laneExpr;
       }
+      
+      // Build a conditional expression chain: 
+      // (laneId == lane0) ? lane1 : ((laneId == lane1) ? lane2 : ... )
+      std::unique_ptr<interpreter::Expression> result = nullptr;
+      
+      for (size_t i = 0; i < laneList.size(); ++i) {
+        size_t nextIdx = (i + 1) % laneList.size();
+        auto currentLane = std::make_unique<interpreter::LiteralExpr>(static_cast<int>(laneList[i]));
+        auto nextLane = std::make_unique<interpreter::LiteralExpr>(static_cast<int>(laneList[nextIdx]));
+        
+        auto condition = std::make_unique<interpreter::BinaryOpExpr>(
+            laneExpr->clone(), std::move(currentLane), interpreter::BinaryOpExpr::Eq);
+        
+        if (!result) {
+          // Last condition in the chain (or first being built)
+          result = std::move(nextLane);
+        } else {
+          result = std::make_unique<interpreter::ConditionalExpr>(
+              std::move(condition), std::move(nextLane), std::move(result));
+        }
+      }
+      
+      return result;
     }
     
     case PermutationType::Reverse: {
-      // (activeLaneCount - 1) - laneId
-      auto countMinus1 = std::make_unique<interpreter::LiteralExpr>(
-          static_cast<int>(activeLaneCount - 1));
-      return std::make_unique<interpreter::BinaryOpExpr>(
-          std::move(countMinus1), std::move(laneExpr), interpreter::BinaryOpExpr::Sub);
+      // Reverse mapping for arbitrary participating lanes
+      // Maps lane[i] -> lane[n-1-i]
+      
+      if (laneList.size() < 2) {
+        return laneExpr;
+      }
+      
+      // Build conditional chain for reverse mapping
+      std::unique_ptr<interpreter::Expression> result = nullptr;
+      
+      for (size_t i = 0; i < laneList.size(); ++i) {
+        size_t reverseIdx = laneList.size() - 1 - i;
+        auto currentLane = std::make_unique<interpreter::LiteralExpr>(static_cast<int>(laneList[i]));
+        auto reverseLane = std::make_unique<interpreter::LiteralExpr>(static_cast<int>(laneList[reverseIdx]));
+        
+        auto condition = std::make_unique<interpreter::BinaryOpExpr>(
+            laneExpr->clone(), std::move(currentLane), interpreter::BinaryOpExpr::Eq);
+        
+        if (!result) {
+          result = std::move(reverseLane);
+        } else {
+          result = std::make_unique<interpreter::ConditionalExpr>(
+              std::move(condition), std::move(reverseLane), std::move(result));
+        }
+      }
+      
+      return result;
     }
     
     case PermutationType::EvenOddSwap: {
-      // For even/odd swap, we need to ensure we don't go out of bounds
-      // If activeLaneCount is odd, the last lane should map to itself
-      // Formula: (laneId % 2 == 0) ? min(laneId + 1, activeLaneCount - 1) : (laneId - 1)
+      // Even/odd swap for arbitrary participating lanes
+      // Pairs lanes: [0]<->[1], [2]<->[3], etc.
+      // If odd number of lanes, last lane maps to itself
       
-      auto two = std::make_unique<interpreter::LiteralExpr>(2);
-      auto mod2 = std::make_unique<interpreter::BinaryOpExpr>(
-          laneExpr->clone(), std::move(two), interpreter::BinaryOpExpr::Mod);
-      auto zero = std::make_unique<interpreter::LiteralExpr>(0);
-      auto isEven = std::make_unique<interpreter::BinaryOpExpr>(
-          std::move(mod2), std::move(zero), interpreter::BinaryOpExpr::Eq);
+      if (laneList.size() < 2) {
+        return laneExpr;
+      }
       
-      // For even lanes: min(laneId + 1, activeLaneCount - 1)
-      auto one1 = std::make_unique<interpreter::LiteralExpr>(1);
-      auto addOne = std::make_unique<interpreter::BinaryOpExpr>(
-          laneExpr->clone(), std::move(one1), interpreter::BinaryOpExpr::Add);
-      auto countMinus1Even = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(static_cast<int>(activeLaneCount - 1)));
-      auto minExpr = std::make_unique<interpreter::BinaryOpExpr>(
-          std::move(addOne), std::move(countMinus1Even), interpreter::BinaryOpExpr::Lt);
-      auto evenResult = std::make_unique<interpreter::ConditionalExpr>(
-          std::move(minExpr),
-          std::make_unique<interpreter::BinaryOpExpr>(
-              laneExpr->clone(), 
-              std::make_unique<interpreter::LiteralExpr>(1),
-              interpreter::BinaryOpExpr::Add),
-          std::make_unique<interpreter::LiteralExpr>(interpreter::Value(static_cast<int>(activeLaneCount - 1))));
+      // Build conditional chain for even/odd swapping
+      std::unique_ptr<interpreter::Expression> result = nullptr;
       
-      // For odd lanes: laneId - 1
-      auto one2 = std::make_unique<interpreter::LiteralExpr>(1);
-      auto subOne = std::make_unique<interpreter::BinaryOpExpr>(
-          laneExpr->clone(), std::move(one2), interpreter::BinaryOpExpr::Sub);
+      for (size_t i = 0; i < laneList.size(); ++i) {
+        size_t pairIdx;
+        if (i % 2 == 0) {
+          // Even index: swap with next (if exists)
+          pairIdx = (i + 1 < laneList.size()) ? i + 1 : i;
+        } else {
+          // Odd index: swap with previous
+          pairIdx = i - 1;
+        }
+        
+        auto currentLane = std::make_unique<interpreter::LiteralExpr>(static_cast<int>(laneList[i]));
+        auto pairLane = std::make_unique<interpreter::LiteralExpr>(static_cast<int>(laneList[pairIdx]));
+        
+        auto condition = std::make_unique<interpreter::BinaryOpExpr>(
+            laneExpr->clone(), std::move(currentLane), interpreter::BinaryOpExpr::Eq);
+        
+        if (!result) {
+          result = std::move(pairLane);
+        } else {
+          result = std::make_unique<interpreter::ConditionalExpr>(
+              std::move(condition), std::move(pairLane), std::move(result));
+        }
+      }
       
-      return std::make_unique<interpreter::ConditionalExpr>(
-          std::move(isEven), std::move(evenResult), std::move(subOne));
+      return result;
     }
     
     default:
       // Default to rotate
-      return createPermutationExpr(PermutationType::Rotate, std::move(laneExpr), activeLaneCount);
+      return createPermutationExpr(PermutationType::Rotate, std::move(laneExpr), 
+                                   activeLaneCount, participatingLanes);
   }
 }
 

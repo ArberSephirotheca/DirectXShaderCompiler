@@ -312,7 +312,8 @@ private:
   std::unique_ptr<interpreter::Expression> createPermutationExpr(
       PermutationType type,
       std::unique_ptr<interpreter::Expression> laneExpr,
-      uint32_t activeLaneCount) const;
+      uint32_t activeLaneCount,
+      const std::set<interpreter::LaneId>& participatingLanes) const;
   
   // Recursively transform expressions, replacing LaneIndexExpr
   std::unique_ptr<interpreter::Expression> transformExpression(
