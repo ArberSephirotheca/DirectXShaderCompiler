@@ -5115,22 +5115,14 @@ MiniHLSLInterpreter::convertExpression(const clang::Expr *expr,
     return result;
   } else if (auto vecElem = clang::dyn_cast<clang::HLSLVectorElementExpr>(expr)) {
     // Handle vector element access like tid.x, tid.y, tid.z
-    // For now, we'll map tid.x to thread index (lane index for 1D dispatch)
-    // This is a simplified implementation
     auto baseExpr = vecElem->getBase();
     if (auto declRef = clang::dyn_cast<clang::DeclRefExpr>(baseExpr)) {
       std::string varName = declRef->getDecl()->getName().str();
-      if (varName == "tid" || varName == "DTid" || varName == "id") {
-        // For SV_DispatchThreadID, map to lane index for 1D kernels
-        std::string accessor = vecElem->getAccessor().getName().str();
-        if (accessor == "x") {
-          // Return the thread index expression which maps to lane index
-          return std::make_unique<ThreadIndexExpr>(HLSLTypeInfo::fromString(exprType));
-        } else if (accessor == "y" || accessor == "z") {
-          // For y and z components in 1D dispatch, return 0
-          return makeLiteral(Value(0), exprType);
-        }
-      }
+      std::string accessor = vecElem->getAccessor().getName().str();
+      
+      // Create a variable expression for the vector element access
+      std::string fullName = varName + "." + accessor;
+      return std::make_unique<VariableExpr>(fullName, HLSLTypeInfo::fromString(exprType));
     }
     // For other vector accesses, try to evaluate the base and handle as needed
     std::cout << "Unsupported vector element access pattern" << std::endl;
