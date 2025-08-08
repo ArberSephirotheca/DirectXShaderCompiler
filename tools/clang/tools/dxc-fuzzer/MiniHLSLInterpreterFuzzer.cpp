@@ -242,7 +242,7 @@ std::unique_ptr<interpreter::Statement> LanePermutationMutation::apply(
   auto permutedLaneExpr = createPermutationExpr(permType, std::move(laneExpr), 
                                                  activeLaneCount, participatingLanes);
   statements.push_back(std::make_unique<interpreter::VarDeclStmt>(
-      "_perm_lane", std::move(permutedLaneExpr)));
+      "_perm_lane", interpreter::HLSLType::Uint, std::move(permutedLaneExpr)));
   
   // 2. Clone the input expression and create the WaveReadLaneAt
   auto clonedInput = inputExpr->clone();
@@ -254,8 +254,11 @@ std::unique_ptr<interpreter::Statement> LanePermutationMutation::apply(
   static int permVarCounter = 0;
   std::string permVarName = "_perm_val_" + std::to_string(permVarCounter++);
   
+  // Get the type from the input expression (WaveReadLaneAt returns the same type as its input)
+  interpreter::HLSLType valueType = inputExpr->getType();
+  
   statements.push_back(std::make_unique<interpreter::VarDeclStmt>(
-      permVarName, std::move(readLaneAt)));
+      permVarName, valueType, std::move(readLaneAt)));
   
   // 3. Create the wave operation with the permuted input
   auto permutedInput = std::make_unique<interpreter::VariableExpr>(permVarName);
@@ -281,14 +284,46 @@ std::unique_ptr<interpreter::Expression> LanePermutationMutation::createPermutat
   std::vector<interpreter::LaneId> laneList(participatingLanes.begin(), participatingLanes.end());
   std::sort(laneList.begin(), laneList.end());
   
+  // Check if participants are consecutive starting from the first lane
+  bool isConsecutive = true;
+  if (!laneList.empty()) {
+    for (size_t i = 1; i < laneList.size(); ++i) {
+      if (laneList[i] != laneList[0] + i) {
+        isConsecutive = false;
+        break;
+      }
+    }
+  }
+  
   switch (type) {
     case PermutationType::Rotate: {
       // General rotation that works for any set of participating lanes
-      // We need to create a conditional chain that maps each lane to its rotated partner
       
       if (laneList.size() < 2) {
         // If only one lane participates, return the same lane
         return laneExpr;
+      }
+      
+      // Optimization for consecutive participants
+      if (isConsecutive && laneList.size() > 1) {
+        // Use mathematical formula: ((laneId - firstLane + 1) % count) + firstLane
+        auto firstLane = std::make_unique<interpreter::LiteralExpr>(static_cast<int>(laneList[0]));
+        auto count = std::make_unique<interpreter::LiteralExpr>(static_cast<int>(laneList.size()));
+        auto one = std::make_unique<interpreter::LiteralExpr>(1);
+        
+        // (laneId - firstLane + 1)
+        auto offsetFromFirst = std::make_unique<interpreter::BinaryOpExpr>(
+            laneExpr->clone(), firstLane->clone(), interpreter::BinaryOpExpr::Sub);
+        auto offsetPlusOne = std::make_unique<interpreter::BinaryOpExpr>(
+            std::move(offsetFromFirst), std::move(one), interpreter::BinaryOpExpr::Add);
+        
+        // % count
+        auto modResult = std::make_unique<interpreter::BinaryOpExpr>(
+            std::move(offsetPlusOne), std::move(count), interpreter::BinaryOpExpr::Mod);
+        
+        // + firstLane
+        return std::make_unique<interpreter::BinaryOpExpr>(
+            std::move(modResult), std::move(firstLane), interpreter::BinaryOpExpr::Add);
       }
       
       // Build a conditional expression chain: 
@@ -323,6 +358,21 @@ std::unique_ptr<interpreter::Expression> LanePermutationMutation::createPermutat
         return laneExpr;
       }
       
+      // Optimization for consecutive participants
+      if (isConsecutive && laneList.size() > 1) {
+        // Use mathematical formula: (firstLane + lastLane) - laneId
+        auto firstLane = std::make_unique<interpreter::LiteralExpr>(static_cast<int>(laneList[0]));
+        auto lastLane = std::make_unique<interpreter::LiteralExpr>(static_cast<int>(laneList.back()));
+        
+        // firstLane + lastLane
+        auto sum = std::make_unique<interpreter::BinaryOpExpr>(
+            std::move(firstLane), std::move(lastLane), interpreter::BinaryOpExpr::Add);
+        
+        // (firstLane + lastLane) - laneId
+        return std::make_unique<interpreter::BinaryOpExpr>(
+            std::move(sum), laneExpr->clone(), interpreter::BinaryOpExpr::Sub);
+      }
+      
       // Build conditional chain for reverse mapping
       std::unique_ptr<interpreter::Expression> result = nullptr;
       
@@ -352,6 +402,49 @@ std::unique_ptr<interpreter::Expression> LanePermutationMutation::createPermutat
       
       if (laneList.size() < 2) {
         return laneExpr;
+      }
+      
+      // Optimization for consecutive participants - but we need to handle unsigned arithmetic carefully
+      if (isConsecutive && laneList.size() > 1 && laneList.size() <= 4) {
+        // For small consecutive sets, build specific patterns to avoid underflow
+        if (laneList.size() == 2) {
+          // Simple swap: lane0 <-> lane1
+          auto lane0 = std::make_unique<interpreter::LiteralExpr>(static_cast<int>(laneList[0]));
+          auto lane1 = std::make_unique<interpreter::LiteralExpr>(static_cast<int>(laneList[1]));
+          auto isLane0 = std::make_unique<interpreter::BinaryOpExpr>(
+              laneExpr->clone(), lane0->clone(), interpreter::BinaryOpExpr::Eq);
+          
+          // lane0 ? lane1 : lane0
+          return std::make_unique<interpreter::ConditionalExpr>(
+              std::move(isLane0), std::move(lane1), std::move(lane0));
+        } else if (laneList.size() == 4 && laneList[0] == 0) {
+          // Special case for lanes 0,1,2,3 - can use safe arithmetic
+          // Pattern: 0->1, 1->0, 2->3, 3->2
+          auto one = std::make_unique<interpreter::LiteralExpr>(1);
+          auto two = std::make_unique<interpreter::LiteralExpr>(2);
+          
+          // Check if lane < 2
+          auto isFirstPair = std::make_unique<interpreter::BinaryOpExpr>(
+              laneExpr->clone(), two->clone(), interpreter::BinaryOpExpr::Lt);
+          
+          // For lanes 0,1: (lane == 0) ? 1 : 0
+          auto zero = std::make_unique<interpreter::LiteralExpr>(0);
+          auto isZero = std::make_unique<interpreter::BinaryOpExpr>(
+              laneExpr->clone(), zero->clone(), interpreter::BinaryOpExpr::Eq);
+          auto firstPairSwap = std::make_unique<interpreter::ConditionalExpr>(
+              std::move(isZero), one->clone(), std::move(zero));
+          
+          // For lanes 2,3: (lane == 2) ? 3 : 2  
+          auto three = std::make_unique<interpreter::LiteralExpr>(3);
+          auto isTwo = std::make_unique<interpreter::BinaryOpExpr>(
+              laneExpr->clone(), two->clone(), interpreter::BinaryOpExpr::Eq);
+          auto secondPairSwap = std::make_unique<interpreter::ConditionalExpr>(
+              std::move(isTwo), std::move(three), std::move(two));
+          
+          // Combine: (lane < 2) ? firstPairSwap : secondPairSwap
+          return std::make_unique<interpreter::ConditionalExpr>(
+              std::move(isFirstPair), std::move(firstPairSwap), std::move(secondPairSwap));
+        }
       }
       
       // Build conditional chain for even/odd swapping
@@ -733,7 +826,7 @@ WaveParticipantTrackingMutation::createTrackingStatements(
       std::move(oneExpr), interpreter::WaveActiveOp::Sum);
   
   statements.push_back(std::make_unique<interpreter::VarDeclStmt>(
-      "_participantCount", std::move(sumOp)));
+      "_participantCount", interpreter::HLSLType::Uint, std::move(sumOp)));
   
   // 2. Check if count matches expected: isCorrect = (participantCount == expectedCount)
   auto countRef = std::make_unique<interpreter::VariableExpr>("_participantCount");
@@ -742,18 +835,33 @@ WaveParticipantTrackingMutation::createTrackingStatements(
       std::move(countRef), std::move(expected), interpreter::BinaryOpExpr::Eq);
   
   statements.push_back(std::make_unique<interpreter::VarDeclStmt>(
-      "_isCorrect", std::move(compare)));
+      "_isCorrect", interpreter::HLSLType::Bool, std::move(compare)));
   
-  // 3. Store the participant count check result in a variable
-  // In real GPU code this would update a buffer at index tid
-  // For now, we'll store it in a variable that can be checked later
+  // 3. Accumulate the result in a global buffer at tid.x index
+  // _participant_check_sum[tid.x] += uint(_isCorrect)
+  
+  // Convert _isCorrect to uint
   auto isCorrectRef = std::make_unique<interpreter::VariableExpr>("_isCorrect");
+  auto isCorrectAsUint = std::make_unique<interpreter::ConditionalExpr>(
+      std::move(isCorrectRef), 
+      std::make_unique<interpreter::LiteralExpr>(1),
+      std::make_unique<interpreter::LiteralExpr>(0));
   
-  // Create a unique variable name for this wave operation result
-  // _participant_check_N where N is based on result variable name
-  std::string checkVarName = "_participant_check_" + resultVar;
-  statements.push_back(std::make_unique<interpreter::VarDeclStmt>(
-      checkVarName, std::move(isCorrectRef)));
+  // Get current value: _participant_check_sum[tid.x]
+  auto tidX = std::make_unique<interpreter::VariableExpr>("tid.x");
+  auto bufferAccess = std::make_unique<interpreter::ArrayAccessExpr>(
+      "_participant_check_sum",
+      std::move(tidX));
+  
+  // Add to current value
+  auto addExpr = std::make_unique<interpreter::BinaryOpExpr>(
+      std::move(bufferAccess), std::move(isCorrectAsUint), 
+      interpreter::BinaryOpExpr::Add);
+  
+  // Store back: _participant_check_sum[tid.x] = ...
+  auto tidX2 = std::make_unique<interpreter::VariableExpr>("tid.x");
+  statements.push_back(std::make_unique<interpreter::ArrayAssignStmt>(
+      "_participant_check_sum", std::move(tidX2), std::move(addExpr)));
   
   return statements;
 }
@@ -1720,6 +1828,13 @@ std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
       mutant.numThreadsY = program.numThreadsY;
       mutant.numThreadsZ = program.numThreadsZ;
       mutant.entryInputs = program.entryInputs;  // Copy entry function parameters
+      
+      // Add buffer initialization at the beginning
+      // Initialize current thread's entry: _participant_check_sum[tid.x] = 0
+      auto tidX = std::make_unique<interpreter::VariableExpr>("tid.x");
+      auto zero = std::make_unique<interpreter::LiteralExpr>(0);
+      mutant.statements.push_back(std::make_unique<interpreter::ArrayAssignStmt>(
+          "_participant_check_sum", std::move(tidX), std::move(zero)));
       
       // Apply mutation to all wave operations and clone other statements
       for (const auto& stmt : program.statements) {
