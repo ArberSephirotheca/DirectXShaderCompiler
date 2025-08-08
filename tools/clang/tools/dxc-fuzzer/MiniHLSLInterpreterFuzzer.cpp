@@ -727,15 +727,13 @@ WaveParticipantTrackingMutation::createTrackingStatements(
   
   std::vector<std::unique_ptr<interpreter::Statement>> statements;
   
-  // 1. Count active participants: participantCount = WaveActiveCountBits(WaveActiveBallot(true))
-  auto trueExpr = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(true));
-  auto ballot = std::make_unique<interpreter::WaveActiveOp>(
-      std::move(trueExpr), interpreter::WaveActiveOp::Ballot);
-  auto countBits = std::make_unique<interpreter::WaveActiveOp>(
-      std::move(ballot), interpreter::WaveActiveOp::CountBits);
+  // 1. Count active participants: _participantCount = WaveActiveSum(1)
+  auto oneExpr = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(1));
+  auto sumOp = std::make_unique<interpreter::WaveActiveOp>(
+      std::move(oneExpr), interpreter::WaveActiveOp::Sum);
   
   statements.push_back(std::make_unique<interpreter::VarDeclStmt>(
-      "_participantCount", std::move(countBits)));
+      "_participantCount", std::move(sumOp)));
   
   // 2. Check if count matches expected: isCorrect = (participantCount == expectedCount)
   auto countRef = std::make_unique<interpreter::VariableExpr>("_participantCount");
