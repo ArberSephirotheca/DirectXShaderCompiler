@@ -748,16 +748,6 @@ bool WaveParticipantTrackingMutation::canApply(const interpreter::Statement* stm
   // Can apply to assignments containing wave operations
   if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
     if (dynamic_cast<const interpreter::WaveActiveOp*>(assign->getExpression()) != nullptr) {
-      // Debug: print trace info
-      std::cout << "[WaveParticipantTracking] canApply: Found wave op assignment\n";
-      std::cout << "[WaveParticipantTracking] Trace has " << trace.waveOperations.size() 
-                << " wave operations\n";
-      for (size_t i = 0; i < trace.waveOperations.size(); ++i) {
-        const auto& waveOp = trace.waveOperations[i];
-        std::cout << "  Wave op " << i << ": " << waveOp.opType 
-                  << " in block " << waveOp.blockId 
-                  << " with " << waveOp.arrivedParticipants.size() << " participants\n";
-      }
       return true;
     }
   }
@@ -765,7 +755,6 @@ bool WaveParticipantTrackingMutation::canApply(const interpreter::Statement* stm
   else if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
     if (varDecl->getInit() && 
         dynamic_cast<const interpreter::WaveActiveOp*>(varDecl->getInit()) != nullptr) {
-      std::cout << "[WaveParticipantTracking] canApply: Found wave op in variable declaration\n";
       return true;
     }
   }
@@ -810,9 +799,6 @@ std::unique_ptr<interpreter::Statement> WaveParticipantTrackingMutation::apply(
       expectedParticipants = waveOpRecord.arrivedParticipants.size();
       blockId = waveOpRecord.blockId;
       
-      // Debug output
-      std::cout << "[WaveParticipantTracking] Found wave op in block " << blockId 
-                << " with " << expectedParticipants << " participants\n";
       
       // Also check the block's wave participation info for more accurate count
       if (trace.blocks.count(blockId)) {
@@ -822,8 +808,6 @@ std::unique_ptr<interpreter::Statement> WaveParticipantTrackingMutation::apply(
           const auto& waveInfo = block.waveParticipation.at(0);
           if (!waveInfo.participatingLanes.empty()) {
             expectedParticipants = waveInfo.participatingLanes.size();
-            std::cout << "[WaveParticipantTracking] Using block participation info: " 
-                      << expectedParticipants << " lanes\n";
           }
         }
       }
@@ -1088,10 +1072,8 @@ bool SemanticValidator::compareFinalStates(
   
   // Debug: Print wave structure
   if (golden.laneVariables.empty()) {
-    std::cout << "DEBUG: Golden trace has no lane variables recorded\n";
   }
   if (mutant.laneVariables.empty()) {
-    std::cout << "DEBUG: Mutant trace has no lane variables recorded\n";
   }
   
   // Compare per-lane variables
@@ -1612,7 +1594,6 @@ void TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& seedProgram,
     
     // Add specific debug for WaveParticipantTrackingMutation
     if (strategy->getName() == "WaveParticipantTracking") {
-      std::cout << "[DEBUG] WaveParticipantTrackingMutation selected for generateMutants\n";
     }
     
     // Generate mutants with this strategy
@@ -1838,7 +1819,6 @@ interpreter::Program TraceGuidedFuzzer::prepareProgramForMutation(
     tidParam.semantic = minihlsl::interpreter::HLSLSemantic::SV_DispatchThreadID;
     preparedProgram.entryInputs.parameters.push_back(tidParam);
     
-    std::cout << "[PreMutation] Added missing SV_DispatchThreadID parameter 'tid'\n";
   }
   
   // Copy all statements
@@ -1858,7 +1838,6 @@ std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
   
   // Special handling for WaveParticipantTrackingMutation
   if (dynamic_cast<WaveParticipantTrackingMutation*>(strategy)) {
-    std::cout << "[DEBUG] Inside WaveParticipantTrackingMutation special handling in generateMutants\n";
     
     // Check if program contains wave operations (including in nested statements)
     bool hasWaveOps = false;
@@ -1900,10 +1879,8 @@ std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
       }
     }
     
-    std::cout << "[DEBUG] hasWaveOps = " << hasWaveOps << "\n";
     
     if (hasWaveOps) {
-      std::cout << "[DEBUG] Creating mutant for WaveParticipantTrackingMutation\n";
       
       // Create a single mutant
       interpreter::Program mutant;
@@ -1932,8 +1909,6 @@ std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
         participantBuffer.isReadWrite = true;
         mutant.globalBuffers.push_back(participantBuffer);
         
-        std::cout << "[DEBUG] Added _participant_check_sum buffer with size " 
-                  << participantBuffer.size << " to mutant\n";
       }
       
       // Add buffer initialization at the beginning
@@ -1956,14 +1931,9 @@ std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
         }
       }
       
-      std::cout << "[DEBUG] Final mutant has " << mutant.statements.size() << " statements\n";
-      for (size_t i = 0; i < mutant.statements.size(); ++i) {
-        std::cout << "  Statement " << i << ": " << mutant.statements[i]->toString() << "\n";
-      }
       
       mutants.push_back(std::move(mutant));
     }
-    std::cout << "[DEBUG] Returning " << mutants.size() << " mutants from WaveParticipantTrackingMutation\n";
     return mutants;
   }
   
