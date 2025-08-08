@@ -27,7 +27,35 @@ std::string serializeProgramToString(const interpreter::Program& program) {
   ss << "[numthreads(" << program.numThreadsX << ", " 
      << program.numThreadsY << ", " 
      << program.numThreadsZ << ")]\n";
-  ss << "void main() {\n";
+  ss << "void main(";
+  
+  // Add function parameters with semantics
+  bool first = true;
+  for (const auto& param : program.entryInputs.parameters) {
+    if (!first) {
+      ss << ",\n          ";
+    }
+    first = false;
+    
+    // Output type
+    ss << interpreter::HLSLTypeInfo::toString(param.type);
+    if (param.type == interpreter::HLSLType::Custom && !param.customTypeStr.empty()) {
+      ss << param.customTypeStr;
+    }
+    
+    // Output parameter name
+    ss << " " << param.name;
+    
+    // Output semantic if present
+    if (param.semantic != interpreter::HLSLSemantic::None) {
+      ss << " : " << interpreter::HLSLSemanticInfo::toString(param.semantic);
+      if (param.semantic == interpreter::HLSLSemantic::Custom && !param.customSemanticStr.empty()) {
+        ss << param.customSemanticStr;
+      }
+    }
+  }
+  
+  ss << ") {\n";
   
   // Add all statements
   for (const auto& stmt : program.statements) {
@@ -48,12 +76,26 @@ bool LanePermutationMutation::canApply(const interpreter::Statement* stmt,
     if (auto* waveOp = dynamic_cast<const interpreter::WaveActiveOp*>(assign->getExpression())) {
       // Check if this is an associative operation
       auto opType = waveOp->getOpType();
-      bool canApply = opType == interpreter::WaveActiveOp::Sum ||
-             opType == interpreter::WaveActiveOp::Product ||
-             opType == interpreter::WaveActiveOp::And ||
-             opType == interpreter::WaveActiveOp::Or ||
-             opType == interpreter::WaveActiveOp::Xor;
-      return canApply;
+      bool isAssociative = opType == interpreter::WaveActiveOp::Sum ||
+                          opType == interpreter::WaveActiveOp::Product ||
+                          opType == interpreter::WaveActiveOp::And ||
+                          opType == interpreter::WaveActiveOp::Or ||
+                          opType == interpreter::WaveActiveOp::Xor;
+      
+      if (!isAssociative) {
+        return false;
+      }
+      
+      // Additionally check if the operation uses thread ID variables
+      // This makes the mutation more relevant for testing built-in variable handling
+      const auto* inputExpr = waveOp->getInput();
+      if (inputExpr && usesThreadIdVariables(inputExpr)) {
+        // Prioritize mutations on operations that use thread IDs
+        return true;
+      }
+      
+      // Still allow mutations on other associative operations
+      return true;
     }
   }
   return false;
@@ -364,6 +406,20 @@ std::unique_ptr<interpreter::Expression> LanePermutationMutation::transformExpre
   }
   
   if (auto varExpr = dynamic_cast<const interpreter::VariableExpr*>(expr)) {
+    // Check if this is a built-in variable that contains thread ID information
+    std::string varName = varExpr->toString();
+    
+    // Handle built-in variables that contain thread index information
+    // These variables are semantically equivalent to lane indices for wave operations
+    if (varName == "tid.x" || varName == "gtid.x" || varName == "gindex" ||
+        varName.find("SV_DispatchThreadID") != std::string::npos ||
+        varName.find("SV_GroupThreadID") != std::string::npos ||
+        varName.find("SV_GroupIndex") != std::string::npos) {
+      // Replace with permuted lane expression
+      return permutedLaneExpr->clone();
+    }
+    
+    // For other variables, just clone
     return varExpr->clone();
   }
   
@@ -375,6 +431,26 @@ std::unique_ptr<interpreter::Expression> LanePermutationMutation::transformExpre
   
   // For other expressions, just clone
   return expr->clone();
+}
+
+bool LanePermutationMutation::usesThreadIdVariables(const interpreter::Expression* expr) const {
+  // Check if this expression uses built-in thread ID variables
+  if (auto varExpr = dynamic_cast<const interpreter::VariableExpr*>(expr)) {
+    std::string varName = varExpr->toString();
+    return varName == "tid.x" || varName == "tid.y" || varName == "tid.z" ||
+           varName == "gtid.x" || varName == "gtid.y" || varName == "gtid.z" ||
+           varName == "gid.x" || varName == "gid.y" || varName == "gid.z" ||
+           varName == "gindex" ||
+           varName == "tid" || varName == "gtid" || varName == "gid";
+  }
+  
+  // Check LaneIndexExpr
+  if (dynamic_cast<const interpreter::LaneIndexExpr*>(expr)) {
+    return true;
+  }
+  
+  // For compound expressions, would need to recurse, but for now return false
+  return false;
 }
 
 bool LanePermutationMutation::validateSemanticPreservation(
@@ -1342,6 +1418,11 @@ void TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& seedProgram,
   std::cout << "Threadgroup size: " << config.threadgroupSize << "\n";
   std::cout << "Wave size: " << config.waveSize << "\n";
   
+  // Debug: Print the seed program being fuzzed
+  std::cout << "\n=== Seed Program ===\n";
+  std::cout << serializeProgramToString(seedProgram);
+  std::cout << "\n";
+  
   // Create trace capture interpreter
   TraceCaptureInterpreter captureInterpreter;
   
@@ -1397,22 +1478,10 @@ void TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& seedProgram,
       std::cout << "\n=== Testing Mutant " << mutantsTested << " (Strategy: " << strategy->getName() << ") ===\n";
       
       std::cout << "\n--- Original Program ---\n";
-      std::cout << "[numthreads(" << seedProgram.numThreadsX << ", " 
-                << seedProgram.numThreadsY << ", " << seedProgram.numThreadsZ << ")]\n";
-      std::cout << "void main() {\n";
-      for (const auto& stmt : seedProgram.statements) {
-        std::cout << "  " << stmt->toString() << "\n";
-      }
-      std::cout << "}\n";
+      std::cout << serializeProgramToString(seedProgram);
       
       std::cout << "\n--- Mutant Program ---\n";
-      std::cout << "[numthreads(" << mutant.numThreadsX << ", " 
-                << mutant.numThreadsY << ", " << mutant.numThreadsZ << ")]\n";
-      std::cout << "void main() {\n";
-      for (const auto& stmt : mutant.statements) {
-        std::cout << "  " << stmt->toString() << "\n";
-      }
-      std::cout << "}\n";
+      std::cout << serializeProgramToString(mutant);
       
       try {
         // Execute mutant
@@ -1606,11 +1675,21 @@ std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
     bool hasWaveOps = false;
     std::function<bool(const interpreter::Statement*)> hasWaveOp;
     hasWaveOp = [&hasWaveOp](const interpreter::Statement* stmt) -> bool {
+      // Check AssignStmt
       if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
         if (dynamic_cast<const interpreter::WaveActiveOp*>(assign->getExpression())) {
           return true;
         }
-      } else if (auto* ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt)) {
+      } 
+      // Check VarDeclStmt
+      else if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
+        if (varDecl->getInit() && 
+            dynamic_cast<const interpreter::WaveActiveOp*>(varDecl->getInit())) {
+          return true;
+        }
+      }
+      // Check IfStmt
+      else if (auto* ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt)) {
         for (const auto& s : ifStmt->getThenBlock()) {
           if (hasWaveOp(s.get())) return true;
         }
@@ -1642,6 +1721,7 @@ std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
       mutant.numThreadsX = program.numThreadsX;
       mutant.numThreadsY = program.numThreadsY;
       mutant.numThreadsZ = program.numThreadsZ;
+      mutant.entryInputs = program.entryInputs;  // Copy entry function parameters
       
       // Apply mutation to all wave operations and clone other statements
       for (const auto& stmt : program.statements) {
@@ -1680,6 +1760,7 @@ std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
       mutant.numThreadsX = program.numThreadsX;
       mutant.numThreadsY = program.numThreadsY;
       mutant.numThreadsZ = program.numThreadsZ;
+      mutant.entryInputs = program.entryInputs;  // Copy entry function parameters
       
       // Clone all statements except the mutated one
       for (size_t j = 0; j < program.statements.size(); ++j) {
@@ -1783,6 +1864,8 @@ void TraceGuidedFuzzer::logSummary(size_t testedMutants, size_t bugsFound) {
 void loadSeedCorpus(TraceGuidedFuzzer* fuzzer) {
   // Check if HLSL_SEED_DIR environment variable is set
   const char* seedDir = std::getenv("HLSL_SEED_DIR");
+  std::string seedDirStr; // Store the directory path to avoid use-after-free
+  
   if (!seedDir) {
     // Try default locations
     std::vector<std::string> defaultDirs = {
@@ -1794,7 +1877,8 @@ void loadSeedCorpus(TraceGuidedFuzzer* fuzzer) {
     for (const auto& dir : defaultDirs) {
       struct stat info;
       if (stat(dir.c_str(), &info) == 0 && S_ISDIR(info.st_mode)) {
-        seedDir = dir.c_str();
+        seedDirStr = dir;
+        seedDir = seedDirStr.c_str();
         break;
       }
     }
@@ -1866,6 +1950,7 @@ void loadSeedCorpus(TraceGuidedFuzzer* fuzzer) {
       seedProgram.numThreadsX = conversionResult.program.numThreadsX;
       seedProgram.numThreadsY = conversionResult.program.numThreadsY;
       seedProgram.numThreadsZ = conversionResult.program.numThreadsZ;
+      seedProgram.entryInputs = conversionResult.program.entryInputs;  // Copy entry function parameters
       
       for (auto& stmt : conversionResult.program.statements) {
         seedProgram.statements.push_back(std::move(stmt));
@@ -1902,6 +1987,7 @@ bool deserializeAST(const uint8_t* data, size_t size,
     program.numThreadsX = seedProgram.numThreadsX;
     program.numThreadsY = seedProgram.numThreadsY;
     program.numThreadsZ = seedProgram.numThreadsZ;
+    program.entryInputs = seedProgram.entryInputs;  // Copy entry function parameters
     program.statements.clear();
     
     for (const auto& stmt : seedProgram.statements) {
@@ -2107,7 +2193,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Run fuzzing
   minihlsl::fuzzer::FuzzingConfig config;
   config.maxMutants = 10; // Quick fuzzing
-  config.enableLogging = false; // Quiet mode
+  config.enableLogging = true; // Enable logging to see programs
   
   try {
     minihlsl::fuzzer::g_fuzzer->fuzzProgram(program, config);

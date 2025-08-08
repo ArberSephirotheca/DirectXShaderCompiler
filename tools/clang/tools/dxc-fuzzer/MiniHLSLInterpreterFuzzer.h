@@ -322,6 +322,9 @@ private:
   
   // Extract wave operation from ExprStmt (if any)
   const interpreter::WaveActiveOp* getWaveOp(const interpreter::Statement* stmt) const;
+  
+  // Check if expression uses built-in thread ID variables
+  bool usesThreadIdVariables(const interpreter::Expression* expr) const;
 };
 
 // Mutation strategy: Apply algebraic transformations to wave op inputs
