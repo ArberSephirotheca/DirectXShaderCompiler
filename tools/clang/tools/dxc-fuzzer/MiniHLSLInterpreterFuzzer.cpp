@@ -1853,10 +1853,10 @@ std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
       }
       
       if (!hasParticipantBuffer) {
-        interpreter::GlobalBufferDecl participantBuffer;
+        minihlsl::interpreter::GlobalBufferDecl participantBuffer;
         participantBuffer.name = "_participant_check_sum";
         participantBuffer.bufferType = "RWBuffer";
-        participantBuffer.elementType = interpreter::HLSLType::Uint;
+        participantBuffer.elementType = minihlsl::interpreter::HLSLType::Uint;
         participantBuffer.size = program.getTotalThreads();  // Size based on threadgroup
         participantBuffer.registerIndex = 1;  // Use u1 to avoid conflicts
         participantBuffer.isReadWrite = true;

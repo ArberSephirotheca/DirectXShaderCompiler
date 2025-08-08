@@ -4245,17 +4245,29 @@ MiniHLSLInterpreter::convertFromHLSLAST(const clang::FunctionDecl *func,
         std::string typeName = VD->getType().getAsString();
         if (typeName.find("RWBuffer") != std::string::npos ||
             typeName.find("Buffer") != std::string::npos ||
-            typeName.find("StructuredBuffer") != std::string::npos) {
+            typeName.find("StructuredBuffer") != std::string::npos ||
+            typeName.find("ByteAddressBuffer") != std::string::npos ||
+            typeName.find("Texture") != std::string::npos) {
           
           interpreter::GlobalBufferDecl bufferDecl;
           bufferDecl.name = VD->getName().str();
           bufferDecl.isReadWrite = (typeName.find("RW") != std::string::npos);
           
           // Extract buffer type
-          if (typeName.find("RWBuffer") != std::string::npos) {
+          if (typeName.find("RWStructuredBuffer") != std::string::npos) {
+            bufferDecl.bufferType = "RWStructuredBuffer";
+          } else if (typeName.find("RWByteAddressBuffer") != std::string::npos) {
+            bufferDecl.bufferType = "RWByteAddressBuffer";
+          } else if (typeName.find("RWBuffer") != std::string::npos) {
             bufferDecl.bufferType = "RWBuffer";
+          } else if (typeName.find("RWTexture") != std::string::npos) {
+            bufferDecl.bufferType = "RWTexture";
           } else if (typeName.find("StructuredBuffer") != std::string::npos) {
             bufferDecl.bufferType = "StructuredBuffer";
+          } else if (typeName.find("ByteAddressBuffer") != std::string::npos) {
+            bufferDecl.bufferType = "ByteAddressBuffer";
+          } else if (typeName.find("Texture") != std::string::npos) {
+            bufferDecl.bufferType = "Texture";
           } else {
             bufferDecl.bufferType = "Buffer";
           }
