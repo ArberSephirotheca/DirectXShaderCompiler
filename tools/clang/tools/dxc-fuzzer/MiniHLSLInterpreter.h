@@ -2237,9 +2237,20 @@ struct EntryInputs {
   bool hasGroupThreadID = false;
 };
 
+// Global buffer declaration
+struct GlobalBufferDecl {
+  std::string name;
+  std::string bufferType; // "RWBuffer", "Buffer", "StructuredBuffer", etc.
+  HLSLType elementType;
+  uint32_t size; // 0 for unbounded
+  uint32_t registerIndex; // register(u0), register(t0), etc.
+  bool isReadWrite; // true for RWBuffer, false for Buffer
+};
+
 // Program representation
 struct Program {
   std::vector<std::unique_ptr<Statement>> statements;
+  std::vector<GlobalBufferDecl> globalBuffers;
   uint32_t numThreadsX = 32;
   uint32_t numThreadsY = 1;
   uint32_t numThreadsZ = 1;

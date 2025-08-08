@@ -23,6 +23,19 @@ std::unique_ptr<std::vector<interpreter::Program>> g_seedPrograms;
 std::string serializeProgramToString(const interpreter::Program& program) {
   std::stringstream ss;
   
+  // Add global buffer declarations
+  for (const auto& buffer : program.globalBuffers) {
+    ss << buffer.bufferType << "<";
+    ss << interpreter::HLSLTypeInfo::toString(buffer.elementType);
+    ss << "> " << buffer.name;
+    ss << " : register(" << (buffer.isReadWrite ? "u" : "t") 
+       << buffer.registerIndex << ");\n";
+  }
+  
+  if (!program.globalBuffers.empty()) {
+    ss << "\n";
+  }
+  
   // Add thread configuration
   ss << "[numthreads(" << program.numThreadsX << ", " 
      << program.numThreadsY << ", " 
@@ -1828,6 +1841,30 @@ std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
       mutant.numThreadsY = program.numThreadsY;
       mutant.numThreadsZ = program.numThreadsZ;
       mutant.entryInputs = program.entryInputs;  // Copy entry function parameters
+      mutant.globalBuffers = program.globalBuffers;  // Copy existing global buffers
+      
+      // Add the participant tracking buffer if it doesn't exist
+      bool hasParticipantBuffer = false;
+      for (const auto& buffer : mutant.globalBuffers) {
+        if (buffer.name == "_participant_check_sum") {
+          hasParticipantBuffer = true;
+          break;
+        }
+      }
+      
+      if (!hasParticipantBuffer) {
+        interpreter::GlobalBufferDecl participantBuffer;
+        participantBuffer.name = "_participant_check_sum";
+        participantBuffer.bufferType = "RWBuffer";
+        participantBuffer.elementType = interpreter::HLSLType::Uint;
+        participantBuffer.size = program.getTotalThreads();  // Size based on threadgroup
+        participantBuffer.registerIndex = 1;  // Use u1 to avoid conflicts
+        participantBuffer.isReadWrite = true;
+        mutant.globalBuffers.push_back(participantBuffer);
+        
+        std::cout << "[DEBUG] Added _participant_check_sum buffer with size " 
+                  << participantBuffer.size << " to mutant\n";
+      }
       
       // Add buffer initialization at the beginning
       // Initialize current thread's entry: _participant_check_sum[tid.x] = 0

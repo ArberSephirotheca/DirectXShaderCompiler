@@ -1278,15 +1278,29 @@ ArrayAccessExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
                                 Value, ExecutionError);
   uint32_t index = indexValue.asInt();
   
-  // Look up the array variable
-  auto it = lane.variables.find(arrayName_);
-  if (it == lane.variables.end()) {
-    return Err<Value, ExecutionError>(ExecutionError::InvalidState);
+  // Check if this is a global buffer first
+  if (tg.globalBuffers.count(arrayName_)) {
+    auto& buffer = tg.globalBuffers.at(arrayName_);
+    Value result = buffer->load(index);
+    std::cout << "Loaded value " << result.toString() << " from global buffer " 
+              << arrayName_ << "[" << index << "]" << std::endl;
+    return Ok<Value, ExecutionError>(result);
   }
   
-  // For now, we treat arrays as single values
-  // In a full implementation, we would need array support in Value
-  return Ok<Value, ExecutionError>(it->second);
+  // Otherwise, look for indexed variable
+  std::string indexedName = arrayName_ + "_" + std::to_string(index);
+  auto it = lane.variables.find(indexedName);
+  if (it != lane.variables.end()) {
+    return Ok<Value, ExecutionError>(it->second);
+  }
+  
+  // Finally, check if it's a non-indexed array variable
+  auto it2 = lane.variables.find(arrayName_);
+  if (it2 != lane.variables.end()) {
+    return Ok<Value, ExecutionError>(it2->second);
+  }
+  
+  return Err<Value, ExecutionError>(ExecutionError::InvalidState);
 }
 
 Result<Value, ExecutionError>
@@ -1640,10 +1654,17 @@ ArrayAssignStmt::execute_result(LaneContext &lane, WaveContext &wave,
   // Evaluate value to assign
   Value val = TRY_RESULT(valueExpr_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
   
-  // For now, store in regular variable with indexed name
-  // In a full implementation, we would need proper array support
-  std::string indexedName = arrayName_ + "_" + std::to_string(index);
-  lane.variables[indexedName] = val;
+  // Check if this is a global buffer
+  if (tg.globalBuffers.count(arrayName_)) {
+    auto& buffer = tg.globalBuffers[arrayName_];
+    buffer->store(index, val);
+    std::cout << "Stored value " << val.toString() << " to global buffer " 
+              << arrayName_ << "[" << index << "]" << std::endl;
+  } else {
+    // Fall back to local variable with indexed name
+    std::string indexedName = arrayName_ + "_" + std::to_string(index);
+    lane.variables[indexedName] = val;
+  }
   
   return Ok<Unit, ExecutionError>(Unit{});
 }
@@ -3264,6 +3285,16 @@ ExecutionResult MiniHLSLInterpreter::executeWithOrdering(
   ThreadgroupContext tgContext(program.getTotalThreads(), waveSize);
   tgContext.interpreter = this;  // Set interpreter pointer for callbacks
   
+  // Initialize global buffers
+  for (const auto& bufferDecl : program.globalBuffers) {
+    auto buffer = std::make_shared<GlobalBuffer>(
+        bufferDecl.size > 0 ? bufferDecl.size : 1024, // Default size if unbounded
+        bufferDecl.bufferType);
+    tgContext.globalBuffers[bufferDecl.name] = buffer;
+    std::cout << "Initialized global buffer: " << bufferDecl.name 
+              << " size: " << buffer->getSize() << std::endl;
+  }
+  
   // Initialize built-in variables for all lanes based on function parameters
   for (auto& wave : tgContext.waves) {
     for (auto& lane : wave->lanes) {
@@ -4205,6 +4236,47 @@ MiniHLSLInterpreter::convertFromHLSLAST(const clang::FunctionDecl *func,
 
   std::cout << "Converting HLSL function: " << func->getName().str()
             << std::endl;
+
+  // First, parse global buffer declarations from the translation unit
+  if (auto* TU = context.getTranslationUnitDecl()) {
+    for (auto* Decl : TU->decls()) {
+      if (auto* VD = clang::dyn_cast<clang::VarDecl>(Decl)) {
+        // Check if this is a buffer declaration
+        std::string typeName = VD->getType().getAsString();
+        if (typeName.find("RWBuffer") != std::string::npos ||
+            typeName.find("Buffer") != std::string::npos ||
+            typeName.find("StructuredBuffer") != std::string::npos) {
+          
+          interpreter::GlobalBufferDecl bufferDecl;
+          bufferDecl.name = VD->getName().str();
+          bufferDecl.isReadWrite = (typeName.find("RW") != std::string::npos);
+          
+          // Extract buffer type
+          if (typeName.find("RWBuffer") != std::string::npos) {
+            bufferDecl.bufferType = "RWBuffer";
+          } else if (typeName.find("StructuredBuffer") != std::string::npos) {
+            bufferDecl.bufferType = "StructuredBuffer";
+          } else {
+            bufferDecl.bufferType = "Buffer";
+          }
+          
+          // Extract element type (simplified - assumes uint for now)
+          bufferDecl.elementType = HLSLType::Uint;
+          bufferDecl.size = 0; // Unbounded
+          bufferDecl.registerIndex = 0; // Default to u0/t0
+          
+          // TODO: Check for register annotation once HLSLResourceBindingAttr is available
+          
+          std::cout << "Found global buffer: " << bufferDecl.name 
+                    << " type: " << bufferDecl.bufferType
+                    << " register: " << (bufferDecl.isReadWrite ? "u" : "t") 
+                    << bufferDecl.registerIndex << std::endl;
+          
+          result.program.globalBuffers.push_back(bufferDecl);
+        }
+      }
+    }
+  }
 
   try {
     // Extract thread configuration from function attributes
