@@ -1456,6 +1456,32 @@ public:
   const Expression* getExpression() const { return expr_.get(); }
 };
 
+// Array assignment statement
+class ArrayAssignStmt : public Statement {
+  std::string arrayName_;
+  std::unique_ptr<Expression> indexExpr_;
+  std::unique_ptr<Expression> valueExpr_;
+
+public:
+  ArrayAssignStmt(const std::string& arrayName,
+                  std::unique_ptr<Expression> indexExpr,
+                  std::unique_ptr<Expression> valueExpr)
+      : arrayName_(arrayName), indexExpr_(std::move(indexExpr)),
+        valueExpr_(std::move(valueExpr)) {}
+  
+  Result<Unit, ExecutionError> execute_result(LaneContext &lane,
+                                              WaveContext &wave,
+                                              ThreadgroupContext &tg) override;
+  std::string toString() const override;
+  
+  std::unique_ptr<Statement> clone() const override {
+    return std::make_unique<ArrayAssignStmt>(
+        arrayName_,
+        indexExpr_ ? indexExpr_->clone() : nullptr,
+        valueExpr_ ? valueExpr_->clone() : nullptr);
+  }
+};
+
 class IfStmt : public Statement {
   std::unique_ptr<Expression> condition_;
   std::vector<std::unique_ptr<Statement>> thenBlock_;
@@ -2027,6 +2053,50 @@ public:
         bufferName_,
         indexExpr_ ? indexExpr_->clone() : nullptr,
         type_);
+  }
+};
+
+// Array access expression for local arrays
+class ArrayAccessExpr : public Expression {
+  std::string arrayName_;
+  std::unique_ptr<Expression> indexExpr_;
+public:
+  ArrayAccessExpr(const std::string& arrayName,
+                  std::unique_ptr<Expression> indexExpr,
+                  const std::string& type = "")
+      : Expression(type), arrayName_(arrayName), indexExpr_(std::move(indexExpr)) {}
+  
+  Result<Value, ExecutionError>
+  evaluate_result(LaneContext &lane, WaveContext &wave,
+                  ThreadgroupContext &tg) const override;
+  
+  bool isDeterministic() const override { return false; }
+  std::string toString() const override;
+  
+  std::unique_ptr<Expression> clone() const override {
+    return std::make_unique<ArrayAccessExpr>(
+        arrayName_,
+        indexExpr_ ? indexExpr_->clone() : nullptr,
+        type_);
+  }
+};
+
+// SV_DispatchThreadID expression
+class DispatchThreadIdExpr : public Expression {
+  uint32_t component_; // 0=x, 1=y, 2=z
+public:
+  explicit DispatchThreadIdExpr(uint32_t component = 0, const std::string& type = "uint")
+      : Expression(type), component_(component) {}
+  
+  Result<Value, ExecutionError>
+  evaluate_result(LaneContext &lane, WaveContext &wave,
+                  ThreadgroupContext &tg) const override;
+  
+  bool isDeterministic() const override { return true; }
+  std::string toString() const override;
+  
+  std::unique_ptr<Expression> clone() const override {
+    return std::make_unique<DispatchThreadIdExpr>(component_, type_);
   }
 };
 

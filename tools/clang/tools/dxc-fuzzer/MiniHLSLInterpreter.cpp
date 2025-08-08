@@ -1223,6 +1223,45 @@ BufferAccessExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
   return Ok<Value, ExecutionError>(bufferIt->second->load(index));
 }
 
+Result<Value, ExecutionError>
+ArrayAccessExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
+                                ThreadgroupContext &tg) const {
+  // Evaluate index
+  Value indexValue = TRY_RESULT(indexExpr_->evaluate_result(lane, wave, tg),
+                                Value, ExecutionError);
+  uint32_t index = indexValue.asInt();
+  
+  // Look up the array variable
+  auto it = lane.variables.find(arrayName_);
+  if (it == lane.variables.end()) {
+    return Err<Value, ExecutionError>(ExecutionError::InvalidState);
+  }
+  
+  // For now, we treat arrays as single values
+  // In a full implementation, we would need array support in Value
+  return Ok<Value, ExecutionError>(it->second);
+}
+
+Result<Value, ExecutionError>
+DispatchThreadIdExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
+                                     ThreadgroupContext &tg) const {
+  // Calculate global thread ID based on wave and lane
+  // For 1D dispatch: tid = waveId * waveSize + laneId
+  uint32_t globalTid = wave.waveId * wave.waveSize + lane.laneId;
+  
+  // Handle different components
+  switch (component_) {
+    case 0: // x component
+      return Ok<Value, ExecutionError>(Value(static_cast<int>(globalTid)));
+    case 1: // y component
+      return Ok<Value, ExecutionError>(Value(0)); // Assuming 1D dispatch
+    case 2: // z component
+      return Ok<Value, ExecutionError>(Value(0)); // Assuming 1D dispatch
+    default:
+      return Err<Value, ExecutionError>(ExecutionError::InvalidState);
+  }
+}
+
 // Wave operation implementations
 WaveActiveOp::WaveActiveOp(std::unique_ptr<Expression> expr, OpType op)
     : Expression(""), expr_(std::move(expr)), op_(op) {}
@@ -1537,6 +1576,31 @@ AssignStmt::execute_result(LaneContext &lane, WaveContext &wave,
 
 std::string AssignStmt::toString() const {
   return name_ + " = " + expr_->toString() + ";";
+}
+
+Result<Unit, ExecutionError>
+ArrayAssignStmt::execute_result(LaneContext &lane, WaveContext &wave,
+                               ThreadgroupContext &tg) {
+  if (!lane.isActive)
+    return Ok<Unit, ExecutionError>(Unit{});
+  
+  // Evaluate index
+  Value indexValue = TRY_RESULT(indexExpr_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+  uint32_t index = indexValue.asInt();
+  
+  // Evaluate value to assign
+  Value val = TRY_RESULT(valueExpr_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+  
+  // For now, store in regular variable with indexed name
+  // In a full implementation, we would need proper array support
+  std::string indexedName = arrayName_ + "_" + std::to_string(index);
+  lane.variables[indexedName] = val;
+  
+  return Ok<Unit, ExecutionError>(Unit{});
+}
+
+std::string ArrayAssignStmt::toString() const {
+  return arrayName_ + "[" + indexExpr_->toString() + "] = " + valueExpr_->toString() + ";";
 }
 
 IfStmt::IfStmt(std::unique_ptr<Expression> cond,
@@ -3131,6 +3195,15 @@ std::string SharedReadExpr::toString() const {
 
 std::string BufferAccessExpr::toString() const {
   return bufferName_ + "[" + indexExpr_->toString() + "]";
+}
+
+std::string ArrayAccessExpr::toString() const {
+  return arrayName_ + "[" + indexExpr_->toString() + "]";
+}
+
+std::string DispatchThreadIdExpr::toString() const {
+  const char* components[] = {"x", "y", "z"};
+  return "SV_DispatchThreadID." + std::string(components[component_]);
 }
 
 // MiniHLSLInterpreter implementation with cooperative scheduling

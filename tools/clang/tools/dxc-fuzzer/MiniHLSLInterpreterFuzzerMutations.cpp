@@ -82,55 +82,7 @@ std::unique_ptr<interpreter::Statement> createPrecomputedReplacement(
   return nullptr;
 }
 
-// RedundantWaveSyncMutation Implementation
 
-const interpreter::WaveActiveOp* RedundantWaveSyncMutation::extractWaveOp(
-    const interpreter::Statement* stmt) const {
-  
-  // We cannot access private members without getters
-  // Return nullptr for now
-  return nullptr;
-}
-
-// ForceBlockBoundariesMutation Implementation
-
-std::unique_ptr<interpreter::Statement> ForceBlockBoundariesMutation::createBlockMarker(
-    uint32_t blockId, 
-    interpreter::BlockType type) const {
-  
-  // Create a no-op statement that marks a block boundary
-  // We'll create a simple variable declaration that doesn't affect semantics
-  auto marker = std::make_unique<interpreter::VarDeclStmt>(
-    "_block_marker_" + std::to_string(blockId),
-    std::make_unique<interpreter::LiteralExpr>(interpreter::Value(0))
-  );
-  
-  return marker;
-}
-
-// SerializeMemoryAccessesMutation Implementation
-
-uint32_t SerializeMemoryAccessesMutation::findBlockContaining(
-    const interpreter::Statement* stmt, 
-    const ExecutionTrace& trace) const {
-  
-  // Search through blocks to find which one contains this statement
-  for (const auto& [blockId, record] : trace.blocks) {
-    if (record.sourceStatement == stmt) {
-      return blockId;
-    }
-  }
-  
-  return 0; // Not found
-}
-
-std::unique_ptr<interpreter::Statement> SerializeMemoryAccessesMutation::createMemoryAccessStmt(
-    const ExecutionTrace::MemoryAccess* access) const {
-  
-  // Create a statement representing this memory access
-  // TODO: Need proper AST construction
-  return nullptr;
-}
 
 // ExplicitLaneDivergenceMutation Implementation
 
@@ -180,12 +132,12 @@ std::unique_ptr<interpreter::Expression> createDisjunction(
       interpreter::BinaryOpExpr::Or);
 }
 
-// LoopUnrollingMutation Implementation
+// Helper functions for mutations
 
-std::unique_ptr<interpreter::Statement> LoopUnrollingMutation::createGuardedIteration(
+std::unique_ptr<interpreter::Statement> createGuardedIteration(
     const interpreter::Statement* loopStmt,
     uint32_t iteration,
-    const std::map<interpreter::WaveId, std::set<interpreter::LaneId>>& activeWaveLanes) const {
+    const std::map<interpreter::WaveId, std::set<interpreter::LaneId>>& activeWaveLanes) {
   
   // Create a guarded version of the loop body for a specific iteration
   // TODO: Need proper AST construction

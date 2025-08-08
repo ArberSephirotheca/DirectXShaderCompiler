@@ -38,475 +38,7 @@ std::string serializeProgramToString(const interpreter::Program& program) {
   return ss.str();
 }
 
-// ===== Mutation Strategy Implementations =====
-
-bool ExplicitLaneDivergenceMutation::canApply(const interpreter::Statement* stmt, 
-                                             const ExecutionTrace& trace) const {
-  // Can apply to if statements that have divergent control flow
-  if (auto ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt)) {
-    // Check if any wave has divergent lanes for this statement
-    for (const auto& decision : trace.controlFlowHistory) {
-      if (decision.statement == stmt) {
-        for (const auto& [waveId, laneDecisions] : decision.decisions) {
-          bool hasTrueLanes = false;
-          bool hasFalseLanes = false;
-          for (const auto& [laneId, dec] : laneDecisions) {
-            if (dec.branchTaken) hasTrueLanes = true;
-            else hasFalseLanes = true;
-          }
-          if (hasTrueLanes && hasFalseLanes) {
-            return true; // Found divergence
-          }
-        }
-      }
-    }
-  }
-  return false;
-}
-
-std::unique_ptr<interpreter::Statement> ExplicitLaneDivergenceMutation::apply(
-    const interpreter::Statement* stmt, 
-    const ExecutionTrace& trace) const {
-  
-  auto ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt);
-  if (!ifStmt) return nullptr;
-  
-  // Find the control flow decision for this statement
-  for (const auto& decision : trace.controlFlowHistory) {
-    if (decision.statement == stmt) {
-      // Collect lanes that took true branch and false branch
-      std::map<interpreter::WaveId, std::pair<std::vector<interpreter::LaneId>, std::vector<interpreter::LaneId>>> waveBranches;
-      
-      for (const auto& [waveId, laneDecisions] : decision.decisions) {
-        for (const auto& [laneId, dec] : laneDecisions) {
-          if (dec.branchTaken) {
-            waveBranches[waveId].first.push_back(laneId);
-          } else {
-            waveBranches[waveId].second.push_back(laneId);
-          }
-        }
-      }
-      
-      // Create explicit lane conditions
-      std::unique_ptr<interpreter::Expression> explicitCondition = nullptr;
-      
-      for (const auto& [waveId, branches] : waveBranches) {
-        const auto& [trueLanes, falseLanes] = branches;
-        
-        if (!trueLanes.empty()) {
-          // Create condition for lanes that take true branch
-          std::unique_ptr<interpreter::Expression> waveCondition = nullptr;
-          
-          // Create (waveIndex() == waveId && (laneIndex() == lane0 || laneIndex() == lane1 || ...))
-          auto waveCheck = createWaveIdCheck(waveId);
-          
-          std::unique_ptr<interpreter::Expression> laneCondition = nullptr;
-          for (auto laneId : trueLanes) {
-            auto laneCheck = createLaneIdCheck(laneId);
-            if (!laneCondition) {
-              laneCondition = std::move(laneCheck);
-            } else {
-              laneCondition = createDisjunction(std::move(laneCondition), std::move(laneCheck));
-            }
-          }
-          
-          waveCondition = createConjunction(std::move(waveCheck), std::move(laneCondition));
-          
-          if (!explicitCondition) {
-            explicitCondition = std::move(waveCondition);
-          } else {
-            explicitCondition = createDisjunction(std::move(explicitCondition), std::move(waveCondition));
-          }
-        }
-      }
-      
-      // Clone the if statement with the new explicit condition
-      // Deep copy then block
-      std::vector<std::unique_ptr<interpreter::Statement>> newThenBlock;
-      for (const auto& stmt : ifStmt->getThenBlock()) {
-        if (stmt) {
-          newThenBlock.push_back(stmt->clone());
-        }
-      }
-      
-      // Deep copy else block
-      std::vector<std::unique_ptr<interpreter::Statement>> newElseBlock;
-      for (const auto& stmt : ifStmt->getElseBlock()) {
-        if (stmt) {
-          newElseBlock.push_back(stmt->clone());
-        }
-      }
-      
-      return std::make_unique<interpreter::IfStmt>(
-          std::move(explicitCondition),
-          std::move(newThenBlock),
-          std::move(newElseBlock)
-      );
-    }
-  }
-  
-  return nullptr;
-}
-
-bool ExplicitLaneDivergenceMutation::validateSemanticPreservation(
-    const interpreter::Statement* original,
-    const interpreter::Statement* mutated,
-    const ExecutionTrace& trace) const {
-  // TODO: verify
-  return true;
-}
-
-bool LoopUnrollingMutation::canApply(const interpreter::Statement* stmt, 
-                                    const ExecutionTrace& trace) const {
-  // Can apply to loops with known iteration counts
-  return dynamic_cast<const interpreter::ForStmt*>(stmt) != nullptr ||
-         dynamic_cast<const interpreter::WhileStmt*>(stmt) != nullptr ||
-         dynamic_cast<const interpreter::DoWhileStmt*>(stmt) != nullptr;
-}
-
-std::unique_ptr<interpreter::Statement> LoopUnrollingMutation::apply(
-    const interpreter::Statement* stmt, 
-    const ExecutionTrace& trace) const {
-  
-  // For simplicity, we'll only handle ForStmt with simple bounds
-  auto forStmt = dynamic_cast<const interpreter::ForStmt*>(stmt);
-  if (!forStmt) {
-    return nullptr;
-  }
-  
-  // Find loop execution info in trace
-  for (const auto& [loopPtr, loopInfo] : trace.loops) {
-    if (loopPtr == stmt) {
-      // Create unrolled version based on max iterations observed
-      if (loopInfo.lanePatterns.empty()) {
-        return nullptr;
-      }
-      
-      // Get maximum iteration count across all lanes
-      uint32_t maxIterations = 0;
-      for (const auto& [waveId, laneMap] : loopInfo.lanePatterns) {
-        for (const auto& [laneId, pattern] : laneMap) {
-          maxIterations = std::max(maxIterations, pattern.totalIterations);
-        }
-      }
-      
-      // Don't unroll if too many iterations
-      if (maxIterations > 10) {
-        return nullptr;
-      }
-      
-      // Create a sequence of if statements that check iteration count
-      // This is a simplified unrolling that preserves semantics
-      std::vector<std::unique_ptr<interpreter::Statement>> unrolledStmts;
-      
-      // Add the loop variable initialization
-      unrolledStmts.push_back(std::make_unique<interpreter::VarDeclStmt>(
-          forStmt->getLoopVar(),
-          forStmt->getInit() ? forStmt->getInit()->clone() : nullptr
-      ));
-      
-      // For each iteration, add guarded body
-      for (uint32_t i = 0; i < maxIterations; i++) {
-        // Create condition: loop_var == i && original_condition
-        auto iterCheck = std::make_unique<interpreter::BinaryOpExpr>(
-            std::make_unique<interpreter::VariableExpr>(forStmt->getLoopVar()),
-            std::make_unique<interpreter::LiteralExpr>(interpreter::Value(static_cast<int>(i))),
-            interpreter::BinaryOpExpr::Eq
-        );
-        
-        std::unique_ptr<interpreter::Expression> combinedCond;
-        if (forStmt->getCondition()) {
-          combinedCond = createConjunction(
-              std::move(iterCheck),
-              forStmt->getCondition()->clone()
-          );
-        } else {
-          combinedCond = std::move(iterCheck);
-        }
-        
-        // Clone loop body
-        std::vector<std::unique_ptr<interpreter::Statement>> iterBody;
-        for (const auto& bodyStmt : forStmt->getBody()) {
-          if (bodyStmt) {
-            iterBody.push_back(bodyStmt->clone());
-          }
-        }
-        
-        // Add increment
-        if (forStmt->getIncrement()) {
-          iterBody.push_back(std::make_unique<interpreter::ExprStmt>(
-              forStmt->getIncrement()->clone()
-          ));
-        }
-        
-        // Wrap in if statement
-        unrolledStmts.push_back(std::make_unique<interpreter::IfStmt>(
-            std::move(combinedCond),
-            std::move(iterBody)
-        ));
-      }
-      
-      // Return first statement if only one, otherwise wrap in if(true)
-      if (unrolledStmts.size() == 1) {
-        return std::move(unrolledStmts[0]);
-      } else {
-        // Wrap multiple statements in if(true) block
-        return std::make_unique<interpreter::IfStmt>(
-            std::make_unique<interpreter::LiteralExpr>(interpreter::Value(1)),
-            std::move(unrolledStmts)
-        );
-      }
-    }
-  }
-  
-  return nullptr;
-}
-
-bool LoopUnrollingMutation::validateSemanticPreservation(
-    const interpreter::Statement* original,
-    const interpreter::Statement* mutated,
-    const ExecutionTrace& trace) const {
-  return true;
-}
-
-bool PrecomputeWaveResultsMutation::canApply(const interpreter::Statement* stmt, 
-                                           const ExecutionTrace& trace) const {
-  // Can apply to statements containing wave operations
-  // For now, check if there are any wave operations in the trace
-  return !trace.waveOperations.empty();
-}
-
-std::unique_ptr<interpreter::Statement> PrecomputeWaveResultsMutation::apply(
-    const interpreter::Statement* stmt, 
-    const ExecutionTrace& trace) const {
-  
-  // Precompute wave operation results and replace with literals
-  auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt);
-  if (!assign) {
-    return stmt->clone();
-  }
-  
-  auto* waveOp = dynamic_cast<const interpreter::WaveActiveOp*>(assign->getExpression());
-  if (!waveOp) {
-    return stmt->clone();
-  }
-  
-  // Find this wave operation in the trace
-  for (const auto& waveRecord : trace.waveOperations) {
-    if (waveRecord.opType == waveOp->toString()) {
-      // Check if all participants have the same result value
-      bool allSame = true;
-      interpreter::Value commonValue;
-      bool firstValue = true;
-      
-      for (const auto& [laneId, value] : waveRecord.outputValues) {
-        if (firstValue) {
-          commonValue = value;
-          firstValue = false;
-        } else if (value.toString() != commonValue.toString()) {
-          allSame = false;
-          break;
-        }
-      }
-      
-      if (allSame && !firstValue) {
-        // Replace with literal - this precomputes the wave result
-        auto literal = std::make_unique<interpreter::LiteralExpr>(commonValue);
-        return std::make_unique<interpreter::AssignStmt>(
-            assign->getName(), std::move(literal));
-      }
-      break; // Only use the first matching wave op
-    }
-  }
-  
-  return stmt->clone();
-}
-
-bool PrecomputeWaveResultsMutation::validateSemanticPreservation(
-    const interpreter::Statement* original,
-    const interpreter::Statement* mutated,
-    const ExecutionTrace& trace) const {
-  // TODO: validate
-  return true;
-}
-
-bool RedundantWaveSyncMutation::canApply(const interpreter::Statement* stmt, 
-                                       const ExecutionTrace& trace) const {
-  // Can apply after most statements
-  // (Skip wave operation check since expr_ is private)
-  return dynamic_cast<const interpreter::VarDeclStmt*>(stmt) != nullptr ||
-         dynamic_cast<const interpreter::ExprStmt*>(stmt) != nullptr ||
-         dynamic_cast<const interpreter::IfStmt*>(stmt) != nullptr ||
-         dynamic_cast<const interpreter::ForStmt*>(stmt) != nullptr;
-}
-
-std::unique_ptr<interpreter::Statement> RedundantWaveSyncMutation::apply(
-    const interpreter::Statement* stmt, 
-    const ExecutionTrace& trace) const {
-  // Wrap the original statement and a redundant wave operation
-  // in a trivial if(true) block
-  
-  // Create the block containing original statement + redundant sync
-  std::vector<std::unique_ptr<interpreter::Statement>> thenBlock;
-  
-  // Clone the original statement
-  thenBlock.push_back(stmt->clone());
-  
-  // Add a redundant wave operation
-  // Choose randomly between different redundant operations
-  static std::mt19937 rng(std::random_device{}());
-  std::uniform_int_distribution<int> dist(0, 2);
-  
-  switch (dist(rng)) {
-    case 0: {
-      // Add WaveActiveBallot(true) - returns mask of active lanes
-      auto trueLit = std::make_unique<interpreter::LiteralExpr>(true);
-      auto ballotOp = std::make_unique<interpreter::WaveActiveOp>(
-          std::move(trueLit), interpreter::WaveActiveOp::Ballot);
-      auto ballotStmt = std::make_unique<interpreter::ExprStmt>(std::move(ballotOp));
-      thenBlock.push_back(std::move(ballotStmt));
-      break;
-    }
-    case 1: {
-      // Add WaveActiveAllTrue(true) - always returns true
-      auto trueLit = std::make_unique<interpreter::LiteralExpr>(true);
-      auto allTrueOp = std::make_unique<interpreter::WaveActiveOp>(
-          std::move(trueLit), interpreter::WaveActiveOp::AllTrue);
-      auto allTrueStmt = std::make_unique<interpreter::ExprStmt>(std::move(allTrueOp));
-      thenBlock.push_back(std::move(allTrueStmt));
-      break;
-    }
-    case 2: {
-      // Add WaveActiveSum(0) - sums zeros across lanes
-      auto zeroLit = std::make_unique<interpreter::LiteralExpr>(0);
-      auto sumOp = std::make_unique<interpreter::WaveActiveOp>(
-          std::move(zeroLit), interpreter::WaveActiveOp::Sum);
-      auto sumStmt = std::make_unique<interpreter::ExprStmt>(std::move(sumOp));
-      thenBlock.push_back(std::move(sumStmt));
-      break;
-    }
-  }
-  
-  // Create if(true) to wrap both statements
-  auto trueCond = std::make_unique<interpreter::LiteralExpr>(true);
-  return std::make_unique<interpreter::IfStmt>(
-      std::move(trueCond), 
-      std::move(thenBlock));
-}
-
-bool RedundantWaveSyncMutation::validateSemanticPreservation(
-    const interpreter::Statement* original,
-    const interpreter::Statement* mutated,
-    const ExecutionTrace& trace) const {
-  return true;
-}
-
-bool ForceBlockBoundariesMutation::canApply(const interpreter::Statement* stmt, 
-                                          const ExecutionTrace& trace) const {
-  // Can apply to any statement by wrapping it in an if(true) block
-  // This is most useful for compound statements or sequences of statements
-  
-  // Don't apply to statements that are already control flow
-  if (dynamic_cast<const interpreter::IfStmt*>(stmt) ||
-      dynamic_cast<const interpreter::ForStmt*>(stmt) ||
-      dynamic_cast<const interpreter::WhileStmt*>(stmt) ||
-      dynamic_cast<const interpreter::DoWhileStmt*>(stmt)) {
-    return false; // Already has block boundaries
-  }
-  
-  // Apply to assignment statements and expression statements
-  return dynamic_cast<const interpreter::AssignStmt*>(stmt) != nullptr ||
-         dynamic_cast<const interpreter::ExprStmt*>(stmt) != nullptr ||
-         dynamic_cast<const interpreter::VarDeclStmt*>(stmt) != nullptr;
-}
-
-std::unique_ptr<interpreter::Statement> ForceBlockBoundariesMutation::apply(
-    const interpreter::Statement* stmt, 
-    const ExecutionTrace& trace) const {
-  
-  // Wrap the statement in an if(true) block to force a new block boundary
-  auto trueCondition = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(1));
-  
-  // Create the then-block with the original statement
-  std::vector<std::unique_ptr<interpreter::Statement>> thenBlock;
-  thenBlock.push_back(stmt->clone());
-  
-  // Create the if statement
-  return std::make_unique<interpreter::IfStmt>(
-    std::move(trueCondition),
-    std::move(thenBlock)
-  );
-}
-
-bool ForceBlockBoundariesMutation::validateSemanticPreservation(
-    const interpreter::Statement* original,
-    const interpreter::Statement* mutated,
-    const ExecutionTrace& trace) const {
-  // Force block boundaries mutation adds explicit if statements with always-true conditions
-  // This should preserve semantics as the code always executes
-  
-  // Check that the mutated statement is an if statement
-  auto* ifStmt = dynamic_cast<const interpreter::IfStmt*>(mutated);
-  if (!ifStmt) {
-    return false; // Expected an if statement
-  }
-  
-  // Check that the condition is always true (literal 1)
-  auto* condition = ifStmt->getCondition();
-  auto* literal = dynamic_cast<const interpreter::LiteralExpr*>(condition);
-  if (!literal || literal->toString() != "1") {
-    return false; // Expected condition to be literal 1
-  }
-  
-  // The mutation preserves semantics by always executing the then block
-  return true;
-}
-
-bool SerializeMemoryAccessesMutation::canApply(const interpreter::Statement* stmt, 
-                                             const ExecutionTrace& trace) const {
-  // Can apply if there are memory accesses
-  return !trace.memoryAccesses.empty();
-}
-
-std::unique_ptr<interpreter::Statement> SerializeMemoryAccessesMutation::apply(
-    const interpreter::Statement* stmt, 
-    const ExecutionTrace& trace) const {
-  // This mutation adds barriers between memory accesses to serialize them
-  // This helps find race conditions by forcing deterministic ordering
-  
-  // First check if this statement performs a memory access
-  bool isMemoryAccess = false;
-  
-  for (const auto& access : trace.memoryAccesses) {
-    if (access.accessingThread == 0) { // Check if this access is from current thread
-      // For now, we'll just clone the original statement
-      // A full implementation would add memory barriers
-      isMemoryAccess = true;
-      break;
-    }
-  }
-  
-  if (!isMemoryAccess) {
-    return nullptr; // No mutation needed
-  }
-  
-  // Clone the original statement
-  if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
-    return std::make_unique<interpreter::AssignStmt>(
-        assign->getName(), 
-        assign->getExpression()->clone());
-  }
-  
-  // For other statement types, return nullptr for now
-  return nullptr;
-}
-
-bool SerializeMemoryAccessesMutation::validateSemanticPreservation(
-    const interpreter::Statement* original,
-    const interpreter::Statement* mutated,
-    const ExecutionTrace& trace) const {
-  return true;
-}
+// ===== Semantics-Preserving Mutation Implementations =====
 
 bool LanePermutationMutation::canApply(const interpreter::Statement* stmt, 
                                        const ExecutionTrace& trace) const {
@@ -521,9 +53,6 @@ bool LanePermutationMutation::canApply(const interpreter::Statement* stmt,
              opType == interpreter::WaveActiveOp::And ||
              opType == interpreter::WaveActiveOp::Or ||
              opType == interpreter::WaveActiveOp::Xor;
-      if (canApply) {
-        std::cout << "[LanePermutation] canApply returns true for " << waveOp->toString() << "\n";
-      }
       return canApply;
     }
   }
@@ -598,22 +127,6 @@ std::unique_ptr<interpreter::Statement> LanePermutationMutation::apply(
       activeLaneCount = waveOpRecord.arrivedParticipants.size();
       blockIdForWaveOp = waveOpRecord.blockId;
       
-      // Debug output
-      std::cout << "[LanePermutation] Found wave op in trace with " << activeLaneCount << " active lanes in block " << blockIdForWaveOp << "\n";
-      if (trace.blocks.count(blockIdForWaveOp)) {
-        const auto& block = trace.blocks.at(blockIdForWaveOp);
-        std::cout << "[LanePermutation] Block type: " 
-                  << static_cast<int>(block.blockType) << "\n";
-        // Find the wave participation info for wave 0 (assuming single wave for now)
-        if (block.waveParticipation.count(0)) {
-          const auto& waveInfo = block.waveParticipation.at(0);
-          std::cout << "[LanePermutation] Block " << blockIdForWaveOp << " wave 0 participating lanes: ";
-          for (auto laneId : waveInfo.participatingLanes) {
-            std::cout << laneId << " ";
-          }
-          std::cout << "\n";
-        }
-      }
       break;
     }
   }
@@ -626,12 +139,6 @@ std::unique_ptr<interpreter::Statement> LanePermutationMutation::apply(
       if (!participation.participatingLanes.empty()) {
         // This gives us the lanes that actually participated in this block
         activeLaneCount = participation.participatingLanes.size();
-        std::cout << "[LanePermutation] Block " << blockIdForWaveOp 
-                  << " has participating lanes: ";
-        for (auto laneId : participation.participatingLanes) {
-          std::cout << laneId << " ";
-        }
-        std::cout << "\n";
         break;
       }
     }
@@ -639,8 +146,7 @@ std::unique_ptr<interpreter::Statement> LanePermutationMutation::apply(
   
   // Ensure we don't create invalid permutations
   if (activeLaneCount == 0) {
-    std::cout << "[LanePermutation] Warning: No active lanes found, using default\n";
-    activeLaneCount = 4;
+    activeLaneCount = 4; // Default fallback
   }
   
   // Choose a random permutation type
@@ -783,6 +289,401 @@ bool LanePermutationMutation::validateSemanticPreservation(
     const interpreter::Statement* mutated,
     const ExecutionTrace& trace) const {
   // Associative operations should produce the same result with permuted lanes
+  return true;
+}
+
+// ===== DataTransformMutation Implementation =====
+
+bool DataTransformMutation::canApply(const interpreter::Statement* stmt,
+                                   const ExecutionTrace& trace) const {
+  // Can apply to assignments containing wave operations
+  if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
+    return dynamic_cast<const interpreter::WaveActiveOp*>(assign->getExpression()) != nullptr;
+  }
+  return false;
+}
+
+std::unique_ptr<interpreter::Statement> DataTransformMutation::apply(
+    const interpreter::Statement* stmt,
+    const ExecutionTrace& trace) const {
+  
+  auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt);
+  if (!assign) return stmt->clone();
+  
+  auto* waveOp = dynamic_cast<const interpreter::WaveActiveOp*>(assign->getExpression());
+  if (!waveOp) return stmt->clone();
+  
+  // Get the input expression
+  const auto* inputExpr = waveOp->getInput();
+  if (!inputExpr) return stmt->clone();
+  
+  // Choose a random transform
+  static std::mt19937 rng(std::random_device{}());
+  std::uniform_int_distribution<int> dist(0, 4);
+  TransformType transformType = static_cast<TransformType>(dist(rng));
+  
+  // Apply the transform
+  auto transformedInput = applyTransform(inputExpr->clone(), transformType);
+  
+  // Create new wave operation with transformed input
+  auto newWaveOp = std::make_unique<interpreter::WaveActiveOp>(
+      std::move(transformedInput), waveOp->getOpType());
+  
+  return std::make_unique<interpreter::AssignStmt>(
+      assign->getName(), std::move(newWaveOp));
+}
+
+std::unique_ptr<interpreter::Expression> DataTransformMutation::applyTransform(
+    std::unique_ptr<interpreter::Expression> expr,
+    TransformType type) const {
+  
+  switch (type) {
+    case TransformType::MultiplyDivide: {
+      // x -> (x * 4) / 4
+      auto four1 = std::make_unique<interpreter::LiteralExpr>(4);
+      auto four2 = std::make_unique<interpreter::LiteralExpr>(4);
+      
+      auto multiply = std::make_unique<interpreter::BinaryOpExpr>(
+          std::move(expr), std::move(four1), interpreter::BinaryOpExpr::Mul);
+      
+      return std::make_unique<interpreter::BinaryOpExpr>(
+          std::move(multiply), std::move(four2), interpreter::BinaryOpExpr::Div);
+    }
+    
+    case TransformType::AddSubtract: {
+      // x -> (x + 100) - 100
+      auto hundred1 = std::make_unique<interpreter::LiteralExpr>(100);
+      auto hundred2 = std::make_unique<interpreter::LiteralExpr>(100);
+      
+      auto add = std::make_unique<interpreter::BinaryOpExpr>(
+          std::move(expr), std::move(hundred1), interpreter::BinaryOpExpr::Add);
+      
+      return std::make_unique<interpreter::BinaryOpExpr>(
+          std::move(add), std::move(hundred2), interpreter::BinaryOpExpr::Sub);
+    }
+    
+    case TransformType::DoubleNegate: {
+      // x -> -(-x)
+      auto negate1 = std::make_unique<interpreter::UnaryOpExpr>(
+          std::move(expr), interpreter::UnaryOpExpr::Neg);
+      
+      return std::make_unique<interpreter::UnaryOpExpr>(
+          std::move(negate1), interpreter::UnaryOpExpr::Neg);
+    }
+    
+    case TransformType::ShiftUnshift: {
+      // Since we don't have shift operators, use multiply/divide by powers of 2
+      // x -> (x * 4) / 4 (similar effect for positive integers)
+      auto four1 = std::make_unique<interpreter::LiteralExpr>(4);
+      auto four2 = std::make_unique<interpreter::LiteralExpr>(4);
+      
+      auto multiply = std::make_unique<interpreter::BinaryOpExpr>(
+          std::move(expr), std::move(four1), interpreter::BinaryOpExpr::Mul);
+      
+      return std::make_unique<interpreter::BinaryOpExpr>(
+          std::move(multiply), std::move(four2), interpreter::BinaryOpExpr::Div);
+    }
+    
+    case TransformType::BitwiseIdentity: {
+      // x -> x | 0
+      auto zero = std::make_unique<interpreter::LiteralExpr>(0);
+      
+      return std::make_unique<interpreter::BinaryOpExpr>(
+          std::move(expr), std::move(zero), interpreter::BinaryOpExpr::Or);
+    }
+    
+    default:
+      return expr;
+  }
+}
+
+bool DataTransformMutation::validateSemanticPreservation(
+    const interpreter::Statement* original,
+    const interpreter::Statement* mutated,
+    const ExecutionTrace& trace) const {
+  // Algebraic transformations preserve semantics
+  return true;
+}
+
+// ===== RedundantComputeMutation Implementation =====
+
+bool RedundantComputeMutation::canApply(const interpreter::Statement* stmt,
+                                       const ExecutionTrace& trace) const {
+  // Can apply to any wave operation
+  if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
+    return dynamic_cast<const interpreter::WaveActiveOp*>(assign->getExpression()) != nullptr;
+  }
+  return false;
+}
+
+std::unique_ptr<interpreter::Statement> RedundantComputeMutation::apply(
+    const interpreter::Statement* stmt,
+    const ExecutionTrace& trace) const {
+  
+  auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt);
+  if (!assign) return stmt->clone();
+  
+  auto* waveOp = dynamic_cast<const interpreter::WaveActiveOp*>(assign->getExpression());
+  if (!waveOp) return stmt->clone();
+  
+  // Create a compound statement with redundant computations
+  std::vector<std::unique_ptr<interpreter::Statement>> statements;
+  
+  // Add redundant temporary variables
+  auto tempVar1 = std::make_unique<interpreter::VarDeclStmt>(
+      "_temp1", waveOp->getInput()->clone());
+  statements.push_back(std::move(tempVar1));
+  
+  // Redundant computation: temp2 = temp1 + 0
+  auto temp1Ref = std::make_unique<interpreter::VariableExpr>("_temp1");
+  auto zero = std::make_unique<interpreter::LiteralExpr>(0);
+  auto addZero = std::make_unique<interpreter::BinaryOpExpr>(
+      std::move(temp1Ref), std::move(zero), interpreter::BinaryOpExpr::Add);
+  auto tempVar2 = std::make_unique<interpreter::VarDeclStmt>(
+      "_temp2", std::move(addZero));
+  statements.push_back(std::move(tempVar2));
+  
+  // Original wave operation with temp2
+  auto temp2Ref = std::make_unique<interpreter::VariableExpr>("_temp2");
+  auto newWaveOp = std::make_unique<interpreter::WaveActiveOp>(
+      std::move(temp2Ref), waveOp->getOpType());
+  auto newAssign = std::make_unique<interpreter::AssignStmt>(
+      assign->getName(), std::move(newWaveOp));
+  statements.push_back(std::move(newAssign));
+  
+  // Wrap in if(true) to create single statement
+  auto trueCond = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(true));
+  return std::make_unique<interpreter::IfStmt>(
+      std::move(trueCond), std::move(statements),
+      std::vector<std::unique_ptr<interpreter::Statement>>{});
+}
+
+bool RedundantComputeMutation::validateSemanticPreservation(
+    const interpreter::Statement* original,
+    const interpreter::Statement* mutated,
+    const ExecutionTrace& trace) const {
+  // Redundant computations preserve semantics
+  return true;
+}
+
+// ===== WaveParticipantTrackingMutation Implementation =====
+
+bool WaveParticipantTrackingMutation::canApply(const interpreter::Statement* stmt,
+                                              const ExecutionTrace& trace) const {
+  // Can apply to assignments containing wave operations
+  if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
+    return dynamic_cast<const interpreter::WaveActiveOp*>(assign->getExpression()) != nullptr;
+  }
+  return false;
+}
+
+std::unique_ptr<interpreter::Statement> WaveParticipantTrackingMutation::apply(
+    const interpreter::Statement* stmt,
+    const ExecutionTrace& trace) const {
+  
+  auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt);
+  if (!assign) return stmt->clone();
+  
+  auto* waveOp = dynamic_cast<const interpreter::WaveActiveOp*>(assign->getExpression());
+  if (!waveOp) return stmt->clone();
+  
+  // Find expected participants from trace
+  uint32_t expectedParticipants = 4; // default
+  for (const auto& waveOpRecord : trace.waveOperations) {
+    if (waveOpRecord.opType == waveOp->toString()) {
+      expectedParticipants = waveOpRecord.arrivedParticipants.size();
+      break;
+    }
+  }
+  
+  // Create compound statement with original operation plus tracking
+  std::vector<std::unique_ptr<interpreter::Statement>> statements;
+  
+  // 1. Original wave operation
+  statements.push_back(assign->clone());
+  
+  // 2. Create tracking statements that use the global tid variable
+  auto trackingStmts = createTrackingStatements(waveOp, assign->getName(), expectedParticipants);
+  for (auto& stmt : trackingStmts) {
+    statements.push_back(std::move(stmt));
+  }
+  
+  // Wrap in if(true) to create single statement
+  auto trueCond = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(true));
+  return std::make_unique<interpreter::IfStmt>(
+      std::move(trueCond), std::move(statements),
+      std::vector<std::unique_ptr<interpreter::Statement>>{});
+}
+
+std::vector<std::unique_ptr<interpreter::Statement>>
+WaveParticipantTrackingMutation::createTrackingStatements(
+    const interpreter::WaveActiveOp* waveOp,
+    const std::string& resultVar,
+    uint32_t expectedParticipants) const {
+  
+  std::vector<std::unique_ptr<interpreter::Statement>> statements;
+  
+  // 1. Count active participants: participantCount = WaveActiveCountBits(WaveActiveBallot(true))
+  auto trueExpr = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(true));
+  auto ballot = std::make_unique<interpreter::WaveActiveOp>(
+      std::move(trueExpr), interpreter::WaveActiveOp::Ballot);
+  auto countBits = std::make_unique<interpreter::WaveActiveOp>(
+      std::move(ballot), interpreter::WaveActiveOp::CountBits);
+  
+  statements.push_back(std::make_unique<interpreter::VarDeclStmt>(
+      "_participantCount", std::move(countBits)));
+  
+  // 2. Check if count matches expected: isCorrect = (participantCount == expectedCount)
+  auto countRef = std::make_unique<interpreter::VariableExpr>("_participantCount");
+  auto expected = std::make_unique<interpreter::LiteralExpr>(static_cast<int>(expectedParticipants));
+  auto compare = std::make_unique<interpreter::BinaryOpExpr>(
+      std::move(countRef), std::move(expected), interpreter::BinaryOpExpr::Eq);
+  
+  statements.push_back(std::make_unique<interpreter::VarDeclStmt>(
+      "_isCorrect", std::move(compare)));
+  
+  // 3. Store the participant count check result in a variable
+  // In real GPU code this would update a buffer at index tid
+  // For now, we'll store it in a variable that can be checked later
+  auto isCorrectRef = std::make_unique<interpreter::VariableExpr>("_isCorrect");
+  
+  // Create a unique variable name for this wave operation result
+  // _participant_check_N where N is based on result variable name
+  std::string checkVarName = "_participant_check_" + resultVar;
+  statements.push_back(std::make_unique<interpreter::VarDeclStmt>(
+      checkVarName, std::move(isCorrectRef)));
+  
+  return statements;
+}
+
+bool WaveParticipantTrackingMutation::hasParticipantBuffer(
+    const interpreter::Program& program) const {
+  // Check if program already declares a participant tracking buffer
+  // For now, return false as we're using variables instead of buffers
+  return false;
+}
+
+bool WaveParticipantTrackingMutation::validateSemanticPreservation(
+    const interpreter::Statement* original,
+    const interpreter::Statement* mutated,
+    const ExecutionTrace& trace) const {
+  // Tracking operations don't change the wave operation result
+  return true;
+}
+
+// ===== GPUInvariantCheckMutation Implementation =====
+
+bool GPUInvariantCheckMutation::canApply(const interpreter::Statement* stmt,
+                                        const ExecutionTrace& trace) const {
+  // Can apply to wave operations
+  if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
+    return dynamic_cast<const interpreter::WaveActiveOp*>(assign->getExpression()) != nullptr;
+  }
+  return false;
+}
+
+std::unique_ptr<interpreter::Statement> GPUInvariantCheckMutation::apply(
+    const interpreter::Statement* stmt,
+    const ExecutionTrace& trace) const {
+  
+  auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt);
+  if (!assign) return stmt->clone();
+  
+  auto* waveOp = dynamic_cast<const interpreter::WaveActiveOp*>(assign->getExpression());
+  if (!waveOp) return stmt->clone();
+  
+  // Choose an invariant type based on the operation
+  InvariantType invariantType = InvariantType::ParticipantCount; // default
+  
+  // For Sum with constant input, we can check uniform result
+  auto opType = waveOp->getOpType();
+  if (opType == interpreter::WaveActiveOp::Sum ||
+      opType == interpreter::WaveActiveOp::Product) {
+    // Check if input is a literal constant
+    if (dynamic_cast<const interpreter::LiteralExpr*>(waveOp->getInput())) {
+      invariantType = InvariantType::UniformResult;
+    }
+  }
+  
+  return createInvariantCheck(waveOp, assign->getName(), invariantType, trace);
+}
+
+std::unique_ptr<interpreter::Statement> GPUInvariantCheckMutation::createInvariantCheck(
+    const interpreter::WaveActiveOp* waveOp,
+    const std::string& resultVar,
+    InvariantType type,
+    const ExecutionTrace& trace) const {
+  
+  std::vector<std::unique_ptr<interpreter::Statement>> statements;
+  
+  // First execute the original operation
+  auto originalAssign = std::make_unique<interpreter::AssignStmt>(
+      resultVar, waveOp->clone());
+  statements.push_back(std::move(originalAssign));
+  
+  switch (type) {
+    case InvariantType::UniformResult: {
+      // For uniform inputs, all lanes should get same result
+      // Check: WaveActiveAllTrue(result == WaveReadLaneFirst(result))
+      
+      auto resultRef1 = std::make_unique<interpreter::VariableExpr>(resultVar);
+      auto resultRef2 = std::make_unique<interpreter::VariableExpr>(resultVar);
+      auto zeroLane = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(0));
+      auto firstLaneResult = std::make_unique<interpreter::WaveReadLaneAt>(
+          std::move(resultRef2), std::move(zeroLane));
+      
+      auto compare = std::make_unique<interpreter::BinaryOpExpr>(
+          std::move(resultRef1), std::move(firstLaneResult), 
+          interpreter::BinaryOpExpr::Eq);
+      
+      auto allTrue = std::make_unique<interpreter::WaveActiveOp>(
+          std::move(compare), interpreter::WaveActiveOp::AllTrue);
+      
+      statements.push_back(std::make_unique<interpreter::VarDeclStmt>(
+          "_invariant_check", std::move(allTrue)));
+      
+      // Store check result to buffer
+      // ParticipantBuffer[tid] = _invariant_check ? 1 : 0
+      break;
+    }
+    
+    case InvariantType::ReductionIdentity: {
+      // Check that operations with identity elements work correctly
+      // e.g., WaveActiveSum(0) == 0, WaveActiveProduct(1) == 1
+      
+      auto resultRef = std::make_unique<interpreter::VariableExpr>(resultVar);
+      auto identity = std::make_unique<interpreter::LiteralExpr>(0); // for Sum
+      
+      if (waveOp->getOpType() == interpreter::WaveActiveOp::Product) {
+        identity = std::make_unique<interpreter::LiteralExpr>(1);
+      }
+      
+      auto compare = std::make_unique<interpreter::BinaryOpExpr>(
+          std::move(resultRef), std::move(identity),
+          interpreter::BinaryOpExpr::Eq);
+      
+      statements.push_back(std::make_unique<interpreter::VarDeclStmt>(
+          "_identity_check", std::move(compare)));
+      break;
+    }
+    
+    default:
+      // Already handled by WaveParticipantTrackingMutation
+      break;
+  }
+  
+  // Wrap in if(true)
+  auto trueCond = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(true));
+  return std::make_unique<interpreter::IfStmt>(
+      std::move(trueCond), std::move(statements),
+      std::vector<std::unique_ptr<interpreter::Statement>>{});
+}
+
+bool GPUInvariantCheckMutation::validateSemanticPreservation(
+    const interpreter::Statement* original,
+    const interpreter::Statement* mutated,
+    const ExecutionTrace& trace) const {
+  // Invariant checks don't change the operation result
   return true;
 }
 
@@ -1246,14 +1147,15 @@ void BugReporter::logBug(const BugReport& report) {
 // ===== Main Fuzzer Implementation =====
 
 TraceGuidedFuzzer::TraceGuidedFuzzer() {
-  // Initialize mutation strategies
-  mutationStrategies.push_back(std::make_unique<ExplicitLaneDivergenceMutation>());
-  mutationStrategies.push_back(std::make_unique<LoopUnrollingMutation>());
-  mutationStrategies.push_back(std::make_unique<PrecomputeWaveResultsMutation>());
-  mutationStrategies.push_back(std::make_unique<RedundantWaveSyncMutation>());
-  mutationStrategies.push_back(std::make_unique<ForceBlockBoundariesMutation>());
-  mutationStrategies.push_back(std::make_unique<SerializeMemoryAccessesMutation>());
+  // Initialize mutation strategies - only semantics-preserving mutations
   mutationStrategies.push_back(std::make_unique<LanePermutationMutation>());
+  mutationStrategies.push_back(std::make_unique<DataTransformMutation>());
+  mutationStrategies.push_back(std::make_unique<RedundantComputeMutation>());
+  mutationStrategies.push_back(std::make_unique<WaveParticipantTrackingMutation>());
+  // TODO: Add more semantics-preserving mutations:
+  // - AlgebraicIdentityMutation (more complex algebraic identities)
+  // - MemoryAccessReorderMutation (reorder independent memory accesses)
+  // - RegisterSpillMutation (force values through memory)
   
   validator = std::make_unique<SemanticValidator>();
   bugReporter = std::make_unique<BugReporter>();
@@ -1487,6 +1389,76 @@ std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
   
   std::vector<interpreter::Program> mutants;
   
+  // Special handling for WaveParticipantTrackingMutation
+  if (dynamic_cast<WaveParticipantTrackingMutation*>(strategy)) {
+    // Check if program contains wave operations (including in nested statements)
+    bool hasWaveOps = false;
+    std::function<bool(const interpreter::Statement*)> hasWaveOp;
+    hasWaveOp = [&hasWaveOp](const interpreter::Statement* stmt) -> bool {
+      if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
+        if (dynamic_cast<const interpreter::WaveActiveOp*>(assign->getExpression())) {
+          return true;
+        }
+      } else if (auto* ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt)) {
+        for (const auto& s : ifStmt->getThenBlock()) {
+          if (hasWaveOp(s.get())) return true;
+        }
+        for (const auto& s : ifStmt->getElseBlock()) {
+          if (hasWaveOp(s.get())) return true;
+        }
+      } else if (auto* forStmt = dynamic_cast<const interpreter::ForStmt*>(stmt)) {
+        for (const auto& s : forStmt->getBody()) {
+          if (hasWaveOp(s.get())) return true;
+        }
+      }
+      return false;
+    };
+    
+    for (const auto& stmt : program.statements) {
+      if (hasWaveOp(stmt.get())) {
+        hasWaveOps = true;
+        break;
+      }
+    }
+    
+    if (hasWaveOps) {
+      // Create a single mutant with tid declaration added at the beginning
+      interpreter::Program mutant;
+      mutant.numThreadsX = program.numThreadsX;
+      mutant.numThreadsY = program.numThreadsY;
+      mutant.numThreadsZ = program.numThreadsZ;
+      
+      // Add tid declaration as first statement
+      // tid = waveId * waveSize + laneId (equivalent to SV_DispatchThreadID.x)
+      auto waveId = std::make_unique<interpreter::WaveIndexExpr>();
+      auto waveSize = std::make_unique<interpreter::WaveGetLaneCountExpr>();
+      auto waveMul = std::make_unique<interpreter::BinaryOpExpr>(
+          std::move(waveId), std::move(waveSize), interpreter::BinaryOpExpr::Mul);
+      auto laneId = std::make_unique<interpreter::LaneIndexExpr>();
+      auto globalTid = std::make_unique<interpreter::BinaryOpExpr>(
+          std::move(waveMul), std::move(laneId), interpreter::BinaryOpExpr::Add);
+      auto tidDecl = std::make_unique<interpreter::VarDeclStmt>("tid", std::move(globalTid));
+      mutant.statements.push_back(std::move(tidDecl));
+      
+      // Apply mutation to all wave operations and clone other statements
+      for (const auto& stmt : program.statements) {
+        bool mutationApplied = false;
+        auto mutatedStmt = applyMutationToStatement(
+            stmt.get(), strategy, trace, mutationApplied);
+        
+        if (mutationApplied) {
+          mutant.statements.push_back(std::move(mutatedStmt));
+        } else {
+          mutant.statements.push_back(stmt->clone());
+        }
+      }
+      
+      mutants.push_back(std::move(mutant));
+    }
+    return mutants;
+  }
+  
+  // Default behavior for other mutation strategies
   // Try to apply the mutation strategy to each statement (including nested ones)
   for (size_t i = 0; i < program.statements.size(); ++i) {
     bool mutationApplied = false;
