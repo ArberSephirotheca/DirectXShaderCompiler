@@ -761,6 +761,14 @@ bool WaveParticipantTrackingMutation::canApply(const interpreter::Statement* stm
       return true;
     }
   }
+  // Also check for variable declarations with wave operations
+  else if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
+    if (varDecl->getInit() && 
+        dynamic_cast<const interpreter::WaveActiveOp*>(varDecl->getInit()) != nullptr) {
+      std::cout << "[WaveParticipantTracking] canApply: Found wave op in variable declaration\n";
+      return true;
+    }
+  }
   return false;
 }
 
@@ -768,11 +776,28 @@ std::unique_ptr<interpreter::Statement> WaveParticipantTrackingMutation::apply(
     const interpreter::Statement* stmt,
     const ExecutionTrace& trace) const {
   
-  auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt);
-  if (!assign) return stmt->clone();
+  // Handle AssignStmt
+  const interpreter::WaveActiveOp* waveOp = nullptr;
+  std::string resultVarName;
   
-  auto* waveOp = dynamic_cast<const interpreter::WaveActiveOp*>(assign->getExpression());
-  if (!waveOp) return stmt->clone();
+  if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
+    waveOp = dynamic_cast<const interpreter::WaveActiveOp*>(assign->getExpression());
+    if (!waveOp) return stmt->clone();
+    resultVarName = assign->getName();
+  }
+  // Handle VarDeclStmt
+  else if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
+    if (varDecl->getInit()) {
+      waveOp = dynamic_cast<const interpreter::WaveActiveOp*>(varDecl->getInit());
+      if (!waveOp) return stmt->clone();
+      resultVarName = varDecl->getName();
+    } else {
+      return stmt->clone();
+    }
+  }
+  else {
+    return stmt->clone();
+  }
   
   // Find expected participants from trace based on the actual block execution
   uint32_t expectedParticipants = 4; // default
@@ -810,10 +835,10 @@ std::unique_ptr<interpreter::Statement> WaveParticipantTrackingMutation::apply(
   std::vector<std::unique_ptr<interpreter::Statement>> statements;
   
   // 1. Original wave operation
-  statements.push_back(assign->clone());
+  statements.push_back(stmt->clone());
   
   // 2. Create tracking statements that use the global tid variable
-  auto trackingStmts = createTrackingStatements(waveOp, assign->getName(), expectedParticipants);
+  auto trackingStmts = createTrackingStatements(waveOp, resultVarName, expectedParticipants);
   for (auto& stmt : trackingStmts) {
     statements.push_back(std::move(stmt));
   }
@@ -1542,6 +1567,13 @@ void TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& seedProgram,
   std::cout << serializeProgramToString(seedProgram);
   std::cout << "\n";
   
+  // Prepare program for mutation
+  interpreter::Program preparedProgram = prepareProgramForMutation(seedProgram);
+  
+  std::cout << "\n=== Prepared Program ===\n";
+  std::cout << serializeProgramToString(preparedProgram);
+  std::cout << "\n";
+  
   // Create trace capture interpreter
   TraceCaptureInterpreter captureInterpreter;
   
@@ -1552,7 +1584,7 @@ void TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& seedProgram,
   // Use default source order
   
   auto goldenResult = captureInterpreter.executeAndCaptureTrace(
-    seedProgram, ordering, config.waveSize);
+    preparedProgram, ordering, config.waveSize);
   
   // Check if execution succeeded
   if (!goldenResult.isValid()) {
@@ -1584,7 +1616,7 @@ void TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& seedProgram,
     }
     
     // Generate mutants with this strategy
-    auto mutants = generateMutants(seedProgram, strategy.get(), goldenTrace);
+    auto mutants = generateMutants(preparedProgram, strategy.get(), goldenTrace);
     
     for (const auto& mutant : mutants) {
       if (mutantsTested >= config.maxMutants) {
@@ -1597,7 +1629,7 @@ void TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& seedProgram,
       std::cout << "\n=== Testing Mutant " << mutantsTested << " (Strategy: " << strategy->getName() << ") ===\n";
       
       std::cout << "\n--- Original Program ---\n";
-      std::cout << serializeProgramToString(seedProgram);
+      std::cout << serializeProgramToString(preparedProgram);
       
       std::cout << "\n--- Mutant Program ---\n";
       std::cout << serializeProgramToString(mutant);
@@ -1628,14 +1660,14 @@ void TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& seedProgram,
         if (!validation.isEquivalent) {
           // Found a bug!
           bugsFound++;
-          bugReporter->reportBug(seedProgram, mutant, goldenTrace, 
+          bugReporter->reportBug(preparedProgram, mutant, goldenTrace, 
                                mutantTrace, validation);
         }
         
       } catch (const std::exception& e) {
         // Mutant crashed - definitely a bug
         bugsFound++;
-        bugReporter->reportCrash(seedProgram, mutant, e);
+        bugReporter->reportCrash(preparedProgram, mutant, e);
       }
     }
   }
@@ -1777,6 +1809,44 @@ std::unique_ptr<interpreter::Statement> TraceGuidedFuzzer::applyMutationToStatem
   
   // No mutation found, return clone
   return stmt->clone();
+}
+
+interpreter::Program TraceGuidedFuzzer::prepareProgramForMutation(
+    const interpreter::Program& program) {
+  
+  interpreter::Program preparedProgram;
+  preparedProgram.numThreadsX = program.numThreadsX;
+  preparedProgram.numThreadsY = program.numThreadsY;
+  preparedProgram.numThreadsZ = program.numThreadsZ;
+  preparedProgram.globalBuffers = program.globalBuffers;
+  preparedProgram.entryInputs = program.entryInputs;
+  
+  // Check if main function has SV_DispatchThreadID parameter
+  bool hasDispatchThreadID = false;
+  for (const auto& param : preparedProgram.entryInputs.parameters) {
+    if (param.semantic == minihlsl::interpreter::HLSLSemantic::SV_DispatchThreadID) {
+      hasDispatchThreadID = true;
+      break;
+    }
+  }
+  
+  // Add SV_DispatchThreadID parameter if missing
+  if (!hasDispatchThreadID) {
+    minihlsl::interpreter::ParameterSig tidParam;
+    tidParam.name = "tid";
+    tidParam.type = minihlsl::interpreter::HLSLType::Uint3;
+    tidParam.semantic = minihlsl::interpreter::HLSLSemantic::SV_DispatchThreadID;
+    preparedProgram.entryInputs.parameters.push_back(tidParam);
+    
+    std::cout << "[PreMutation] Added missing SV_DispatchThreadID parameter 'tid'\n";
+  }
+  
+  // Copy all statements
+  for (const auto& stmt : program.statements) {
+    preparedProgram.statements.push_back(stmt->clone());
+  }
+  
+  return preparedProgram;
 }
 
 std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(

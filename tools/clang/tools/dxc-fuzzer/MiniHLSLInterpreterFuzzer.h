@@ -584,6 +584,9 @@ public:
     unsigned int seed);
   
 private:
+  interpreter::Program prepareProgramForMutation(
+    const interpreter::Program& program);
+    
   std::vector<interpreter::Program> generateMutants(
     const interpreter::Program& program,
     MutationStrategy* strategy,
