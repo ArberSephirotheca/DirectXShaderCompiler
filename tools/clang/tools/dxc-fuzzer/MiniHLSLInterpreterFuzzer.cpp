@@ -1635,25 +1635,13 @@ std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
     std::cout << "[DEBUG] hasWaveOps = " << hasWaveOps << "\n";
     
     if (hasWaveOps) {
-      std::cout << "[DEBUG] Creating mutant with tid declaration\n";
+      std::cout << "[DEBUG] Creating mutant for WaveParticipantTrackingMutation\n";
       
-      // Create a single mutant with tid declaration added at the beginning
+      // Create a single mutant
       interpreter::Program mutant;
       mutant.numThreadsX = program.numThreadsX;
       mutant.numThreadsY = program.numThreadsY;
       mutant.numThreadsZ = program.numThreadsZ;
-      
-      // Add tid declaration as first statement
-      // tid = waveId * waveSize + laneId (equivalent to SV_DispatchThreadID.x)
-      auto waveId = std::make_unique<interpreter::WaveIndexExpr>();
-      auto waveSize = std::make_unique<interpreter::WaveGetLaneCountExpr>();
-      auto waveMul = std::make_unique<interpreter::BinaryOpExpr>(
-          std::move(waveId), std::move(waveSize), interpreter::BinaryOpExpr::Mul);
-      auto laneId = std::make_unique<interpreter::LaneIndexExpr>();
-      auto globalTid = std::make_unique<interpreter::BinaryOpExpr>(
-          std::move(waveMul), std::move(laneId), interpreter::BinaryOpExpr::Add);
-      auto tidDecl = std::make_unique<interpreter::VarDeclStmt>("tid", std::move(globalTid));
-      mutant.statements.push_back(std::move(tidDecl));
       
       // Apply mutation to all wave operations and clone other statements
       for (const auto& stmt : program.statements) {

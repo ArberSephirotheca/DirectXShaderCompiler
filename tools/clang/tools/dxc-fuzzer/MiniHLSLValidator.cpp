@@ -2687,9 +2687,9 @@ MiniHLSLValidator::validate_source_with_ast_ownership(const string &hlsl_source,
     // Set up basic compiler instance (same as parse_and_validate_hlsl)
     CI.createDiagnostics();
     std::string abs_filename = filename;
-    if (!llvm::sys::path::is_absolute(filename)) {
-        abs_filename = "/home/zheyuan/dxc_workspace/DirectXShaderCompiler/tools/clang/tools/dxc-fuzzer/test_cases/" + filename;
-    }
+    // if (!llvm::sys::path::is_absolute(filename)) {
+    //     abs_filename = "/home/zheyuan/dxc_workspace/DirectXShaderCompiler/tools/clang/tools/dxc-fuzzer/test_cases/" + filename;
+    // }
     
     // Set up FrontendOptions
     auto& FrontendOpts = CI.getFrontendOpts();

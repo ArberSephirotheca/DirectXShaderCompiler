@@ -6,6 +6,7 @@
 #include <numeric>
 #include <sstream>
 #include <thread>
+#include <unordered_map>
 
 // Clang AST includes for conversion
 #include "clang/AST/ASTContext.h"
@@ -16,6 +17,7 @@
 #include "clang/AST/Stmt.h"
 #include "clang/AST/StmtCXX.h"
 #include "clang/Basic/OperatorKinds.h"
+#include "clang/Lex/Lexer.h"
 #include "llvm/Support/raw_ostream.h"
 
 // Debug flags for MiniHLSL Interpreter
@@ -1537,12 +1539,21 @@ std::string WaveActiveOp::toString() const {
 // Legacy constructor - tries to get type from init expression
 VarDeclStmt::VarDeclStmt(const std::string &name,
                          std::unique_ptr<Expression> init)
-    : name_(name), type_(init ? init->getType() : "uint"), init_(std::move(init)) {}
+    : name_(name), type_(init ? init->getType() : HLSLType::Uint), init_(std::move(init)) {}
 
-// New constructor with explicit type
-VarDeclStmt::VarDeclStmt(const std::string &name, const std::string &type,
+// Constructor with explicit type
+VarDeclStmt::VarDeclStmt(const std::string &name, HLSLType type,
                          std::unique_ptr<Expression> init)
     : name_(name), type_(type), init_(std::move(init)) {}
+
+// Constructor with string type (for compatibility)
+VarDeclStmt::VarDeclStmt(const std::string &name, const std::string &typeStr,
+                         std::unique_ptr<Expression> init)
+    : name_(name), type_(HLSLTypeInfo::fromString(typeStr)), init_(std::move(init)) {
+  if (type_ == HLSLType::Custom) {
+    customTypeStr_ = typeStr;
+  }
+}
 
 Result<Unit, ExecutionError>
 VarDeclStmt::execute_result(LaneContext &lane, WaveContext &wave,
@@ -1574,20 +1585,8 @@ VarDeclStmt::execute_result(LaneContext &lane, WaveContext &wave,
 }
 
 std::string VarDeclStmt::toString() const {
-  // Use the stored type if available
-  std::string actualType = type_;
-  
-  // If no type was stored, try to get it from the init expression
-  if (actualType.empty() && init_) {
-    actualType = init_->getType();
-  }
-  
-  // Last resort: default to uint
-  if (actualType.empty()) {
-    actualType = "uint";
-  }
-  
-  return actualType + " " + name_ + " = " + (init_ ? init_->toString() : "0") + ";";
+  std::string typeStr = type_ == HLSLType::Custom ? customTypeStr_ : HLSLTypeInfo::toString(type_);
+  return typeStr + " " + name_ + " = " + (init_ ? init_->toString() : "0") + ";";
 }
 
 AssignStmt::AssignStmt(const std::string &name,
@@ -3879,12 +3878,20 @@ MiniHLSLInterpreter::generateTestOrderings(uint32_t threadCount,
 }
 
 // Helper function implementations
-std::unique_ptr<Expression> makeLiteral(Value v, const std::string& type = "") {
-  return std::make_unique<LiteralExpr>(v, type);
+std::unique_ptr<Expression> makeLiteral(Value v) {
+  return std::make_unique<LiteralExpr>(v, HLSLType::Unknown);
 }
 
-std::unique_ptr<Expression> makeVariable(const std::string &name, const std::string& type = "") {
-  return std::make_unique<VariableExpr>(name, type);
+std::unique_ptr<Expression> makeLiteral(Value v, const std::string& typeStr) {
+  return std::make_unique<LiteralExpr>(v, typeStr);
+}
+
+std::unique_ptr<Expression> makeVariable(const std::string &name) {
+  return std::make_unique<VariableExpr>(name, HLSLType::Unknown);
+}
+
+std::unique_ptr<Expression> makeVariable(const std::string &name, const std::string& typeStr) {
+  return std::make_unique<VariableExpr>(name, typeStr);
 }
 
 std::unique_ptr<Expression> makeLaneIndex() {
@@ -3933,6 +3940,191 @@ makeIf(std::unique_ptr<Expression> cond,
                                   std::move(elseBlock));
 }
 
+// Helper function implementations for HLSL type/semantic conversion
+HLSLType HLSLTypeInfo::fromString(const std::string& typeStr) {
+  static const std::unordered_map<std::string, HLSLType> typeMap = {
+    {"bool", HLSLType::Bool}, {"int", HLSLType::Int}, {"uint", HLSLType::Uint},
+    {"float", HLSLType::Float}, {"double", HLSLType::Double},
+    {"bool2", HLSLType::Bool2}, {"bool3", HLSLType::Bool3}, {"bool4", HLSLType::Bool4},
+    {"int2", HLSLType::Int2}, {"int3", HLSLType::Int3}, {"int4", HLSLType::Int4},
+    {"uint2", HLSLType::Uint2}, {"uint3", HLSLType::Uint3}, {"uint4", HLSLType::Uint4},
+    {"float2", HLSLType::Float2}, {"float3", HLSLType::Float3}, {"float4", HLSLType::Float4},
+    {"double2", HLSLType::Double2}, {"double3", HLSLType::Double3}, {"double4", HLSLType::Double4},
+    {"float2x2", HLSLType::Float2x2}, {"float3x3", HLSLType::Float3x3}, {"float4x4", HLSLType::Float4x4},
+    {"float2x3", HLSLType::Float2x3}, {"float2x4", HLSLType::Float2x4},
+    {"float3x2", HLSLType::Float3x2}, {"float3x4", HLSLType::Float3x4},
+    {"float4x2", HLSLType::Float4x2}, {"float4x3", HLSLType::Float4x3},
+    {"StructuredBuffer", HLSLType::StructuredBuffer},
+    {"RWStructuredBuffer", HLSLType::RWStructuredBuffer}
+  };
+  
+  auto it = typeMap.find(typeStr);
+  return (it != typeMap.end()) ? it->second : HLSLType::Custom;
+}
+
+std::string HLSLTypeInfo::toString(HLSLType type) {
+  switch (type) {
+    case HLSLType::Bool: return "bool";
+    case HLSLType::Int: return "int";
+    case HLSLType::Uint: return "uint";
+    case HLSLType::Float: return "float";
+    case HLSLType::Double: return "double";
+    case HLSLType::Bool2: return "bool2";
+    case HLSLType::Bool3: return "bool3";
+    case HLSLType::Bool4: return "bool4";
+    case HLSLType::Int2: return "int2";
+    case HLSLType::Int3: return "int3";
+    case HLSLType::Int4: return "int4";
+    case HLSLType::Uint2: return "uint2";
+    case HLSLType::Uint3: return "uint3";
+    case HLSLType::Uint4: return "uint4";
+    case HLSLType::Float2: return "float2";
+    case HLSLType::Float3: return "float3";
+    case HLSLType::Float4: return "float4";
+    case HLSLType::Double2: return "double2";
+    case HLSLType::Double3: return "double3";
+    case HLSLType::Double4: return "double4";
+    case HLSLType::Float2x2: return "float2x2";
+    case HLSLType::Float3x3: return "float3x3";
+    case HLSLType::Float4x4: return "float4x4";
+    case HLSLType::Float2x3: return "float2x3";
+    case HLSLType::Float2x4: return "float2x4";
+    case HLSLType::Float3x2: return "float3x2";
+    case HLSLType::Float3x4: return "float3x4";
+    case HLSLType::Float4x2: return "float4x2";
+    case HLSLType::Float4x3: return "float4x3";
+    case HLSLType::StructuredBuffer: return "StructuredBuffer";
+    case HLSLType::RWStructuredBuffer: return "RWStructuredBuffer";
+    default: return "unknown";
+  }
+}
+
+bool HLSLTypeInfo::isVectorType(HLSLType type) {
+  return type >= HLSLType::Bool2 && type <= HLSLType::Double4;
+}
+
+bool HLSLTypeInfo::isMatrixType(HLSLType type) {
+  return type >= HLSLType::Float2x2 && type <= HLSLType::Float4x3;
+}
+
+uint32_t HLSLTypeInfo::getComponentCount(HLSLType type) {
+  switch (type) {
+    case HLSLType::Bool2: case HLSLType::Int2: case HLSLType::Uint2:
+    case HLSLType::Float2: case HLSLType::Double2: return 2;
+    case HLSLType::Bool3: case HLSLType::Int3: case HLSLType::Uint3:
+    case HLSLType::Float3: case HLSLType::Double3: return 3;
+    case HLSLType::Bool4: case HLSLType::Int4: case HLSLType::Uint4:
+    case HLSLType::Float4: case HLSLType::Double4: return 4;
+    default: return 1;
+  }
+}
+
+HLSLSemantic HLSLSemanticInfo::fromString(const std::string& semanticStr) {
+  static const std::unordered_map<std::string, HLSLSemantic> semanticMap = {
+    {"SV_DispatchThreadID", HLSLSemantic::SV_DispatchThreadID},
+    {"SV_GroupID", HLSLSemantic::SV_GroupID},
+    {"SV_GroupThreadID", HLSLSemantic::SV_GroupThreadID},
+    {"SV_GroupIndex", HLSLSemantic::SV_GroupIndex},
+    {"SV_Position", HLSLSemantic::SV_Position},
+    {"SV_VertexID", HLSLSemantic::SV_VertexID},
+    {"SV_InstanceID", HLSLSemantic::SV_InstanceID},
+    {"SV_Target", HLSLSemantic::SV_Target},
+    {"SV_Depth", HLSLSemantic::SV_Depth},
+    {"SV_Coverage", HLSLSemantic::SV_Coverage},
+    {"SV_IsFrontFace", HLSLSemantic::SV_IsFrontFace},
+    {"SV_PrimitiveID", HLSLSemantic::SV_PrimitiveID},
+    {"SV_SampleIndex", HLSLSemantic::SV_SampleIndex}
+  };
+  
+  if (semanticStr.empty()) return HLSLSemantic::None;
+  auto it = semanticMap.find(semanticStr);
+  return (it != semanticMap.end()) ? it->second : HLSLSemantic::Custom;
+}
+
+std::string HLSLSemanticInfo::toString(HLSLSemantic semantic) {
+  switch (semantic) {
+    case HLSLSemantic::SV_DispatchThreadID: return "SV_DispatchThreadID";
+    case HLSLSemantic::SV_GroupID: return "SV_GroupID";
+    case HLSLSemantic::SV_GroupThreadID: return "SV_GroupThreadID";
+    case HLSLSemantic::SV_GroupIndex: return "SV_GroupIndex";
+    case HLSLSemantic::SV_Position: return "SV_Position";
+    case HLSLSemantic::SV_VertexID: return "SV_VertexID";
+    case HLSLSemantic::SV_InstanceID: return "SV_InstanceID";
+    case HLSLSemantic::SV_Target: return "SV_Target";
+    case HLSLSemantic::SV_Depth: return "SV_Depth";
+    case HLSLSemantic::SV_Coverage: return "SV_Coverage";
+    case HLSLSemantic::SV_IsFrontFace: return "SV_IsFrontFace";
+    case HLSLSemantic::SV_PrimitiveID: return "SV_PrimitiveID";
+    case HLSLSemantic::SV_SampleIndex: return "SV_SampleIndex";
+    case HLSLSemantic::None: return "";
+    default: return "Custom";
+  }
+}
+
+bool HLSLSemanticInfo::isComputeShaderSemantic(HLSLSemantic semantic) {
+  return semantic == HLSLSemantic::SV_DispatchThreadID ||
+         semantic == HLSLSemantic::SV_GroupID ||
+         semantic == HLSLSemantic::SV_GroupThreadID ||
+         semantic == HLSLSemantic::SV_GroupIndex;
+}
+
+// Helper function to extract parameter signature from AST
+static ParameterSig extractParamSig(const clang::ParmVarDecl* P,
+                                    clang::ASTContext& Ctx) {
+  ParameterSig sig;
+  sig.name = P->getNameAsString();
+  
+  // Get the type as string
+  std::string typeStr = P->getType().getAsString(Ctx.getPrintingPolicy());
+  sig.type = HLSLTypeInfo::fromString(typeStr);
+  if (sig.type == HLSLType::Custom) {
+    sig.customTypeStr = typeStr;
+  }
+  
+  // Initialize semantic to None
+  sig.semantic = HLSLSemantic::None;
+  sig.customSemanticStr = "";
+
+  // Look for semantic attributes
+  std::cout << "DEBUG: Checking attrs for param " << sig.name << ", attr count: " << std::distance(P->attr_begin(), P->attr_end()) << std::endl;
+  for (const clang::Attr* A : P->attrs()) {
+    std::cout << "DEBUG: Found attr with spelling: " << A->getSpelling() << " kind: " << A->getKind() << std::endl;
+    // Check for HLSLSemanticAttr if available
+    if (A->getSpelling() == "semantic") {
+      // Try to extract semantic from source
+      clang::SourceManager& SM = Ctx.getSourceManager();
+      clang::SourceRange R = P->getSourceRange();
+      std::string paramDecl = clang::Lexer::getSourceText(
+        clang::CharSourceRange::getTokenRange(R), SM, Ctx.getLangOpts()
+      ).str();
+      
+      // Look for semantic after ':'
+      if (auto pos = paramDecl.find(':'); pos != std::string::npos) {
+        std::string after = paramDecl.substr(pos + 1);
+        // Trim whitespace
+        size_t start = after.find_first_not_of(" \t\n\r");
+        size_t end = after.find_last_not_of(" \t\n\r");
+        if (start != std::string::npos) {
+          std::string semanticStr = after.substr(start, end - start + 1);
+          // Remove any trailing characters like ) or ,
+          size_t endPos = semanticStr.find_first_of(" \t\n\r),");
+          if (endPos != std::string::npos) {
+            semanticStr = semanticStr.substr(0, endPos);
+          }
+          
+          sig.semantic = HLSLSemanticInfo::fromString(semanticStr);
+          if (sig.semantic == HLSLSemantic::Custom) {
+            sig.customSemanticStr = semanticStr;
+          }
+        }
+      }
+      break;
+    }
+  }
+
+  return sig;
+}
+
 // HLSL AST conversion implementation (simplified version)
 MiniHLSLInterpreter::ConversionResult
 MiniHLSLInterpreter::convertFromHLSLAST(const clang::FunctionDecl *func,
@@ -3951,6 +4143,41 @@ MiniHLSLInterpreter::convertFromHLSLAST(const clang::FunctionDecl *func,
   try {
     // Extract thread configuration from function attributes
     extractThreadConfiguration(func, result.program);
+
+    // Parse function parameters and semantics
+    result.program.entryInputs.parameters.reserve(func->getNumParams());
+    for (const clang::ParmVarDecl* P : func->parameters()) {
+      auto sig = extractParamSig(P, context);
+      
+      // Handle special system value semantics
+      if (sig.semantic == HLSLSemantic::SV_DispatchThreadID) {
+        result.program.entryInputs.dispatchThreadIdParamName = sig.name;
+        result.program.entryInputs.hasDispatchThreadID = true;
+        
+        // Validate it's a 3-component vector
+        if (!HLSLTypeInfo::isVectorType(sig.type) || 
+            HLSLTypeInfo::getComponentCount(sig.type) != 3) {
+          result.errorMessage = "SV_DispatchThreadID must be a 3-component vector (e.g., uint3)";
+          return result;
+        }
+      } else if (sig.semantic == HLSLSemantic::SV_GroupID) {
+        result.program.entryInputs.groupIdParamName = sig.name;
+        result.program.entryInputs.hasGroupID = true;
+      } else if (sig.semantic == HLSLSemantic::SV_GroupThreadID) {
+        result.program.entryInputs.groupThreadIdParamName = sig.name;
+        result.program.entryInputs.hasGroupThreadID = true;
+      }
+      
+      result.program.entryInputs.parameters.push_back(sig);
+      
+      // Log parameter information
+      std::cout << "Parameter: " << HLSLTypeInfo::toString(sig.type) 
+                << " " << sig.name;
+      if (sig.semantic != HLSLSemantic::None) {
+        std::cout << " : " << HLSLSemanticInfo::toString(sig.semantic);
+      }
+      std::cout << std::endl;
+    }
 
     // Get the function body
     const clang::CompoundStmt *body =
@@ -4668,7 +4895,14 @@ MiniHLSLInterpreter::convertExpression(const clang::Expr *expr,
   // Handle different expression types
   if (auto binOp = clang::dyn_cast<clang::BinaryOperator>(expr)) {
     auto result = convertBinaryExpression(binOp, context);
-    if (result) result->setType(exprType);
+    if (result) {
+      HLSLType hlslType = HLSLTypeInfo::fromString(exprType);
+      if (hlslType == HLSLType::Custom) {
+        result->setCustomType(exprType);
+      } else {
+        result->setType(hlslType);
+      }
+    }
     return result;
   } else if (auto declRef = clang::dyn_cast<clang::DeclRefExpr>(expr)) {
     std::string varName = declRef->getDecl()->getName().str();
@@ -4690,19 +4924,47 @@ MiniHLSLInterpreter::convertExpression(const clang::Expr *expr,
   } else if (auto operatorCall =
                  clang::dyn_cast<clang::CXXOperatorCallExpr>(expr)) {
     auto result = convertOperatorCall(operatorCall, context);
-    if (result) result->setType(exprType);
+    if (result) {
+      HLSLType hlslType = HLSLTypeInfo::fromString(exprType);
+      if (hlslType == HLSLType::Custom) {
+        result->setCustomType(exprType);
+      } else {
+        result->setType(hlslType);
+      }
+    }
     return result;
   } else if (auto callExpr = clang::dyn_cast<clang::CallExpr>(expr)) {
     auto result = convertCallExpressionToExpression(callExpr, context);
-    if (result) result->setType(exprType);
+    if (result) {
+      HLSLType hlslType = HLSLTypeInfo::fromString(exprType);
+      if (hlslType == HLSLType::Custom) {
+        result->setCustomType(exprType);
+      } else {
+        result->setType(hlslType);
+      }
+    }
     return result;
   } else if (auto condOp = clang::dyn_cast<clang::ConditionalOperator>(expr)) {
     auto result = convertConditionalOperator(condOp, context);
-    if (result) result->setType(exprType);
+    if (result) {
+      HLSLType hlslType = HLSLTypeInfo::fromString(exprType);
+      if (hlslType == HLSLType::Custom) {
+        result->setCustomType(exprType);
+      } else {
+        result->setType(hlslType);
+      }
+    }
     return result;
   } else if (auto unaryOp = clang::dyn_cast<clang::UnaryOperator>(expr)) {
     auto result = convertUnaryExpression(unaryOp, context);
-    if (result) result->setType(exprType);
+    if (result) {
+      HLSLType hlslType = HLSLTypeInfo::fromString(exprType);
+      if (hlslType == HLSLType::Custom) {
+        result->setCustomType(exprType);
+      } else {
+        result->setType(hlslType);
+      }
+    }
     return result;
   } else if (auto vecElem = clang::dyn_cast<clang::HLSLVectorElementExpr>(expr)) {
     // Handle vector element access like tid.x, tid.y, tid.z
@@ -4711,12 +4973,12 @@ MiniHLSLInterpreter::convertExpression(const clang::Expr *expr,
     auto baseExpr = vecElem->getBase();
     if (auto declRef = clang::dyn_cast<clang::DeclRefExpr>(baseExpr)) {
       std::string varName = declRef->getDecl()->getName().str();
-      if (varName == "tid" || varName == "DTid") {
+      if (varName == "tid" || varName == "DTid" || varName == "id") {
         // For SV_DispatchThreadID, map to lane index for 1D kernels
         std::string accessor = vecElem->getAccessor().getName().str();
         if (accessor == "x") {
           // Return the thread index expression which maps to lane index
-          return std::make_unique<ThreadIndexExpr>(exprType);
+          return std::make_unique<ThreadIndexExpr>(HLSLTypeInfo::fromString(exprType));
         } else if (accessor == "y" || accessor == "z") {
           // For y and z components in 1D dispatch, return 0
           return makeLiteral(Value(0), exprType);
@@ -4867,7 +5129,7 @@ MiniHLSLInterpreter::convertCallExpressionToExpression(
       auto laneIndex = convertExpression(callExpr->getArg(1), context);
       if (value && laneIndex) {
         // Get the type from the value expression
-        std::string type = value->getType();
+        HLSLType type = value->getType();
         return std::make_unique<WaveReadLaneAt>(std::move(value), 
                                                 std::move(laneIndex), 
                                                 type);

@@ -1075,13 +1075,83 @@ struct ExecutionResult {
   bool isValid() const { return errorMessage.empty() && !hasDataRace; }
 };
 
+// HLSL type enumeration
+enum class HLSLType {
+  Unknown,
+  // Scalar types
+  Bool,
+  Int,
+  Uint,
+  Float,
+  Double,
+  // Vector types
+  Bool2, Bool3, Bool4,
+  Int2, Int3, Int4,
+  Uint2, Uint3, Uint4,
+  Float2, Float3, Float4,
+  Double2, Double3, Double4,
+  // Matrix types
+  Float2x2, Float3x3, Float4x4,
+  Float2x3, Float2x4, Float3x2, Float3x4, Float4x2, Float4x3,
+  // Buffer types
+  StructuredBuffer,
+  RWStructuredBuffer,
+  // Custom/user-defined
+  Custom
+};
+
+// HLSL semantic enumeration
+enum class HLSLSemantic {
+  None,
+  // Compute shader semantics
+  SV_DispatchThreadID,
+  SV_GroupID,
+  SV_GroupThreadID,
+  SV_GroupIndex,
+  // Vertex shader semantics
+  SV_Position,
+  SV_VertexID,
+  SV_InstanceID,
+  // Pixel shader semantics
+  SV_Target,
+  SV_Depth,
+  SV_Coverage,
+  SV_IsFrontFace,
+  // Other system values
+  SV_PrimitiveID,
+  SV_SampleIndex,
+  // Custom semantic
+  Custom
+};
+
+// Helper functions for type/semantic conversion
+struct HLSLTypeInfo {
+  static HLSLType fromString(const std::string& typeStr);
+  static std::string toString(HLSLType type);
+  static bool isVectorType(HLSLType type);
+  static bool isMatrixType(HLSLType type);
+  static uint32_t getComponentCount(HLSLType type);
+};
+
+struct HLSLSemanticInfo {
+  static HLSLSemantic fromString(const std::string& semanticStr);
+  static std::string toString(HLSLSemantic semantic);
+  static bool isComputeShaderSemantic(HLSLSemantic semantic);
+};
+
 // Expression AST nodes
 class Expression {
 protected:
-  std::string type_; // HLSL type extracted from Clang AST
+  HLSLType type_; // HLSL type extracted from Clang AST
+  std::string customTypeStr_; // For custom types when type_ is HLSLType::Custom
   
 public:
-  explicit Expression(const std::string& type = "") : type_(type) {}
+  explicit Expression(HLSLType type = HLSLType::Unknown) : type_(type) {}
+  explicit Expression(const std::string& typeStr) : type_(HLSLTypeInfo::fromString(typeStr)) {
+    if (type_ == HLSLType::Custom) {
+      customTypeStr_ = typeStr;
+    }
+  }
   virtual ~Expression() = default;
 
   // Primary evaluation method - all expressions must implement this
@@ -1095,8 +1165,15 @@ public:
   virtual std::unique_ptr<Expression> clone() const = 0;
   
   // Type information getter
-  const std::string& getType() const { return type_; }
-  void setType(const std::string& type) { type_ = type; }
+  HLSLType getType() const { return type_; }
+  std::string getTypeStr() const { 
+    return type_ == HLSLType::Custom ? customTypeStr_ : HLSLTypeInfo::toString(type_);
+  }
+  void setType(HLSLType type) { type_ = type; }
+  void setCustomType(const std::string& typeStr) { 
+    type_ = HLSLType::Custom;
+    customTypeStr_ = typeStr;
+  }
 };
 
 // Pure expressions
@@ -1104,7 +1181,8 @@ class LiteralExpr : public Expression {
   Value value_;
 
 public:
-  explicit LiteralExpr(Value v, const std::string& type = "") : Expression(type), value_(v) {}
+  explicit LiteralExpr(Value v, HLSLType type = HLSLType::Unknown) : Expression(type), value_(v) {}
+  explicit LiteralExpr(Value v, const std::string& typeStr) : Expression(typeStr), value_(v) {}
   Result<Value, ExecutionError>
   evaluate_result(LaneContext &, WaveContext &,
                   ThreadgroupContext &) const override {
@@ -1126,7 +1204,8 @@ class VariableExpr : public Expression {
   std::string name_;
 
 public:
-  explicit VariableExpr(const std::string &name, const std::string& type = "") : Expression(type), name_(name) {}
+  explicit VariableExpr(const std::string &name, HLSLType type = HLSLType::Unknown) : Expression(type), name_(name) {}
+  explicit VariableExpr(const std::string &name, const std::string& typeStr) : Expression(typeStr), name_(name) {}
   Result<Value, ExecutionError>
   evaluate_result(LaneContext &lane, WaveContext &,
                   ThreadgroupContext &) const override;
@@ -1140,7 +1219,7 @@ public:
 
 class LaneIndexExpr : public Expression {
 public:
-  explicit LaneIndexExpr(const std::string& type = "uint") : Expression(type) {}
+  explicit LaneIndexExpr(HLSLType type = HLSLType::Uint) : Expression(type) {}
   Result<Value, ExecutionError>
   evaluate_result(LaneContext &lane, WaveContext &,
                   ThreadgroupContext &) const override;
@@ -1154,7 +1233,7 @@ public:
 
 class WaveIndexExpr : public Expression {
 public:
-  explicit WaveIndexExpr(const std::string& type = "uint") : Expression(type) {}
+  explicit WaveIndexExpr(HLSLType type = HLSLType::Uint) : Expression(type) {}
   Result<Value, ExecutionError>
   evaluate_result(LaneContext &, WaveContext &wave,
                   ThreadgroupContext &) const override;
@@ -1168,7 +1247,7 @@ public:
 
 class ThreadIndexExpr : public Expression {
 public:
-  explicit ThreadIndexExpr(const std::string& type = "uint") : Expression(type) {}
+  explicit ThreadIndexExpr(HLSLType type = HLSLType::Uint) : Expression(type) {}
   Result<Value, ExecutionError>
   evaluate_result(LaneContext &lane, WaveContext &,
                   ThreadgroupContext &) const override;
@@ -1310,7 +1389,7 @@ public:
 
 class WaveGetLaneCountExpr : public Expression {
 public:
-  explicit WaveGetLaneCountExpr(const std::string& type = "uint") : Expression(type) {}
+  explicit WaveGetLaneCountExpr(HLSLType type = HLSLType::Uint) : Expression(type) {}
   Result<Value, ExecutionError>
   evaluate_result(LaneContext &, WaveContext &wave,
                   ThreadgroupContext &) const override;
@@ -1324,7 +1403,7 @@ public:
 
 class WaveIsFirstLaneExpr : public Expression {
 public:
-  explicit WaveIsFirstLaneExpr(const std::string& type = "bool") : Expression(type) {}
+  explicit WaveIsFirstLaneExpr(HLSLType type = HLSLType::Bool) : Expression(type) {}
   Result<Value, ExecutionError>
   evaluate_result(LaneContext &lane, WaveContext &wave,
                   ThreadgroupContext &) const override;
@@ -1345,8 +1424,12 @@ private:
 public:
   WaveReadLaneAt(std::unique_ptr<Expression> value,
                  std::unique_ptr<Expression> laneIndex,
-                 const std::string& type = "")
+                 HLSLType type = HLSLType::Unknown)
       : Expression(type), value_(std::move(value)), laneIndex_(std::move(laneIndex)) {}
+  WaveReadLaneAt(std::unique_ptr<Expression> value,
+                 std::unique_ptr<Expression> laneIndex,
+                 const std::string& typeStr)
+      : Expression(typeStr), value_(std::move(value)), laneIndex_(std::move(laneIndex)) {}
   
   Result<Value, ExecutionError>
   evaluate_result(LaneContext &lane, WaveContext &wave,
@@ -1413,14 +1496,18 @@ public:
 
 class VarDeclStmt : public Statement {
   std::string name_;
-  std::string type_;  // HLSL type (e.g., "uint", "float", "bool")
+  HLSLType type_;  // HLSL type
+  std::string customTypeStr_; // For custom types when type_ is HLSLType::Custom
   std::unique_ptr<Expression> init_;
 
 public:
-  // Legacy constructor for backward compatibility
+  // Legacy constructor for backward compatibility - infers type from init expression
   VarDeclStmt(const std::string &name, std::unique_ptr<Expression> init);
-  // New constructor with type information
-  VarDeclStmt(const std::string &name, const std::string &type,
+  // Constructor with explicit type
+  VarDeclStmt(const std::string &name, HLSLType type,
+              std::unique_ptr<Expression> init);
+  // Constructor with string type (for compatibility)
+  VarDeclStmt(const std::string &name, const std::string &typeStr,
               std::unique_ptr<Expression> init);
   Result<Unit, ExecutionError> execute_result(LaneContext &lane,
                                               WaveContext &wave,
@@ -1428,15 +1515,22 @@ public:
   std::string toString() const override;
   
   std::unique_ptr<Statement> clone() const override {
-    return std::make_unique<VarDeclStmt>(
+    auto stmt = std::make_unique<VarDeclStmt>(
         name_,
         type_,
         init_ ? init_->clone() : nullptr);
+    if (type_ == HLSLType::Custom) {
+      stmt->customTypeStr_ = customTypeStr_;
+    }
+    return stmt;
   }
   
   // Getter methods for fuzzer access
   const std::string& getName() const { return name_; }
-  const std::string& getType() const { return type_; }
+  HLSLType getType() const { return type_; }
+  std::string getTypeStr() const { 
+    return type_ == HLSLType::Custom ? customTypeStr_ : HLSLTypeInfo::toString(type_);
+  }
   const Expression* getInit() const { return init_.get(); }
 };
 
@@ -2027,7 +2121,8 @@ class SharedReadExpr : public Expression {
   MemoryAddress addr_;
 
 public:
-  explicit SharedReadExpr(MemoryAddress addr, const std::string& type = "") : Expression(type), addr_(addr) {}
+  explicit SharedReadExpr(MemoryAddress addr, HLSLType type = HLSLType::Unknown) : Expression(type), addr_(addr) {}
+  explicit SharedReadExpr(MemoryAddress addr, const std::string& typeStr) : Expression(typeStr), addr_(addr) {}
   Result<Value, ExecutionError>
   evaluate_result(LaneContext &lane, WaveContext &wave,
                   ThreadgroupContext &tg) const override;
@@ -2046,8 +2141,12 @@ class BufferAccessExpr : public Expression {
 public:
   BufferAccessExpr(std::string bufferName,
                    std::unique_ptr<Expression> indexExpr,
-                   const std::string& type = "")
+                   HLSLType type = HLSLType::Unknown)
       : Expression(type), bufferName_(std::move(bufferName)), indexExpr_(std::move(indexExpr)) {}
+  BufferAccessExpr(std::string bufferName,
+                   std::unique_ptr<Expression> indexExpr,
+                   const std::string& typeStr)
+      : Expression(typeStr), bufferName_(std::move(bufferName)), indexExpr_(std::move(indexExpr)) {}
   Result<Value, ExecutionError>
   evaluate_result(LaneContext &lane, WaveContext &wave,
                   ThreadgroupContext &tg) const override;
@@ -2069,8 +2168,12 @@ class ArrayAccessExpr : public Expression {
 public:
   ArrayAccessExpr(const std::string& arrayName,
                   std::unique_ptr<Expression> indexExpr,
-                  const std::string& type = "")
+                  HLSLType type = HLSLType::Unknown)
       : Expression(type), arrayName_(arrayName), indexExpr_(std::move(indexExpr)) {}
+  ArrayAccessExpr(const std::string& arrayName,
+                  std::unique_ptr<Expression> indexExpr,
+                  const std::string& typeStr)
+      : Expression(typeStr), arrayName_(arrayName), indexExpr_(std::move(indexExpr)) {}
   
   Result<Value, ExecutionError>
   evaluate_result(LaneContext &lane, WaveContext &wave,
@@ -2091,7 +2194,7 @@ public:
 class DispatchThreadIdExpr : public Expression {
   uint32_t component_; // 0=x, 1=y, 2=z
 public:
-  explicit DispatchThreadIdExpr(uint32_t component = 0, const std::string& type = "uint")
+  explicit DispatchThreadIdExpr(uint32_t component = 0, HLSLType type = HLSLType::Uint)
       : Expression(type), component_(component) {}
   
   Result<Value, ExecutionError>
@@ -2106,12 +2209,41 @@ public:
   }
 };
 
+// Parameter signature information
+struct ParameterSig {
+  std::string name;
+  HLSLType type;
+  HLSLSemantic semantic;
+  std::string customTypeStr;    // For Custom type
+  std::string customSemanticStr; // For Custom semantic
+  
+  // Helper to check if this is a system value semantic
+  bool isSystemValue() const {
+    return semantic != HLSLSemantic::None && semantic != HLSLSemantic::Custom;
+  }
+};
+
+// Entry point input information
+struct EntryInputs {
+  std::vector<ParameterSig> parameters;
+  
+  // Quick lookup for common system values (stores parameter names)
+  std::string dispatchThreadIdParamName;
+  std::string groupIdParamName;
+  std::string groupThreadIdParamName;
+  
+  bool hasDispatchThreadID = false;
+  bool hasGroupID = false;
+  bool hasGroupThreadID = false;
+};
+
 // Program representation
 struct Program {
   std::vector<std::unique_ptr<Statement>> statements;
   uint32_t numThreadsX = 32;
   uint32_t numThreadsY = 1;
   uint32_t numThreadsZ = 1;
+  EntryInputs entryInputs;
 
   uint32_t getTotalThreads() const {
     return numThreadsX * numThreadsY * numThreadsZ;
@@ -2282,7 +2414,9 @@ private:
 
 // Helper functions for building programs
 std::unique_ptr<Expression> makeLiteral(Value v);
+std::unique_ptr<Expression> makeLiteral(Value v, const std::string& typeStr);
 std::unique_ptr<Expression> makeVariable(const std::string &name);
+std::unique_ptr<Expression> makeVariable(const std::string &name, const std::string& typeStr);
 std::unique_ptr<Expression> makeLaneIndex();
 std::unique_ptr<Expression> makeWaveIndex();
 std::unique_ptr<Expression> makeThreadIndex();
