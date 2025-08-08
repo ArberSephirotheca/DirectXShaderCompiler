@@ -1006,38 +1006,76 @@ BinaryOpExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
   // Evaluate right operand
   auto rightVal = TRY_RESULT(right_->evaluate_result(lane, wave, tg), Value, ExecutionError);
 
+  // Debug output for binary operations
+  std::string opStr;
+  switch (op_) {
+  case Add: opStr = "+"; break;
+  case Sub: opStr = "-"; break;
+  case Mul: opStr = "*"; break;
+  case Div: opStr = "/"; break;
+  case Mod: opStr = "%"; break;
+  case Eq: opStr = "=="; break;
+  case Ne: opStr = "!="; break;
+  case Lt: opStr = "<"; break;
+  case Le: opStr = "<="; break;
+  case Gt: opStr = ">"; break;
+  case Ge: opStr = ">="; break;
+  case And: opStr = "&&"; break;
+  case Or: opStr = "||"; break;
+  }
+  
   // Perform operation
+  Value result;
   switch (op_) {
   case Add:
-    return Ok<Value, ExecutionError>(leftVal + rightVal);
+    result = leftVal + rightVal;
+    break;
   case Sub:
-    return Ok<Value, ExecutionError>(leftVal - rightVal);
+    result = leftVal - rightVal;
+    break;
   case Mul:
-    return Ok<Value, ExecutionError>(leftVal * rightVal);
+    result = leftVal * rightVal;
+    break;
   case Div:
     // Could add division by zero check here
-    return Ok<Value, ExecutionError>(leftVal / rightVal);
+    result = leftVal / rightVal;
+    break;
   case Mod:
-    return Ok<Value, ExecutionError>(leftVal % rightVal);
+    result = leftVal % rightVal;
+    break;
   case Eq:
-    return Ok<Value, ExecutionError>(Value(leftVal == rightVal));
+    result = Value(leftVal == rightVal);
+    break;
   case Ne:
-    return Ok<Value, ExecutionError>(Value(leftVal != rightVal));
+    result = Value(leftVal != rightVal);
+    break;
   case Lt:
-    return Ok<Value, ExecutionError>(Value(leftVal < rightVal));
+    result = Value(leftVal < rightVal);
+    break;
   case Le:
-    return Ok<Value, ExecutionError>(Value(leftVal <= rightVal));
+    result = Value(leftVal <= rightVal);
+    break;
   case Gt:
-    return Ok<Value, ExecutionError>(Value(leftVal > rightVal));
+    result = Value(leftVal > rightVal);
+    break;
   case Ge:
-    return Ok<Value, ExecutionError>(Value(leftVal >= rightVal));
+    result = Value(leftVal >= rightVal);
+    break;
   case And:
-    return Ok<Value, ExecutionError>(leftVal && rightVal);
+    result = leftVal && rightVal;
+    break;
   case Or:
-    return Ok<Value, ExecutionError>(leftVal || rightVal);
+    result = leftVal || rightVal;
+    break;
   default:
     return Err<Value, ExecutionError>(ExecutionError::InvalidState);
   }
+  
+  std::cout << "DEBUG: BinaryOp - Lane " << lane.laneId << ": " 
+            << leftVal.toString() << " " << opStr << " " 
+            << rightVal.toString() << " = " << result.toString() << std::endl;
+  
+  return Ok<Value, ExecutionError>(result);
 }
 
 Result<Value, ExecutionError>
@@ -1522,6 +1560,10 @@ VarDeclStmt::execute_result(LaneContext &lane, WaveContext &wave,
   }
 
   lane.variables[name_] = initVal;
+  
+  // Debug output for variable assignment
+  std::cout << "DEBUG: VarDecl - Lane " << lane.laneId << " assigned " 
+            << name_ << " = " << initVal.toString() << std::endl;
   
   // Call hook for variable write access
   if (tg.interpreter) {
