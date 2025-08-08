@@ -4819,6 +4819,16 @@ MiniHLSLInterpreter::convertCallExpressionToExpression(
         return std::make_unique<WaveActiveOp>(std::move(arg),
                                               WaveActiveOp::Ballot);
       }
+    } else if (funcName == "WaveReadLaneAt" && callExpr->getNumArgs() == 2) {
+      auto value = convertExpression(callExpr->getArg(0), context);
+      auto laneIndex = convertExpression(callExpr->getArg(1), context);
+      if (value && laneIndex) {
+        // Get the type from the value expression
+        std::string type = value->getType();
+        return std::make_unique<WaveReadLaneAt>(std::move(value), 
+                                                std::move(laneIndex), 
+                                                type);
+      }
     }
 
     std::cout << "Unsupported function call in expression context: " << funcName
