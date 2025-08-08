@@ -11,6 +11,7 @@
 // Clang AST includes for conversion
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/Attr.h"
+#include "clang/AST/Attrs.inc"  // For HLSLSemanticAttr
 #include "clang/AST/Decl.h"
 #include "clang/AST/Expr.h"
 #include "clang/AST/ExprCXX.h"
@@ -53,6 +54,12 @@ static constexpr bool ENABLE_BLOCK_DEBUG =
 
 namespace minihlsl {
 namespace interpreter {
+
+// Forward declarations
+void initializeBuiltinVariables(LaneContext& lane, 
+                               WaveContext& wave,
+                               ThreadgroupContext& tg,
+                               const Program& program);
 
 // Helper function to check if a thread state should be protected from
 // overwriting
@@ -3256,6 +3263,13 @@ ExecutionResult MiniHLSLInterpreter::executeWithOrdering(
   // Create threadgroup context
   ThreadgroupContext tgContext(program.getTotalThreads(), waveSize);
   tgContext.interpreter = this;  // Set interpreter pointer for callbacks
+  
+  // Initialize built-in variables for all lanes based on function parameters
+  for (auto& wave : tgContext.waves) {
+    for (auto& lane : wave->lanes) {
+      initializeBuiltinVariables(*lane, *wave, tgContext, program);
+    }
+  }
 
   uint32_t orderingIndex = 0;
   uint32_t maxIterations = program.getTotalThreads() *
@@ -4074,51 +4088,103 @@ static ParameterSig extractParamSig(const clang::ParmVarDecl* P,
   ParameterSig sig;
   sig.name = P->getNameAsString();
   
-  // Get the type as string
-  std::string typeStr = P->getType().getAsString(Ctx.getPrintingPolicy());
+  // Get parameter type
+  clang::QualType QT = P->getType();
+  std::string typeStr = QT.getAsString(Ctx.getPrintingPolicy());
   sig.type = HLSLTypeInfo::fromString(typeStr);
   if (sig.type == HLSLType::Custom) {
     sig.customTypeStr = typeStr;
   }
   
+  std::cout << "DEBUG: Parameter '" << sig.name << "' has type '" 
+            << typeStr << "', mapped to enum " << (int)sig.type << std::endl;
+  
   // Initialize semantic to None
   sig.semantic = HLSLSemantic::None;
   sig.customSemanticStr = "";
 
-  // Look for semantic attributes
-  std::cout << "DEBUG: Checking attrs for param " << sig.name << ", attr count: " << std::distance(P->attr_begin(), P->attr_end()) << std::endl;
-  for (const clang::Attr* A : P->attrs()) {
-    std::cout << "DEBUG: Found attr with spelling: " << A->getSpelling() << " kind: " << A->getKind() << std::endl;
-    // Check for HLSLSemanticAttr if available
-    if (A->getSpelling() == "semantic") {
-      // Try to extract semantic from source
-      clang::SourceManager& SM = Ctx.getSourceManager();
-      clang::SourceRange R = P->getSourceRange();
-      std::string paramDecl = clang::Lexer::getSourceText(
-        clang::CharSourceRange::getTokenRange(R), SM, Ctx.getLangOpts()
-      ).str();
-      
-      // Look for semantic after ':'
-      if (auto pos = paramDecl.find(':'); pos != std::string::npos) {
-        std::string after = paramDecl.substr(pos + 1);
-        // Trim whitespace
-        size_t start = after.find_first_not_of(" \t\n\r");
-        size_t end = after.find_last_not_of(" \t\n\r");
-        if (start != std::string::npos) {
-          std::string semanticStr = after.substr(start, end - start + 1);
-          // Remove any trailing characters like ) or ,
-          size_t endPos = semanticStr.find_first_of(" \t\n\r),");
-          if (endPos != std::string::npos) {
-            semanticStr = semanticStr.substr(0, endPos);
-          }
+  // Debug: print all attributes
+  std::cout << "DEBUG: Parameter " << sig.name << " has " 
+            << std::distance(P->attr_begin(), P->attr_end()) << " attributes" << std::endl;
+  for (const auto* A : P->attrs()) {
+    std::cout << "  Attr kind: " << A->getKind() 
+              << ", spelling: " << A->getSpelling() << std::endl;
+  }
+  
+  // 1) Best path: look for real HLSL semantic attribute
+  if (const auto* SA = P->getAttr<clang::HLSLSemanticAttr>()) {
+    // HLSLSemanticAttr has a 'name' argument based on Attr.td
+    std::string semanticName = SA->getName();
+    std::cout << "DEBUG: Found HLSLSemanticAttr with name: " << semanticName << std::endl;
+    
+    sig.semantic = HLSLSemanticInfo::fromString(semanticName);
+    if (sig.semantic == HLSLSemantic::Custom) {
+      sig.customSemanticStr = semanticName;
+    }
+    return sig; // Found concrete semantic, we're done
+  }
+    
+  // Some DXC versions have per-system-value attrs
+  // Uncomment and adapt based on your DXC version:
+  // if (llvm::isa<clang::HLSLSV_DispatchThreadIDAttr>(A)) {
+  //   sig.semantic = HLSLSemantic::SV_DispatchThreadID;
+  //   return sig;
+  // }
+  // if (llvm::isa<clang::HLSLSV_GroupIDAttr>(A)) {
+  //   sig.semantic = HLSLSemantic::SV_GroupID;
+  //   return sig;
+  // }
+
+  // 2) Since DXC doesn't expose semantics as attributes, use source text parsing
+  // This is now the primary method for extracting semantics
+  {
+    clang::SourceManager& SM = Ctx.getSourceManager();
+    clang::SourceRange R = P->getSourceRange();
+    
+    // Get the entire parameter declaration including semantic
+    // We need to expand the range to capture text after the parameter name
+    clang::SourceLocation StartLoc = R.getBegin();
+    clang::SourceLocation EndLoc = R.getEnd();
+    
+    // Try to read more characters to capture the semantic
+    const char* StartPtr = SM.getCharacterData(StartLoc);
+    const char* EndPtr = SM.getCharacterData(EndLoc);
+    
+    // Search for the semantic by looking for ':' after the parameter name
+    std::string paramText;
+    const char* ptr = StartPtr;
+    int charCount = 0;
+    // Read up to 200 characters to find the semantic
+    while (ptr && *ptr && charCount < 200) {
+      if (*ptr == ',' || *ptr == ')') {
+        // Found end of this parameter
+        break;
+      }
+      paramText += *ptr;
+      ptr++;
+      charCount++;
+    }
+    
+    std::cout << "DEBUG: Raw parameter text for '" << sig.name << "': " << paramText << std::endl;
+    
+    // Look for semantic after ':'
+    if (auto pos = paramText.find(':'); pos != std::string::npos) {
+      std::string after = paramText.substr(pos + 1);
+      // Trim whitespace
+      size_t start = after.find_first_not_of(" \t\n\r");
+      if (start != std::string::npos) {
+        size_t end = after.find_first_of(" \t\n\r),;");
+        std::string semanticStr = (end == std::string::npos) 
+          ? after.substr(start) 
+          : after.substr(start, end - start);
           
-          sig.semantic = HLSLSemanticInfo::fromString(semanticStr);
-          if (sig.semantic == HLSLSemantic::Custom) {
-            sig.customSemanticStr = semanticStr;
-          }
+        std::cout << "DEBUG: Extracted semantic string: '" << semanticStr << "'" << std::endl;
+        
+        sig.semantic = HLSLSemanticInfo::fromString(semanticStr);
+        if (sig.semantic == HLSLSemantic::Custom) {
+          sig.customSemanticStr = semanticStr;
         }
       }
-      break;
     }
   }
 
@@ -4155,17 +4221,32 @@ MiniHLSLInterpreter::convertFromHLSLAST(const clang::FunctionDecl *func,
         result.program.entryInputs.hasDispatchThreadID = true;
         
         // Validate it's a 3-component vector
-        if (!HLSLTypeInfo::isVectorType(sig.type) || 
-            HLSLTypeInfo::getComponentCount(sig.type) != 3) {
-          result.errorMessage = "SV_DispatchThreadID must be a 3-component vector (e.g., uint3)";
+        if (sig.type != HLSLType::Uint3 && sig.type != HLSLType::Int3) {
+          result.errorMessage = "SV_DispatchThreadID must be uint3 or int3, got type " + std::to_string((int)sig.type);
           return result;
         }
       } else if (sig.semantic == HLSLSemantic::SV_GroupID) {
         result.program.entryInputs.groupIdParamName = sig.name;
         result.program.entryInputs.hasGroupID = true;
+        // Similar validation could be added for other semantics
       } else if (sig.semantic == HLSLSemantic::SV_GroupThreadID) {
         result.program.entryInputs.groupThreadIdParamName = sig.name;
         result.program.entryInputs.hasGroupThreadID = true;
+      }
+      
+      // Check if parameter is a struct - if so, check field semantics
+      if (const auto* RT = P->getType()->getAs<clang::RecordType>()) {
+        if (const auto* RD = RT->getDecl()) {
+          std::cout << "Parameter " << sig.name << " is a struct, checking field semantics..." << std::endl;
+          for (const auto* Field : RD->fields()) {
+            if (const auto* FSA = Field->getAttr<clang::HLSLSemanticAttr>()) {
+              std::string fieldSemantic = FSA->getName();
+              std::cout << "  Field " << Field->getNameAsString() 
+                        << " has semantic: " << fieldSemantic << std::endl;
+              // TODO: Store field semantics in a more structured way
+            }
+          }
+        }
       }
       
       result.program.entryInputs.parameters.push_back(sig);
@@ -4177,6 +4258,13 @@ MiniHLSLInterpreter::convertFromHLSLAST(const clang::FunctionDecl *func,
         std::cout << " : " << HLSLSemanticInfo::toString(sig.semantic);
       }
       std::cout << std::endl;
+    }
+    
+    // Check for return type semantic (e.g., SV_Target for pixel shaders)
+    if (const auto* RSA = func->getAttr<clang::HLSLSemanticAttr>()) {
+      std::string returnSemantic = RSA->getName();
+      std::cout << "Function has return semantic: " << returnSemantic << std::endl;
+      // TODO: Store return semantic in program structure
     }
 
     // Get the function body
@@ -4204,6 +4292,65 @@ MiniHLSLInterpreter::convertFromHLSLAST(const clang::FunctionDecl *func,
 }
 
 // AST traversal helper methods
+// Initialize built-in variables based on function parameters
+void initializeBuiltinVariables(LaneContext& lane, 
+                                                    WaveContext& wave,
+                                                    ThreadgroupContext& tg,
+                                                    const Program& program) {
+  // Calculate thread IDs based on wave and lane
+  uint32_t globalTid = wave.waveId * wave.waveSize + lane.laneId;
+  
+  // For each parameter with a system semantic, create the appropriate variable
+  for (const auto& param : program.entryInputs.parameters) {
+    switch (param.semantic) {
+      case HLSLSemantic::SV_DispatchThreadID:
+        // For 3D dispatch, we'd need dispatch dimensions. For now, assume 1D.
+        if (param.type == HLSLType::Uint3) {
+          // Create a struct-like representation or individual components
+          lane.variables[param.name + ".x"] = Value(static_cast<int>(globalTid));
+          lane.variables[param.name + ".y"] = Value(0);
+          lane.variables[param.name + ".z"] = Value(0);
+          // Also store as the full variable name for direct access
+          lane.variables[param.name] = Value(static_cast<int>(globalTid)); // x component
+        }
+        break;
+        
+      case HLSLSemantic::SV_GroupID:
+        if (param.type == HLSLType::Uint3) {
+          lane.variables[param.name + ".x"] = Value(static_cast<int>(wave.waveId));
+          lane.variables[param.name + ".y"] = Value(0);
+          lane.variables[param.name + ".z"] = Value(0);
+          lane.variables[param.name] = Value(static_cast<int>(wave.waveId));
+        }
+        break;
+        
+      case HLSLSemantic::SV_GroupThreadID:
+        if (param.type == HLSLType::Uint3) {
+          lane.variables[param.name + ".x"] = Value(static_cast<int>(lane.laneId));
+          lane.variables[param.name + ".y"] = Value(0);
+          lane.variables[param.name + ".z"] = Value(0);
+          lane.variables[param.name] = Value(static_cast<int>(lane.laneId));
+        }
+        break;
+        
+      case HLSLSemantic::SV_GroupIndex:
+        if (param.type == HLSLType::Uint) {
+          lane.variables[param.name] = Value(static_cast<int>(lane.laneId));
+        }
+        break;
+        
+      default:
+        // Non-system semantics or custom semantics - no automatic initialization
+        break;
+    }
+  }
+  
+  std::cout << "DEBUG: Initialized built-in variables for lane " << lane.laneId << std::endl;
+  for (const auto& var : lane.variables) {
+    std::cout << "  " << var.first << " = " << var.second.toString() << std::endl;
+  }
+}
+
 void MiniHLSLInterpreter::extractThreadConfiguration(
     const clang::FunctionDecl *func, Program &program) {
   // Default configuration
