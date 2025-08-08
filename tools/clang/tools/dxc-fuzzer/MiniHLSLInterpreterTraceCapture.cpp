@@ -28,7 +28,7 @@ interpreter::ExecutionResult TraceCaptureInterpreter::executeAndCaptureTrace(
     trace_.finalState.sharedMemory[addr] = value;
   }
   
-  // Note: Thread variable states are captured in onExecutionComplete hook
+  // Note: Thread variable states and wave operations are captured in onExecutionComplete hook
   
   return result;
 }
@@ -191,6 +191,9 @@ void TraceCaptureInterpreter::recordWaveOperation(
 }
 
 void TraceCaptureInterpreter::onExecutionComplete(const interpreter::ThreadgroupContext &tg) {
+  // Extract wave operations from sync points
+  extractWaveOperationsFromContext(tg);
+  
   // Capture final variable states for all threads
   for (size_t waveId = 0; waveId < tg.waves.size(); ++waveId) {
     const auto& wave = *tg.waves[waveId];
@@ -252,6 +255,37 @@ void TraceCaptureInterpreter::onWaveOpExecuted(interpreter::WaveContext &wave,
   }
   
   trace_.waveOperations.push_back(record);
+}
+
+void TraceCaptureInterpreter::extractWaveOperationsFromContext(
+    const interpreter::ThreadgroupContext& tg) {
+  // Clear any wave operations recorded by hooks
+  trace_.waveOperations.clear();
+  
+  // Extract from each wave's sync points
+  for (size_t waveId = 0; waveId < tg.waves.size(); ++waveId) {
+    const auto& wave = *tg.waves[waveId];
+    
+    // Iterate through all sync points in this wave
+    for (const auto& [key, syncPoint] : wave.activeSyncPoints) {
+      ExecutionTrace::WaveOpRecord record;
+      record.waveId = waveId;
+      record.opType = syncPoint.instructionType;
+      record.blockId = key.second; // blockId from the key pair
+      record.waveOpEnumType = syncPoint.waveOpType; // Store the enum type
+      
+      // Use actual participants from sync point
+      record.expectedParticipants = syncPoint.expectedParticipants;
+      record.arrivedParticipants = syncPoint.arrivedParticipants;
+      
+      // Copy the results for each participant
+      for (const auto& [laneId, result] : syncPoint.pendingResults) {
+        record.outputValues[laneId] = result;
+      }
+      
+      trace_.waveOperations.push_back(record);
+    }
+  }
 }
 
 } // namespace fuzzer

@@ -117,16 +117,41 @@ std::unique_ptr<interpreter::Statement> LanePermutationMutation::apply(
   uint32_t activeLaneCount = 4; // default fallback
   uint32_t blockIdForWaveOp = 0;
   
+  // Debug: print what we're looking for
+  std::cout << "[LanePermutation] Looking for wave op: " << waveOp->toString() 
+            << " ptr=" << static_cast<const void*>(waveOp) << "\n";
+  
   // First, try to find the exact wave operation in the trace
   for (const auto& waveOpRecord : trace.waveOperations) {
-    // Check if this wave operation record matches our statement
-    // The instruction pointer should match the wave operation we're mutating
-    if (waveOpRecord.instruction == static_cast<const void*>(waveOp) ||
-        waveOpRecord.opType == waveOp->toString()) {
-      // Found the matching wave operation
+    std::cout << "[LanePermutation] Checking trace wave op: " << waveOpRecord.opType 
+              << " enumType=" << waveOpRecord.waveOpEnumType
+              << " participants=" << waveOpRecord.arrivedParticipants.size() << "\n";
+    
+    // Match by enum type for precise matching
+    if (waveOpRecord.waveOpEnumType >= 0 && 
+        waveOpRecord.waveOpEnumType == static_cast<int>(waveOp->getOpType())) {
+      // Found a matching wave operation type by enum
       activeLaneCount = waveOpRecord.arrivedParticipants.size();
       blockIdForWaveOp = waveOpRecord.blockId;
-      
+      std::cout << "[LanePermutation] Found match by enum! Active lanes: " << activeLaneCount << "\n";
+      std::cout << "[LanePermutation] Participants: ";
+      for (auto laneId : waveOpRecord.arrivedParticipants) {
+        std::cout << laneId << " ";
+      }
+      std::cout << "\n";
+      break;
+    }
+    // Fallback to string matching if enum not available
+    else if (waveOpRecord.opType.find(waveOp->toString()) != std::string::npos) {
+      // Found a matching wave operation type
+      activeLaneCount = waveOpRecord.arrivedParticipants.size();
+      blockIdForWaveOp = waveOpRecord.blockId;
+      std::cout << "[LanePermutation] Found match by string! Active lanes: " << activeLaneCount << "\n";
+      std::cout << "[LanePermutation] Participants: ";
+      for (auto laneId : waveOpRecord.arrivedParticipants) {
+        std::cout << laneId << " ";
+      }
+      std::cout << "\n";
       break;
     }
   }
@@ -197,13 +222,23 @@ std::unique_ptr<interpreter::Expression> LanePermutationMutation::createPermutat
   
   switch (type) {
     case PermutationType::Rotate: {
-      // (laneId + 1) % activeLaneCount
-      auto one = std::make_unique<interpreter::LiteralExpr>(1);
-      auto add = std::make_unique<interpreter::BinaryOpExpr>(
-          std::move(laneExpr), std::move(one), interpreter::BinaryOpExpr::Add);
-      auto count = std::make_unique<interpreter::LiteralExpr>(static_cast<int>(activeLaneCount));
-      return std::make_unique<interpreter::BinaryOpExpr>(
-          std::move(add), std::move(count), interpreter::BinaryOpExpr::Mod);
+      // For now, use a simple rotation that works for 2 participating lanes
+      // This assumes lanes 0 and 1 participate (common case)
+      // TODO: Make this more general by computing participating lanes at runtime
+      if (activeLaneCount == 2) {
+        // For 2 lanes: lane 0 -> 1, lane 1 -> 0
+        auto one = std::make_unique<interpreter::LiteralExpr>(1);
+        return std::make_unique<interpreter::BinaryOpExpr>(
+            std::move(one), std::move(laneExpr), interpreter::BinaryOpExpr::Sub);
+      } else {
+        // Fallback: (laneId + 1) % activeLaneCount
+        auto one = std::make_unique<interpreter::LiteralExpr>(1);
+        auto add = std::make_unique<interpreter::BinaryOpExpr>(
+            std::move(laneExpr), std::move(one), interpreter::BinaryOpExpr::Add);
+        auto count = std::make_unique<interpreter::LiteralExpr>(static_cast<int>(activeLaneCount));
+        return std::make_unique<interpreter::BinaryOpExpr>(
+            std::move(add), std::move(count), interpreter::BinaryOpExpr::Mod);
+      }
     }
     
     case PermutationType::Reverse: {
@@ -1258,7 +1293,7 @@ void TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& seedProgram,
   interpreter::ThreadOrdering ordering;
   // Use default source order
   
-  auto goldenResult = captureInterpreter.execute(
+  auto goldenResult = captureInterpreter.executeAndCaptureTrace(
     seedProgram, ordering, config.waveSize);
   
   // Check if execution succeeded
@@ -1267,7 +1302,7 @@ void TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& seedProgram,
     return;
   }
   
-  const ExecutionTrace& goldenTrace = static_cast<const TraceCaptureInterpreter&>(captureInterpreter).getTrace();
+  const ExecutionTrace& goldenTrace = *captureInterpreter.getTrace();
   
   std::cout << "Golden trace captured:\n";
   std::cout << "  - Blocks executed: " << goldenTrace.blocks.size() << "\n";
@@ -1316,7 +1351,7 @@ void TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& seedProgram,
       try {
         // Execute mutant
         TraceCaptureInterpreter mutantInterpreter;
-        auto mutantResult = mutantInterpreter.execute(
+        auto mutantResult = mutantInterpreter.executeAndCaptureTrace(
           mutant, ordering, config.waveSize);
         
         // Check if execution succeeded
@@ -1325,7 +1360,7 @@ void TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& seedProgram,
           continue;
         }
         
-        const ExecutionTrace& mutantTrace = static_cast<const TraceCaptureInterpreter&>(mutantInterpreter).getTrace();
+        const ExecutionTrace& mutantTrace = *mutantInterpreter.getTrace();
         
         std::cout << "Mutant trace captured:\n";
         std::cout << "  - Waves in final state: " << mutantTrace.finalState.laneVariables.size() << "\n";

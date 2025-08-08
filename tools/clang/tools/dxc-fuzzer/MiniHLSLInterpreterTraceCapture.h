@@ -72,6 +72,10 @@ public:
   
   // Clear trace for new execution
   void clearTrace() { trace_ = ExecutionTrace(); }
+  
+private:
+  // Extract wave operations from ThreadgroupContext after execution
+  void extractWaveOperationsFromContext(const interpreter::ThreadgroupContext& tg);
 };
 
 } // namespace fuzzer

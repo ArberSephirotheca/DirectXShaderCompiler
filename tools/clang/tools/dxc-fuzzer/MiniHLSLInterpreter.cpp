@@ -1338,7 +1338,8 @@ WaveActiveOp::evaluate_result(LaneContext &lane, WaveContext &wave,
   // Mark this lane as waiting at this specific instruction
   tg.markLaneWaitingAtWaveInstruction(wave.waveId, lane.laneId,
                                       static_cast<const void *>(this),
-                                      "WaveActiveOp");
+                                      toString(),
+                                      static_cast<int>(op_));
 
   // No stored result - need to wait
   if (!lane.isResumingFromWaveOp) {
@@ -7241,9 +7242,7 @@ bool ThreadgroupContext::canExecuteWaveInstruction(
   // Create instruction identity for lookup
   InstructionIdentity instrIdentity;
   instrIdentity.instruction = instruction;
-  instrIdentity.instructionType =
-      "WaveActiveOp"; // This should be passed as parameter in a full
-                      // implementation
+  instrIdentity.instructionType = "WaveActiveOp"; // Generic type for now
   instrIdentity.sourceExpression = instruction;
 
   // Use the wave-specific approach for instruction synchronization
@@ -7299,7 +7298,7 @@ bool ThreadgroupContext::canExecuteWaveInstruction(
 
 void ThreadgroupContext::markLaneWaitingAtWaveInstruction(
     WaveId waveId, LaneId laneId, const void *instruction,
-    const std::string &instructionType) {
+    const std::string &instructionType, int waveOpType) {
   // Create instruction identity
   InstructionIdentity instrIdentity =
       createInstructionIdentity(instruction, instructionType, instruction);
@@ -7330,7 +7329,7 @@ void ThreadgroupContext::markLaneWaitingAtWaveInstruction(
   addInstructionToBlock(currentBlockId, instrIdentity, participants);
 
   // Create or update sync point for this instruction
-  createOrUpdateWaveSyncPoint(instruction, waveId, laneId, instructionType);
+  createOrUpdateWaveSyncPoint(instruction, waveId, laneId, instructionType, waveOpType);
 
   // Create compound key using existing currentBlockId
   std::pair<const void *, uint32_t> instructionKey = {instruction,
@@ -7416,7 +7415,7 @@ bool ThreadgroupContext::haveAllParticipantsArrivedAtWaveInstruction(
 
 void ThreadgroupContext::createOrUpdateWaveSyncPoint(
     const void *instruction, WaveId waveId, LaneId laneId,
-    const std::string &instructionType) {
+    const std::string &instructionType, int waveOpType) {
   // Create compound key with current block ID
   uint32_t blockId = getCurrentBlock(waveId, laneId);
   std::pair<const void *, uint32_t> instructionKey = {instruction, blockId};
@@ -7428,6 +7427,7 @@ void ThreadgroupContext::createOrUpdateWaveSyncPoint(
     WaveOperationSyncPoint syncPoint;
     syncPoint.instruction = instruction;
     syncPoint.instructionType = instructionType;
+    syncPoint.waveOpType = waveOpType;
 
     // Use blockId from compound key
     syncPoint.blockId = blockId;

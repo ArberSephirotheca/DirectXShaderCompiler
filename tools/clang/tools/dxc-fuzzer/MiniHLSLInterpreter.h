@@ -484,6 +484,10 @@ struct WaveOperationSyncPoint {
   // Instruction identification
   std::string instructionType; // "WaveActiveSum", "WaveActiveAllTrue", etc.
   const void *sourceExpression = nullptr; // Source AST expression
+  
+  // Store the actual wave operation type for precise matching
+  // This is set when the sync point is created from a WaveActiveOp
+  int waveOpType = -1; // Will store WaveActiveOp::OpType, -1 means not set
 };
 
 // Barrier state for threadgroup synchronization
@@ -988,7 +992,8 @@ struct ThreadgroupContext {
                                  const void *instruction) const;
   void markLaneWaitingAtWaveInstruction(WaveId waveId, LaneId laneId,
                                         const void *instruction,
-                                        const std::string &instructionType);
+                                        const std::string &instructionType,
+                                        int waveOpType = -1);
   bool areAllParticipantsKnownForWaveInstruction(
       WaveId waveId,
       const std::pair<const void *, uint32_t> &instructionKey) const;
@@ -997,7 +1002,8 @@ struct ThreadgroupContext {
       const std::pair<const void *, uint32_t> &instructionKey) const;
   void createOrUpdateWaveSyncPoint(const void *instruction, WaveId waveId,
                                    LaneId laneId,
-                                   const std::string &instructionType);
+                                   const std::string &instructionType,
+                                   int waveOpType = -1);
   void
   releaseWaveSyncPoint(WaveId waveId,
                        const std::pair<const void *, uint32_t> &instructionKey);

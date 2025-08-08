@@ -114,6 +114,7 @@ struct ExecutionTrace {
     uint32_t blockId;
     interpreter::WaveId waveId;
     uint64_t syncPointId;
+    int waveOpEnumType = -1; // WaveActiveOp::OpType enum value
     
     // Participants and values
     std::set<interpreter::LaneId> expectedParticipants;
