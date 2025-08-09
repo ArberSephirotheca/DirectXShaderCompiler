@@ -165,3 +165,37 @@ set_target_properties(fuzz-hlsl-file PROPERTIES
   CXX_STANDARD_REQUIRED ON
 )
 
+# Incremental HLSL fuzzer with control flow generation
+add_executable(fuzz-hlsl-incremental
+  MiniHLSLInterpreter.cpp
+  MiniHLSLInterpreterFuzzerMutations.cpp
+  MiniHLSLInterpreterTraceCapture.cpp
+  MiniHLSLValidator.cpp
+  HLSLProgramGenerator.cpp
+  HLSLProgramGeneratorUtils.cpp
+  HLSLParticipantPatterns.cpp
+  fuzz_hlsl_incremental.cpp
+)
+
+target_link_libraries(fuzz-hlsl-incremental
+  Threads::Threads
+  dxcompiler
+  clangAST
+  clangBasic
+  clangFrontend
+  clangLex
+  clangParse
+  clangSema
+  LLVMSupport
+  LLVMOption
+  LLVMCore
+)
+
+# Set fuzzing flags for the incremental fuzzer
+set_target_properties(fuzz-hlsl-incremental PROPERTIES
+  CXX_STANDARD 17
+  CXX_STANDARD_REQUIRED ON
+  COMPILE_FLAGS "-fsanitize=address,fuzzer -fno-omit-frame-pointer"
+  LINK_FLAGS    "-fsanitize=address,fuzzer"
+)
+
