@@ -3272,7 +3272,9 @@ ExecutionResult MiniHLSLInterpreter::executeWithOrdering(
   ExecutionResult result;
 
   // Create threadgroup context
-  ThreadgroupContext tgContext(program.getTotalThreads(), waveSize);
+  // Use the effective wave size from the program, which considers WaveSize attributes
+  uint32_t effectiveWaveSize = program.getEffectiveWaveSize(waveSize);
+  ThreadgroupContext tgContext(program.getTotalThreads(), effectiveWaveSize);
   tgContext.interpreter = this;  // Set interpreter pointer for callbacks
   
   // Initialize global buffers
@@ -4436,6 +4438,17 @@ void MiniHLSLInterpreter::extractThreadConfiguration(
   } else {
     std::cout << "No numthreads attribute found, using default [1, 1, 1]"
               << std::endl;
+  }
+  
+  // Look for HLSLWaveSizeAttr
+  if (const clang::HLSLWaveSizeAttr *attr =
+          func->getAttr<clang::HLSLWaveSizeAttr>()) {
+    program.waveSizeMin = attr->getMin();
+    program.waveSizeMax = attr->getMax();
+    program.waveSizePreferred = attr->getPreferred();
+    std::cout << "Found WaveSize attribute: min=" << program.waveSizeMin 
+              << ", max=" << program.waveSizeMax 
+              << ", preferred=" << program.waveSizePreferred << std::endl;
   }
 }
 

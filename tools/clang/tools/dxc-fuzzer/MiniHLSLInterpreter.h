@@ -2255,9 +2255,30 @@ struct Program {
   uint32_t numThreadsY = 1;
   uint32_t numThreadsZ = 1;
   EntryInputs entryInputs;
+  
+  // WaveSize attribute values (0 means not specified)
+  uint32_t waveSizeMin = 0;
+  uint32_t waveSizeMax = 0;
+  uint32_t waveSizePreferred = 0;
 
   uint32_t getTotalThreads() const {
     return numThreadsX * numThreadsY * numThreadsZ;
+  }
+  
+  uint32_t getEffectiveWaveSize(uint32_t defaultWaveSize = 32) const {
+    // If preferred wave size is specified, use it
+    if (waveSizePreferred > 0) {
+      return waveSizePreferred;
+    }
+    // Otherwise use default, but ensure it's within min/max bounds
+    uint32_t waveSize = defaultWaveSize;
+    if (waveSizeMin > 0 && waveSize < waveSizeMin) {
+      waveSize = waveSizeMin;
+    }
+    if (waveSizeMax > 0 && waveSize > waveSizeMax) {
+      waveSize = waveSizeMax;
+    }
+    return waveSize;
   }
 };
 

@@ -40,6 +40,16 @@ std::string serializeProgramToString(const interpreter::Program& program) {
   ss << "[numthreads(" << program.numThreadsX << ", " 
      << program.numThreadsY << ", " 
      << program.numThreadsZ << ")]\n";
+  
+  // Add WaveSize attribute if specified
+  if (program.waveSizeMin > 0 || program.waveSizeMax > 0 || program.waveSizePreferred > 0) {
+    ss << "[WaveSize(";
+    if (program.waveSizeMin > 0) ss << program.waveSizeMin;
+    if (program.waveSizeMax > 0) ss << ", " << program.waveSizeMax;
+    if (program.waveSizePreferred > 0) ss << ", " << program.waveSizePreferred;
+    ss << ")]\n";
+  }
+  
   ss << "void main(";
   
   // Add function parameters with semantics
