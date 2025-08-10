@@ -1215,6 +1215,9 @@ public:
   std::unique_ptr<Expression> clone() const override {
     return std::make_unique<VariableExpr>(name_, type_);
   }
+  
+  // Getter for AST manipulation
+  const std::string& getName() const { return name_; }
 };
 
 class LaneIndexExpr : public Expression {
@@ -1261,7 +1264,7 @@ public:
 
 class BinaryOpExpr : public Expression {
 public:
-  enum OpType { Add, Sub, Mul, Div, Mod, Eq, Ne, Lt, Le, Gt, Ge, And, Or };
+  enum OpType { Add, Sub, Mul, Div, Mod, Eq, Ne, Lt, Le, Gt, Ge, And, Or, Xor, BitwiseAnd, BitwiseOr };
 
 private:
   std::unique_ptr<Expression> left_;
@@ -1283,6 +1286,11 @@ public:
         right_ ? right_->clone() : nullptr,
         op_);
   }
+  
+  // Public accessors for AST manipulation
+  const Expression* getLeft() const { return left_.get(); }
+  const Expression* getRight() const { return right_.get(); }
+  OpType getOp() const { return op_; }
 };
 
 class UnaryOpExpr : public Expression {
@@ -1316,6 +1324,10 @@ public:
         expr_ ? expr_->clone() : nullptr,
         op_);
   }
+  
+  // Public accessors for AST manipulation
+  const Expression* getExpr() const { return expr_.get(); }
+  OpType getOp() const { return op_; }
 };
 
 class ConditionalExpr : public Expression {
@@ -1580,6 +1592,11 @@ public:
         indexExpr_ ? indexExpr_->clone() : nullptr,
         valueExpr_ ? valueExpr_->clone() : nullptr);
   }
+  
+  // Getter methods for fuzzer access
+  const std::string& getArrayName() const { return arrayName_; }
+  const Expression* getIndexExpr() const { return indexExpr_.get(); }
+  const Expression* getValueExpr() const { return valueExpr_.get(); }
 };
 
 class IfStmt : public Statement {
@@ -1844,6 +1861,7 @@ public:
   
   // Getter methods for fuzzer access
   const std::vector<std::unique_ptr<Statement>>& getBody() const { return body_; }
+  const Expression* getCondition() const { return condition_.get(); }
   
   std::unique_ptr<Statement> clone() const override {
     auto cloned = std::make_unique<WhileStmt>(
@@ -2207,6 +2225,9 @@ public:
   std::unique_ptr<Expression> clone() const override {
     return std::make_unique<DispatchThreadIdExpr>(component_, type_);
   }
+  
+  // Getter for AST manipulation
+  uint32_t getComponent() const { return component_; }
 };
 
 // Parameter signature information

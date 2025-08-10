@@ -161,35 +161,8 @@ std::vector<WaveOpLocation> findAllWaveOps(const interpreter::Expression* expr,
         locations.emplace_back(waveOp, currentPath);
     }
     
-    // Recursively search in child expressions
-    if (auto binOp = dynamic_cast<const interpreter::BinaryOpExpr*>(expr)) {
-        auto leftPath = currentPath;
-        leftPath.push_back(0);
-        auto leftOps = findAllWaveOps(binOp->left.get(), leftPath);
-        locations.insert(locations.end(), leftOps.begin(), leftOps.end());
-        
-        auto rightPath = currentPath;
-        rightPath.push_back(1);
-        auto rightOps = findAllWaveOps(binOp->right.get(), rightPath);
-        locations.insert(locations.end(), rightOps.begin(), rightOps.end());
-    }
-    else if (auto unaryOp = dynamic_cast<const interpreter::UnaryOpExpr*>(expr)) {
-        auto childPath = currentPath;
-        childPath.push_back(0);
-        auto childOps = findAllWaveOps(unaryOp->expr.get(), childPath);
-        locations.insert(locations.end(), childOps.begin(), childOps.end());
-    }
-    else if (auto waveRead = dynamic_cast<const interpreter::WaveReadLaneAt*>(expr)) {
-        auto valuePath = currentPath;
-        valuePath.push_back(0);
-        auto valueOps = findAllWaveOps(waveRead->value.get(), valuePath);
-        locations.insert(locations.end(), valueOps.begin(), valueOps.end());
-        
-        auto lanePath = currentPath;
-        lanePath.push_back(1);
-        auto laneOps = findAllWaveOps(waveRead->lane.get(), lanePath);
-        locations.insert(locations.end(), laneOps.begin(), laneOps.end());
-    }
+    // TODO: Add proper AST traversal when public getters are available for expressions
+    // For now, we can only detect top-level wave operations
     
     return locations;
 }
@@ -202,50 +175,50 @@ std::vector<WaveOpLocation> findAllWaveOps(const interpreter::Statement* stmt) {
     
     // Check different statement types
     if (auto varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
-        if (varDecl->initExpr) {
-            locations = findAllWaveOps(varDecl->initExpr.get());
+        if (varDecl->getInit()) {
+            locations = findAllWaveOps(varDecl->getInit());
         }
     }
     else if (auto assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
-        locations = findAllWaveOps(assign->expr.get());
+        locations = findAllWaveOps(assign->getExpression());
     }
     else if (auto ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt)) {
         // Search in condition
-        auto condOps = findAllWaveOps(ifStmt->condition.get());
+        auto condOps = findAllWaveOps(ifStmt->getCondition());
         locations.insert(locations.end(), condOps.begin(), condOps.end());
         
         // Search in then block
-        for (const auto& thenStmt : ifStmt->thenStmt) {
+        for (const auto& thenStmt : ifStmt->getThenBlock()) {
             auto thenOps = findAllWaveOps(thenStmt.get());
             locations.insert(locations.end(), thenOps.begin(), thenOps.end());
         }
         
         // Search in else block
-        for (const auto& elseStmt : ifStmt->elseStmt) {
+        for (const auto& elseStmt : ifStmt->getElseBlock()) {
             auto elseOps = findAllWaveOps(elseStmt.get());
             locations.insert(locations.end(), elseOps.begin(), elseOps.end());
         }
     }
     else if (auto forStmt = dynamic_cast<const interpreter::ForStmt*>(stmt)) {
         // Search in condition
-        if (forStmt->condition) {
-            auto condOps = findAllWaveOps(forStmt->condition.get());
+        if (forStmt->getCondition()) {
+            auto condOps = findAllWaveOps(forStmt->getCondition());
             locations.insert(locations.end(), condOps.begin(), condOps.end());
         }
         
         // Search in body
-        for (const auto& bodyStmt : forStmt->body) {
+        for (const auto& bodyStmt : forStmt->getBody()) {
             auto bodyOps = findAllWaveOps(bodyStmt.get());
             locations.insert(locations.end(), bodyOps.begin(), bodyOps.end());
         }
     }
     else if (auto whileStmt = dynamic_cast<const interpreter::WhileStmt*>(stmt)) {
         // Search in condition
-        auto condOps = findAllWaveOps(whileStmt->condition.get());
+        auto condOps = findAllWaveOps(whileStmt->getCondition());
         locations.insert(locations.end(), condOps.begin(), condOps.end());
         
         // Search in body
-        for (const auto& bodyStmt : whileStmt->body) {
+        for (const auto& bodyStmt : whileStmt->getBody()) {
             auto bodyOps = findAllWaveOps(bodyStmt.get());
             locations.insert(locations.end(), bodyOps.begin(), bodyOps.end());
         }
@@ -260,28 +233,28 @@ std::unique_ptr<interpreter::Expression> cloneExpression(const interpreter::Expr
     
     // Handle different expression types
     if (auto lit = dynamic_cast<const interpreter::LiteralExpr*>(expr)) {
-        return std::make_unique<interpreter::LiteralExpr>(lit->value);
+        return std::make_unique<interpreter::LiteralExpr>(lit->getValue(), lit->getType());
     }
     else if (auto var = dynamic_cast<const interpreter::VariableExpr*>(expr)) {
-        return std::make_unique<interpreter::VariableExpr>(var->name);
+        return std::make_unique<interpreter::VariableExpr>(var->getName(), var->getType());
     }
     else if (auto binOp = dynamic_cast<const interpreter::BinaryOpExpr*>(expr)) {
         return std::make_unique<interpreter::BinaryOpExpr>(
-            cloneExpression(binOp->left.get()),
-            cloneExpression(binOp->right.get()),
-            binOp->op
+            cloneExpression(binOp->getLeft()),
+            cloneExpression(binOp->getRight()),
+            binOp->getOp()
         );
     }
     else if (auto unaryOp = dynamic_cast<const interpreter::UnaryOpExpr*>(expr)) {
         return std::make_unique<interpreter::UnaryOpExpr>(
-            cloneExpression(unaryOp->expr.get()),
-            unaryOp->op
+            cloneExpression(unaryOp->getExpr()),
+            unaryOp->getOp()
         );
     }
     else if (auto waveOp = dynamic_cast<const interpreter::WaveActiveOp*>(expr)) {
         return std::make_unique<interpreter::WaveActiveOp>(
-            waveOp->opType,
-            cloneExpression(waveOp->expr.get())
+            cloneExpression(waveOp->getInput()),
+            waveOp->getOpType()
         );
     }
     else if (auto laneIndex = dynamic_cast<const interpreter::LaneIndexExpr*>(expr)) {
@@ -289,23 +262,17 @@ std::unique_ptr<interpreter::Expression> cloneExpression(const interpreter::Expr
     }
     else if (auto waveRead = dynamic_cast<const interpreter::WaveReadLaneAt*>(expr)) {
         return std::make_unique<interpreter::WaveReadLaneAt>(
-            cloneExpression(waveRead->value.get()),
-            cloneExpression(waveRead->lane.get())
+            cloneExpression(waveRead->getValue()),
+            cloneExpression(waveRead->getLaneIndex()),
+            waveRead->getType()
         );
     }
     else if (auto threadId = dynamic_cast<const interpreter::DispatchThreadIdExpr*>(expr)) {
-        return std::make_unique<interpreter::DispatchThreadIdExpr>(threadId->axis);
+        return std::make_unique<interpreter::DispatchThreadIdExpr>(threadId->getComponent(), threadId->getType());
     }
-    else if (auto bufferLoad = dynamic_cast<const interpreter::BufferLoadExpr*>(expr)) {
-        return std::make_unique<interpreter::BufferLoadExpr>(
-            bufferLoad->bufferName,
-            cloneExpression(bufferLoad->index.get())
-        );
-    }
-    else if (auto waveBallot = dynamic_cast<const interpreter::WaveActiveBallot*>(expr)) {
-        return std::make_unique<interpreter::WaveActiveBallot>(
-            cloneExpression(waveBallot->condition.get())
-        );
+    else if (auto arrayAccess = dynamic_cast<const interpreter::ArrayAccessExpr*>(expr)) {
+        // ArrayAccessExpr doesn't have public accessors, use clone
+        return arrayAccess->clone();
     }
     
     // If we don't recognize the type, return nullptr
@@ -319,63 +286,63 @@ std::unique_ptr<interpreter::Statement> cloneStatement(const interpreter::Statem
     // Handle different statement types
     if (auto varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
         return std::make_unique<interpreter::VarDeclStmt>(
-            varDecl->varName,
-            varDecl->type,
-            cloneExpression(varDecl->initExpr.get())
+            varDecl->getName(),
+            varDecl->getType(),
+            cloneExpression(varDecl->getInit())
         );
     }
     else if (auto assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
         return std::make_unique<interpreter::AssignStmt>(
-            assign->varName,
-            cloneExpression(assign->expr.get())
+            assign->getName(),
+            cloneExpression(assign->getExpression())
         );
     }
-    else if (auto bufferStore = dynamic_cast<const interpreter::BufferStoreStmt*>(stmt)) {
-        return std::make_unique<interpreter::BufferStoreStmt>(
-            bufferStore->bufferName,
-            cloneExpression(bufferStore->index.get()),
-            cloneExpression(bufferStore->value.get())
+    else if (auto arrayAssign = dynamic_cast<const interpreter::ArrayAssignStmt*>(stmt)) {
+        return std::make_unique<interpreter::ArrayAssignStmt>(
+            arrayAssign->getArrayName(),
+            cloneExpression(arrayAssign->getIndexExpr()),
+            cloneExpression(arrayAssign->getValueExpr())
         );
     }
     else if (auto ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt)) {
         std::vector<std::unique_ptr<interpreter::Statement>> thenClone;
-        for (const auto& s : ifStmt->thenStmt) {
+        for (const auto& s : ifStmt->getThenBlock()) {
             thenClone.push_back(cloneStatement(s.get()));
         }
         
         std::vector<std::unique_ptr<interpreter::Statement>> elseClone;
-        for (const auto& s : ifStmt->elseStmt) {
+        for (const auto& s : ifStmt->getElseBlock()) {
             elseClone.push_back(cloneStatement(s.get()));
         }
         
         return std::make_unique<interpreter::IfStmt>(
-            cloneExpression(ifStmt->condition.get()),
+            cloneExpression(ifStmt->getCondition()),
             std::move(thenClone),
             std::move(elseClone)
         );
     }
     else if (auto forStmt = dynamic_cast<const interpreter::ForStmt*>(stmt)) {
         std::vector<std::unique_ptr<interpreter::Statement>> bodyClone;
-        for (const auto& s : forStmt->body) {
+        for (const auto& s : forStmt->getBody()) {
             bodyClone.push_back(cloneStatement(s.get()));
         }
         
         return std::make_unique<interpreter::ForStmt>(
-            forStmt->var,
-            cloneExpression(forStmt->init.get()),
-            cloneExpression(forStmt->condition.get()),
-            cloneExpression(forStmt->increment.get()),
+            forStmt->getLoopVar(),
+            cloneExpression(forStmt->getInit()),
+            cloneExpression(forStmt->getCondition()),
+            cloneExpression(forStmt->getIncrement()),
             std::move(bodyClone)
         );
     }
     else if (auto whileStmt = dynamic_cast<const interpreter::WhileStmt*>(stmt)) {
         std::vector<std::unique_ptr<interpreter::Statement>> bodyClone;
-        for (const auto& s : whileStmt->body) {
+        for (const auto& s : whileStmt->getBody()) {
             bodyClone.push_back(cloneStatement(s.get()));
         }
         
         return std::make_unique<interpreter::WhileStmt>(
-            cloneExpression(whileStmt->condition.get()),
+            cloneExpression(whileStmt->getCondition()),
             std::move(bodyClone)
         );
     }

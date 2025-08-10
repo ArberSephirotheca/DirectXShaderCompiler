@@ -67,18 +67,24 @@ void IncrementalGenerator::initializeBaseProgram(ProgramState& state, FuzzedData
         std::make_unique<interpreter::LiteralExpr>(0)
     );
     
-    StatementMetadata meta{
-        0,  // originalIndex
-        0,  // currentIndex
-        false,  // isNewlyAdded
-        false,  // hasMutation
-        MutationType::None,
-        {}  // waveOps
-    };
+    // Create and register metadata for the statement
+    StatementMetadata meta;
+    meta.originalIndex = 0;
+    meta.currentIndex = 0;
+    meta.isNewlyAdded = false;
+    meta.generationRound = 0;
+    meta.context = StatementMetadata::TopLevel;
+    meta.nestingLevel = 0;
+    meta.writesVariables.insert("result");
     
-    state.metadata.push_back(meta);
+    // Register with mutation tracker
+    auto* stmtPtr = resultDecl.get();
     state.program.statements.push_back(std::move(resultDecl));
     state.declaredVariables.insert("result");
+    
+    if (mutationTracker) {
+        mutationTracker->registerStatement(stmtPtr, meta);
+    }
 }
 
 // findWaveOps is now handled by the mutation tracker's findAllWaveOps
@@ -156,7 +162,7 @@ ProgramState IncrementalGenerator::generateIncremental(const uint8_t* data, size
             meta.currentIndex = insertPos;
             meta.isNewlyAdded = true;
             meta.generationRound = round;
-            meta.waveOps = findAllWaveOps(state.pendingStatement.get());
+            meta.waveOps = ::minihlsl::fuzzer::findAllWaveOps(state.pendingStatement.get());
             meta.context = StatementMetadata::TopLevel;
             meta.nestingLevel = 0;
             
@@ -176,7 +182,7 @@ ProgramState IncrementalGenerator::generateIncremental(const uint8_t* data, size
             meta.currentIndex = insertPos;
             meta.isNewlyAdded = true;
             meta.generationRound = round;
-            meta.waveOps = findAllWaveOps(stmt.get());
+            meta.waveOps = ::minihlsl::fuzzer::findAllWaveOps(stmt.get());
             meta.context = StatementMetadata::TopLevel;  // TODO: Set proper context
             meta.nestingLevel = 0;  // TODO: Calculate proper nesting
             
@@ -476,7 +482,7 @@ ControlFlowGenerator::generateWaveOperation(ProgramState& state, FuzzedDataProvi
         }
     }
     
-    return std::make_unique<interpreter::WaveActiveOp>(opType, std::move(input));
+    return std::make_unique<interpreter::WaveActiveOp>(std::move(input), opType);
 }
 
 // Utility functions - these would typically be in MiniHLSLInterpreterFuzzer.cpp

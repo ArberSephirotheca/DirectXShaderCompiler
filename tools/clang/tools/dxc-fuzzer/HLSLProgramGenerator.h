@@ -44,6 +44,8 @@ public:
 // Forward declarations
 class ParticipantPattern;
 class ControlFlowGenerator;
+class MutationTracker;
+class SemanticPreservingMutator;
 
 // Main incremental generator
 class IncrementalGenerator {
