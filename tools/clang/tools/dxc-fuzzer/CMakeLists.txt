@@ -174,6 +174,8 @@ add_executable(fuzz-hlsl-incremental
   HLSLProgramGenerator.cpp
   HLSLProgramGeneratorUtils.cpp
   HLSLParticipantPatterns.cpp
+  HLSLMutationTracker.cpp
+  HLSLSemanticMutator.cpp
   fuzz_hlsl_incremental.cpp
 )
 

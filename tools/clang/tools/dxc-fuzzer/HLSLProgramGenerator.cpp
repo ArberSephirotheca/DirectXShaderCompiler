@@ -29,7 +29,9 @@ std::vector<const interpreter::WaveActiveOp*> findWaveOpsInStatement(const inter
 
 // IncrementalGenerator implementation
 IncrementalGenerator::IncrementalGenerator() 
-    : cfGenerator(std::make_unique<ControlFlowGenerator>()) {
+    : cfGenerator(std::make_unique<ControlFlowGenerator>()),
+      mutationTracker(std::make_unique<MutationTracker>()),
+      mutator(std::make_unique<SemanticPreservingMutator>(*mutationTracker)) {
 }
 
 IncrementalGenerator::~IncrementalGenerator() = default;
@@ -79,28 +81,32 @@ void IncrementalGenerator::initializeBaseProgram(ProgramState& state, FuzzedData
     state.declaredVariables.insert("result");
 }
 
-std::vector<const interpreter::WaveActiveOp*> IncrementalGenerator::findWaveOps(const interpreter::Statement* stmt) {
-    return findWaveOpsInStatement(stmt);
+// findWaveOps is now handled by the mutation tracker's findAllWaveOps
+
+std::unique_ptr<interpreter::Statement> 
+IncrementalGenerator::applyMutationsSelectively(
+    const interpreter::Statement* stmt,
+    ProgramState& state,
+    FuzzedDataProvider& provider) {
+    
+    // Only mutate if this statement has wave operations
+    auto metadata = mutationTracker->getMetadata(stmt);
+    if (!metadata || metadata->waveOps.empty()) {
+        return nullptr;
+    }
+    
+    // Only mutate statements from current round
+    if (!mutationTracker->isFromCurrentRound(stmt)) {
+        return nullptr;
+    }
+    
+    // Use the semantic-preserving mutator
+    return mutator->mutateStatement(stmt, state, provider);
 }
 
 void IncrementalGenerator::applyMutationsToNew(ProgramState& state, FuzzedDataProvider& provider) {
-    // Prepare the program for mutations
-    state.program = prepareProgramForExecution(std::move(state.program));
-    
-    // For now, skip mutations as they require ExecutionTrace
-    // In a full implementation, we would:
-    // 1. Execute the program to get a trace
-    // 2. Apply mutations based on the trace
-    // 3. Update the program with the mutations
-    
-    // Mark that we attempted mutations
-    for (auto& meta : state.metadata) {
-        if (meta.isNewlyAdded && !meta.waveOps.empty()) {
-            meta.hasMutation = true;
-            meta.mutationType = provider.ConsumeBool() ? 
-                MutationType::LanePermutation : MutationType::ParticipantTracking;
-        }
-    }
+    // This method is now deprecated - mutations are applied inline during generation
+    // Kept for backward compatibility
 }
 
 ProgramState IncrementalGenerator::generateIncremental(const uint8_t* data, size_t size) {
@@ -117,10 +123,8 @@ ProgramState IncrementalGenerator::generateIncremental(const uint8_t* data, size
         GenerationRound roundInfo;
         roundInfo.roundNumber = round;
         
-        // Mark existing statements as not new
-        for (auto& meta : state.metadata) {
-            meta.isNewlyAdded = false;
-        }
+        // Advance mutation tracker round
+        mutationTracker->advanceRound();
         
         // Generate new control flow block
         auto pattern = createPattern(provider);
@@ -146,36 +150,65 @@ ProgramState IncrementalGenerator::generateIncremental(const uint8_t* data, size
         
         // Check if there's a pending statement to add first
         if (state.pendingStatement) {
-            StatementMetadata meta{
-                insertPos,  // originalIndex
-                insertPos,  // currentIndex
-                true,       // isNewlyAdded
-                false,      // hasMutation
-                MutationType::None,
-                {}  // no wave ops in counter init
-            };
-            state.metadata.push_back(meta);
+            // Create metadata for pending statement
+            StatementMetadata meta;
+            meta.originalIndex = insertPos;
+            meta.currentIndex = insertPos;
+            meta.isNewlyAdded = true;
+            meta.generationRound = round;
+            meta.waveOps = findAllWaveOps(state.pendingStatement.get());
+            meta.context = StatementMetadata::TopLevel;
+            meta.nestingLevel = 0;
+            
+            // Register with mutation tracker
+            mutationTracker->registerStatement(state.pendingStatement.get(), meta);
+            
             roundInfo.addedStatementIndices.push_back(insertPos);
             state.program.statements.push_back(std::move(state.pendingStatement));
             insertPos++;
         }
+        
+        // Process new statements
         for (auto& stmt : newStatements) {
-            StatementMetadata meta{
-                insertPos,  // originalIndex
-                insertPos,  // currentIndex
-                true,       // isNewlyAdded
-                false,      // hasMutation
-                MutationType::None,
-                findWaveOps(stmt.get())
-            };
-            state.metadata.push_back(meta);
+            // Create metadata for new statement
+            StatementMetadata meta;
+            meta.originalIndex = insertPos;
+            meta.currentIndex = insertPos;
+            meta.isNewlyAdded = true;
+            meta.generationRound = round;
+            meta.waveOps = findAllWaveOps(stmt.get());
+            meta.context = StatementMetadata::TopLevel;  // TODO: Set proper context
+            meta.nestingLevel = 0;  // TODO: Calculate proper nesting
+            
+            // Register with mutation tracker BEFORE potential mutation
+            mutationTracker->registerStatement(stmt.get(), meta);
+            
+            // Apply mutations selectively
+            auto mutatedStmt = applyMutationsSelectively(stmt.get(), state, provider);
+            
+            if (mutatedStmt) {
+                // Update metadata to point to mutated statement
+                mutationTracker->registerStatement(mutatedStmt.get(), meta);
+                state.program.statements.push_back(std::move(mutatedStmt));
+                
+                // Record mutation in round info
+                auto mutationMeta = mutationTracker->getMetadata(
+                    state.program.statements.back().get()
+                );
+                if (mutationMeta && !mutationMeta->appliedMutations.empty()) {
+                    roundInfo.appliedMutations.insert(
+                        roundInfo.appliedMutations.end(),
+                        mutationMeta->appliedMutations.begin(),
+                        mutationMeta->appliedMutations.end()
+                    );
+                }
+            } else {
+                state.program.statements.push_back(std::move(stmt));
+            }
+            
             roundInfo.addedStatementIndices.push_back(insertPos);
-            state.program.statements.push_back(std::move(stmt));
             insertPos++;
         }
-        
-        // Apply mutations to new wave operations only
-        applyMutationsToNew(state, provider);
         
         // Record round
         roundInfo.description = "Round " + std::to_string(round);
@@ -443,7 +476,7 @@ ControlFlowGenerator::generateWaveOperation(ProgramState& state, FuzzedDataProvi
         }
     }
     
-    return std::make_unique<interpreter::WaveActiveOp>(std::move(input), opType);
+    return std::make_unique<interpreter::WaveActiveOp>(opType, std::move(input));
 }
 
 // Utility functions - these would typically be in MiniHLSLInterpreterFuzzer.cpp

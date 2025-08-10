@@ -2,6 +2,8 @@
 #define HLSL_PROGRAM_GENERATOR_H
 
 #include "MiniHLSLInterpreter.h"
+#include "HLSLMutationTracker.h"
+#include "HLSLSemanticMutator.h"
 #include <fuzzer/FuzzedDataProvider.h>
 #include <memory>
 #include <vector>
@@ -11,13 +13,6 @@
 namespace minihlsl {
 namespace fuzzer {
 
-// Mutation types that can be applied to wave operations
-enum class MutationType {
-    None,
-    LanePermutation,
-    ParticipantTracking
-};
-
 // Information about a generation round
 struct GenerationRound {
     size_t roundNumber;
@@ -26,21 +21,10 @@ struct GenerationRound {
     std::string description;
 };
 
-// Metadata for tracking statement information
-struct StatementMetadata {
-    size_t originalIndex;
-    size_t currentIndex;
-    bool isNewlyAdded;
-    bool hasMutation;
-    MutationType mutationType;
-    std::vector<const interpreter::WaveActiveOp*> waveOps;
-};
-
 // Core state for incremental program generation
 class ProgramState {
 public:
     interpreter::Program program;
-    std::vector<StatementMetadata> metadata;
     std::vector<GenerationRound> history;
     
     // Track variable names for generation
@@ -65,11 +49,18 @@ class ControlFlowGenerator;
 class IncrementalGenerator {
 private:
     std::unique_ptr<ControlFlowGenerator> cfGenerator;
+    std::unique_ptr<MutationTracker> mutationTracker;
+    std::unique_ptr<SemanticPreservingMutator> mutator;
     
     std::unique_ptr<ParticipantPattern> createPattern(FuzzedDataProvider& provider);
     void initializeBaseProgram(ProgramState& state, FuzzedDataProvider& provider);
     void applyMutationsToNew(ProgramState& state, FuzzedDataProvider& provider);
-    std::vector<const interpreter::WaveActiveOp*> findWaveOps(const interpreter::Statement* stmt);
+    
+    // Apply mutations with sophisticated tracking
+    std::unique_ptr<interpreter::Statement> applyMutationsSelectively(
+        const interpreter::Statement* stmt,
+        ProgramState& state,
+        FuzzedDataProvider& provider);
     
 public:
     IncrementalGenerator();

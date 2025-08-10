@@ -59,6 +59,30 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         std::cout << fuzzer::serializeProgramToString(program) << std::endl;
         std::cout << "=== End Program ===\n";
         
+        // Print mutation history
+        std::cout << "=== Mutation History ===\n";
+        for (const auto& round : state.history) {
+            std::cout << "Round " << round.roundNumber << ": ";
+            std::cout << round.addedStatementIndices.size() << " statements added";
+            if (!round.appliedMutations.empty()) {
+                std::cout << ", mutations: ";
+                for (auto mut : round.appliedMutations) {
+                    switch (mut) {
+                        case fuzzer::MutationType::LanePermutation:
+                            std::cout << "LanePermutation ";
+                            break;
+                        case fuzzer::MutationType::ParticipantTracking:
+                            std::cout << "ParticipantTracking ";
+                            break;
+                        default:
+                            std::cout << "Unknown ";
+                    }
+                }
+            }
+            std::cout << "\n";
+        }
+        std::cout << "=== End Mutation History ===\n";
+        
         // Create interpreter
         interpreter::MiniHLSLInterpreter interpreter;
         uint32_t waveSize = program.getEffectiveWaveSize(32);
