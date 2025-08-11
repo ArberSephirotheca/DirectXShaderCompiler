@@ -1809,6 +1809,56 @@ std::unique_ptr<interpreter::Statement> TraceGuidedFuzzer::applyMutationToStatem
           forStmt->getIncrement() ? forStmt->getIncrement()->clone() : nullptr,
           std::move(mutatedBodyStmts));
     }
+  } else if (auto whileStmt = dynamic_cast<const interpreter::WhileStmt*>(stmt)) {
+    // Try to mutate statements in the while loop body
+    std::vector<std::unique_ptr<interpreter::Statement>> mutatedBodyStmts;
+    bool foundMutation = false;
+    
+    for (const auto& bodyStmt : whileStmt->getBody()) {
+      if (!foundMutation) {
+        auto mutated = applyMutationToStatement(bodyStmt.get(), strategy, trace, foundMutation);
+        if (foundMutation) {
+          mutatedBodyStmts.push_back(std::move(mutated));
+          mutationApplied = true;
+        } else {
+          mutatedBodyStmts.push_back(bodyStmt->clone());
+        }
+      } else {
+        mutatedBodyStmts.push_back(bodyStmt->clone());
+      }
+    }
+    
+    // If we found a mutation in the body, create a new WhileStmt
+    if (mutationApplied) {
+      return std::make_unique<interpreter::WhileStmt>(
+          whileStmt->getCondition()->clone(),
+          std::move(mutatedBodyStmts));
+    }
+  } else if (auto doWhileStmt = dynamic_cast<const interpreter::DoWhileStmt*>(stmt)) {
+    // Try to mutate statements in the do-while loop body
+    std::vector<std::unique_ptr<interpreter::Statement>> mutatedBodyStmts;
+    bool foundMutation = false;
+    
+    for (const auto& bodyStmt : doWhileStmt->getBody()) {
+      if (!foundMutation) {
+        auto mutated = applyMutationToStatement(bodyStmt.get(), strategy, trace, foundMutation);
+        if (foundMutation) {
+          mutatedBodyStmts.push_back(std::move(mutated));
+          mutationApplied = true;
+        } else {
+          mutatedBodyStmts.push_back(bodyStmt->clone());
+        }
+      } else {
+        mutatedBodyStmts.push_back(bodyStmt->clone());
+      }
+    }
+    
+    // If we found a mutation in the body, create a new DoWhileStmt
+    if (mutationApplied) {
+      return std::make_unique<interpreter::DoWhileStmt>(
+          std::move(mutatedBodyStmts),
+          doWhileStmt->getCondition()->clone());
+    }
   }
   
   // No mutation found, return clone
@@ -1889,6 +1939,14 @@ std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
         }
       } else if (auto* forStmt = dynamic_cast<const interpreter::ForStmt*>(stmt)) {
         for (const auto& s : forStmt->getBody()) {
+          if (hasWaveOp(s.get())) return true;
+        }
+      } else if (auto* whileStmt = dynamic_cast<const interpreter::WhileStmt*>(stmt)) {
+        for (const auto& s : whileStmt->getBody()) {
+          if (hasWaveOp(s.get())) return true;
+        }
+      } else if (auto* doWhileStmt = dynamic_cast<const interpreter::DoWhileStmt*>(stmt)) {
+        for (const auto& s : doWhileStmt->getBody()) {
           if (hasWaveOp(s.get())) return true;
         }
       }

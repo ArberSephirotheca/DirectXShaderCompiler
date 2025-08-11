@@ -1941,6 +1941,7 @@ public:
   
   // Getter methods for fuzzer access
   const std::vector<std::unique_ptr<Statement>>& getBody() const { return body_; }
+  const Expression* getCondition() const { return condition_.get(); }
   
   std::unique_ptr<Statement> clone() const override {
     auto cloned = std::make_unique<DoWhileStmt>(
