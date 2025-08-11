@@ -1,5 +1,6 @@
 #include "IncrementalFuzzingPipeline.h"
 #include "MiniHLSLInterpreterTraceCapture.h"
+#include "FuzzerDebug.h"
 #include <iostream>
 #include <chrono>
 #include <thread>
@@ -107,16 +108,16 @@ PipelineResult::IncrementResult IncrementalFuzzingPipeline::testMutations(
         
         // For now, let's print what mutations would be applied
         if (config.enableLogging) {
-            std::cout << "\nApplying trace-guided mutations:\n";
-            std::cout << "Golden trace has " << goldenTrace.waveOperations.size() << " wave operations\n";
+            FUZZER_DEBUG_LOG("\nApplying trace-guided mutations:\n");
+            FUZZER_DEBUG_LOG("Golden trace has " << goldenTrace.waveOperations.size() << " wave operations\n");
             
             // Show what mutations would be applied
             for (size_t i = 0; i < goldenTrace.waveOperations.size() && i < 3; ++i) {
                 const auto& waveOp = goldenTrace.waveOperations[i];
-                std::cout << "Wave op " << i << ": " << waveOp.opType 
-                         << " with " << waveOp.arrivedParticipants.size() << " participants\n";
-                std::cout << "  - Could apply LanePermutation mutation\n";
-                std::cout << "  - Could apply WaveParticipantTracking mutation\n";
+                FUZZER_DEBUG_LOG("Wave op " << i << ": " << waveOp.opType 
+                         << " with " << waveOp.arrivedParticipants.size() << " participants\n");
+                FUZZER_DEBUG_LOG("  - Could apply LanePermutation mutation\n");
+                FUZZER_DEBUG_LOG("  - Could apply WaveParticipantTracking mutation\n");
             }
         }
         
@@ -141,9 +142,9 @@ PipelineResult IncrementalFuzzingPipeline::run(const uint8_t* data, size_t size)
     if (config.enableLogging) {
         static int pipelineCallCount = 0;
         ++pipelineCallCount;
-        std::cout << "\n=== Starting Incremental Fuzzing Pipeline (Call #" << pipelineCallCount << ") ===\n";
-        std::cout << "Max increments: " << config.maxIncrements << "\n";
-        std::cout << "Mutants per increment: " << config.mutantsPerIncrement << "\n\n";
+        FUZZER_DEBUG_LOG("\n=== Starting Incremental Fuzzing Pipeline (Call #" << pipelineCallCount << ") ===\n");
+        FUZZER_DEBUG_LOG("Max increments: " << config.maxIncrements << "\n");
+        FUZZER_DEBUG_LOG("Mutants per increment: " << config.mutantsPerIncrement << "\n\n");
     }
     
     // Initialize fuzzer with empty seed corpus
@@ -154,7 +155,7 @@ PipelineResult IncrementalFuzzingPipeline::run(const uint8_t* data, size_t size)
     
     for (size_t increment = 0; increment < config.maxIncrements; ++increment) {
         if (config.enableLogging) {
-            std::cout << "\n=== Increment " << (increment + 1) << " ===\n";
+            FUZZER_DEBUG_LOG("\n=== Increment " << (increment + 1) << " ===\n");
         }
         
         PipelineResult::IncrementResult incrementResult;
@@ -163,9 +164,9 @@ PipelineResult IncrementalFuzzingPipeline::run(const uint8_t* data, size_t size)
         incrementResult.baseProgramStr = serializeProgramToString(state.program);
         
         if (config.enableLogging) {
-            std::cout << "Generated program:\n";
-            std::cout << incrementResult.baseProgramStr;
-            std::cout << "\n";
+            FUZZER_DEBUG_LOG("Generated program:\n");
+            FUZZER_DEBUG_LOG(incrementResult.baseProgramStr);
+            FUZZER_DEBUG_LOG("\n");
         }
         
         // Step 1: Validate syntax
@@ -175,7 +176,7 @@ PipelineResult IncrementalFuzzingPipeline::run(const uint8_t* data, size_t size)
             incrementResult.errorMessage = syntaxError;
             
             if (config.enableLogging) {
-                std::cout << "Syntax validation failed: " << syntaxError << "\n";
+                FUZZER_DEBUG_LOG("Syntax validation failed: " << syntaxError << "\n");
             }
             
             result.increments.push_back(incrementResult);
@@ -192,7 +193,7 @@ PipelineResult IncrementalFuzzingPipeline::run(const uint8_t* data, size_t size)
             incrementResult.errorMessage = execError;
             
             if (config.enableLogging) {
-                std::cout << "Execution validation failed: " << execError << "\n";
+                FUZZER_DEBUG_LOG("Execution validation failed: " << execError << "\n");
             }
             
             result.increments.push_back(incrementResult);
@@ -202,9 +203,9 @@ PipelineResult IncrementalFuzzingPipeline::run(const uint8_t* data, size_t size)
         }
         
         if (config.enableLogging) {
-            std::cout << "Program validated successfully\n";
-            std::cout << "Trace: " << goldenTrace.blocks.size() << " blocks, "
-                     << goldenTrace.waveOperations.size() << " wave operations\n";
+            FUZZER_DEBUG_LOG("Program validated successfully\n");
+            FUZZER_DEBUG_LOG("Trace: " << goldenTrace.blocks.size() << " blocks, "
+                     << goldenTrace.waveOperations.size() << " wave operations\n");
         }
         
         // Step 3: Apply mutations and test
@@ -214,8 +215,8 @@ PipelineResult IncrementalFuzzingPipeline::run(const uint8_t* data, size_t size)
         result.totalBugsFound += incrementResult.bugsFound;
         
         if (config.enableLogging) {
-            std::cout << "Tested " << incrementResult.mutantsTested << " mutants\n";
-            std::cout << "Found " << incrementResult.bugsFound << " bugs\n";
+            FUZZER_DEBUG_LOG("Tested " << incrementResult.mutantsTested << " mutants\n");
+            FUZZER_DEBUG_LOG("Found " << incrementResult.bugsFound << " bugs\n");
         }
         
         result.increments.push_back(incrementResult);
@@ -230,7 +231,7 @@ PipelineResult IncrementalFuzzingPipeline::run(const uint8_t* data, size_t size)
         // Check program size limit
         if (state.program.statements.size() >= config.maxProgramSize) {
             if (config.enableLogging) {
-                std::cout << "Reached maximum program size\n";
+                FUZZER_DEBUG_LOG("Reached maximum program size\n");
             }
             break;
         }
@@ -241,7 +242,7 @@ PipelineResult IncrementalFuzzingPipeline::run(const uint8_t* data, size_t size)
             size_t remainingData = provider.remaining_bytes();
             if (remainingData < 16) {
                 if (config.enableLogging) {
-                    std::cout << "Insufficient data for next increment\n";
+                    FUZZER_DEBUG_LOG("Insufficient data for next increment\n");
                 }
                 break;
             }
@@ -254,12 +255,12 @@ PipelineResult IncrementalFuzzingPipeline::run(const uint8_t* data, size_t size)
     }
     
     if (config.enableLogging) {
-        std::cout << "\n=== Pipeline Complete ===\n";
-        std::cout << "Total increments: " << result.increments.size() << "\n";
-        std::cout << "Total mutants tested: " << result.totalMutantsTested << "\n";
-        std::cout << "Total bugs found: " << result.totalBugsFound << "\n";
+        FUZZER_DEBUG_LOG("\n=== Pipeline Complete ===\n");
+        FUZZER_DEBUG_LOG("Total increments: " << result.increments.size() << "\n");
+        FUZZER_DEBUG_LOG("Total mutants tested: " << result.totalMutantsTested << "\n");
+        FUZZER_DEBUG_LOG("Total bugs found: " << result.totalBugsFound << "\n");
         if (result.stoppedEarly) {
-            std::cout << "Stopped early: " << result.stopReason << "\n";
+            FUZZER_DEBUG_LOG("Stopped early: " << result.stopReason << "\n");
         }
     }
     

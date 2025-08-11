@@ -3,6 +3,7 @@
 #include "MiniHLSLValidator.h"
 #include "HLSLProgramGenerator.h"
 #include "IncrementalFuzzingPipeline.h"
+#include "FuzzerDebug.h"
 #include <fuzzer/FuzzedDataProvider.h>
 #include <fstream>
 #include <sstream>
@@ -187,14 +188,14 @@ std::unique_ptr<interpreter::Statement> LanePermutationMutation::apply(
   std::set<interpreter::LaneId> participatingLanes; // Actual lane IDs that participate
   
   // Debug: print what we're looking for
-  std::cout << "[LanePermutation] Looking for wave op: " << waveOp->toString() 
-            << " ptr=" << static_cast<const void*>(waveOp) << "\n";
+  FUZZER_DEBUG_LOG("[LanePermutation] Looking for wave op: " << waveOp->toString() 
+            << " ptr=" << static_cast<const void*>(waveOp) << "\n");
   
   // First, try to find the exact wave operation in the trace
   for (const auto& waveOpRecord : trace.waveOperations) {
-    std::cout << "[LanePermutation] Checking trace wave op: " << waveOpRecord.opType 
+    FUZZER_DEBUG_LOG("[LanePermutation] Checking trace wave op: " << waveOpRecord.opType 
               << " enumType=" << waveOpRecord.waveOpEnumType
-              << " participants=" << waveOpRecord.arrivedParticipants.size() << "\n";
+              << " participants=" << waveOpRecord.arrivedParticipants.size() << "\n");
     
     // Match by enum type for precise matching
     if (waveOpRecord.waveOpEnumType >= 0 && 
@@ -203,12 +204,12 @@ std::unique_ptr<interpreter::Statement> LanePermutationMutation::apply(
       activeLaneCount = waveOpRecord.arrivedParticipants.size();
       blockIdForWaveOp = waveOpRecord.blockId;
       participatingLanes = waveOpRecord.arrivedParticipants;
-      std::cout << "[LanePermutation] Found match by enum! Active lanes: " << activeLaneCount << "\n";
-      std::cout << "[LanePermutation] Participants: ";
+      FUZZER_DEBUG_LOG("[LanePermutation] Found match by enum! Active lanes: " << activeLaneCount << "\n");
+      FUZZER_DEBUG_LOG("[LanePermutation] Participants: ");
       for (auto laneId : waveOpRecord.arrivedParticipants) {
-        std::cout << laneId << " ";
+        FUZZER_DEBUG_LOG(laneId << " ");
       }
-      std::cout << "\n";
+      FUZZER_DEBUG_LOG("\n");
       break;
     }
     // Fallback to string matching if enum not available
@@ -217,12 +218,12 @@ std::unique_ptr<interpreter::Statement> LanePermutationMutation::apply(
       activeLaneCount = waveOpRecord.arrivedParticipants.size();
       blockIdForWaveOp = waveOpRecord.blockId;
       participatingLanes = waveOpRecord.arrivedParticipants;
-      std::cout << "[LanePermutation] Found match by string! Active lanes: " << activeLaneCount << "\n";
-      std::cout << "[LanePermutation] Participants: ";
+      FUZZER_DEBUG_LOG("[LanePermutation] Found match by string! Active lanes: " << activeLaneCount << "\n");
+      FUZZER_DEBUG_LOG("[LanePermutation] Participants: ");
       for (auto laneId : waveOpRecord.arrivedParticipants) {
-        std::cout << laneId << " ";
+        FUZZER_DEBUG_LOG(laneId << " ");
       }
-      std::cout << "\n";
+      FUZZER_DEBUG_LOG("\n");
       break;
     }
   }
@@ -1523,14 +1524,14 @@ void BugReporter::saveBugReport(const BugReport& report) {
   }
   
   file.close();
-  std::cout << "Bug report saved to: " << filename << "\n";
+  FUZZER_DEBUG_LOG("Bug report saved to: " << filename << "\n");
 }
 
 void BugReporter::logBug(const BugReport& report) {
-  std::cout << "Found bug: " << report.id << "\n";
-  std::cout << "Type: " << static_cast<int>(report.bugType) << "\n";
-  std::cout << "Severity: " << static_cast<int>(report.severity) << "\n";
-  std::cout << "Description: " << report.traceDivergence.description << "\n";
+  FUZZER_DEBUG_LOG("Found bug: " << report.id << "\n");
+  FUZZER_DEBUG_LOG("Type: " << static_cast<int>(report.bugType) << "\n");
+  FUZZER_DEBUG_LOG("Severity: " << static_cast<int>(report.severity) << "\n");
+  FUZZER_DEBUG_LOG("Description: " << report.traceDivergence.description << "\n");
 }
 
 // ===== Main Fuzzer Implementation =====
@@ -1553,35 +1554,35 @@ TraceGuidedFuzzer::TraceGuidedFuzzer() {
 void TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& seedProgram, 
                                   const FuzzingConfig& config) {
   
-  std::cout << "Starting trace-guided fuzzing...\n";
-  std::cout << "Threadgroup size: " << config.threadgroupSize << "\n";
-  std::cout << "Wave size: " << config.waveSize << "\n";
+  FUZZER_DEBUG_LOG("Starting trace-guided fuzzing...\n");
+  FUZZER_DEBUG_LOG("Threadgroup size: " << config.threadgroupSize << "\n");
+  FUZZER_DEBUG_LOG("Wave size: " << config.waveSize << "\n");
   
   // Debug: Print the seed program being fuzzed
-  std::cout << "\n=== Seed Program ===\n";
-  std::cout << serializeProgramToString(seedProgram);
-  std::cout << "\n";
+  FUZZER_DEBUG_LOG("\n=== Seed Program ===\n");
+  FUZZER_DEBUG_LOG(serializeProgramToString(seedProgram));
+  FUZZER_DEBUG_LOG("\n");
   
   // Prepare program for mutation
   interpreter::Program preparedProgram = prepareProgramForMutation(seedProgram);
   
-  std::cout << "\n=== Prepared Program ===\n";
-  std::cout << serializeProgramToString(preparedProgram);
-  std::cout << "\n";
+  FUZZER_DEBUG_LOG("\n=== Prepared Program ===\n");
+  FUZZER_DEBUG_LOG(serializeProgramToString(preparedProgram));
+  FUZZER_DEBUG_LOG("\n");
   
   // Create trace capture interpreter
   TraceCaptureInterpreter captureInterpreter;
   
   // Execute seed and capture golden trace
-  std::cout << "Capturing golden trace...\n";
+  FUZZER_DEBUG_LOG("Capturing golden trace...\n");
   
   // Check if we should print programs (controlled by environment variable)
   static bool printPrograms = getenv("FUZZ_PRINT_PROGRAMS") != nullptr;
   
   if (printPrograms) {
-    std::cout << "\n--- Original Program ---\n";
-    std::cout << serializeProgramToString(preparedProgram);
-    std::cout << "--- End Original Program ---\n\n";
+    FUZZER_DEBUG_LOG("\n--- Original Program ---\n");
+    FUZZER_DEBUG_LOG(serializeProgramToString(preparedProgram));
+    FUZZER_DEBUG_LOG("--- End Original Program ---\n\n");
   }
   
   // Use sequential ordering for deterministic execution
@@ -1598,21 +1599,21 @@ void TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& seedProgram,
   
   const ExecutionTrace& goldenTrace = *captureInterpreter.getTrace();
   
-  std::cout << "Golden trace captured:\n";
-  std::cout << "  - Blocks executed: " << goldenTrace.blocks.size() << "\n";
-  std::cout << "  - Wave operations: " << goldenTrace.waveOperations.size() << "\n";
-  std::cout << "  - Waves in final state: " << goldenTrace.finalState.laneVariables.size() << "\n";
+  FUZZER_DEBUG_LOG("Golden trace captured:\n");
+  FUZZER_DEBUG_LOG("  - Blocks executed: " << goldenTrace.blocks.size() << "\n");
+  FUZZER_DEBUG_LOG("  - Wave operations: " << goldenTrace.waveOperations.size() << "\n");
+  FUZZER_DEBUG_LOG("  - Waves in final state: " << goldenTrace.finalState.laneVariables.size() << "\n");
   for (const auto& [waveId, waveVars] : goldenTrace.finalState.laneVariables) {
-    std::cout << "    Wave " << waveId << " has " << waveVars.size() << " lanes\n";
+    FUZZER_DEBUG_LOG("    Wave " << waveId << " has " << waveVars.size() << " lanes\n");
   }
-  std::cout << "  - Control flow decisions: " << goldenTrace.controlFlowHistory.size() << "\n";
+  FUZZER_DEBUG_LOG("  - Control flow decisions: " << goldenTrace.controlFlowHistory.size() << "\n");
   
   // Generate and test mutants
   size_t mutantsTested = 0;
   size_t bugsFound = 0;
   
   for (auto& strategy : mutationStrategies) {
-    std::cout << "\nTrying mutation strategy: " << strategy->getName() << "\n";
+    FUZZER_DEBUG_LOG("\nTrying mutation strategy: " << strategy->getName() << "\n");
     
     // Add specific debug for WaveParticipantTrackingMutation
     if (strategy->getName() == "WaveParticipantTracking") {
@@ -1629,14 +1630,14 @@ void TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& seedProgram,
       mutantsTested++;
       
       // Always print original and mutated programs
-      std::cout << "\n=== Testing Mutant " << mutantsTested << " (Strategy: " << strategy->getName() << ") ===\n";
+      FUZZER_DEBUG_LOG("\n=== Testing Mutant " << mutantsTested << " (Strategy: " << strategy->getName() << ") ===\n");
       
-      std::cout << "\n--- Original Program ---\n";
-      std::cout << serializeProgramToString(preparedProgram);
+      FUZZER_DEBUG_LOG("\n--- Original Program ---\n");
+      FUZZER_DEBUG_LOG(serializeProgramToString(preparedProgram));
       
-      std::cout << "\n--- Mutant Program ---\n";
-      std::cout << serializeProgramToString(mutant);
-      std::cout << "--- End Mutant Program ---\n\n";
+      FUZZER_DEBUG_LOG("\n--- Mutant Program ---\n");
+      FUZZER_DEBUG_LOG(serializeProgramToString(mutant));
+      FUZZER_DEBUG_LOG("--- End Mutant Program ---\n\n");
       
       try {
         // Execute mutant
@@ -1646,16 +1647,16 @@ void TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& seedProgram,
         
         // Check if execution succeeded
         if (!mutantResult.isValid()) {
-          std::cout << "Mutant execution failed: " << mutantResult.errorMessage << "\n";
+          FUZZER_DEBUG_LOG("Mutant execution failed: " << mutantResult.errorMessage << "\n");
           continue;
         }
         
         const ExecutionTrace& mutantTrace = *mutantInterpreter.getTrace();
         
-        std::cout << "Mutant trace captured:\n";
-        std::cout << "  - Waves in final state: " << mutantTrace.finalState.laneVariables.size() << "\n";
+        FUZZER_DEBUG_LOG("Mutant trace captured:\n");
+        FUZZER_DEBUG_LOG("  - Waves in final state: " << mutantTrace.finalState.laneVariables.size() << "\n");
         for (const auto& [waveId, waveVars] : mutantTrace.finalState.laneVariables) {
-          std::cout << "    Wave " << waveId << " has " << waveVars.size() << " lanes\n";
+          FUZZER_DEBUG_LOG("    Wave " << waveId << " has " << waveVars.size() << " lanes\n");
         }
         
         // Validate semantic equivalence
@@ -2110,24 +2111,24 @@ uint64_t TraceGuidedFuzzer::hashSyncPattern(const ExecutionTrace::BarrierRecord&
 }
 
 void TraceGuidedFuzzer::logTrace(const std::string& message, const ExecutionTrace& trace) {
-  std::cout << message << "\n";
-  std::cout << "  Blocks: " << trace.blocks.size() << "\n";
-  std::cout << "  Wave ops: " << trace.waveOperations.size() << "\n";
-  std::cout << "  Barriers: " << trace.barriers.size() << "\n";
+  FUZZER_DEBUG_LOG(message << "\n");
+  FUZZER_DEBUG_LOG("  Blocks: " << trace.blocks.size() << "\n");
+  FUZZER_DEBUG_LOG("  Wave ops: " << trace.waveOperations.size() << "\n");
+  FUZZER_DEBUG_LOG("  Barriers: " << trace.barriers.size() << "\n");
 }
 
 void TraceGuidedFuzzer::logMutation(const std::string& message, const std::string& strategy) {
-  std::cout << message << " [" << strategy << "]\n";
+  FUZZER_DEBUG_LOG(message << " [" << strategy << "]\n");
 }
 
 void TraceGuidedFuzzer::logSummary(size_t testedMutants, size_t bugsFound) {
-  std::cout << "\n=== Fuzzing Summary ===\n";
-  std::cout << "Mutants tested: " << testedMutants << "\n";
-  std::cout << "Bugs found: " << bugsFound << "\n";
-  std::cout << "Coverage:\n";
-  std::cout << "  Block patterns: " << seenBlockPatterns.size() << "\n";
-  std::cout << "  Wave patterns: " << seenWavePatterns.size() << "\n";
-  std::cout << "  Sync patterns: " << seenSyncPatterns.size() << "\n";
+  FUZZER_DEBUG_LOG("\n=== Fuzzing Summary ===\n");
+  FUZZER_DEBUG_LOG("Mutants tested: " << testedMutants << "\n");
+  FUZZER_DEBUG_LOG("Bugs found: " << bugsFound << "\n");
+  FUZZER_DEBUG_LOG("Coverage:\n");
+  FUZZER_DEBUG_LOG("  Block patterns: " << seenBlockPatterns.size() << "\n");
+  FUZZER_DEBUG_LOG("  Wave patterns: " << seenWavePatterns.size() << "\n");
+  FUZZER_DEBUG_LOG("  Sync patterns: " << seenSyncPatterns.size() << "\n");
 }
 
 // ===== LibFuzzer Integration =====
@@ -2160,7 +2161,7 @@ void loadSeedCorpus(TraceGuidedFuzzer* fuzzer) {
     return;
   }
   
-  std::cout << "Loading seed corpus from: " << seedDir << "\n";
+  FUZZER_DEBUG_LOG("Loading seed corpus from: " << seedDir << "\n");
   
   // Load all .hlsl files from the seed directory
   DIR* dir = opendir(seedDir);
@@ -2190,7 +2191,7 @@ void loadSeedCorpus(TraceGuidedFuzzer* fuzzer) {
       std::string hlslContent = buffer.str();
       
       // Parse HLSL and convert to interpreter AST
-      std::cout << "  Loading seed: " << filename << " (" << hlslContent.size() << " bytes)";
+      FUZZER_DEBUG_LOG("  Loading seed: " << filename << " (" << hlslContent.size() << " bytes)");
       
       // Use the MiniHLSLValidator to parse HLSL
       minihlsl::MiniHLSLValidator validator;
@@ -2200,7 +2201,7 @@ void loadSeedCorpus(TraceGuidedFuzzer* fuzzer) {
       auto* mainFunc = astResult.get_main_function();
       
       if (!astContext || !mainFunc) {
-        std::cout << " - Failed to parse or find main function\n";
+        FUZZER_DEBUG_LOG(" - Failed to parse or find main function\n");
         continue;
       }
       
@@ -2208,7 +2209,7 @@ void loadSeedCorpus(TraceGuidedFuzzer* fuzzer) {
       minihlsl::interpreter::MiniHLSLInterpreter interpreter(0);
       auto conversionResult = interpreter.convertFromHLSLAST(mainFunc, *astContext);
       if (!conversionResult.success) {
-        std::cout << " - Failed to convert: " << conversionResult.errorMessage << "\n";
+        FUZZER_DEBUG_LOG(" - Failed to convert: " << conversionResult.errorMessage << "\n");
         continue;
       }
       
@@ -2230,12 +2231,12 @@ void loadSeedCorpus(TraceGuidedFuzzer* fuzzer) {
       g_seedPrograms->push_back(std::move(seedProgram));
       
       seedCount++;
-      std::cout << " - Success!\n";
+      FUZZER_DEBUG_LOG(" - Success!\n");
     }
   }
   
   closedir(dir);
-  std::cout << "Loaded " << seedCount << " seed files.\n";
+  FUZZER_DEBUG_LOG("Loaded " << seedCount << " seed files.\n");
 }
 
 bool deserializeAST(const uint8_t* data, size_t size, 
@@ -2254,9 +2255,9 @@ bool deserializeAST(const uint8_t* data, size_t size,
     // Prepare the program for execution
     program = prepareProgramForExecution(std::move(state.program));
     
-    std::cout << "\n=== Randomly Generated Program ===\n";
-    std::cout << serializeProgramToString(program);
-    std::cout << "=== End Generated Program ===\n\n";
+    FUZZER_DEBUG_LOG("\n=== Randomly Generated Program ===\n");
+    FUZZER_DEBUG_LOG(serializeProgramToString(program));
+    FUZZER_DEBUG_LOG("=== End Generated Program ===\n\n");
     
     return true;
   }
@@ -2485,7 +2486,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     // Use the new incremental fuzzing pipeline
     static int testInputCallCount = 0;
     ++testInputCallCount;
-    std::cout << "DEBUG: LLVMFuzzerTestOneInput pipeline path (call #" << testInputCallCount << ")\n";
+    FUZZER_DEBUG_LOG("DEBUG: LLVMFuzzerTestOneInput pipeline path (call #" << testInputCallCount << ")\n");
     
     minihlsl::fuzzer::IncrementalFuzzingConfig pipelineConfig;
     pipelineConfig.maxIncrements = 5;
@@ -2496,7 +2497,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     auto result = pipeline.run(data, size);
     
     // Could use result.totalBugsFound to guide libFuzzer
-    std::cout << "DEBUG: LLVMFuzzerTestOneInput returning early\n";
+    FUZZER_DEBUG_LOG("DEBUG: LLVMFuzzerTestOneInput returning early\n");
     return 0;
   }
   

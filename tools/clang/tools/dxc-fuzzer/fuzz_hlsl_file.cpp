@@ -4,6 +4,7 @@
 #include "MiniHLSLInterpreterFuzzer.h"
 #include "MiniHLSLInterpreterTraceCapture.h"
 #include "MiniHLSLValidator.h"
+#include "FuzzerDebug.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
