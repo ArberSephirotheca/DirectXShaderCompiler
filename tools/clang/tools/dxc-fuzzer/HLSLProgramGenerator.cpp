@@ -151,6 +151,7 @@ void IncrementalGenerator::handleMutationBufferRequirements(
             std::cerr << "DEBUG: Buffer added, total buffers: " << state.program.globalBuffers.size() << "\n";
             
             // Add initialization at the beginning
+            std::cerr << "DEBUG: Adding _participant_check_sum initialization\n";
             auto tidX = std::make_unique<interpreter::DispatchThreadIdExpr>(0);
             auto zero = std::make_unique<interpreter::LiteralExpr>(0);
             state.program.statements.insert(
@@ -158,7 +159,11 @@ void IncrementalGenerator::handleMutationBufferRequirements(
                 std::make_unique<interpreter::ArrayAssignStmt>(
                     "_participant_check_sum", std::move(tidX), std::move(zero))
             );
+        } else {
+            std::cerr << "DEBUG: _participant_check_sum buffer already exists, skipping initialization\n";
         }
+        // If buffer already exists, we assume initialization was already added in the first round
+        // No need to add initialization again
     }
 }
 
@@ -270,44 +275,6 @@ ProgramState IncrementalGenerator::generateIncremental(const uint8_t* data, size
                 
                 // Handle buffer requirements for the mutation
                 handleMutationBufferRequirements(mutatedStmt.get(), state);
-                
-                // Also check if the statement uses _participant_check_sum directly
-                // (for when metadata isn't properly propagated)
-                std::string stmtStr = mutatedStmt->toString();
-                if (stmtStr.find("_participant_check_sum") != std::string::npos) {
-                    std::cerr << "DEBUG: Statement uses _participant_check_sum buffer\n";
-                    
-                    // Add buffer if it doesn't exist
-                    bool hasBuffer = false;
-                    for (const auto& buffer : state.program.globalBuffers) {
-                        if (buffer.name == "_participant_check_sum") {
-                            hasBuffer = true;
-                            break;
-                        }
-                    }
-                    
-                    if (!hasBuffer) {
-                        std::cerr << "DEBUG: Adding _participant_check_sum buffer (fallback)\n";
-                        interpreter::GlobalBufferDecl participantBuffer;
-                        participantBuffer.name = "_participant_check_sum";
-                        participantBuffer.bufferType = "RWBuffer";
-                        participantBuffer.elementType = interpreter::HLSLType::Uint;
-                        participantBuffer.size = state.program.getTotalThreads();
-                        participantBuffer.registerIndex = 1;
-                        participantBuffer.isReadWrite = true;
-                        state.program.globalBuffers.push_back(participantBuffer);
-                        std::cerr << "DEBUG: Buffer added, total buffers: " << state.program.globalBuffers.size() << "\n";
-                        
-                        // Add initialization at the beginning
-                        auto tidX = std::make_unique<interpreter::DispatchThreadIdExpr>(0);
-                        auto zero = std::make_unique<interpreter::LiteralExpr>(0);
-                        state.program.statements.insert(
-                            state.program.statements.begin(),
-                            std::make_unique<interpreter::ArrayAssignStmt>(
-                                "_participant_check_sum", std::move(tidX), std::move(zero))
-                        );
-                    }
-                }
                 
                 state.program.statements.push_back(std::move(mutatedStmt));
                 

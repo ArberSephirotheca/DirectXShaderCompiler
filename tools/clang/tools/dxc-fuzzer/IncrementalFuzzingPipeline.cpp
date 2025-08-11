@@ -91,7 +91,8 @@ bool IncrementalFuzzingPipeline::validateExecution(const interpreter::Program& p
 PipelineResult::IncrementResult IncrementalFuzzingPipeline::testMutations(
     const interpreter::Program& program,
     const ExecutionTrace& goldenTrace,
-    interpreter::Program& mutatedProgram) {
+    interpreter::Program& mutatedProgram,
+    const ProgramState& state) {
     
     PipelineResult::IncrementResult result;
     result.baseProgramStr = serializeProgramToString(program);
@@ -101,7 +102,7 @@ PipelineResult::IncrementResult IncrementalFuzzingPipeline::testMutations(
     fuzzConfig.maxMutants = config.mutantsPerIncrement;
     fuzzConfig.enableLogging = config.enableLogging;
     // fuzzConfig.stopOnFirstBug = false; // Not available in FuzzingConfig
-    
+
     // Run fuzzing with captured trace
     try {
         // The fuzzer expects to have the golden trace available
@@ -127,7 +128,12 @@ PipelineResult::IncrementResult IncrementalFuzzingPipeline::testMutations(
         mutatedProgram = interpreter::Program();
         
         // Actually run the fuzzer and get the mutated program
-        mutatedProgram = fuzzer->fuzzProgram(program, fuzzConfig);
+        // Pass the generation history so it only mutates new statements
+        size_t currentRound = 0;
+        if (!state.history.empty()) {
+            currentRound = state.history.back().roundNumber;
+        }
+        mutatedProgram = fuzzer->fuzzProgram(program, fuzzConfig, state.history, currentRound);
         
         // Track results
         result.mutantsTested = fuzzConfig.maxMutants;
@@ -236,7 +242,7 @@ PipelineResult IncrementalFuzzingPipeline::run(const uint8_t* data, size_t size)
         
         // Step 3: Apply mutations and test
         interpreter::Program mutatedProgram;
-        incrementResult = testMutations(state.program, goldenTrace, mutatedProgram);
+        incrementResult = testMutations(state.program, goldenTrace, mutatedProgram, state);
         
         // Check if mutation was successful
         bool mutationSucceeded = mutatedProgram.statements.size() > 0;

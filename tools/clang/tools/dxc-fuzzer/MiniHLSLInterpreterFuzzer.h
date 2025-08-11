@@ -35,6 +35,7 @@ namespace fuzzer {
 struct ExecutionTrace;
 class MutationStrategy;
 class SemanticValidator;
+struct GenerationRound;
 
 // ===== Execution Trace Data Structures =====
 
@@ -579,6 +580,12 @@ public:
   interpreter::Program fuzzProgram(const interpreter::Program& seedProgram, 
                   const FuzzingConfig& config);
   
+  // Version that accepts generation history to only mutate new statements
+  interpreter::Program fuzzProgram(const interpreter::Program& seedProgram, 
+                  const FuzzingConfig& config,
+                  const std::vector<GenerationRound>& history,
+                  size_t currentRound);
+  
   // For libFuzzer integration
   std::unique_ptr<interpreter::Program> mutateAST(
     const interpreter::Program& program, 
@@ -592,6 +599,13 @@ private:
     const interpreter::Program& program,
     MutationStrategy* strategy,
     const ExecutionTrace& trace);
+    
+  std::vector<interpreter::Program> generateMutants(
+    const interpreter::Program& program,
+    MutationStrategy* strategy,
+    const ExecutionTrace& trace,
+    const std::vector<GenerationRound>& history,
+    size_t currentRound);
   
   std::unique_ptr<interpreter::Statement> applyMutationToStatement(
     const interpreter::Statement* stmt,

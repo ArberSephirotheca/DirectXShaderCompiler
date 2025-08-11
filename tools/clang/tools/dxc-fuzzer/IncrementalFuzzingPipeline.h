@@ -60,7 +60,8 @@ private:
     PipelineResult::IncrementResult testMutations(
         const interpreter::Program& program,
         const ExecutionTrace& goldenTrace,
-        interpreter::Program& mutatedProgram);
+        interpreter::Program& mutatedProgram,
+        const ProgramState& state);
     
 public:
     IncrementalFuzzingPipeline(const IncrementalFuzzingConfig& cfg = {});

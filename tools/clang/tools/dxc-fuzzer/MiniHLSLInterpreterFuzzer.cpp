@@ -1719,6 +1719,162 @@ interpreter::Program TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& 
   }
 }
 
+// Version that accepts generation history to only mutate new statements
+interpreter::Program TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& seedProgram, 
+                                  const FuzzingConfig& config,
+                                  const std::vector<GenerationRound>& history,
+                                  size_t currentRound) {
+  
+  FUZZER_DEBUG_LOG("Starting trace-guided fuzzing with generation history...\n");
+  FUZZER_DEBUG_LOG("Current round: " << currentRound << "\n");
+  FUZZER_DEBUG_LOG("History has " << history.size() << " rounds\n");
+  
+  // Find which statements were added in the current round
+  std::set<size_t> currentRoundStatements;
+  for (const auto& round : history) {
+    if (round.roundNumber == currentRound) {
+      for (size_t idx : round.addedStatementIndices) {
+        currentRoundStatements.insert(idx);
+      }
+      FUZZER_DEBUG_LOG("Current round added " << round.addedStatementIndices.size() << " statements\n");
+      break;
+    }
+  }
+  
+  if (currentRoundStatements.empty()) {
+    FUZZER_DEBUG_LOG("No new statements in current round, returning original program\n");
+    // Can't copy Program, need to clone it
+    interpreter::Program result;
+    result.numThreadsX = seedProgram.numThreadsX;
+    result.numThreadsY = seedProgram.numThreadsY;
+    result.numThreadsZ = seedProgram.numThreadsZ;
+    result.globalBuffers = seedProgram.globalBuffers;
+    result.entryInputs = seedProgram.entryInputs;
+    result.waveSizePreferred = seedProgram.waveSizePreferred;
+    result.waveSizeMin = seedProgram.waveSizeMin;
+    result.waveSizeMax = seedProgram.waveSizeMax;
+    for (const auto& stmt : seedProgram.statements) {
+      result.statements.push_back(stmt->clone());
+    }
+    return result;
+  }
+  
+  // Prepare program for mutation
+  interpreter::Program preparedProgram = prepareProgramForMutation(seedProgram);
+  
+  // Create trace capture interpreter
+  TraceCaptureInterpreter captureInterpreter;
+  
+  // Execute seed and capture golden trace
+  FUZZER_DEBUG_LOG("Capturing golden trace...\n");
+  
+  // Use sequential ordering for deterministic execution
+  interpreter::ThreadOrdering ordering = interpreter::ThreadOrdering::sequential(preparedProgram.getTotalThreads());
+  
+  auto goldenResult = captureInterpreter.executeAndCaptureTrace(
+    preparedProgram, ordering, config.waveSize);
+  
+  // Check if execution succeeded
+  if (!goldenResult.isValid()) {
+    std::cerr << "Golden execution failed: " << goldenResult.errorMessage << "\n";
+    return preparedProgram;
+  }
+  
+  const ExecutionTrace& goldenTrace = *captureInterpreter.getTrace();
+  
+  FUZZER_DEBUG_LOG("Golden trace captured:\n");
+  FUZZER_DEBUG_LOG("  - Wave operations: " << goldenTrace.waveOperations.size() << "\n");
+  
+  // Apply mutations only to new statements
+  size_t mutantsTested = 0;
+  size_t bugsFound = 0;
+  
+  // Find the specific mutation strategies we want to apply
+  MutationStrategy* waveParticipantStrategy = nullptr;
+  MutationStrategy* lanePermutationStrategy = nullptr;
+  
+  for (auto& strategy : mutationStrategies) {
+    if (strategy->getName() == "WaveParticipantTracking") {
+      waveParticipantStrategy = strategy.get();
+    } else if (strategy->getName() == "LanePermutation") {
+      lanePermutationStrategy = strategy.get();
+    }
+  }
+  
+  // Track the final mutated program - start with a clone of preparedProgram
+  interpreter::Program finalMutant;
+  finalMutant.numThreadsX = preparedProgram.numThreadsX;
+  finalMutant.numThreadsY = preparedProgram.numThreadsY;
+  finalMutant.numThreadsZ = preparedProgram.numThreadsZ;
+  finalMutant.globalBuffers = preparedProgram.globalBuffers;
+  finalMutant.entryInputs = preparedProgram.entryInputs;
+  finalMutant.waveSizePreferred = preparedProgram.waveSizePreferred;
+  finalMutant.waveSizeMin = preparedProgram.waveSizeMin;
+  finalMutant.waveSizeMax = preparedProgram.waveSizeMax;
+  for (const auto& stmt : preparedProgram.statements) {
+    finalMutant.statements.push_back(stmt->clone());
+  }
+  
+  // Apply WaveParticipantTracking first
+  if (waveParticipantStrategy) {
+    FUZZER_DEBUG_LOG("\nApplying WaveParticipantTracking mutation to new statements only...\n");
+    
+    auto mutants = generateMutants(preparedProgram, waveParticipantStrategy, goldenTrace, history, currentRound);
+    
+    if (!mutants.empty()) {
+      // Take the first mutant (WaveParticipantTracking generates only one)
+      auto waveTrackingMutant = std::move(mutants[0]);
+      
+      // Now apply LanePermutation to the already mutated program
+      if (lanePermutationStrategy) {
+        FUZZER_DEBUG_LOG("\nApplying LanePermutation mutation on top of WaveParticipantTracking...\n");
+        
+        // Generate lane permutation mutants from the wave tracking mutant
+        auto finalMutants = generateMutants(waveTrackingMutant, lanePermutationStrategy, goldenTrace, history, currentRound);
+        
+        if (!finalMutants.empty()) {
+          finalMutant = std::move(finalMutants[0]);
+          mutantsTested++;
+          
+          // Test the mutant
+          try {
+            TraceCaptureInterpreter mutantInterpreter;
+            auto mutantResult = mutantInterpreter.executeAndCaptureTrace(
+              finalMutant, ordering, config.waveSize);
+            
+            if (!mutantResult.isValid()) {
+              FUZZER_DEBUG_LOG("Mutant execution failed: " << mutantResult.errorMessage << "\n");
+            } else {
+              const ExecutionTrace& mutantTrace = *mutantInterpreter.getTrace();
+              
+              // Validate semantic equivalence
+              auto validation = validator->validate(goldenTrace, mutantTrace);
+              
+              if (!validation.isEquivalent) {
+                bugsFound++;
+                bugReporter->reportBug(preparedProgram, finalMutant, goldenTrace, 
+                                     mutantTrace, validation);
+              }
+            }
+          } catch (const std::exception& e) {
+            bugsFound++;
+            bugReporter->reportCrash(preparedProgram, finalMutant, e);
+          }
+        } else {
+          // Just use the wave tracking mutant
+          finalMutant = std::move(waveTrackingMutant);
+        }
+      } else {
+        finalMutant = std::move(waveTrackingMutant);
+      }
+    }
+  }
+  
+  logSummary(mutantsTested, bugsFound);
+  
+  return finalMutant;
+}
+
 std::unique_ptr<interpreter::Program> TraceGuidedFuzzer::mutateAST(
     const interpreter::Program& program, 
     unsigned int seed) {
@@ -2072,6 +2228,188 @@ std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
       mutant.numThreadsY = program.numThreadsY;
       mutant.numThreadsZ = program.numThreadsZ;
       mutant.entryInputs = program.entryInputs;  // Copy entry function parameters
+      
+      // Clone all statements except the mutated one
+      for (size_t j = 0; j < program.statements.size(); ++j) {
+        if (j == i) {
+          mutant.statements.push_back(std::move(mutatedStmt));
+        } else {
+          mutant.statements.push_back(program.statements[j]->clone());
+        }
+      }
+      
+      mutants.push_back(std::move(mutant));
+    }
+  }
+  
+  return mutants;
+}
+
+// Version that only generates mutants for statements added in the current round
+std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
+    const interpreter::Program& program,
+    MutationStrategy* strategy,
+    const ExecutionTrace& trace,
+    const std::vector<GenerationRound>& history,
+    size_t currentRound) {
+  
+  std::vector<interpreter::Program> mutants;
+  
+  // Find which statements were added in the current round
+  std::set<size_t> currentRoundStatements;
+  for (const auto& round : history) {
+    if (round.roundNumber == currentRound) {
+      for (size_t idx : round.addedStatementIndices) {
+        currentRoundStatements.insert(idx);
+      }
+      break;
+    }
+  }
+  
+  if (currentRoundStatements.empty()) {
+    return mutants;
+  }
+  
+  FUZZER_DEBUG_LOG("Generating mutants for " << currentRoundStatements.size() 
+                   << " statements from round " << currentRound << "\n");
+  
+  // Special handling for WaveParticipantTrackingMutation
+  if (dynamic_cast<WaveParticipantTrackingMutation*>(strategy)) {
+    
+    // Check if any of the new statements contain wave operations
+    bool hasNewWaveOps = false;
+    std::function<bool(const interpreter::Statement*)> hasWaveOpRecursive;
+    hasWaveOpRecursive = [&hasWaveOpRecursive](const interpreter::Statement* stmt) -> bool {
+      // Check AssignStmt
+      if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
+        if (dynamic_cast<const interpreter::WaveActiveOp*>(assign->getExpression())) {
+          return true;
+        }
+      } 
+      // Check VarDeclStmt
+      else if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
+        if (varDecl->getInit() && 
+            dynamic_cast<const interpreter::WaveActiveOp*>(varDecl->getInit())) {
+          return true;
+        }
+      }
+      // Check IfStmt
+      else if (auto* ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt)) {
+        for (const auto& s : ifStmt->getThenBlock()) {
+          if (hasWaveOpRecursive(s.get())) return true;
+        }
+        for (const auto& s : ifStmt->getElseBlock()) {
+          if (hasWaveOpRecursive(s.get())) return true;
+        }
+      } else if (auto* forStmt = dynamic_cast<const interpreter::ForStmt*>(stmt)) {
+        for (const auto& s : forStmt->getBody()) {
+          if (hasWaveOpRecursive(s.get())) return true;
+        }
+      } else if (auto* whileStmt = dynamic_cast<const interpreter::WhileStmt*>(stmt)) {
+        for (const auto& s : whileStmt->getBody()) {
+          if (hasWaveOpRecursive(s.get())) return true;
+        }
+      } else if (auto* doWhileStmt = dynamic_cast<const interpreter::DoWhileStmt*>(stmt)) {
+        for (const auto& s : doWhileStmt->getBody()) {
+          if (hasWaveOpRecursive(s.get())) return true;
+        }
+      }
+      return false;
+    };
+    
+    for (size_t i = 0; i < program.statements.size(); ++i) {
+      // Only check statements from the current round
+      if (currentRoundStatements.find(i) != currentRoundStatements.end()) {
+        if (hasWaveOpRecursive(program.statements[i].get())) {
+          hasNewWaveOps = true;
+          break;
+        }
+      }
+    }
+    
+    if (hasNewWaveOps) {
+      FUZZER_DEBUG_LOG("Found wave operations in new statements, applying WaveParticipantTracking\n");
+      
+      // Create a single mutant
+      interpreter::Program mutant;
+      mutant.numThreadsX = program.numThreadsX;
+      mutant.numThreadsY = program.numThreadsY;
+      mutant.numThreadsZ = program.numThreadsZ;
+      mutant.entryInputs = program.entryInputs;
+      mutant.globalBuffers = program.globalBuffers;
+      
+      // Add the participant tracking buffer if it doesn't exist
+      bool hasParticipantBuffer = false;
+      for (const auto& buffer : mutant.globalBuffers) {
+        if (buffer.name == "_participant_check_sum") {
+          hasParticipantBuffer = true;
+          break;
+        }
+      }
+      
+      if (!hasParticipantBuffer) {
+        minihlsl::interpreter::GlobalBufferDecl participantBuffer;
+        participantBuffer.name = "_participant_check_sum";
+        participantBuffer.bufferType = "RWBuffer";
+        participantBuffer.elementType = minihlsl::interpreter::HLSLType::Uint;
+        participantBuffer.size = program.getTotalThreads();
+        participantBuffer.registerIndex = 1;
+        participantBuffer.isReadWrite = true;
+        mutant.globalBuffers.push_back(participantBuffer);
+        
+        // Add buffer initialization
+        auto tidX = std::make_unique<interpreter::VariableExpr>("tid.x");
+        auto zero = std::make_unique<interpreter::LiteralExpr>(0);
+        mutant.statements.push_back(std::make_unique<interpreter::ArrayAssignStmt>(
+            "_participant_check_sum", std::move(tidX), std::move(zero)));
+      }
+      
+      // Apply mutation only to statements from the current round
+      for (size_t i = 0; i < program.statements.size(); ++i) {
+        const auto& stmt = program.statements[i];
+        bool mutationApplied = false;
+        
+        if (currentRoundStatements.find(i) != currentRoundStatements.end()) {
+          // This statement is from the current round, try to mutate it
+          auto mutatedStmt = applyMutationToStatement(
+              stmt.get(), strategy, trace, mutationApplied);
+          
+          if (mutationApplied) {
+            mutant.statements.push_back(std::move(mutatedStmt));
+          } else {
+            mutant.statements.push_back(stmt->clone());
+          }
+        } else {
+          // Clone statements from previous rounds without mutation
+          mutant.statements.push_back(stmt->clone());
+        }
+      }
+      
+      mutants.push_back(std::move(mutant));
+    }
+    return mutants;
+  }
+  
+  // Default behavior for other mutation strategies
+  // Try to apply the mutation strategy only to statements from the current round
+  for (size_t i = 0; i < program.statements.size(); ++i) {
+    // Skip statements not from the current round
+    if (currentRoundStatements.find(i) == currentRoundStatements.end()) {
+      continue;
+    }
+    
+    bool mutationApplied = false;
+    auto mutatedStmt = applyMutationToStatement(
+        program.statements[i].get(), strategy, trace, mutationApplied);
+    
+    if (mutationApplied) {
+      // Create a new program with the mutated statement
+      interpreter::Program mutant;
+      mutant.numThreadsX = program.numThreadsX;
+      mutant.numThreadsY = program.numThreadsY;
+      mutant.numThreadsZ = program.numThreadsZ;
+      mutant.entryInputs = program.entryInputs;
+      mutant.globalBuffers = program.globalBuffers;
       
       // Clone all statements except the mutated one
       for (size_t j = 0; j < program.statements.size(); ++j) {
