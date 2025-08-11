@@ -27,13 +27,13 @@
 // - ENABLE_BLOCK_DEBUG: Shows block creation, merging, and convergence
 
 static constexpr bool ENABLE_INTERPRETER_DEBUG =
-    false; // Set to true to enable detailed execution tracing
+    true; // Set to true to enable detailed execution tracing
 static constexpr bool ENABLE_WAVE_DEBUG =
-    false; // Set to true to enable wave operation tracing
+    true; // Set to true to enable wave operation tracing
 static constexpr bool ENABLE_BLOCK_DEBUG =
-    false; // Set to true to enable block lifecycle tracing
+    true; // Set to true to enable block lifecycle tracing
 static constexpr bool ENABLE_PARSER_DEBUG =
-    false; // Set to true to enable AST conversion debug output
+    true; // Set to true to enable AST conversion debug output
 
 #define INTERPRETER_DEBUG_LOG(msg)                                             \
   do {                                                                         \
@@ -2303,8 +2303,10 @@ Result<Unit, ExecutionError> ForStmt::execute_result(LaneContext &lane,
               << " from statement " << ourEntry.statementIndex
               << " (Result-based)" << std::endl;
 
-    // Set up iteration-specific blocks using non-throwing helper method
-    setupIterationBlocks(lane, wave, tg, ourStackIndex, headerBlockId);
+    // Only set up iteration blocks if we're starting the body (statement index 0)
+    if (ourEntry.statementIndex == 0) {
+      setupIterationBlocks(lane, wave, tg, ourStackIndex, headerBlockId);
+    }
 
     // Execute body statements using Result-based helper method
     TRY_RESULT(executeBodyStatements_result(lane, wave, tg, ourStackIndex,
@@ -3306,7 +3308,7 @@ ExecutionResult MiniHLSLInterpreter::executeWithOrdering(
 
   uint32_t orderingIndex = 0;
   uint32_t maxIterations = program.getTotalThreads() *
-                           program.statements.size() * 30; // Safety limit
+                           program.statements.size() * 100; // Safety limit
   uint32_t iteration = 0;
 
   // Cooperative scheduling main loop
@@ -5590,8 +5592,10 @@ Result<Unit, ExecutionError> WhileStmt::execute_result(LaneContext &lane,
       PARSER_DEBUG_LOG(var.first << "=" << var.second.toString() << " ");
     }
 
-    // Set up iteration-specific blocks using non-throwing helper method
-    setupIterationBlocks(lane, wave, tg, ourStackIndex, headerBlockId);
+    // Only set up iteration blocks if we're starting the body (statement index 0)
+    if (ourEntry.statementIndex == 0) {
+      setupIterationBlocks(lane, wave, tg, ourStackIndex, headerBlockId);
+    }
 
     // Execute body statements using Result-based helper method
     TRY_RESULT(executeBodyStatements_result(lane, wave, tg, ourStackIndex,
@@ -6478,8 +6482,10 @@ DoWhileStmt::execute_result(LaneContext &lane, WaveContext &wave,
               << " from statement " << ourEntry.statementIndex
               << " (Result-based)" << std::endl;
 
-    // Setup iteration blocks if needed
-    setupIterationBlocks(lane, wave, tg, ourStackIndex, headerBlockId);
+    // Only set up iteration blocks if we're starting the body (statement index 0)
+    if (ourEntry.statementIndex == 0) {
+      setupIterationBlocks(lane, wave, tg, ourStackIndex, headerBlockId);
+    }
 
     // Execute body statements using Result-based helper method
     TRY_RESULT(executeBodyStatements_result(lane, wave, tg, ourStackIndex,
