@@ -1,16 +1,12 @@
 // totalSum = 16
 [numthreads(4, 1, 1)]
 void main(uint3 tid : SV_DispatchThreadID) {
-    uint laneId = WaveGetLaneIndex();
   uint result = 0;
-  uint i = 0;
-  while (i < 4) {
-    result += 1;
-  if (laneId < 4) {
-    result = WaveActiveSum(1);
+  uint counter0 = 0;
+  while ((counter0 < 4)) {
+  counter0 = (counter0 + 1);
+  if (((WaveGetLaneIndex() < 4) || (WaveGetLaneIndex() >= 22))) {
+    result = WaveActiveMin(result);
 }
-  i += 1;
 }
-  uint totalSum = WaveActiveSum(result);
-
 }

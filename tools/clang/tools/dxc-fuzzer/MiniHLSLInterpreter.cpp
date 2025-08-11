@@ -3285,6 +3285,12 @@ ExecutionResult MiniHLSLInterpreter::executeWithOrdering(
     const Program &program, const ThreadOrdering &ordering, uint32_t waveSize) {
   ExecutionResult result;
 
+  // Use sequential ordering if no ordering is specified
+  ThreadOrdering effectiveOrdering = ordering;
+  if (ordering.executionOrder.empty()) {
+    effectiveOrdering = ThreadOrdering::sequential(program.getTotalThreads());
+  }
+
   // Create threadgroup context
   // Use the effective wave size from the program, which considers WaveSize attributes
   uint32_t effectiveWaveSize = program.getEffectiveWaveSize(waveSize);
@@ -3360,7 +3366,7 @@ ExecutionResult MiniHLSLInterpreter::executeWithOrdering(
     }
 
     // Select next thread to execute according to ordering
-    ThreadId nextTid = selectNextThread(readyThreads, ordering, orderingIndex);
+    ThreadId nextTid = selectNextThread(readyThreads, effectiveOrdering, orderingIndex);
 
     // Execute one step of the selected thread
     bool continueExecution = executeOneStep(nextTid, program, tgContext);
