@@ -980,6 +980,32 @@ std::string BinaryOpExpr::toString() const {
          right_->toString() + ")";
 }
 
+// AssignExpr implementation
+AssignExpr::AssignExpr(const std::string& varName, std::unique_ptr<Expression> value)
+    : Expression(""), varName_(varName), value_(std::move(value)) {}
+
+Result<Value, ExecutionError>
+AssignExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
+                           ThreadgroupContext &tg) const {
+  // Evaluate the value expression
+  auto val = TRY_RESULT(value_->evaluate_result(lane, wave, tg), Value, ExecutionError);
+  
+  // Perform the assignment (side effect)
+  lane.variables[varName_] = val;
+  
+  // Call hook if available
+  if (tg.interpreter) {
+    tg.interpreter->onVariableAccess(lane, wave, tg, varName_, true, val);
+  }
+  
+  // Return the assigned value (like C/C++ assignment expressions)
+  return Ok<Value, ExecutionError>(val);
+}
+
+std::string AssignExpr::toString() const {
+  return varName_ + " = " + value_->toString();
+}
+
 UnaryOpExpr::UnaryOpExpr(std::unique_ptr<Expression> expr, OpType op)
     : Expression(""), expr_(std::move(expr)), op_(op) {}
 
@@ -4825,7 +4851,11 @@ MiniHLSLInterpreter::convertForStatement(const clang::ForStmt *forStmt,
   // Convert the increment expression
   std::unique_ptr<Expression> increment = nullptr;
   if (auto incExpr = forStmt->getInc()) {
+    INTERPRETER_DEBUG_LOG("Converting for loop increment expression\n");
     increment = convertExpression(incExpr, context);
+    if (!increment) {
+      INTERPRETER_DEBUG_LOG("Failed to convert for loop increment expression\n");
+    }
   }
 
   // Convert the loop body
@@ -5088,7 +5118,42 @@ MiniHLSLInterpreter::convertExpression(const clang::Expr *expr,
   
 
   // Handle different expression types
-  if (auto binOp = clang::dyn_cast<clang::BinaryOperator>(expr)) {
+  // Check CompoundAssignOperator first since it inherits from BinaryOperator
+  if (auto compoundOp = clang::dyn_cast<clang::CompoundAssignOperator>(expr)) {
+    // For compound assignment in expression context (e.g., i0 += 1 in for loop)
+    // Convert it to the equivalent binary expression: i0 + 1
+    auto lhs = convertExpression(compoundOp->getLHS(), context);
+    auto rhs = convertExpression(compoundOp->getRHS(), context);
+    
+    if (!lhs || !rhs) {
+      INTERPRETER_DEBUG_LOG("Failed to convert compound assignment operands\n");
+      return nullptr;
+    }
+    
+    // Map compound assignment to binary operation
+    BinaryOpExpr::OpType opType;
+    switch (compoundOp->getOpcode()) {
+    case clang::BO_AddAssign:
+      opType = BinaryOpExpr::Add;
+      break;
+    case clang::BO_SubAssign:
+      opType = BinaryOpExpr::Sub;
+      break;
+    case clang::BO_MulAssign:
+      opType = BinaryOpExpr::Mul;
+      break;
+    case clang::BO_DivAssign:
+      opType = BinaryOpExpr::Div;
+      break;
+    default:
+      INTERPRETER_DEBUG_LOG("Unsupported compound assignment in expression context\n");
+      return nullptr;
+    }
+    
+    // Return the binary expression (without the assignment side effect)
+    // The ForStmt will handle the actual assignment
+    return makeBinaryOp(std::move(lhs), std::move(rhs), opType);
+  } else if (auto binOp = clang::dyn_cast<clang::BinaryOperator>(expr)) {
     auto result = convertBinaryExpression(binOp, context);
     if (result) {
       HLSLType hlslType = HLSLTypeInfo::fromString(exprType);
@@ -5414,6 +5479,14 @@ MiniHLSLInterpreter::convertBinaryExpression(const clang::BinaryOperator *binOp,
   case clang::BO_Xor:
     opType = BinaryOpExpr::Xor;
     break;
+  case clang::BO_Assign:
+    // Assignment in expression context (e.g., in for loop increment)
+    if (auto varExpr = clang::dyn_cast<clang::DeclRefExpr>(binOp->getLHS())) {
+      std::string varName = varExpr->getDecl()->getName().str();
+      return std::make_unique<AssignExpr>(varName, std::move(rhs));
+    }
+    INTERPRETER_DEBUG_LOG("Assignment expression with non-variable LHS\n");
+    return nullptr;
   default:
     INTERPRETER_DEBUG_LOG("Unsupported binary operator\n");
     return nullptr;

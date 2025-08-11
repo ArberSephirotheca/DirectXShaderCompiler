@@ -1301,6 +1301,26 @@ public:
   OpType getOp() const { return op_; }
 };
 
+// Assignment expression that performs assignment as a side effect
+// and returns the assigned value
+class AssignExpr : public Expression {
+private:
+  std::string varName_;
+  std::unique_ptr<Expression> value_;
+
+public:
+  AssignExpr(const std::string& varName, std::unique_ptr<Expression> value);
+  Result<Value, ExecutionError>
+  evaluate_result(LaneContext &lane, WaveContext &wave,
+                  ThreadgroupContext &tg) const override;
+  bool isDeterministic() const override { return false; } // Has side effects
+  std::string toString() const override;
+  
+  std::unique_ptr<Expression> clone() const override {
+    return std::make_unique<AssignExpr>(varName_, value_ ? value_->clone() : nullptr);
+  }
+};
+
 class UnaryOpExpr : public Expression {
 public:
   enum OpType {
