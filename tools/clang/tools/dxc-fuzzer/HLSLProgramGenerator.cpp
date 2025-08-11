@@ -33,8 +33,7 @@ std::vector<const interpreter::WaveActiveOp*> findWaveOpsInStatement(const inter
 // IncrementalGenerator implementation
 IncrementalGenerator::IncrementalGenerator() 
     : cfGenerator(std::make_unique<ControlFlowGenerator>()),
-      mutationTracker(std::make_unique<MutationTracker>()),
-      semanticMutator(std::make_unique<SemanticPreservingMutator>(*mutationTracker)) {
+      mutationTracker(std::make_unique<MutationTracker>()) {
 }
 
 IncrementalGenerator::~IncrementalGenerator() = default;

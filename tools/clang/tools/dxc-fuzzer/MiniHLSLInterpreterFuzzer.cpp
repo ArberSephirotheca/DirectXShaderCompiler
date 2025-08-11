@@ -1574,6 +1574,15 @@ void TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& seedProgram,
   // Execute seed and capture golden trace
   std::cout << "Capturing golden trace...\n";
   
+  // Check if we should print programs (controlled by environment variable)
+  static bool printPrograms = getenv("FUZZ_PRINT_PROGRAMS") != nullptr;
+  
+  if (printPrograms) {
+    std::cout << "\n--- Original Program ---\n";
+    std::cout << serializeProgramToString(preparedProgram);
+    std::cout << "--- End Original Program ---\n\n";
+  }
+  
   interpreter::ThreadOrdering ordering;
   // Use default source order
   
@@ -1626,6 +1635,7 @@ void TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& seedProgram,
       
       std::cout << "\n--- Mutant Program ---\n";
       std::cout << serializeProgramToString(mutant);
+      std::cout << "--- End Mutant Program ---\n\n";
       
       try {
         // Execute mutant

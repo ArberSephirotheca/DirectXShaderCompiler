@@ -103,15 +103,13 @@ set_target_properties(minihlsl-standalone PROPERTIES
 add_executable(minihlsl-fuzzer
   MiniHLSLInterpreter.cpp
   MiniHLSLInterpreterFuzzer.cpp
-  # MiniHLSLInterpreterFuzzerMutations.cpp  # Commented out - mutations are in MiniHLSLInterpreterFuzzer.cpp
   MiniHLSLInterpreterTraceCapture.cpp
-  MiniHLSLValidator.cpp  # Added to support loadSeedCorpus
-  HLSLProgramGenerator.cpp  # Added for random program generation
+  MiniHLSLValidator.cpp  # For loadSeedCorpus
+  HLSLProgramGenerator.cpp  # For random program generation when FUZZ_GENERATE_RANDOM=1
   HLSLProgramGeneratorUtils.cpp
   HLSLParticipantPatterns.cpp
-  HLSLMutationTracker.cpp
-  HLSLSemanticMutator.cpp
-  # minihlsl_fuzzer_main.cpp  # Remove custom main - libFuzzer provides main
+  HLSLMutationTracker.cpp  # Needed by HLSLProgramGenerator
+  # HLSLSemanticMutator.cpp  # Not needed - mutations are in MiniHLSLInterpreterFuzzer.cpp
 )
 target_link_libraries(minihlsl-fuzzer
   # Use pthread for std::thread and std::mutex
@@ -145,7 +143,6 @@ set_target_properties(minihlsl-fuzzer PROPERTIES
 add_executable(fuzz-hlsl-file
   MiniHLSLInterpreter.cpp
   MiniHLSLInterpreterFuzzer.cpp
-  MiniHLSLInterpreterFuzzerMutations.cpp
   MiniHLSLInterpreterTraceCapture.cpp
   MiniHLSLValidator.cpp
   fuzz_hlsl_file.cpp
@@ -170,39 +167,7 @@ set_target_properties(fuzz-hlsl-file PROPERTIES
   CXX_STANDARD_REQUIRED ON
 )
 
-# Incremental HLSL fuzzer with control flow generation
-add_executable(fuzz-hlsl-incremental
-  MiniHLSLInterpreter.cpp
-  MiniHLSLInterpreterFuzzerMutations.cpp
-  MiniHLSLInterpreterTraceCapture.cpp
-  MiniHLSLValidator.cpp
-  HLSLProgramGenerator.cpp
-  HLSLProgramGeneratorUtils.cpp
-  HLSLParticipantPatterns.cpp
-  HLSLMutationTracker.cpp
-  HLSLSemanticMutator.cpp
-  fuzz_hlsl_incremental.cpp
-)
-
-target_link_libraries(fuzz-hlsl-incremental
-  Threads::Threads
-  dxcompiler
-  clangAST
-  clangBasic
-  clangFrontend
-  clangLex
-  clangParse
-  clangSema
-  LLVMSupport
-  LLVMOption
-  LLVMCore
-)
-
-# Set fuzzing flags for the incremental fuzzer
-set_target_properties(fuzz-hlsl-incremental PROPERTIES
-  CXX_STANDARD 17
-  CXX_STANDARD_REQUIRED ON
-  COMPILE_FLAGS "-fsanitize=address,fuzzer -fno-omit-frame-pointer"
-  LINK_FLAGS    "-fsanitize=address,fuzzer"
-)
+# minihlsl-fuzzer supports two modes:
+# 1. Traditional seed corpus mode (default): ./bin/minihlsl-fuzzer seeds -runs=1000
+# 2. Random program generation mode: FUZZ_GENERATE_RANDOM=1 ./bin/minihlsl-fuzzer -runs=1000
 
