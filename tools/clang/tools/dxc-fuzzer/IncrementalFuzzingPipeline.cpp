@@ -49,11 +49,8 @@ bool IncrementalFuzzingPipeline::validateExecution(const interpreter::Program& p
         // Use sequential thread ordering
         interpreter::ThreadOrdering ordering = interpreter::ThreadOrdering::sequential(program.getTotalThreads());
         
-        // Execute with default wave size
-        uint32_t waveSize = 32;
-        if (program.waveSize > 0) {
-            waveSize = program.waveSize;
-        }
+        // Execute with effective wave size
+        uint32_t waveSize = program.getEffectiveWaveSize(32);
         
         // Debug output for execution parameters
         std::cout << "\n=== Execution Parameters ===\n";

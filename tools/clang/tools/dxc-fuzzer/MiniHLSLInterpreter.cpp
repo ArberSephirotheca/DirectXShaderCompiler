@@ -990,6 +990,10 @@ AssignExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
   // Evaluate the value expression
   auto val = TRY_RESULT(value_->evaluate_result(lane, wave, tg), Value, ExecutionError);
   
+  INTERPRETER_DEBUG_LOG("DEBUG: AssignExpr - Lane " << lane.laneId 
+                        << " assigning " << val.toString() 
+                        << " to variable '" << varName_ << "'");
+  
   // Perform the assignment (side effect)
   lane.variables[varName_] = val;
   
@@ -4855,6 +4859,8 @@ MiniHLSLInterpreter::convertForStatement(const clang::ForStmt *forStmt,
     increment = convertExpression(incExpr, context);
     if (!increment) {
       INTERPRETER_DEBUG_LOG("Failed to convert for loop increment expression\n");
+    } else {
+      INTERPRETER_DEBUG_LOG("Successfully converted increment to: " << increment->toString() << "\n");
     }
   }
 

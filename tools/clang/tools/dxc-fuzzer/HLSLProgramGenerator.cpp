@@ -423,11 +423,14 @@ ControlFlowGenerator::generateForLoop(const BlockSpec& spec, ProgramState& state
         interpreter::BinaryOpExpr::Lt
     );
     
-    // Increment expression
-    auto increment = std::make_unique<interpreter::BinaryOpExpr>(
-        std::make_unique<interpreter::VariableExpr>(loopVar),
-        std::make_unique<interpreter::LiteralExpr>(1),
-        interpreter::BinaryOpExpr::Add
+    // Increment expression - must be an assignment to update the loop variable
+    auto increment = std::make_unique<interpreter::AssignExpr>(
+        loopVar,
+        std::make_unique<interpreter::BinaryOpExpr>(
+            std::make_unique<interpreter::VariableExpr>(loopVar),
+            std::make_unique<interpreter::LiteralExpr>(1),
+            interpreter::BinaryOpExpr::Add
+        )
     );
     
     // Generate body with participant pattern

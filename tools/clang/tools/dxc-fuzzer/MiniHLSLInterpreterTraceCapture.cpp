@@ -16,9 +16,10 @@ interpreter::ExecutionResult TraceCaptureInterpreter::executeAndCaptureTrace(
   
   // Record thread hierarchy first
   auto tgSize = program.numThreadsX * program.numThreadsY * program.numThreadsZ;
+  auto effectiveWaveSize = program.getEffectiveWaveSize(waveSize);
   trace_.threadHierarchy.totalThreads = tgSize;
-  trace_.threadHierarchy.waveSize = waveSize;
-  trace_.threadHierarchy.numWaves = (tgSize + waveSize - 1) / waveSize;
+  trace_.threadHierarchy.waveSize = effectiveWaveSize;
+  trace_.threadHierarchy.numWaves = (tgSize + effectiveWaveSize - 1) / effectiveWaveSize;
   
   // Execute with trace capture hooks enabled
   auto result = execute(program, ordering, waveSize);
