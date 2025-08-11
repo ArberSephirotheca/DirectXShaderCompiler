@@ -372,13 +372,14 @@ MutationType SemanticPreservingMutator::selectMutation(
         available.push_back(MutationType::ParticipantTracking);
     }
     
-    if (tracker.canApplyMutation(stmt, MutationType::ValueDuplication, waveOpIndex)) {
-        available.push_back(MutationType::ValueDuplication);
-    }
+    // TODO: Enable these once implemented
+    // if (tracker.canApplyMutation(stmt, MutationType::ValueDuplication, waveOpIndex)) {
+    //     available.push_back(MutationType::ValueDuplication);
+    // }
     
-    if (tracker.canApplyMutation(stmt, MutationType::BroadcastPattern, waveOpIndex)) {
-        available.push_back(MutationType::BroadcastPattern);
-    }
+    // if (tracker.canApplyMutation(stmt, MutationType::BroadcastPattern, waveOpIndex)) {
+    //     available.push_back(MutationType::BroadcastPattern);
+    // }
     
     if (available.empty()) {
         return MutationType::None;

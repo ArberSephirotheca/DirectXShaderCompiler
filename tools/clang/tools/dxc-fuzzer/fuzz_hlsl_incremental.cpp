@@ -9,7 +9,7 @@
 #include <cstdlib>
 
 // Global verbosity flag - can be set via environment variable
-static int g_verbosity = 0;
+int g_verbosity = 0;
 
 using namespace minihlsl;
 
@@ -84,6 +84,54 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
             std::cerr << "=== Generated HLSL Program ===\n";
             std::cerr << fuzzer::serializeProgramToString(program) << std::endl;
             std::cerr << "=== End Program ===\n";
+            
+            // Show which statements have mutations applied
+            bool hasMutations = false;
+            for (const auto& round : state.history) {
+                if (!round.appliedMutations.empty()) {
+                    hasMutations = true;
+                    break;
+                }
+            }
+            
+            if (hasMutations) {
+                std::cerr << "\n=== Mutations Applied ===\n";
+                size_t stmtIndex = 0;
+                for (const auto& stmt : program.statements) {
+                    // Check if this statement has mutations by looking at rounds
+                    bool stmtHasMutation = false;
+                    fuzzer::MutationType appliedType = fuzzer::MutationType::None;
+                    
+                    for (const auto& round : state.history) {
+                        for (size_t idx : round.addedStatementIndices) {
+                            if (idx == stmtIndex && !round.appliedMutations.empty()) {
+                                stmtHasMutation = true;
+                                appliedType = round.appliedMutations[0]; // Take first mutation
+                                break;
+                            }
+                        }
+                        if (stmtHasMutation) break;
+                    }
+                    
+                    if (stmtHasMutation) {
+                        std::cerr << "Statement " << stmtIndex << " has mutation: ";
+                        switch (appliedType) {
+                            case fuzzer::MutationType::LanePermutation:
+                                std::cerr << "LanePermutation";
+                                break;
+                            case fuzzer::MutationType::ParticipantTracking:
+                                std::cerr << "ParticipantTracking";
+                                break;
+                            default:
+                                std::cerr << "Unknown";
+                        }
+                        std::cerr << "\n";
+                        std::cerr << "  " << stmt->toString() << "\n";
+                    }
+                    stmtIndex++;
+                }
+                std::cerr << "=== End Mutations ===\n";
+            }
         }
         
         // Print mutation history if verbosity is high

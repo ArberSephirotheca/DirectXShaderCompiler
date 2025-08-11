@@ -3,6 +3,9 @@
 #include "MiniHLSLInterpreterFuzzer.h"
 #include <algorithm>
 
+// External verbosity flag from fuzzer
+extern int g_verbosity;
+
 namespace minihlsl {
 namespace fuzzer {
 
@@ -249,6 +252,14 @@ ProgramState IncrementalGenerator::generateIncremental(const uint8_t* data, size
             
             // Apply mutations selectively
             auto mutatedStmt = applyMutationsSelectively(stmt.get(), state, provider);
+            
+            if (mutatedStmt && g_verbosity >= 2) {
+                // Show the mutation transformation
+                std::cerr << "\n=== Mutation Applied ===\n";
+                std::cerr << "Original: " << stmt->toString() << "\n";
+                std::cerr << "Mutated:  " << mutatedStmt->toString() << "\n";
+                std::cerr << "=========================\n";
+            }
             
             if (mutatedStmt) {
                 // Copy metadata to the mutated statement, including any mutations that were recorded
