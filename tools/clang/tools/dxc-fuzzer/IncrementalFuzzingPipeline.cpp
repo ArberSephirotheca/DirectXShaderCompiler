@@ -51,8 +51,8 @@ bool IncrementalFuzzingPipeline::validateExecution(const interpreter::Program& p
         
         // Execute with default wave size
         uint32_t waveSize = 32;
-        if (program.waveSizePreferred > 0) {
-            waveSize = program.waveSizePreferred;
+        if (program.waveSize > 0) {
+            waveSize = program.waveSize;
         }
         
         // Set a timeout to prevent infinite loops

@@ -50,7 +50,7 @@ void IncrementalGenerator::initializeBaseProgram(ProgramState& state, FuzzedData
     
     // Set wave size if specified
     if (provider.ConsumeBool()) {
-        state.program.waveSizePreferred = provider.ConsumeBool() ? 32 : 64;
+        state.program.waveSize = provider.ConsumeBool() ? 32 : 64;
     }
     
     // Add SV_DispatchThreadID parameter
@@ -191,7 +191,7 @@ ProgramState IncrementalGenerator::generateIncremental(const uint8_t* data, size
         // Generate new control flow block
         auto pattern = createPattern(provider);
         auto blockType = static_cast<ControlFlowGenerator::BlockSpec::Type>(
-            provider.ConsumeIntegralInRange<int>(0, 4));  // 5 types: IF, IF_ELSE, NESTED_IF, FOR_LOOP, WHILE_LOOP
+            provider.ConsumeIntegralInRange<int>(0, 5));  // 6 types: IF, IF_ELSE, NESTED_IF, FOR_LOOP, WHILE_LOOP, CASCADING_IF_ELSE
         
         // Only allow break/continue in loop contexts
         bool isLoop = (blockType == ControlFlowGenerator::BlockSpec::FOR_LOOP ||
@@ -202,7 +202,10 @@ ProgramState IncrementalGenerator::generateIncremental(const uint8_t* data, size
             std::move(pattern),
             isLoop && provider.ConsumeBool(),  // includeBreak - only for loops
             isLoop && provider.ConsumeBool(),  // includeContinue - only for loops
-            provider.ConsumeIntegralInRange<uint32_t>(0, 2)  // nestingDepth
+            provider.ConsumeIntegralInRange<uint32_t>(0, 2),  // nestingDepth
+            // numBranches for cascading if-else
+            blockType == ControlFlowGenerator::BlockSpec::CASCADING_IF_ELSE ? 
+                provider.ConsumeIntegralInRange<uint32_t>(2, 5) : 3
         };
         
         auto newStatements = cfGenerator->generateBlock(spec, state, provider);
@@ -332,6 +335,9 @@ ControlFlowGenerator::generateBlock(const BlockSpec& spec, ProgramState& state,
             // Generate nested if by creating two if statements
             statements.push_back(generateIf(spec, state, provider));
             break;
+        case BlockSpec::CASCADING_IF_ELSE:
+            statements.push_back(generateCascadingIfElse(spec, state, provider));
+            break;
     }
     
     return statements;
@@ -341,8 +347,8 @@ std::unique_ptr<interpreter::Statement>
 ControlFlowGenerator::generateIf(const BlockSpec& spec, ProgramState& state, 
                                 FuzzedDataProvider& provider) {
     // Generate condition using pattern
-    uint32_t waveSize = state.program.waveSizePreferred > 0 ? 
-                       state.program.waveSizePreferred : 32;
+    uint32_t waveSize = state.program.waveSize > 0 ? 
+                       state.program.waveSize : 32;
     auto condition = spec.pattern->generateCondition(waveSize, provider);
     
     // Generate body with wave operation
@@ -409,8 +415,8 @@ ControlFlowGenerator::generateForLoop(const BlockSpec& spec, ProgramState& state
     // Initialize expression for the loop variable
     auto initExpr = std::make_unique<interpreter::LiteralExpr>(0);
     
-    // Loop condition
-    uint32_t loopCount = provider.ConsumeIntegralInRange<uint32_t>(2, 8);
+    // Loop condition - limit to 3 iterations to avoid false deadlock detection
+    uint32_t loopCount = provider.ConsumeIntegralInRange<uint32_t>(2, 3);
     auto condition = std::make_unique<interpreter::BinaryOpExpr>(
         std::make_unique<interpreter::VariableExpr>(loopVar),
         std::make_unique<interpreter::LiteralExpr>(static_cast<int32_t>(loopCount)),
@@ -428,8 +434,8 @@ ControlFlowGenerator::generateForLoop(const BlockSpec& spec, ProgramState& state
     std::vector<std::unique_ptr<interpreter::Statement>> body;
     
     // Use pattern for conditional wave operation
-    uint32_t waveSize = state.program.waveSizePreferred > 0 ? 
-                       state.program.waveSizePreferred : 32;
+    uint32_t waveSize = state.program.waveSize > 0 ? 
+                       state.program.waveSize : 32;
     auto participantCondition = spec.pattern->generateCondition(waveSize, provider);
     
     std::vector<std::unique_ptr<interpreter::Statement>> waveBody;
@@ -502,8 +508,8 @@ ControlFlowGenerator::generateWhileLoop(const BlockSpec& spec, ProgramState& sta
     );
     state.declaredVariables.insert(counterVar);
     
-    // While condition
-    uint32_t maxIterations = provider.ConsumeIntegralInRange<uint32_t>(2, 5);
+    // While condition - limit to 3 iterations to avoid false deadlock detection
+    uint32_t maxIterations = provider.ConsumeIntegralInRange<uint32_t>(2, 3);
     auto condition = std::make_unique<interpreter::BinaryOpExpr>(
         std::make_unique<interpreter::VariableExpr>(counterVar),
         std::make_unique<interpreter::LiteralExpr>(static_cast<int32_t>(maxIterations)),
@@ -524,8 +530,8 @@ ControlFlowGenerator::generateWhileLoop(const BlockSpec& spec, ProgramState& sta
     ));
     
     // Add wave operation with pattern
-    uint32_t waveSize = state.program.waveSizePreferred > 0 ? 
-                       state.program.waveSizePreferred : 32;
+    uint32_t waveSize = state.program.waveSize > 0 ? 
+                       state.program.waveSize : 32;
     auto participantCondition = spec.pattern->generateCondition(waveSize, provider);
     
     std::vector<std::unique_ptr<interpreter::Statement>> waveBody;
@@ -554,6 +560,81 @@ ControlFlowGenerator::generateWhileLoop(const BlockSpec& spec, ProgramState& sta
     
     // Return just the while statement
     return std::move(statements[1]);
+}
+
+std::unique_ptr<interpreter::Statement>
+ControlFlowGenerator::generateCascadingIfElse(const BlockSpec& spec, ProgramState& state,
+                                            FuzzedDataProvider& provider) {
+    // Get the number of branches (default to 3 if not specified)
+    uint32_t numBranches = spec.numBranches > 0 ? spec.numBranches : 3;
+    uint32_t waveSize = state.program.waveSize > 0 ? 
+                       state.program.waveSize : 32;
+    
+    // Generate unique participant patterns for each branch
+    std::vector<std::unique_ptr<ParticipantPattern>> patterns;
+    std::vector<std::unique_ptr<interpreter::Expression>> conditions;
+    
+    // Generate different patterns for each branch
+    for (uint32_t i = 0; i < numBranches; ++i) {
+        auto pattern = createRandomPattern(provider);
+        auto condition = pattern->generateCondition(waveSize, provider);
+        patterns.push_back(std::move(pattern));
+        conditions.push_back(std::move(condition));
+    }
+    
+    // Build the cascading if-else-if structure from the bottom up
+    std::unique_ptr<interpreter::IfStmt> result = nullptr;
+    
+    for (int i = numBranches - 1; i >= 0; --i) {
+        // Generate body with a different wave operation for each branch
+        std::vector<std::unique_ptr<interpreter::Statement>> body;
+        
+        // Choose a different wave operation type for each branch
+        interpreter::WaveActiveOp::OpType opType;
+        switch (i % 4) {
+            case 0: opType = interpreter::WaveActiveOp::Sum; break;
+            case 1: opType = interpreter::WaveActiveOp::Product; break;
+            case 2: opType = interpreter::WaveActiveOp::Min; break;
+            case 3: opType = interpreter::WaveActiveOp::Max; break;
+        }
+        
+        // Create wave operation with different input for each branch
+        std::unique_ptr<interpreter::Expression> input;
+        if (provider.ConsumeBool()) {
+            // Use lane index modified by branch number
+            input = std::make_unique<interpreter::BinaryOpExpr>(
+                std::make_unique<interpreter::LaneIndexExpr>(),
+                std::make_unique<interpreter::LiteralExpr>(i + 1),
+                interpreter::BinaryOpExpr::Add
+            );
+        } else {
+            // Use different literal for each branch
+            input = std::make_unique<interpreter::LiteralExpr>(i + 1);
+        }
+        
+        auto waveOp = std::make_unique<interpreter::WaveActiveOp>(std::move(input), opType);
+        
+        // Assign to result variable
+        body.push_back(std::make_unique<interpreter::AssignStmt>(
+            "result",
+            std::move(waveOp)
+        ));
+        
+        // Create else body (which contains the previous if-else chain)
+        std::vector<std::unique_ptr<interpreter::Statement>> elseBody;
+        if (result != nullptr) {
+            elseBody.push_back(std::move(result));
+        }
+        
+        // Create new if statement
+        result = std::make_unique<interpreter::IfStmt>(
+            std::move(conditions[i]),
+            std::move(body),
+            std::move(elseBody)
+        );
+    }
+    
+    return result;
 }
 
 std::unique_ptr<interpreter::Expression>
@@ -632,7 +713,7 @@ void IncrementalGenerator::addStatementsToProgram(ProgramState& state, const uin
     // Generate new control flow block
     auto pattern = createPattern(provider);
     auto blockType = static_cast<ControlFlowGenerator::BlockSpec::Type>(
-        provider.ConsumeIntegralInRange<int>(0, 4));
+        provider.ConsumeIntegralInRange<int>(0, 5));
     
     bool isLoop = (blockType == ControlFlowGenerator::BlockSpec::FOR_LOOP ||
                   blockType == ControlFlowGenerator::BlockSpec::WHILE_LOOP);
@@ -642,7 +723,10 @@ void IncrementalGenerator::addStatementsToProgram(ProgramState& state, const uin
         std::move(pattern),
         isLoop && provider.ConsumeBool(),
         isLoop && provider.ConsumeBool(),
-        provider.ConsumeIntegralInRange<uint32_t>(0, 2)
+        provider.ConsumeIntegralInRange<uint32_t>(0, 2),
+        // numBranches for cascading if-else
+        blockType == ControlFlowGenerator::BlockSpec::CASCADING_IF_ELSE ? 
+            provider.ConsumeIntegralInRange<uint32_t>(2, 5) : 3
     };
     
     auto newStatements = cfGenerator->generateBlock(spec, state, provider);

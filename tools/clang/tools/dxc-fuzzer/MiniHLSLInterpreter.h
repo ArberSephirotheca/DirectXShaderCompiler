@@ -2278,10 +2278,8 @@ struct Program {
   uint32_t numThreadsZ = 1;
   EntryInputs entryInputs;
   
-  // WaveSize attribute values (0 means not specified)
-  uint32_t waveSizeMin = 0;
-  uint32_t waveSizeMax = 0;
-  uint32_t waveSizePreferred = 0;
+  // WaveSize attribute value (0 means not specified)
+  uint32_t waveSize = 0;
   
   // Default constructor
   Program() = default;
@@ -2294,9 +2292,7 @@ struct Program {
       numThreadsY(other.numThreadsY),
       numThreadsZ(other.numThreadsZ),
       entryInputs(std::move(other.entryInputs)),
-      waveSizeMin(other.waveSizeMin),
-      waveSizeMax(other.waveSizeMax),
-      waveSizePreferred(other.waveSizePreferred) {}
+      waveSize(other.waveSize) {}
   
   // Move assignment
   Program& operator=(Program&& other) noexcept {
@@ -2307,9 +2303,7 @@ struct Program {
       numThreadsY = other.numThreadsY;
       numThreadsZ = other.numThreadsZ;
       entryInputs = std::move(other.entryInputs);
-      waveSizeMin = other.waveSizeMin;
-      waveSizeMax = other.waveSizeMax;
-      waveSizePreferred = other.waveSizePreferred;
+      waveSize = other.waveSize;
     }
     return *this;
   }
@@ -2323,19 +2317,12 @@ struct Program {
   }
   
   uint32_t getEffectiveWaveSize(uint32_t defaultWaveSize = 32) const {
-    // If preferred wave size is specified, use it
-    if (waveSizePreferred > 0) {
-      return waveSizePreferred;
+    // If wave size is specified, use it
+    if (waveSize > 0) {
+      return waveSize;
     }
-    // Otherwise use default, but ensure it's within min/max bounds
-    uint32_t waveSize = defaultWaveSize;
-    if (waveSizeMin > 0 && waveSize < waveSizeMin) {
-      waveSize = waveSizeMin;
-    }
-    if (waveSizeMax > 0 && waveSize > waveSizeMax) {
-      waveSize = waveSizeMax;
-    }
-    return waveSize;
+    // Otherwise use default
+    return defaultWaveSize;
   }
 };
 

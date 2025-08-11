@@ -82,12 +82,14 @@ public:
 class ControlFlowGenerator {
 public:
     struct BlockSpec {
-        enum Type { IF, IF_ELSE, NESTED_IF, FOR_LOOP, WHILE_LOOP };
+        enum Type { IF, IF_ELSE, NESTED_IF, FOR_LOOP, WHILE_LOOP, CASCADING_IF_ELSE };
         Type type;
         std::unique_ptr<ParticipantPattern> pattern;
         bool includeBreak;
         bool includeContinue;
         uint32_t nestingDepth;
+        // For cascading if-else patterns
+        uint32_t numBranches = 3; // Number of if-else-if branches
     };
     
     std::vector<std::unique_ptr<interpreter::Statement>>
@@ -98,6 +100,10 @@ private:
     std::unique_ptr<interpreter::Statement> 
     generateIf(const BlockSpec& spec, ProgramState& state, 
                FuzzedDataProvider& provider);
+    
+    std::unique_ptr<interpreter::Statement>
+    generateCascadingIfElse(const BlockSpec& spec, ProgramState& state,
+                            FuzzedDataProvider& provider);
     
     std::unique_ptr<interpreter::Statement>
     generateForLoop(const BlockSpec& spec, ProgramState& state,

@@ -4436,12 +4436,13 @@ void MiniHLSLInterpreter::extractThreadConfiguration(
   // Look for HLSLWaveSizeAttr
   if (const clang::HLSLWaveSizeAttr *attr =
           func->getAttr<clang::HLSLWaveSizeAttr>()) {
-    program.waveSizeMin = attr->getMin();
-    program.waveSizeMax = attr->getMax();
-    program.waveSizePreferred = attr->getPreferred();
-    INTERPRETER_DEBUG_LOG("Found WaveSize attribute: min=" << program.waveSizeMin 
-              << ", max=" << program.waveSizeMax 
-              << ", preferred=" << program.waveSizePreferred);
+    // For simplicity, use the preferred size if specified, otherwise use min
+    if (attr->getPreferred() > 0) {
+      program.waveSize = attr->getPreferred();
+    } else if (attr->getMin() > 0) {
+      program.waveSize = attr->getMin();
+    }
+    INTERPRETER_DEBUG_LOG("Found WaveSize attribute: " << program.waveSize);
   }
 }
 

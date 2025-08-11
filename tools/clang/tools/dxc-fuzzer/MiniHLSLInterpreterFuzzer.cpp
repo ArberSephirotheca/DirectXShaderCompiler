@@ -46,12 +46,8 @@ std::string serializeProgramToString(const interpreter::Program& program) {
      << program.numThreadsZ << ")]\n";
   
   // Add WaveSize attribute if specified
-  if (program.waveSizeMin > 0 || program.waveSizeMax > 0 || program.waveSizePreferred > 0) {
-    ss << "[WaveSize(";
-    if (program.waveSizeMin > 0) ss << program.waveSizeMin;
-    if (program.waveSizeMax > 0) ss << ", " << program.waveSizeMax;
-    if (program.waveSizePreferred > 0) ss << ", " << program.waveSizePreferred;
-    ss << ")]\n";
+  if (program.waveSize > 0) {
+    ss << "[WaveSize(" << program.waveSize << ")]\n";
   }
   
   ss << "void main(";
@@ -1577,9 +1573,7 @@ interpreter::Program TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& 
     result.numThreadsZ = seedProgram.numThreadsZ;
     result.globalBuffers = seedProgram.globalBuffers;
     result.entryInputs = seedProgram.entryInputs;
-    result.waveSizePreferred = seedProgram.waveSizePreferred;
-    result.waveSizeMin = seedProgram.waveSizeMin;
-    result.waveSizeMax = seedProgram.waveSizeMax;
+    result.waveSize = seedProgram.waveSize;
     for (const auto& stmt : seedProgram.statements) {
       result.statements.push_back(stmt->clone());
     }
@@ -1750,9 +1744,7 @@ interpreter::Program TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& 
     result.numThreadsZ = seedProgram.numThreadsZ;
     result.globalBuffers = seedProgram.globalBuffers;
     result.entryInputs = seedProgram.entryInputs;
-    result.waveSizePreferred = seedProgram.waveSizePreferred;
-    result.waveSizeMin = seedProgram.waveSizeMin;
-    result.waveSizeMax = seedProgram.waveSizeMax;
+    result.waveSize = seedProgram.waveSize;
     for (const auto& stmt : seedProgram.statements) {
       result.statements.push_back(stmt->clone());
     }
@@ -1808,9 +1800,7 @@ interpreter::Program TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& 
   finalMutant.numThreadsZ = preparedProgram.numThreadsZ;
   finalMutant.globalBuffers = preparedProgram.globalBuffers;
   finalMutant.entryInputs = preparedProgram.entryInputs;
-  finalMutant.waveSizePreferred = preparedProgram.waveSizePreferred;
-  finalMutant.waveSizeMin = preparedProgram.waveSizeMin;
-  finalMutant.waveSizeMax = preparedProgram.waveSizeMax;
+  finalMutant.waveSize = preparedProgram.waveSize;
   for (const auto& stmt : preparedProgram.statements) {
     finalMutant.statements.push_back(stmt->clone());
   }
@@ -2701,7 +2691,7 @@ bool deserializeAST(const uint8_t* data, size_t size,
     
     case 1: {
       // Divergent control flow program
-      program.numThreadsX = 4;
+      program.numThreadsX = 32;
       program.numThreadsY = 1;
       program.numThreadsZ = 1;
       
@@ -2747,7 +2737,7 @@ bool deserializeAST(const uint8_t* data, size_t size,
     
     default: {
       // Loop-based program
-      program.numThreadsX = 8;
+      program.numThreadsX = 32;
       program.numThreadsY = 1;
       program.numThreadsZ = 1;
       
