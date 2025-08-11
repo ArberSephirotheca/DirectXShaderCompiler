@@ -2282,6 +2282,41 @@ struct Program {
   uint32_t waveSizeMin = 0;
   uint32_t waveSizeMax = 0;
   uint32_t waveSizePreferred = 0;
+  
+  // Default constructor
+  Program() = default;
+  
+  // Move constructor
+  Program(Program&& other) noexcept
+    : statements(std::move(other.statements)),
+      globalBuffers(std::move(other.globalBuffers)),
+      numThreadsX(other.numThreadsX),
+      numThreadsY(other.numThreadsY),
+      numThreadsZ(other.numThreadsZ),
+      entryInputs(std::move(other.entryInputs)),
+      waveSizeMin(other.waveSizeMin),
+      waveSizeMax(other.waveSizeMax),
+      waveSizePreferred(other.waveSizePreferred) {}
+  
+  // Move assignment
+  Program& operator=(Program&& other) noexcept {
+    if (this != &other) {
+      statements = std::move(other.statements);
+      globalBuffers = std::move(other.globalBuffers);
+      numThreadsX = other.numThreadsX;
+      numThreadsY = other.numThreadsY;
+      numThreadsZ = other.numThreadsZ;
+      entryInputs = std::move(other.entryInputs);
+      waveSizeMin = other.waveSizeMin;
+      waveSizeMax = other.waveSizeMax;
+      waveSizePreferred = other.waveSizePreferred;
+    }
+    return *this;
+  }
+  
+  // Delete copy constructor and copy assignment to prevent accidental copies
+  Program(const Program&) = delete;
+  Program& operator=(const Program&) = delete;
 
   uint32_t getTotalThreads() const {
     return numThreadsX * numThreadsY * numThreadsZ;

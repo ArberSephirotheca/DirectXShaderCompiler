@@ -128,26 +128,6 @@ bool LanePermutationMutation::canApply(const interpreter::Statement* stmt,
   return false;
 }
 
-const interpreter::WaveActiveOp* LanePermutationMutation::getWaveOp(
-    const interpreter::Statement* stmt) const {
-  // Try to extract wave operation from ExprStmt
-  if (auto exprStmt = dynamic_cast<const interpreter::ExprStmt*>(stmt)) {
-    // Check toString to identify wave operations since expr_ is private
-    std::string stmtStr = stmt->toString();
-    
-    // Only apply to associative wave operations
-    if (stmtStr.find("WaveActiveSum") != std::string::npos ||
-        stmtStr.find("WaveActiveProduct") != std::string::npos ||
-        stmtStr.find("WaveActiveBitAnd") != std::string::npos ||
-        stmtStr.find("WaveActiveBitOr") != std::string::npos ||
-        stmtStr.find("WaveActiveBitXor") != std::string::npos) {
-      // We can't directly access expr_ but we know it's a wave op
-      return reinterpret_cast<const interpreter::WaveActiveOp*>(stmt);
-    }
-  }
-  return nullptr;
-}
-
 std::unique_ptr<interpreter::Statement> LanePermutationMutation::apply(
     const interpreter::Statement* stmt, 
     const ExecutionTrace& trace) const {
@@ -1555,24 +1535,16 @@ TraceGuidedFuzzer::TraceGuidedFuzzer() {
   bugReporter = std::make_unique<BugReporter>();
 }
 
-void TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& seedProgram, 
+interpreter::Program TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& seedProgram, 
                                   const FuzzingConfig& config) {
   
   FUZZER_DEBUG_LOG("Starting trace-guided fuzzing...\n");
   FUZZER_DEBUG_LOG("Threadgroup size: " << config.threadgroupSize << "\n");
   FUZZER_DEBUG_LOG("Wave size: " << config.waveSize << "\n");
   
-  // Debug: Print the seed program being fuzzed
-  FUZZER_DEBUG_LOG("\n=== Seed Program ===\n");
-  FUZZER_DEBUG_LOG(serializeProgramToString(seedProgram));
-  FUZZER_DEBUG_LOG("\n");
   
   // Prepare program for mutation
   interpreter::Program preparedProgram = prepareProgramForMutation(seedProgram);
-  
-  FUZZER_DEBUG_LOG("\n=== Prepared Program ===\n");
-  FUZZER_DEBUG_LOG(serializeProgramToString(preparedProgram));
-  FUZZER_DEBUG_LOG("\n");
   
   // Create trace capture interpreter
   TraceCaptureInterpreter captureInterpreter;
@@ -1598,7 +1570,20 @@ void TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& seedProgram,
   // Check if execution succeeded
   if (!goldenResult.isValid()) {
     std::cerr << "Golden execution failed: " << goldenResult.errorMessage << "\n";
-    return;
+    // Return a clone of the original program if golden execution fails
+    interpreter::Program result;
+    result.numThreadsX = seedProgram.numThreadsX;
+    result.numThreadsY = seedProgram.numThreadsY;
+    result.numThreadsZ = seedProgram.numThreadsZ;
+    result.globalBuffers = seedProgram.globalBuffers;
+    result.entryInputs = seedProgram.entryInputs;
+    result.waveSizePreferred = seedProgram.waveSizePreferred;
+    result.waveSizeMin = seedProgram.waveSizeMin;
+    result.waveSizeMax = seedProgram.waveSizeMax;
+    for (const auto& stmt : seedProgram.statements) {
+      result.statements.push_back(stmt->clone());
+    }
+    return result;
   }
   
   const ExecutionTrace& goldenTrace = *captureInterpreter.getTrace();
@@ -1615,6 +1600,9 @@ void TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& seedProgram,
   // Apply both WaveParticipantTracking and LanePermutation mutations to all programs
   size_t mutantsTested = 0;
   size_t bugsFound = 0;
+  
+  // Track the final mutants to avoid copying
+  std::vector<interpreter::Program> allMutantsGenerated;
   
   // Find the specific mutation strategies we want to apply
   MutationStrategy* waveParticipantStrategy = nullptr;
@@ -1702,17 +1690,33 @@ void TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& seedProgram,
                                    mutantTrace, validation);
             }
             
+            // Store the successfully tested mutant
+            // Note: We can't store it directly due to const reference, it will be handled outside the loop
+            
           } catch (const std::exception& e) {
             // Mutant crashed - definitely a bug
             bugsFound++;
             bugReporter->reportCrash(preparedProgram, mutant, e);
           }
         }
+        
+        // Store all final mutants
+        for (auto& mutant : finalMutants) {
+          allMutantsGenerated.push_back(std::move(mutant));
+        }
       }
     }
   }
   
   logSummary(mutantsTested, bugsFound);
+  
+  // Return the final mutated program
+  if (!allMutantsGenerated.empty()) {
+    return std::move(allMutantsGenerated.back());
+  } else {
+    // No mutations were applied, return the prepared program
+    return preparedProgram;
+  }
 }
 
 std::unique_ptr<interpreter::Program> TraceGuidedFuzzer::mutateAST(

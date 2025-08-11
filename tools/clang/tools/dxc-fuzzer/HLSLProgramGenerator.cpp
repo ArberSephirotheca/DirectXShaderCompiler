@@ -655,5 +655,58 @@ void saveBugReport(const uint8_t* data, size_t size,
     std::cerr << "Program:\n" << serializeProgramToString(program) << "\n";
 }
 
+void IncrementalGenerator::addStatementsToProgram(ProgramState& state, const uint8_t* data, size_t size, size_t offset) {
+    FuzzedDataProvider provider(data + offset, size - offset);
+    
+    // Add one round of new statements to the existing program
+    GenerationRound roundInfo;
+    roundInfo.roundNumber = state.history.size();
+    
+    // Generate new control flow block
+    auto pattern = createPattern(provider);
+    auto blockType = static_cast<ControlFlowGenerator::BlockSpec::Type>(
+        provider.ConsumeIntegralInRange<int>(0, 4));
+    
+    bool isLoop = (blockType == ControlFlowGenerator::BlockSpec::FOR_LOOP ||
+                  blockType == ControlFlowGenerator::BlockSpec::WHILE_LOOP);
+    
+    ControlFlowGenerator::BlockSpec spec{
+        blockType,
+        std::move(pattern),
+        isLoop && provider.ConsumeBool(),
+        isLoop && provider.ConsumeBool(),
+        provider.ConsumeIntegralInRange<uint32_t>(0, 2)
+    };
+    
+    auto newStatements = cfGenerator->generateBlock(spec, state, provider);
+    
+    // Add to program
+    size_t insertPos = state.program.statements.size();
+    
+    for (auto& stmt : newStatements) {
+        // Create metadata
+        StatementMetadata meta;
+        meta.originalIndex = insertPos;
+        meta.currentIndex = insertPos;
+        meta.isNewlyAdded = true;
+        meta.generationRound = roundInfo.roundNumber;
+        meta.waveOps = ::minihlsl::fuzzer::findAllWaveOps(stmt.get());
+        meta.context = StatementMetadata::TopLevel;
+        meta.nestingLevel = 0;
+        
+        mutationTracker->registerStatement(stmt.get(), meta);
+        
+        state.program.statements.push_back(std::move(stmt));
+        roundInfo.addedStatementIndices.push_back(insertPos);
+        insertPos++;
+    }
+    
+    // Record round
+    roundInfo.description = "Incremental round " + std::to_string(roundInfo.roundNumber);
+    state.history.push_back(roundInfo);
+    
+    mutationTracker->advanceRound();
+}
+
 } // namespace fuzzer
 } // namespace minihlsl

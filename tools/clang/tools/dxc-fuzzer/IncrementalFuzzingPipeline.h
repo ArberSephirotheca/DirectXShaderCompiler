@@ -56,9 +56,11 @@ private:
                           ExecutionTrace& trace, std::string& error);
     
     // Apply mutations and test
+    // Returns the result and the mutated program via the mutatedProgram parameter
     PipelineResult::IncrementResult testMutations(
         const interpreter::Program& program,
-        const ExecutionTrace& goldenTrace);
+        const ExecutionTrace& goldenTrace,
+        interpreter::Program& mutatedProgram);
     
 public:
     IncrementalFuzzingPipeline(const IncrementalFuzzingConfig& cfg = {});

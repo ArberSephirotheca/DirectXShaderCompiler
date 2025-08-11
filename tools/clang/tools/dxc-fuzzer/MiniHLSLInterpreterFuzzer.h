@@ -575,7 +575,8 @@ private:
 public:
   TraceGuidedFuzzer();
   
-  void fuzzProgram(const interpreter::Program& seedProgram, 
+  // Returns the final mutated program that was tested
+  interpreter::Program fuzzProgram(const interpreter::Program& seedProgram, 
                   const FuzzingConfig& config);
   
   // For libFuzzer integration

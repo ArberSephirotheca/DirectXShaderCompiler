@@ -73,6 +73,9 @@ public:
     ~IncrementalGenerator();
     
     ProgramState generateIncremental(const uint8_t* data, size_t size);
+    
+    // Add statements to an existing program
+    void addStatementsToProgram(ProgramState& state, const uint8_t* data, size_t size, size_t offset = 0);
 };
 
 // Control flow generation

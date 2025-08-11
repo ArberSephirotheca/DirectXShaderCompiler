@@ -90,7 +90,8 @@ bool IncrementalFuzzingPipeline::validateExecution(const interpreter::Program& p
 
 PipelineResult::IncrementResult IncrementalFuzzingPipeline::testMutations(
     const interpreter::Program& program,
-    const ExecutionTrace& goldenTrace) {
+    const ExecutionTrace& goldenTrace,
+    interpreter::Program& mutatedProgram) {
     
     PipelineResult::IncrementResult result;
     result.baseProgramStr = serializeProgramToString(program);
@@ -121,8 +122,12 @@ PipelineResult::IncrementResult IncrementalFuzzingPipeline::testMutations(
             }
         }
         
-        // Actually run the fuzzer
-        fuzzer->fuzzProgram(program, fuzzConfig);
+        // We can't copy the program directly - need to serialize and deserialize
+        // For now, just ensure mutatedProgram is empty
+        mutatedProgram = interpreter::Program();
+        
+        // Actually run the fuzzer and get the mutated program
+        mutatedProgram = fuzzer->fuzzProgram(program, fuzzConfig);
         
         // Track results
         result.mutantsTested = fuzzConfig.maxMutants;
@@ -131,6 +136,8 @@ PipelineResult::IncrementResult IncrementalFuzzingPipeline::testMutations(
     } catch (const std::exception& e) {
         result.errorMessage = std::string("Mutation testing error: ") + e.what();
         result.executionValid = false;
+        // If mutation failed, we need to return the original program
+        // Since we can't copy, we'll have to let the caller handle this case
     }
     
     return result;
@@ -151,7 +158,10 @@ PipelineResult IncrementalFuzzingPipeline::run(const uint8_t* data, size_t size)
     // (The fuzzer expects to have been initialized)
     
     FuzzedDataProvider provider(data, size);
-    ProgramState state = generator->generateIncremental(data, size);
+    
+    // For the first increment, generate initial program
+    // For subsequent increments, we'll add to the existing program
+    ProgramState state;
     
     for (size_t increment = 0; increment < config.maxIncrements; ++increment) {
         if (config.enableLogging) {
@@ -159,6 +169,22 @@ PipelineResult IncrementalFuzzingPipeline::run(const uint8_t* data, size_t size)
         }
         
         PipelineResult::IncrementResult incrementResult;
+        
+        // For first increment, generate base program
+        // For subsequent increments, add statements to existing program
+        if (increment == 0) {
+            ProgramState newState = generator->generateIncremental(data, size);
+            // Move the program and other data
+            state.program = std::move(newState.program);
+            state.history = std::move(newState.history);
+            state.declaredVariables = std::move(newState.declaredVariables);
+            state.nextVarIndex = newState.nextVarIndex;
+            state.pendingStatement = std::move(newState.pendingStatement);
+        } else {
+            // Calculate offset for data consumption to ensure different statements each time
+            size_t offset = (increment * size) / config.maxIncrements;
+            generator->addStatementsToProgram(state, data, size, offset);
+        }
         
         // Get current program state
         incrementResult.baseProgramStr = serializeProgramToString(state.program);
@@ -209,7 +235,11 @@ PipelineResult IncrementalFuzzingPipeline::run(const uint8_t* data, size_t size)
         }
         
         // Step 3: Apply mutations and test
-        incrementResult = testMutations(state.program, goldenTrace);
+        interpreter::Program mutatedProgram;
+        incrementResult = testMutations(state.program, goldenTrace, mutatedProgram);
+        
+        // Check if mutation was successful
+        bool mutationSucceeded = mutatedProgram.statements.size() > 0;
         
         result.totalMutantsTested += incrementResult.mutantsTested;
         result.totalBugsFound += incrementResult.bugsFound;
@@ -236,9 +266,12 @@ PipelineResult IncrementalFuzzingPipeline::run(const uint8_t* data, size_t size)
             break;
         }
         
-        // Step 4: Generate next increment
-        if (increment < config.maxIncrements - 1) {
-            // Add more to the program
+        // Step 4: Use mutated program as base for next increment
+        if (increment < config.maxIncrements - 1 && mutationSucceeded) {
+            // Update state with the mutated program for the next increment
+            state.program = std::move(mutatedProgram);
+            
+            // Add more statements to the mutated program
             size_t remainingData = provider.remaining_bytes();
             if (remainingData < 16) {
                 if (config.enableLogging) {
@@ -247,10 +280,13 @@ PipelineResult IncrementalFuzzingPipeline::run(const uint8_t* data, size_t size)
                 break;
             }
             
-            // Generate more statements
-            state = generator->generateIncremental(
-                provider.ConsumeBytes<uint8_t>(remainingData).data(), 
-                remainingData);
+            // The mutated program is now stored in state.program
+            // The next iteration will add more statements to it
+            if (config.enableLogging) {
+                FUZZER_DEBUG_LOG("\n=== Using mutated program as base for next increment ===\n");
+                FUZZER_DEBUG_LOG(serializeProgramToString(state.program));
+                FUZZER_DEBUG_LOG("\n");
+            }
         }
     }
     
