@@ -179,7 +179,7 @@ ParityPattern::generateCondition(uint32_t waveSize, FuzzedDataProvider& provider
     auto andExpr = std::make_unique<interpreter::BinaryOpExpr>(
         std::make_unique<interpreter::LaneIndexExpr>(),
         std::make_unique<interpreter::LiteralExpr>(1),
-        interpreter::BinaryOpExpr::And
+        interpreter::BinaryOpExpr::BitwiseAnd
     );
     
     return std::make_unique<interpreter::BinaryOpExpr>(
