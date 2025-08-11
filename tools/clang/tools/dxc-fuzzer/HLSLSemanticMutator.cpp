@@ -5,6 +5,26 @@
 namespace minihlsl {
 namespace fuzzer {
 
+// Helper function to get permutation pattern description
+static std::string getPermutationDescription(SemanticPreservingMutator::PermutationPattern pattern) {
+    switch (pattern) {
+        case SemanticPreservingMutator::PermutationPattern::Rotate:
+            return "Rotate";
+        case SemanticPreservingMutator::PermutationPattern::Reverse:
+            return "Reverse";
+        case SemanticPreservingMutator::PermutationPattern::EvenOddSwap:
+            return "EvenOddSwap";
+        case SemanticPreservingMutator::PermutationPattern::Butterfly:
+            return "Butterfly";
+        case SemanticPreservingMutator::PermutationPattern::Broadcast:
+            return "Broadcast";
+        case SemanticPreservingMutator::PermutationPattern::Custom:
+            return "Custom";
+        default:
+            return "Unknown";
+    }
+}
+
 std::unique_ptr<interpreter::Expression> 
 SemanticPreservingMutator::generatePermutationExpr(
     PermutationPattern pattern,
@@ -147,27 +167,82 @@ SemanticPreservingMutator::applyLanePermutation(
     ProgramState& state,
     FuzzedDataProvider& provider) {
     
+    std::cerr << "DEBUG: applyLanePermutation called for waveOpIndex=" << waveOpIndex << "\n";
+    
     // Check if we can apply this mutation
     if (!tracker.canApplyMutation(stmt, MutationType::LanePermutation, waveOpIndex)) {
+        std::cerr << "DEBUG: applyLanePermutation - cannot apply mutation\n";
         return nullptr;
     }
     
-    // For now, just clone the statement and mark the mutation as applied
-    // TODO: Implement actual AST transformation
-    auto cloned = cloneStatement(stmt);
-    if (!cloned) return nullptr;
+    // Get metadata to find participant count
+    auto metadata = tracker.getMetadata(stmt);
+    if (!metadata || waveOpIndex >= metadata->waveOps.size()) {
+        return nullptr;
+    }
+    
+    // Determine participant count (use wave size as approximation)
+    uint32_t participantCount = state.program.waveSizePreferred > 0 ? 
+                                state.program.waveSizePreferred : 32;
+    
+    // Choose permutation pattern
+    auto pattern = static_cast<PermutationPattern>(
+        provider.ConsumeIntegralInRange<int>(0, 5));
+    
+    // Generate permutation expression
+    auto permExpr = generatePermutationExpr(pattern, participantCount, provider);
+    
+    // Create replacement function that wraps wave operations
+    std::function<std::unique_ptr<interpreter::Expression>(
+        std::unique_ptr<interpreter::Expression>)> replacementFunc = 
+        [&permExpr](std::unique_ptr<interpreter::Expression> waveOp) -> std::unique_ptr<interpreter::Expression> {
+        // For wave operations, wrap the input with WaveReadLaneAt
+        if (auto wave = dynamic_cast<interpreter::WaveActiveOp*>(waveOp.get())) {
+            // Get the input expression
+            auto input = wave->getInput();
+            if (!input) return waveOp;
+            
+            // Clone the input
+            auto inputClone = input->clone();
+            
+            // Wrap with WaveReadLaneAt using our permutation
+            auto permutedInput = std::make_unique<interpreter::WaveReadLaneAt>(
+                std::move(inputClone),
+                permExpr->clone(),
+                input->getType()
+            );
+            
+            // Create new wave operation with permuted input
+            return std::make_unique<interpreter::WaveActiveOp>(
+                std::move(permutedInput),
+                wave->getOpType()
+            );
+        }
+        return waveOp;
+    };
+    
+    // Use WaveOpReplacer to modify the statement
+    WaveOpReplacer replacer(waveOpIndex, replacementFunc);
+    auto mutatedStmt = replacer.replaceInStatement(cloneStatement(stmt));
+    
+    std::cerr << "DEBUG: applyLanePermutation - replacer.wasReplaced()=" << replacer.wasReplaced() << "\n";
+    
+    if (!mutatedStmt || !replacer.wasReplaced()) {
+        std::cerr << "DEBUG: applyLanePermutation - mutation failed\n";
+        return nullptr;
+    }
     
     // Create mutation record
     MutationRecord record;
     record.type = MutationType::LanePermutation;
     record.waveOpIndex = waveOpIndex;
     record.round = tracker.getCurrentRound();
-    record.description = "Lane permutation (simplified - no AST modification yet)";
+    record.description = "Lane permutation: " + getPermutationDescription(pattern);
     
     // Record the mutation
-    tracker.recordMutation(cloned.get(), MutationType::LanePermutation, waveOpIndex, record);
+    tracker.recordMutation(mutatedStmt.get(), MutationType::LanePermutation, waveOpIndex, record);
     
-    return cloned;
+    return mutatedStmt;
 }
 
 std::unique_ptr<interpreter::Statement>
@@ -177,15 +252,21 @@ SemanticPreservingMutator::applyParticipantTracking(
     ProgramState& state,
     FuzzedDataProvider& provider) {
     
+    std::cerr << "DEBUG: applyParticipantTracking called\n";
+    
     // Check if we can apply this mutation
     if (!tracker.canApplyMutation(stmt, MutationType::ParticipantTracking, waveOpIndex)) {
+        std::cerr << "DEBUG: applyParticipantTracking - cannot apply mutation\n";
         return nullptr;
     }
     
     // For now, just clone the statement and mark the mutation as applied
     // TODO: Implement actual participant tracking
     auto cloned = cloneStatement(stmt);
-    if (!cloned) return nullptr;
+    if (!cloned) {
+        std::cerr << "DEBUG: applyParticipantTracking - clone failed\n";
+        return nullptr;
+    }
     
     // Create mutation record
     MutationRecord record;
@@ -241,6 +322,7 @@ SemanticPreservingMutator::mutateStatement(
     
     // Find unmutated wave operations
     auto unmutatedOps = tracker.findUnmutatedWaveOps(stmt);
+    std::cerr << "DEBUG: mutateStatement - found " << unmutatedOps.size() << " unmutated wave ops\n";
     if (unmutatedOps.empty()) {
         return nullptr;
     }
@@ -252,10 +334,12 @@ SemanticPreservingMutator::mutateStatement(
     
     // Select appropriate mutation
     MutationType mutation = selectMutation(stmt, opIndex, provider);
+    std::cerr << "DEBUG: mutateStatement - selected mutation type: " << static_cast<int>(mutation) << "\n";
     
     // Apply the mutation
     switch (mutation) {
         case MutationType::LanePermutation:
+            std::cerr << "DEBUG: mutateStatement - applying lane permutation\n";
             return applyLanePermutation(stmt, opIndex, state, provider);
             
         case MutationType::ParticipantTracking:
@@ -274,28 +358,171 @@ SemanticPreservingMutator::mutateStatement(
     }
 }
 
-// ExpressionReplacer implementation
+// WaveOpReplacer implementation
 std::unique_ptr<interpreter::Expression>
-ExpressionReplacer::replaceInExpression(std::unique_ptr<interpreter::Expression> expr) {
-    return replaceAtPath(std::move(expr), {});
-}
-
-std::unique_ptr<interpreter::Expression>
-ExpressionReplacer::replaceAtPath(std::unique_ptr<interpreter::Expression> expr,
-                                 std::vector<size_t> currentPath) {
+WaveOpReplacer::replaceInExpression(std::unique_ptr<interpreter::Expression> expr) {
     if (!expr) return nullptr;
     
-    // Check if we're at the target location
-    if (currentPath == targetPath && !replaced) {
-        replaced = true;
-        return std::move(replacement);
+    // Check if this is a wave operation
+    if (auto waveOp = dynamic_cast<interpreter::WaveActiveOp*>(expr.get())) {
+        if (currentWaveOpCount == targetWaveOpIndex && !replaced) {
+            replaced = true;
+            // Apply the replacement function
+            return replacementFunc(std::move(expr));
+        }
+        currentWaveOpCount++;
+        // Still need to clone even if not replacing
+        return expr->clone();
     }
     
-    // TODO: Implement proper AST manipulation with visitor pattern
-    // For now, we can't directly access private members
-    // This is a limitation that needs to be addressed in the interpreter design
+    // Recursively process sub-expressions
+    if (auto binOp = dynamic_cast<interpreter::BinaryOpExpr*>(expr.get())) {
+        auto left = binOp->getLeft();
+        auto right = binOp->getRight();
+        
+        auto newLeft = replaceInExpression(left ? left->clone() : nullptr);
+        auto newRight = replaceInExpression(right ? right->clone() : nullptr);
+        
+        if (replaced) {
+            return std::make_unique<interpreter::BinaryOpExpr>(
+                std::move(newLeft), std::move(newRight), binOp->getOp());
+        }
+    }
+    else if (auto unaryOp = dynamic_cast<interpreter::UnaryOpExpr*>(expr.get())) {
+        auto inner = unaryOp->getExpr();
+        auto newInner = replaceInExpression(inner ? inner->clone() : nullptr);
+        
+        if (replaced) {
+            return std::make_unique<interpreter::UnaryOpExpr>(
+                std::move(newInner), unaryOp->getOp());
+        }
+    }
+    else if (auto waveRead = dynamic_cast<interpreter::WaveReadLaneAt*>(expr.get())) {
+        auto value = waveRead->getValue();
+        auto lane = waveRead->getLaneIndex();
+        
+        auto newValue = replaceInExpression(value ? value->clone() : nullptr);
+        auto newLane = replaceInExpression(lane ? lane->clone() : nullptr);
+        
+        if (replaced) {
+            return std::make_unique<interpreter::WaveReadLaneAt>(
+                std::move(newValue), std::move(newLane), waveRead->getType());
+        }
+    }
     
-    return expr;
+    // For other expression types, return clone
+    return expr->clone();
+}
+
+std::unique_ptr<interpreter::Statement>
+WaveOpReplacer::replaceInStatement(std::unique_ptr<interpreter::Statement> stmt) {
+    if (!stmt) return nullptr;
+    
+    // Handle different statement types
+    if (auto varDecl = dynamic_cast<interpreter::VarDeclStmt*>(stmt.get())) {
+        auto init = varDecl->getInit();
+        auto newInit = replaceInExpression(init ? init->clone() : nullptr);
+        
+        if (replaced) {
+            return std::make_unique<interpreter::VarDeclStmt>(
+                varDecl->getName(), varDecl->getType(), std::move(newInit));
+        }
+    }
+    else if (auto assign = dynamic_cast<interpreter::AssignStmt*>(stmt.get())) {
+        auto expr = assign->getExpression();
+        auto newExpr = replaceInExpression(expr ? expr->clone() : nullptr);
+        
+        if (replaced) {
+            return std::make_unique<interpreter::AssignStmt>(
+                assign->getName(), std::move(newExpr));
+        }
+    }
+    else if (auto arrayAssign = dynamic_cast<interpreter::ArrayAssignStmt*>(stmt.get())) {
+        auto value = arrayAssign->getValueExpr();
+        auto newValue = replaceInExpression(value ? value->clone() : nullptr);
+        
+        if (replaced) {
+            auto index = arrayAssign->getIndexExpr();
+            return std::make_unique<interpreter::ArrayAssignStmt>(
+                arrayAssign->getArrayName(),
+                index ? index->clone() : nullptr,
+                std::move(newValue));
+        }
+    }
+    else if (auto ifStmt = dynamic_cast<interpreter::IfStmt*>(stmt.get())) {
+        // Process then body
+        std::vector<std::unique_ptr<interpreter::Statement>> newThenBody;
+        bool modifiedThen = false;
+        for (const auto& s : ifStmt->getThenBlock()) {
+            auto newStmt = replaceInStatement(s->clone());
+            if (replaced && !modifiedThen) {
+                modifiedThen = true;
+            }
+            newThenBody.push_back(std::move(newStmt));
+        }
+        
+        // Process else body
+        std::vector<std::unique_ptr<interpreter::Statement>> newElseBody;
+        bool modifiedElse = false;
+        for (const auto& s : ifStmt->getElseBlock()) {
+            auto newStmt = replaceInStatement(s->clone());
+            if (replaced && !modifiedElse) {
+                modifiedElse = true;
+            }
+            newElseBody.push_back(std::move(newStmt));
+        }
+        
+        if (modifiedThen || modifiedElse) {
+            return std::make_unique<interpreter::IfStmt>(
+                ifStmt->getCondition()->clone(),
+                std::move(newThenBody),
+                std::move(newElseBody)
+            );
+        }
+    }
+    else if (auto forStmt = dynamic_cast<interpreter::ForStmt*>(stmt.get())) {
+        // Process for loop body
+        std::vector<std::unique_ptr<interpreter::Statement>> newBody;
+        bool modified = false;
+        for (const auto& s : forStmt->getBody()) {
+            auto newStmt = replaceInStatement(s->clone());
+            if (replaced && !modified) {
+                modified = true;
+            }
+            newBody.push_back(std::move(newStmt));
+        }
+        
+        if (modified) {
+            return std::make_unique<interpreter::ForStmt>(
+                forStmt->getLoopVar(),
+                forStmt->getInit()->clone(),
+                forStmt->getCondition()->clone(),
+                forStmt->getIncrement()->clone(),
+                std::move(newBody)
+            );
+        }
+    }
+    else if (auto whileStmt = dynamic_cast<interpreter::WhileStmt*>(stmt.get())) {
+        // Process while loop body
+        std::vector<std::unique_ptr<interpreter::Statement>> newBody;
+        bool modified = false;
+        for (const auto& s : whileStmt->getBody()) {
+            auto newStmt = replaceInStatement(s->clone());
+            if (replaced && !modified) {
+                modified = true;
+            }
+            newBody.push_back(std::move(newStmt));
+        }
+        
+        if (modified) {
+            return std::make_unique<interpreter::WhileStmt>(
+                whileStmt->getCondition()->clone(),
+                std::move(newBody)
+            );
+        }
+    }
+    
+    return stmt->clone();
 }
 
 } // namespace fuzzer

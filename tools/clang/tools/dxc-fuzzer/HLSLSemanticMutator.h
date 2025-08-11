@@ -4,15 +4,14 @@
 #include "HLSLMutationTracker.h"
 #include "HLSLProgramGenerator.h"
 #include <fuzzer/FuzzedDataProvider.h>
+#include <functional>
 
 namespace minihlsl {
 namespace fuzzer {
 
 // Semantic-preserving mutations for HLSL programs
 class SemanticPreservingMutator {
-private:
-    MutationTracker& tracker;
-    
+public:
     // Lane permutation patterns
     enum class PermutationPattern {
         Rotate,      // Rotate lanes by N
@@ -22,6 +21,9 @@ private:
         Broadcast,   // Broadcast single lane
         Custom       // Custom permutation
     };
+    
+private:
+    MutationTracker& tracker;
     
     // Generate permutation expression
     std::unique_ptr<interpreter::Expression> generatePermutationExpr(
@@ -90,29 +92,30 @@ public:
         FuzzedDataProvider& provider);
 };
 
-// Helper class to find and modify expressions in AST
-class ExpressionReplacer {
+// Helper class to find and replace wave operations in AST
+class WaveOpReplacer {
 private:
-    const std::vector<size_t>& targetPath;
-    std::unique_ptr<interpreter::Expression> replacement;
-    size_t currentDepth;
-    bool replaced;
+    size_t targetWaveOpIndex;
+    size_t currentWaveOpCount = 0;
+    std::function<std::unique_ptr<interpreter::Expression>(
+        std::unique_ptr<interpreter::Expression>)> replacementFunc;
+    bool replaced = false;
     
 public:
-    ExpressionReplacer(const std::vector<size_t>& path,
-                      std::unique_ptr<interpreter::Expression> repl)
-        : targetPath(path), replacement(std::move(repl)), 
-          currentDepth(0), replaced(false) {}
-    
-    std::unique_ptr<interpreter::Expression> replaceInExpression(
-        std::unique_ptr<interpreter::Expression> expr);
+    WaveOpReplacer(size_t index, 
+                   std::function<std::unique_ptr<interpreter::Expression>(
+                       std::unique_ptr<interpreter::Expression>)> func)
+        : targetWaveOpIndex(index), replacementFunc(func) {}
     
     bool wasReplaced() const { return replaced; }
     
-private:
-    std::unique_ptr<interpreter::Expression> replaceAtPath(
-        std::unique_ptr<interpreter::Expression> expr,
-        std::vector<size_t> currentPath);
+    // Replace in expression tree
+    std::unique_ptr<interpreter::Expression> 
+    replaceInExpression(std::unique_ptr<interpreter::Expression> expr);
+    
+    // Replace in statement
+    std::unique_ptr<interpreter::Statement>
+    replaceInStatement(std::unique_ptr<interpreter::Statement> stmt);
 };
 
 } // namespace fuzzer

@@ -98,13 +98,21 @@ IncrementalGenerator::applyMutationsSelectively(
     // Only mutate if this statement has wave operations
     auto metadata = mutationTracker->getMetadata(stmt);
     if (!metadata || metadata->waveOps.empty()) {
+        std::cerr << "DEBUG: applyMutationsSelectively - no metadata or no wave ops\n";
         return nullptr;
     }
     
+    std::cerr << "DEBUG: applyMutationsSelectively - found " << metadata->waveOps.size() << " wave ops\n";
+    std::cerr << "DEBUG: statement generationRound=" << metadata->generationRound 
+              << ", currentRound=" << mutationTracker->getCurrentRound() << "\n";
+    
     // Only mutate statements from current round
     if (!mutationTracker->isFromCurrentRound(stmt)) {
+        std::cerr << "DEBUG: applyMutationsSelectively - not from current round\n";
         return nullptr;
     }
+    
+    std::cerr << "DEBUG: applyMutationsSelectively - calling mutator->mutateStatement\n";
     
     // Use the semantic-preserving mutator
     return mutator->mutateStatement(stmt, state, provider);
@@ -129,8 +137,7 @@ ProgramState IncrementalGenerator::generateIncremental(const uint8_t* data, size
         GenerationRound roundInfo;
         roundInfo.roundNumber = round;
         
-        // Advance mutation tracker round
-        mutationTracker->advanceRound();
+        // Don't advance round yet - we want to apply mutations to statements from this round
         
         // Generate new control flow block
         auto pattern = createPattern(provider);
@@ -208,8 +215,13 @@ ProgramState IncrementalGenerator::generateIncremental(const uint8_t* data, size
                         mutationMeta->appliedMutations.end()
                     );
                 }
+                std::cerr << "DEBUG: Applied mutation to statement in round " << round << "\n";
             } else {
                 state.program.statements.push_back(std::move(stmt));
+                if (!meta.waveOps.empty()) {
+                    std::cerr << "DEBUG: No mutation applied to statement with " 
+                              << meta.waveOps.size() << " wave ops in round " << round << "\n";
+                }
             }
             
             roundInfo.addedStatementIndices.push_back(insertPos);
@@ -219,6 +231,9 @@ ProgramState IncrementalGenerator::generateIncremental(const uint8_t* data, size
         // Record round
         roundInfo.description = "Round " + std::to_string(round);
         state.history.push_back(roundInfo);
+        
+        // Now advance to next round for future mutations
+        mutationTracker->advanceRound();
     }
     
     return state;
