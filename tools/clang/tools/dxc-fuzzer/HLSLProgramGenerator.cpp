@@ -383,12 +383,25 @@ ControlFlowGenerator::generateIf(const BlockSpec& spec, ProgramState& state,
     
     // Always include at least one wave operation
     auto waveOp = generateWaveOperation(state, provider);
-    std::string resultVar = state.getNewVariable();
-    thenBody.push_back(std::make_unique<interpreter::VarDeclStmt>(
-        resultVar,
-        interpreter::HLSLType::Uint,
-        std::move(waveOp)
-    ));
+    
+    // Use assignment to existing variable (result) to avoid scope issues
+    // Or use a variable that was declared at the function scope
+    if (!state.declaredVariables.empty() && provider.ConsumeBool()) {
+        // Assign to existing variable
+        std::vector<std::string> vars(state.declaredVariables.begin(), 
+                                     state.declaredVariables.end());
+        size_t idx = provider.ConsumeIntegralInRange<size_t>(0, vars.size() - 1);
+        thenBody.push_back(std::make_unique<interpreter::AssignStmt>(
+            vars[idx],
+            std::move(waveOp)
+        ));
+    } else {
+        // Always assign to 'result' which is declared at the beginning
+        thenBody.push_back(std::make_unique<interpreter::AssignStmt>(
+            "result",
+            std::move(waveOp)
+        ));
+    }
     
     // Break/continue should not be added in if statements - they're only valid in loops
     
@@ -396,12 +409,20 @@ ControlFlowGenerator::generateIf(const BlockSpec& spec, ProgramState& state,
     std::vector<std::unique_ptr<interpreter::Statement>> elseBody;
     if (spec.type == BlockSpec::IF_ELSE) {
         // Simple assignment in else
-        std::string elseVar = state.getNewVariable();
-        elseBody.push_back(std::make_unique<interpreter::VarDeclStmt>(
-            elseVar,
-            interpreter::HLSLType::Uint,
-            std::make_unique<interpreter::LiteralExpr>(0)
-        ));
+        if (!state.declaredVariables.empty()) {
+            std::vector<std::string> vars(state.declaredVariables.begin(), 
+                                         state.declaredVariables.end());
+            size_t idx = provider.ConsumeIntegralInRange<size_t>(0, vars.size() - 1);
+            elseBody.push_back(std::make_unique<interpreter::AssignStmt>(
+                vars[idx],
+                std::make_unique<interpreter::LiteralExpr>(0)
+            ));
+        } else {
+            elseBody.push_back(std::make_unique<interpreter::AssignStmt>(
+                "result",
+                std::make_unique<interpreter::LiteralExpr>(0)
+            ));
+        }
     }
     
     return std::make_unique<interpreter::IfStmt>(
@@ -446,10 +467,9 @@ ControlFlowGenerator::generateForLoop(const BlockSpec& spec, ProgramState& state
     
     std::vector<std::unique_ptr<interpreter::Statement>> waveBody;
     auto waveOp = generateWaveOperation(state, provider);
-    std::string waveResult = state.getNewVariable();
-    waveBody.push_back(std::make_unique<interpreter::VarDeclStmt>(
-        waveResult,
-        interpreter::HLSLType::Uint,
+    // Use assignment to existing variable to avoid scope issues
+    waveBody.push_back(std::make_unique<interpreter::AssignStmt>(
+        "result",
         std::move(waveOp)
     ));
     
@@ -543,10 +563,9 @@ ControlFlowGenerator::generateWhileLoop(const BlockSpec& spec, ProgramState& sta
     
     std::vector<std::unique_ptr<interpreter::Statement>> waveBody;
     auto waveOp = generateWaveOperation(state, provider);
-    std::string waveResult = state.getNewVariable();
-    waveBody.push_back(std::make_unique<interpreter::VarDeclStmt>(
-        waveResult,
-        interpreter::HLSLType::Uint,
+    // Use assignment to existing variable to avoid scope issues
+    waveBody.push_back(std::make_unique<interpreter::AssignStmt>(
+        "result",
         std::move(waveOp)
     ));
     
@@ -586,11 +605,23 @@ ControlFlowGenerator::generateWaveOperation(ProgramState& state, FuzzedDataProvi
     // Choose input - either variable or expression
     std::unique_ptr<interpreter::Expression> input;
     if (!state.declaredVariables.empty() && provider.ConsumeBool()) {
-        // Use existing variable
-        std::vector<std::string> vars(state.declaredVariables.begin(), 
-                                     state.declaredVariables.end());
-        size_t idx = provider.ConsumeIntegralInRange<size_t>(0, vars.size() - 1);
-        input = std::make_unique<interpreter::VariableExpr>(vars[idx]);
+        // Use existing variable, but filter out loop variables that may be out of scope
+        std::vector<std::string> validVars;
+        for (const auto& var : state.declaredVariables) {
+            // Skip loop counter variables (they start with 'i' or 'counter')
+            if (var.substr(0, 1) != "i" && var.substr(0, 7) != "counter") {
+                validVars.push_back(var);
+            }
+        }
+        
+        if (!validVars.empty()) {
+            size_t idx = provider.ConsumeIntegralInRange<size_t>(0, validVars.size() - 1);
+            input = std::make_unique<interpreter::VariableExpr>(validVars[idx]);
+        } else {
+            // Fallback to literal if no valid variables
+            input = std::make_unique<interpreter::LiteralExpr>(
+                provider.ConsumeIntegralInRange<int>(1, 10));
+        }
     } else {
         // Use tid.x or literal
         if (provider.ConsumeBool()) {

@@ -2,6 +2,7 @@
 #include "MiniHLSLInterpreterTraceCapture.h"
 #include <iostream>
 #include <chrono>
+#include <thread>
 
 namespace minihlsl {
 namespace fuzzer {
@@ -140,7 +141,8 @@ PipelineResult IncrementalFuzzingPipeline::run(const uint8_t* data, size_t size)
     if (config.enableLogging) {
         std::cout << "\n=== Starting Incremental Fuzzing Pipeline ===\n";
         std::cout << "Max increments: " << config.maxIncrements << "\n";
-        std::cout << "Mutants per increment: " << config.mutantsPerIncrement << "\n\n";
+        std::cout << "Mutants per increment: " << config.mutantsPerIncrement << "\n";
+        std::cout << "DEBUG: Pipeline started from thread " << std::this_thread::get_id() << "\n\n";
     }
     
     // Initialize fuzzer with empty seed corpus
