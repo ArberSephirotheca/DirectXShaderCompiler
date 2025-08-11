@@ -2425,6 +2425,10 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   
   if (useIncrementalPipeline && generateRandom && size >= 16) {
     // Use the new incremental fuzzing pipeline
+    static int testInputCallCount = 0;
+    ++testInputCallCount;
+    std::cout << "DEBUG: LLVMFuzzerTestOneInput pipeline path (call #" << testInputCallCount << ")\n";
+    
     minihlsl::fuzzer::IncrementalFuzzingConfig pipelineConfig;
     pipelineConfig.maxIncrements = 5;
     pipelineConfig.mutantsPerIncrement = 10;
@@ -2434,6 +2438,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     auto result = pipeline.run(data, size);
     
     // Could use result.totalBugsFound to guide libFuzzer
+    std::cout << "DEBUG: LLVMFuzzerTestOneInput returning early\n";
     return 0;
   }
   

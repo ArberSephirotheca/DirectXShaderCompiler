@@ -139,10 +139,11 @@ PipelineResult IncrementalFuzzingPipeline::run(const uint8_t* data, size_t size)
     PipelineResult result;
     
     if (config.enableLogging) {
-        std::cout << "\n=== Starting Incremental Fuzzing Pipeline ===\n";
+        static int pipelineCallCount = 0;
+        ++pipelineCallCount;
+        std::cout << "\n=== Starting Incremental Fuzzing Pipeline (Call #" << pipelineCallCount << ") ===\n";
         std::cout << "Max increments: " << config.maxIncrements << "\n";
-        std::cout << "Mutants per increment: " << config.mutantsPerIncrement << "\n";
-        std::cout << "DEBUG: Pipeline started from thread " << std::this_thread::get_id() << "\n\n";
+        std::cout << "Mutants per increment: " << config.mutantsPerIncrement << "\n\n";
     }
     
     // Initialize fuzzer with empty seed corpus
