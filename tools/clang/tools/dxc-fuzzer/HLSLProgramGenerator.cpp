@@ -31,7 +31,7 @@ std::vector<const interpreter::WaveActiveOp*> findWaveOpsInStatement(const inter
 IncrementalGenerator::IncrementalGenerator() 
     : cfGenerator(std::make_unique<ControlFlowGenerator>()),
       mutationTracker(std::make_unique<MutationTracker>()),
-      mutator(std::make_unique<SemanticPreservingMutator>(*mutationTracker)) {
+      semanticMutator(std::make_unique<SemanticPreservingMutator>(*mutationTracker)) {
 }
 
 IncrementalGenerator::~IncrementalGenerator() = default;
@@ -95,27 +95,78 @@ IncrementalGenerator::applyMutationsSelectively(
     ProgramState& state,
     FuzzedDataProvider& provider) {
     
-    // Only mutate if this statement has wave operations
-    auto metadata = mutationTracker->getMetadata(stmt);
-    if (!metadata || metadata->waveOps.empty()) {
-        std::cerr << "DEBUG: applyMutationsSelectively - no metadata or no wave ops\n";
-        return nullptr;
+    std::cerr << "DEBUG: applyMutationsSelectively - using SemanticPreservingMutator\n";
+    
+    // Use our SemanticPreservingMutator which doesn't require traces
+    auto mutated = semanticMutator->mutateStatement(stmt, state, provider);
+    
+    if (mutated) {
+        std::cerr << "DEBUG: Successfully applied mutation\n";
+        // The mutation has already been recorded by the mutator
+        return mutated;
     }
     
-    std::cerr << "DEBUG: applyMutationsSelectively - found " << metadata->waveOps.size() << " wave ops\n";
-    std::cerr << "DEBUG: statement generationRound=" << metadata->generationRound 
-              << ", currentRound=" << mutationTracker->getCurrentRound() << "\n";
+    std::cerr << "DEBUG: No mutation applied\n";
+    return nullptr;
+}
+
+void IncrementalGenerator::handleMutationBufferRequirements(
+    const interpreter::Statement* stmt,
+    ProgramState& state) {
     
-    // Only mutate statements from current round
-    if (!mutationTracker->isFromCurrentRound(stmt)) {
-        std::cerr << "DEBUG: applyMutationsSelectively - not from current round\n";
-        return nullptr;
+    std::cerr << "DEBUG: handleMutationBufferRequirements called\n";
+    
+    // Get mutation metadata to check what type was applied
+    auto mutationMeta = mutationTracker->getMetadata(stmt);
+    if (!mutationMeta) {
+        std::cerr << "DEBUG: No mutation metadata found\n";
+        return;
+    }
+    std::cerr << "DEBUG: Found metadata with " << mutationMeta->appliedMutations.size() << " mutations\n";
+    
+    // Check if we need to handle WaveParticipantTrackingMutation buffer
+    bool needsParticipantBuffer = false;
+    for (const auto& mut : mutationMeta->appliedMutations) {
+        std::cerr << "DEBUG: Checking mutation type: " << static_cast<int>(mut) << "\n";
+        if (mut == MutationType::ParticipantTracking) {
+            needsParticipantBuffer = true;
+            std::cerr << "DEBUG: Found ParticipantTracking mutation\n";
+            break;
+        }
     }
     
-    std::cerr << "DEBUG: applyMutationsSelectively - calling mutator->mutateStatement\n";
-    
-    // Use the semantic-preserving mutator
-    return mutator->mutateStatement(stmt, state, provider);
+    if (needsParticipantBuffer) {
+        // Add buffer if it doesn't exist
+        bool hasBuffer = false;
+        for (const auto& buffer : state.program.globalBuffers) {
+            if (buffer.name == "_participant_check_sum") {
+                hasBuffer = true;
+                break;
+            }
+        }
+        
+        if (!hasBuffer) {
+            std::cerr << "DEBUG: Adding _participant_check_sum buffer\n";
+            interpreter::GlobalBufferDecl participantBuffer;
+            participantBuffer.name = "_participant_check_sum";
+            participantBuffer.bufferType = "RWBuffer";
+            participantBuffer.elementType = interpreter::HLSLType::Uint;
+            participantBuffer.size = state.program.getTotalThreads();
+            participantBuffer.registerIndex = 1;
+            participantBuffer.isReadWrite = true;
+            state.program.globalBuffers.push_back(participantBuffer);
+            std::cerr << "DEBUG: Buffer added, total buffers: " << state.program.globalBuffers.size() << "\n";
+            
+            // Add initialization at the beginning
+            auto tidX = std::make_unique<interpreter::DispatchThreadIdExpr>(0);
+            auto zero = std::make_unique<interpreter::LiteralExpr>(0);
+            state.program.statements.insert(
+                state.program.statements.begin(),
+                std::make_unique<interpreter::ArrayAssignStmt>(
+                    "_participant_check_sum", std::move(tidX), std::move(zero))
+            );
+        }
+    }
 }
 
 void IncrementalGenerator::applyMutationsToNew(ProgramState& state, FuzzedDataProvider& provider) {
@@ -200,14 +251,67 @@ ProgramState IncrementalGenerator::generateIncremental(const uint8_t* data, size
             auto mutatedStmt = applyMutationsSelectively(stmt.get(), state, provider);
             
             if (mutatedStmt) {
-                // Update metadata to point to mutated statement
+                // Copy metadata to the mutated statement, including any mutations that were recorded
+                auto existingMeta = mutationTracker->getMetadata(mutatedStmt.get());
+                if (existingMeta) {
+                    std::cerr << "DEBUG: Found existing metadata on mutated stmt with " 
+                              << existingMeta->appliedMutations.size() << " mutations\n";
+                    // Copy applied mutations from the mutated statement's metadata
+                    meta.appliedMutations = existingMeta->appliedMutations;
+                    meta.mutationHistory = existingMeta->mutationHistory;
+                    meta.mutatedWaveOpIndices = existingMeta->mutatedWaveOpIndices;
+                } else {
+                    std::cerr << "DEBUG: No existing metadata on mutated stmt\n";
+                }
+                
+                // Register the updated metadata
                 mutationTracker->registerStatement(mutatedStmt.get(), meta);
+                
+                // Handle buffer requirements for the mutation
+                handleMutationBufferRequirements(mutatedStmt.get(), state);
+                
+                // Also check if the statement uses _participant_check_sum directly
+                // (for when metadata isn't properly propagated)
+                std::string stmtStr = mutatedStmt->toString();
+                if (stmtStr.find("_participant_check_sum") != std::string::npos) {
+                    std::cerr << "DEBUG: Statement uses _participant_check_sum buffer\n";
+                    
+                    // Add buffer if it doesn't exist
+                    bool hasBuffer = false;
+                    for (const auto& buffer : state.program.globalBuffers) {
+                        if (buffer.name == "_participant_check_sum") {
+                            hasBuffer = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!hasBuffer) {
+                        std::cerr << "DEBUG: Adding _participant_check_sum buffer (fallback)\n";
+                        interpreter::GlobalBufferDecl participantBuffer;
+                        participantBuffer.name = "_participant_check_sum";
+                        participantBuffer.bufferType = "RWBuffer";
+                        participantBuffer.elementType = interpreter::HLSLType::Uint;
+                        participantBuffer.size = state.program.getTotalThreads();
+                        participantBuffer.registerIndex = 1;
+                        participantBuffer.isReadWrite = true;
+                        state.program.globalBuffers.push_back(participantBuffer);
+                        std::cerr << "DEBUG: Buffer added, total buffers: " << state.program.globalBuffers.size() << "\n";
+                        
+                        // Add initialization at the beginning
+                        auto tidX = std::make_unique<interpreter::DispatchThreadIdExpr>(0);
+                        auto zero = std::make_unique<interpreter::LiteralExpr>(0);
+                        state.program.statements.insert(
+                            state.program.statements.begin(),
+                            std::make_unique<interpreter::ArrayAssignStmt>(
+                                "_participant_check_sum", std::move(tidX), std::move(zero))
+                        );
+                    }
+                }
+                
                 state.program.statements.push_back(std::move(mutatedStmt));
                 
                 // Record mutation in round info
-                auto mutationMeta = mutationTracker->getMetadata(
-                    state.program.statements.back().get()
-                );
+                auto mutationMeta = mutationTracker->getMetadata(state.program.statements.back().get());
                 if (mutationMeta && !mutationMeta->appliedMutations.empty()) {
                     roundInfo.appliedMutations.insert(
                         roundInfo.appliedMutations.end(),

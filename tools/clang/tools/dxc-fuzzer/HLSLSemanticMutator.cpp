@@ -260,25 +260,100 @@ SemanticPreservingMutator::applyParticipantTracking(
         return nullptr;
     }
     
-    // For now, just clone the statement and mark the mutation as applied
-    // TODO: Implement actual participant tracking
-    auto cloned = cloneStatement(stmt);
-    if (!cloned) {
-        std::cerr << "DEBUG: applyParticipantTracking - clone failed\n";
+    // Get metadata
+    auto metadata = tracker.getMetadata(stmt);
+    if (!metadata || waveOpIndex >= metadata->waveOps.size()) {
         return nullptr;
     }
+    
+    // Clone the original statement
+    auto clonedStmt = cloneStatement(stmt);
+    if (!clonedStmt) {
+        return nullptr;
+    }
+    
+    // Create tracking statements that will wrap the original statement
+    std::vector<std::unique_ptr<interpreter::Statement>> trackingStatements;
+    
+    // 1. Count active participants before wave op: _participantCount = WaveActiveSum(1)
+    auto oneExpr = std::make_unique<interpreter::LiteralExpr>(1);
+    auto sumOp = std::make_unique<interpreter::WaveActiveOp>(
+        std::move(oneExpr), interpreter::WaveActiveOp::Sum);
+    
+    std::string countVarName = "_participant_count_" + std::to_string(waveOpIndex);
+    trackingStatements.push_back(std::make_unique<interpreter::VarDeclStmt>(
+        countVarName, interpreter::HLSLType::Uint, std::move(sumOp)));
+    
+    // 2. Add the original statement (with wave operation)
+    trackingStatements.push_back(std::move(clonedStmt));
+    
+    // 3. Count participants after wave op: _participantCountPost = WaveActiveSum(1)
+    auto oneExpr2 = std::make_unique<interpreter::LiteralExpr>(1);
+    auto sumOp2 = std::make_unique<interpreter::WaveActiveOp>(
+        std::move(oneExpr2), interpreter::WaveActiveOp::Sum);
+    
+    std::string countVarNamePost = "_participant_count_post_" + std::to_string(waveOpIndex);
+    trackingStatements.push_back(std::make_unique<interpreter::VarDeclStmt>(
+        countVarNamePost, interpreter::HLSLType::Uint, std::move(sumOp2)));
+    
+    // 4. Check if counts match: _counts_match = (pre == post)
+    auto preCountRef = std::make_unique<interpreter::VariableExpr>(countVarName);
+    auto postCountRef = std::make_unique<interpreter::VariableExpr>(countVarNamePost);
+    auto compare = std::make_unique<interpreter::BinaryOpExpr>(
+        std::move(preCountRef), std::move(postCountRef), interpreter::BinaryOpExpr::Eq);
+    
+    std::string matchVarName = "_counts_match_" + std::to_string(waveOpIndex);
+    trackingStatements.push_back(std::make_unique<interpreter::VarDeclStmt>(
+        matchVarName, interpreter::HLSLType::Bool, std::move(compare)));
+    
+    // 5. Store verification result to buffer: _participant_check_sum[tid.x] += matchResult
+    // Convert bool to uint
+    auto matchRef = std::make_unique<interpreter::VariableExpr>(matchVarName);
+    auto matchAsUint = std::make_unique<interpreter::ConditionalExpr>(
+        std::move(matchRef),
+        std::make_unique<interpreter::LiteralExpr>(1),
+        std::make_unique<interpreter::LiteralExpr>(0)
+    );
+    
+    // Get thread ID component
+    auto tidX = std::make_unique<interpreter::DispatchThreadIdExpr>(0); // component 0 = x
+    
+    // Read current buffer value
+    auto bufferAccess = std::make_unique<interpreter::ArrayAccessExpr>(
+        "_participant_check_sum",
+        tidX->clone(),
+        interpreter::HLSLType::Uint
+    );
+    
+    // Add to current value
+    auto addExpr = std::make_unique<interpreter::BinaryOpExpr>(
+        std::move(bufferAccess), std::move(matchAsUint),
+        interpreter::BinaryOpExpr::Add
+    );
+    
+    // Store back to buffer
+    trackingStatements.push_back(std::make_unique<interpreter::ArrayAssignStmt>(
+        "_participant_check_sum", std::move(tidX), std::move(addExpr)));
+    
+    // Wrap all statements in if(true) to create a single statement
+    auto trueCond = std::make_unique<interpreter::LiteralExpr>(true);
+    auto wrappedStmt = std::make_unique<interpreter::IfStmt>(
+        std::move(trueCond), 
+        std::move(trackingStatements),
+        std::vector<std::unique_ptr<interpreter::Statement>>{}
+    );
     
     // Create mutation record
     MutationRecord record;
     record.type = MutationType::ParticipantTracking;
     record.waveOpIndex = waveOpIndex;
     record.round = tracker.getCurrentRound();
-    record.description = "Participant tracking (simplified - no verification added yet)";
+    record.description = "Participant tracking with WaveActiveSum verification";
     
     // Record the mutation
-    tracker.recordMutation(cloned.get(), MutationType::ParticipantTracking, waveOpIndex, record);
+    tracker.recordMutation(wrappedStmt.get(), MutationType::ParticipantTracking, waveOpIndex, record);
     
-    return cloned;
+    return wrappedStmt;
 }
 
 MutationType SemanticPreservingMutator::selectMutation(

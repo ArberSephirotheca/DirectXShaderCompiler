@@ -8,6 +8,9 @@
 #include <fstream>
 #include <cstdlib>
 
+// Global verbosity flag - can be set via environment variable
+static int g_verbosity = 0;
+
 using namespace minihlsl;
 
 // Global flag to control crash behavior
@@ -42,6 +45,28 @@ static void saveBugToFile(const uint8_t* data, size_t size,
     }
 }
 
+// libFuzzer initialization
+extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv) {
+    std::cerr << "HLSL Incremental Fuzzer initialized\n";
+    std::cerr << "Generating programs with complex control flow and wave operations\n";
+    
+    // Check for verbosity in argv
+    for (int i = 1; i < *argc; i++) {
+        std::string arg((*argv)[i]);
+        if (arg.find("-verbosity=") == 0) {
+            g_verbosity = std::stoi(arg.substr(11));
+        }
+    }
+    
+    // Check environment variable for crash behavior
+    if (getenv("FUZZ_CRASH_ON_BUG")) {
+        g_crashOnBug = true;
+        std::cerr << "Will crash on bug discovery (FUZZ_CRASH_ON_BUG set)\n";
+    }
+    
+    return 0;
+}
+
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     // Minimum size for meaningful generation
     if (Size < 16) return 0;
@@ -54,34 +79,38 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         // Prepare for execution (adds any missing initialization)
         auto program = fuzzer::prepareProgramForExecution(std::move(state.program));
         
-        // Print generated program
-        std::cout << "=== Generated HLSL Program ===\n";
-        std::cout << fuzzer::serializeProgramToString(program) << std::endl;
-        std::cout << "=== End Program ===\n";
+        // Print generated program if verbosity is enabled
+        if (g_verbosity >= 2) {
+            std::cerr << "=== Generated HLSL Program ===\n";
+            std::cerr << fuzzer::serializeProgramToString(program) << std::endl;
+            std::cerr << "=== End Program ===\n";
+        }
         
-        // Print mutation history
-        std::cout << "=== Mutation History ===\n";
-        for (const auto& round : state.history) {
-            std::cout << "Round " << round.roundNumber << ": ";
-            std::cout << round.addedStatementIndices.size() << " statements added";
-            if (!round.appliedMutations.empty()) {
-                std::cout << ", mutations: ";
-                for (auto mut : round.appliedMutations) {
-                    switch (mut) {
-                        case fuzzer::MutationType::LanePermutation:
-                            std::cout << "LanePermutation ";
-                            break;
-                        case fuzzer::MutationType::ParticipantTracking:
-                            std::cout << "ParticipantTracking ";
-                            break;
-                        default:
-                            std::cout << "Unknown ";
+        // Print mutation history if verbosity is high
+        if (g_verbosity >= 3) {
+            std::cerr << "=== Mutation History ===\n";
+            for (const auto& round : state.history) {
+                std::cerr << "Round " << round.roundNumber << ": ";
+                std::cerr << round.addedStatementIndices.size() << " statements added";
+                if (!round.appliedMutations.empty()) {
+                    std::cerr << ", mutations: ";
+                    for (auto mut : round.appliedMutations) {
+                        switch (mut) {
+                            case fuzzer::MutationType::LanePermutation:
+                                std::cerr << "LanePermutation ";
+                                break;
+                            case fuzzer::MutationType::ParticipantTracking:
+                                std::cerr << "ParticipantTracking ";
+                                break;
+                            default:
+                                std::cerr << "Unknown ";
+                        }
                     }
                 }
+                std::cerr << "\n";
             }
-            std::cout << "\n";
+            std::cerr << "=== End Mutation History ===\n";
         }
-        std::cout << "=== End Mutation History ===\n";
         
         // Create interpreter
         interpreter::MiniHLSLInterpreter interpreter;
@@ -154,17 +183,3 @@ extern "C" size_t LLVMFuzzerCustomMutator(
     return 0; // Return 0 to use default mutator
 }
 
-// Initialize function called once at startup
-extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv) {
-    // Check environment variable for crash behavior
-    if (getenv("FUZZ_CRASH_ON_BUG")) {
-        g_crashOnBug = true;
-        std::cerr << "Will crash on bug discovery (FUZZ_CRASH_ON_BUG set)\n";
-    }
-    
-    // Set up any other initialization
-    std::cerr << "HLSL Incremental Fuzzer initialized\n";
-    std::cerr << "Generating programs with complex control flow and wave operations\n";
-    
-    return 0;
-}

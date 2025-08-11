@@ -4,6 +4,7 @@
 #include "MiniHLSLInterpreter.h"
 #include "HLSLMutationTracker.h"
 #include "HLSLSemanticMutator.h"
+#include "MiniHLSLInterpreterFuzzer.h"  // For MutationStrategy and TraceGuidedFuzzer
 #include <fuzzer/FuzzedDataProvider.h>
 #include <memory>
 #include <vector>
@@ -52,7 +53,7 @@ class IncrementalGenerator {
 private:
     std::unique_ptr<ControlFlowGenerator> cfGenerator;
     std::unique_ptr<MutationTracker> mutationTracker;
-    std::unique_ptr<SemanticPreservingMutator> mutator;
+    std::unique_ptr<SemanticPreservingMutator> semanticMutator;
     
     std::unique_ptr<ParticipantPattern> createPattern(FuzzedDataProvider& provider);
     void initializeBaseProgram(ProgramState& state, FuzzedDataProvider& provider);
@@ -63,6 +64,11 @@ private:
         const interpreter::Statement* stmt,
         ProgramState& state,
         FuzzedDataProvider& provider);
+    
+    // Handle buffer requirements for mutations
+    void handleMutationBufferRequirements(
+        const interpreter::Statement* stmt,
+        ProgramState& state);
     
 public:
     IncrementalGenerator();
