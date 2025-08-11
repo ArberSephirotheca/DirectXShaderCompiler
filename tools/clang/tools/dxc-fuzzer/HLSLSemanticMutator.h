@@ -90,6 +90,13 @@ public:
         const interpreter::Statement* stmt,
         ProgramState& state,
         FuzzedDataProvider& provider);
+        
+    // Recursive mutation application (similar to MiniHLSLInterpreterFuzzer)
+    std::unique_ptr<interpreter::Statement> applyMutationRecursively(
+        const interpreter::Statement* stmt,
+        ProgramState& state,
+        FuzzedDataProvider& provider,
+        bool& mutationApplied);
 };
 
 // Helper class to find and replace wave operations in AST

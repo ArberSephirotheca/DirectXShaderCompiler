@@ -98,18 +98,9 @@ IncrementalGenerator::applyMutationsSelectively(
     ProgramState& state,
     FuzzedDataProvider& provider) {
     
-    std::cerr << "DEBUG: applyMutationsSelectively - using SemanticPreservingMutator\n";
-    
-    // Use our SemanticPreservingMutator which doesn't require traces
-    auto mutated = semanticMutator->mutateStatement(stmt, state, provider);
-    
-    if (mutated) {
-        std::cerr << "DEBUG: Successfully applied mutation\n";
-        // The mutation has already been recorded by the mutator
-        return mutated;
-    }
-    
-    std::cerr << "DEBUG: No mutation applied\n";
+    // We can't apply trace-guided mutations during generation
+    // This would need to be done after execution
+    // For now, return nullptr to skip mutations during generation
     return nullptr;
 }
 
@@ -253,7 +244,7 @@ ProgramState IncrementalGenerator::generateIncremental(const uint8_t* data, size
             // Apply mutations selectively
             auto mutatedStmt = applyMutationsSelectively(stmt.get(), state, provider);
             
-            if (mutatedStmt && g_verbosity >= 2) {
+            if (mutatedStmt) {
                 // Show the mutation transformation
                 std::cerr << "\n=== Mutation Applied ===\n";
                 std::cerr << "Original: " << stmt->toString() << "\n";

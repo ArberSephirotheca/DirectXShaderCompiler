@@ -103,9 +103,14 @@ set_target_properties(minihlsl-standalone PROPERTIES
 add_executable(minihlsl-fuzzer
   MiniHLSLInterpreter.cpp
   MiniHLSLInterpreterFuzzer.cpp
-  MiniHLSLInterpreterFuzzerMutations.cpp
+  # MiniHLSLInterpreterFuzzerMutations.cpp  # Commented out - mutations are in MiniHLSLInterpreterFuzzer.cpp
   MiniHLSLInterpreterTraceCapture.cpp
   MiniHLSLValidator.cpp  # Added to support loadSeedCorpus
+  HLSLProgramGenerator.cpp  # Added for random program generation
+  HLSLProgramGeneratorUtils.cpp
+  HLSLParticipantPatterns.cpp
+  HLSLMutationTracker.cpp
+  HLSLSemanticMutator.cpp
   # minihlsl_fuzzer_main.cpp  # Remove custom main - libFuzzer provides main
 )
 target_link_libraries(minihlsl-fuzzer

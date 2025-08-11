@@ -1,6 +1,8 @@
 #include "MiniHLSLInterpreterFuzzer.h"
 #include "MiniHLSLInterpreterTraceCapture.h"
 #include "MiniHLSLValidator.h"
+#include "HLSLProgramGenerator.h"
+#include <fuzzer/FuzzedDataProvider.h>
 #include <fstream>
 #include <sstream>
 #include <random>
@@ -2169,6 +2171,23 @@ void loadSeedCorpus(TraceGuidedFuzzer* fuzzer) {
 
 bool deserializeAST(const uint8_t* data, size_t size, 
                    interpreter::Program& program) {
+  // Check if we should generate a random program instead
+  static bool generateRandom = getenv("FUZZ_GENERATE_RANDOM") != nullptr;
+  
+  if (generateRandom && size >= 16) {
+    // Use the input data as entropy for random generation
+    FuzzedDataProvider provider(data, size);
+    
+    // Import the incremental generator
+    IncrementalGenerator generator;
+    auto state = generator.generateIncremental(data, size);
+    
+    // Prepare the program for execution
+    program = prepareProgramForExecution(std::move(state.program));
+    return true;
+  }
+  
+  // Original behavior: deserialize from seed programs
   if (size < 4) return false;
   
   // Simple approach: Use input bytes to select from seed programs
