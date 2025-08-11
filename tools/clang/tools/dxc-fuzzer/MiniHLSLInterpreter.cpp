@@ -27,13 +27,13 @@
 // - ENABLE_BLOCK_DEBUG: Shows block creation, merging, and convergence
 
 static constexpr bool ENABLE_INTERPRETER_DEBUG =
-    false; // Set to true to enable detailed execution tracing
+    true; // Set to true to enable detailed execution tracing
 static constexpr bool ENABLE_WAVE_DEBUG =
     true; // Set to true to enable wave operation tracing
 static constexpr bool ENABLE_BLOCK_DEBUG =
     true; // Set to true to enable block lifecycle tracing
 static constexpr bool ENABLE_PARSER_DEBUG =
-    false; // Set to true to enable AST conversion debug output
+    true; // Set to true to enable AST conversion debug output
 
 #define INTERPRETER_DEBUG_LOG(msg)                                             \
   do {                                                                         \
@@ -2855,7 +2855,7 @@ ForStmt::execute_with_error_handling(LaneContext &lane, WaveContext &wave,
 }
 
 std::string ForStmt::toString() const {
-  std::string result = "for (" + loopVar_ + " = " + init_->toString() + "; ";
+  std::string result = "for (uint " + loopVar_ + " = " + init_->toString() + "; ";
   result += condition_->toString() + "; ";
   result += loopVar_ + " = " + increment_->toString() + ") {\n";
   for (const auto &stmt : body_) {
@@ -5405,8 +5405,17 @@ MiniHLSLInterpreter::convertBinaryExpression(const clang::BinaryOperator *binOp,
   case clang::BO_LOr:
     opType = BinaryOpExpr::Or;
     break;
+  case clang::BO_And:
+    opType = BinaryOpExpr::BitwiseAnd;
+    break;
+  case clang::BO_Or:
+    opType = BinaryOpExpr::BitwiseOr;
+    break;
+  case clang::BO_Xor:
+    opType = BinaryOpExpr::Xor;
+    break;
   default:
-    INTERPRETER_DEBUG_LOG("Unsupported binary operator");
+    INTERPRETER_DEBUG_LOG("Unsupported binary operator\n");
     return nullptr;
   }
 

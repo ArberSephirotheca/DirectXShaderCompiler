@@ -46,14 +46,27 @@ bool IncrementalFuzzingPipeline::validateExecution(const interpreter::Program& p
         // Create trace capture interpreter
         TraceCaptureInterpreter interpreter;
         
-        // Use default thread ordering
-        interpreter::ThreadOrdering ordering;
+        // Use sequential thread ordering
+        interpreter::ThreadOrdering ordering = interpreter::ThreadOrdering::sequential(program.getTotalThreads());
         
         // Execute with default wave size
         uint32_t waveSize = 32;
         if (program.waveSize > 0) {
             waveSize = program.waveSize;
         }
+        
+        // Debug output for execution parameters
+        std::cout << "\n=== Execution Parameters ===\n";
+        std::cout << "Thread Ordering: " << ordering.description << "\n";
+        std::cout << "Execution Order Size: " << ordering.executionOrder.size() << "\n";
+        std::cout << "Execution Order: ";
+        for (auto tid : ordering.executionOrder) {
+            std::cout << tid << " ";
+        }
+        std::cout << "\n";
+        std::cout << "Total Threads: " << program.getTotalThreads() << "\n";
+        std::cout << "Wave Size: " << waveSize << "\n";
+        std::cout << "===========================\n" << std::endl;
         
         // Set a timeout to prevent infinite loops
         auto start = std::chrono::steady_clock::now();
@@ -62,8 +75,9 @@ bool IncrementalFuzzingPipeline::validateExecution(const interpreter::Program& p
         auto result = interpreter.executeAndCaptureTrace(program, ordering, waveSize);
         
         auto elapsed = std::chrono::steady_clock::now() - start;
+        std::cout << "Execution time: " << std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() << "ms\n";
         if (elapsed > timeout) {
-            error = "Execution timeout - possible infinite loop";
+            error = "Execution timeout: possible infinite loop or deadlock";
             return false;
         }
         

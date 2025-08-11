@@ -63,6 +63,14 @@ enum class ExecutionError {
   ControlFlowContinue
 };
 
+// Error types for AST conversion
+struct ConversionError {
+  std::string message;
+  int line = 0;
+  
+  ConversionError(const std::string& msg, int l = 0) : message(msg), line(l) {}
+};
+
 // Result type implementation (Rust-like)
 template <typename T, typename E> class Result {
 private:
