@@ -1584,8 +1584,8 @@ void TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& seedProgram,
     std::cout << "--- End Original Program ---\n\n";
   }
   
-  interpreter::ThreadOrdering ordering;
-  // Use default source order
+  // Use sequential ordering for deterministic execution
+  interpreter::ThreadOrdering ordering = interpreter::ThreadOrdering::sequential(preparedProgram.getTotalThreads());
   
   auto goldenResult = captureInterpreter.executeAndCaptureTrace(
     preparedProgram, ordering, config.waveSize);
