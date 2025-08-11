@@ -109,6 +109,7 @@ add_executable(minihlsl-fuzzer
   HLSLProgramGeneratorUtils.cpp
   HLSLParticipantPatterns.cpp
   HLSLMutationTracker.cpp  # Needed by HLSLProgramGenerator
+  IncrementalFuzzingPipeline.cpp  # For automated incremental fuzzing
   # HLSLSemanticMutator.cpp  # Not needed - mutations are in MiniHLSLInterpreterFuzzer.cpp
 )
 target_link_libraries(minihlsl-fuzzer

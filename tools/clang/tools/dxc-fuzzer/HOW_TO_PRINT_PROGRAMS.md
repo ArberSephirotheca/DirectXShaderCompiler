@@ -10,9 +10,18 @@ The minihlsl-fuzzer already prints both original and mutated programs by default
 ```
 
 ### 2. Run with random program generation
+
+When using random generation mode, you need to provide sufficient input data (at least 16 bytes):
+
 ```bash
-FUZZ_GENERATE_RANDOM=1 ./bin/minihlsl-fuzzer -runs=10
+# Create a random input file
+dd if=/dev/urandom of=test_input bs=1024 count=1 2>/dev/null
+
+# Run fuzzer with random generation
+FUZZ_GENERATE_RANDOM=1 ./bin/minihlsl-fuzzer test_input -runs=1
 ```
+
+Note: Without an explicit input file, libFuzzer starts with very small inputs that may not trigger random generation.
 
 ## Output Format
 

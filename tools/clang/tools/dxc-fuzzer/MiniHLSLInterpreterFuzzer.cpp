@@ -2,6 +2,7 @@
 #include "MiniHLSLInterpreterTraceCapture.h"
 #include "MiniHLSLValidator.h"
 #include "HLSLProgramGenerator.h"
+#include "IncrementalFuzzingPipeline.h"
 #include <fuzzer/FuzzedDataProvider.h>
 #include <fstream>
 #include <sstream>
@@ -2194,6 +2195,11 @@ bool deserializeAST(const uint8_t* data, size_t size,
     
     // Prepare the program for execution
     program = prepareProgramForExecution(std::move(state.program));
+    
+    std::cout << "\n=== Randomly Generated Program ===\n";
+    std::cout << serializeProgramToString(program);
+    std::cout << "=== End Generated Program ===\n\n";
+    
     return true;
   }
   
@@ -2413,7 +2419,25 @@ int LLVMFuzzerInitialize(int* argc, char*** argv) {
 int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (size < 4) return 0;
   
-  // Deserialize AST
+  // Check if we should use incremental pipeline for random generation
+  static bool useIncrementalPipeline = getenv("FUZZ_INCREMENTAL_PIPELINE") != nullptr;
+  static bool generateRandom = getenv("FUZZ_GENERATE_RANDOM") != nullptr;
+  
+  if (useIncrementalPipeline && generateRandom && size >= 16) {
+    // Use the new incremental fuzzing pipeline
+    minihlsl::fuzzer::IncrementalFuzzingConfig pipelineConfig;
+    pipelineConfig.maxIncrements = 5;
+    pipelineConfig.mutantsPerIncrement = 10;
+    pipelineConfig.enableLogging = true;
+    
+    minihlsl::fuzzer::IncrementalFuzzingPipeline pipeline(pipelineConfig);
+    auto result = pipeline.run(data, size);
+    
+    // Could use result.totalBugsFound to guide libFuzzer
+    return 0;
+  }
+  
+  // Original behavior
   minihlsl::interpreter::Program program;
   if (!minihlsl::fuzzer::deserializeAST(data, size, program)) {
     return 0;
