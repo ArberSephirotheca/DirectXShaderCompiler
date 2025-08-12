@@ -57,17 +57,6 @@ private:
     void initializeBaseProgram(ProgramState& state, FuzzedDataProvider& provider);
     void applyMutationsToNew(ProgramState& state, FuzzedDataProvider& provider);
     
-    // Apply mutations with sophisticated tracking
-    std::unique_ptr<interpreter::Statement> applyMutationsSelectively(
-        const interpreter::Statement* stmt,
-        ProgramState& state,
-        FuzzedDataProvider& provider);
-    
-    // Handle buffer requirements for mutations
-    void handleMutationBufferRequirements(
-        const interpreter::Statement* stmt,
-        ProgramState& state);
-    
 public:
     IncrementalGenerator();
     ~IncrementalGenerator();

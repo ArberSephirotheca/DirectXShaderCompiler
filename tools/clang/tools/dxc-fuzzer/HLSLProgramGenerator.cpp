@@ -91,82 +91,6 @@ void IncrementalGenerator::initializeBaseProgram(ProgramState& state, FuzzedData
 
 // findWaveOps is now handled by the mutation tracker's findAllWaveOps
 
-std::unique_ptr<interpreter::Statement> 
-IncrementalGenerator::applyMutationsSelectively(
-    const interpreter::Statement* stmt,
-    ProgramState& state,
-    FuzzedDataProvider& provider) {
-    
-    // We can't apply trace-guided mutations during generation
-    // This would need to be done after execution
-    // For now, return nullptr to skip mutations during generation
-    return nullptr;
-}
-
-void IncrementalGenerator::handleMutationBufferRequirements(
-    const interpreter::Statement* stmt,
-    ProgramState& state) {
-    
-    std::cerr << "DEBUG: handleMutationBufferRequirements called\n";
-    
-    // Get mutation metadata to check what type was applied
-    auto mutationMeta = mutationTracker->getMetadata(stmt);
-    if (!mutationMeta) {
-        std::cerr << "DEBUG: No mutation metadata found\n";
-        return;
-    }
-    std::cerr << "DEBUG: Found metadata with " << mutationMeta->appliedMutations.size() << " mutations\n";
-    
-    // Check if we need to handle WaveParticipantTrackingMutation buffer
-    bool needsParticipantBuffer = false;
-    for (const auto& mut : mutationMeta->appliedMutations) {
-        std::cerr << "DEBUG: Checking mutation type: " << static_cast<int>(mut) << "\n";
-        if (mut == MutationType::ParticipantTracking) {
-            needsParticipantBuffer = true;
-            std::cerr << "DEBUG: Found ParticipantTracking mutation\n";
-            break;
-        }
-    }
-    
-    if (needsParticipantBuffer) {
-        // Add buffer if it doesn't exist
-        bool hasBuffer = false;
-        for (const auto& buffer : state.program.globalBuffers) {
-            if (buffer.name == "_participant_check_sum") {
-                hasBuffer = true;
-                break;
-            }
-        }
-        
-        if (!hasBuffer) {
-            std::cerr << "DEBUG: Adding _participant_check_sum buffer\n";
-            interpreter::GlobalBufferDecl participantBuffer;
-            participantBuffer.name = "_participant_check_sum";
-            participantBuffer.bufferType = "RWBuffer";
-            participantBuffer.elementType = interpreter::HLSLType::Uint;
-            participantBuffer.size = state.program.getTotalThreads();
-            participantBuffer.registerIndex = 1;
-            participantBuffer.isReadWrite = true;
-            state.program.globalBuffers.push_back(participantBuffer);
-            std::cerr << "DEBUG: Buffer added, total buffers: " << state.program.globalBuffers.size() << "\n";
-            
-            // Add initialization at the beginning
-            std::cerr << "DEBUG: Adding _participant_check_sum initialization\n";
-            auto tidX = std::make_unique<interpreter::DispatchThreadIdExpr>(0);
-            auto zero = std::make_unique<interpreter::LiteralExpr>(0);
-            state.program.statements.insert(
-                state.program.statements.begin(),
-                std::make_unique<interpreter::ArrayAssignStmt>(
-                    "_participant_check_sum", std::move(tidX), std::move(zero))
-            );
-        } else {
-            std::cerr << "DEBUG: _participant_check_sum buffer already exists, skipping initialization\n";
-        }
-        // If buffer already exists, we assume initialization was already added in the first round
-        // No need to add initialization again
-    }
-}
-
 void IncrementalGenerator::applyMutationsToNew(ProgramState& state, FuzzedDataProvider& provider) {
     // This method is now deprecated - mutations are applied inline during generation
     // Kept for backward compatibility
@@ -245,58 +169,14 @@ ProgramState IncrementalGenerator::generateIncremental(const uint8_t* data, size
             meta.context = StatementMetadata::TopLevel;  // TODO: Set proper context
             meta.nestingLevel = 0;  // TODO: Calculate proper nesting
             
-            // Register with mutation tracker BEFORE potential mutation
+            // Register with mutation tracker
             mutationTracker->registerStatement(stmt.get(), meta);
             
-            // Apply mutations selectively
-            auto mutatedStmt = applyMutationsSelectively(stmt.get(), state, provider);
-            
-            if (mutatedStmt) {
-                // Show the mutation transformation
-                std::cerr << "\n=== Mutation Applied ===\n";
-                std::cerr << "Original: " << stmt->toString() << "\n";
-                std::cerr << "Mutated:  " << mutatedStmt->toString() << "\n";
-                std::cerr << "=========================\n";
-            }
-            
-            if (mutatedStmt) {
-                // Copy metadata to the mutated statement, including any mutations that were recorded
-                auto existingMeta = mutationTracker->getMetadata(mutatedStmt.get());
-                if (existingMeta) {
-                    std::cerr << "DEBUG: Found existing metadata on mutated stmt with " 
-                              << existingMeta->appliedMutations.size() << " mutations\n";
-                    // Copy applied mutations from the mutated statement's metadata
-                    meta.appliedMutations = existingMeta->appliedMutations;
-                    meta.mutationHistory = existingMeta->mutationHistory;
-                    meta.mutatedWaveOpIndices = existingMeta->mutatedWaveOpIndices;
-                } else {
-                    std::cerr << "DEBUG: No existing metadata on mutated stmt\n";
-                }
-                
-                // Register the updated metadata
-                mutationTracker->registerStatement(mutatedStmt.get(), meta);
-                
-                // Handle buffer requirements for the mutation
-                handleMutationBufferRequirements(mutatedStmt.get(), state);
-                
-                state.program.statements.push_back(std::move(mutatedStmt));
-                
-                // Record mutation in round info
-                auto mutationMeta = mutationTracker->getMetadata(state.program.statements.back().get());
-                if (mutationMeta && !mutationMeta->appliedMutations.empty()) {
-                    roundInfo.appliedMutations.insert(
-                        roundInfo.appliedMutations.end(),
-                        mutationMeta->appliedMutations.begin(),
-                        mutationMeta->appliedMutations.end()
-                    );
-                }
-                std::cerr << "DEBUG: Applied mutation to statement in round " << round << "\n";
-            } else {
-                state.program.statements.push_back(std::move(stmt));
-                if (!meta.waveOps.empty()) {
-                    std::cerr << "DEBUG: No mutation applied to statement with " 
-                              << meta.waveOps.size() << " wave ops in round " << round << "\n";
-                }
+            // Add the statement to the program
+            state.program.statements.push_back(std::move(stmt));
+            if (!meta.waveOps.empty()) {
+                std::cerr << "DEBUG: No mutation applied to statement with " 
+                          << meta.waveOps.size() << " wave ops in round " << round << "\n";
             }
             
             roundInfo.addedStatementIndices.push_back(insertPos);
