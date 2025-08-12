@@ -1805,26 +1805,43 @@ interpreter::Program TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& 
 interpreter::Program TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& seedProgram, 
                                   const FuzzingConfig& config,
                                   const std::vector<GenerationRound>& history,
-                                  size_t currentRound) {
+                                  size_t currentIncrement) {
   
   FUZZER_DEBUG_LOG("Starting trace-guided fuzzing with generation history...\n");
-  FUZZER_DEBUG_LOG("Current round: " << currentRound << "\n");
+  FUZZER_DEBUG_LOG("Current increment: " << currentIncrement << "\n");
   FUZZER_DEBUG_LOG("History has " << history.size() << " rounds\n");
   
-  // Find which statements were added in the current round
-  std::set<size_t> currentRoundStatements;
-  for (const auto& round : history) {
-    if (round.roundNumber == currentRound) {
-      for (size_t idx : round.addedStatementIndices) {
-        currentRoundStatements.insert(idx);
+  // Find which statements to mutate based on the increment
+  std::set<size_t> statementsToMutate;
+  
+  if (currentIncrement == 0) {
+    // Increment 0: mutate all statements from rounds 0-4 (initial generation)
+    for (const auto& round : history) {
+      if (round.roundNumber <= 4) {
+        for (size_t idx : round.addedStatementIndices) {
+          statementsToMutate.insert(idx);
+        }
+        FUZZER_DEBUG_LOG("Round " << round.roundNumber << " added " << round.addedStatementIndices.size() << " statements\n");
       }
-      FUZZER_DEBUG_LOG("Current round added " << round.addedStatementIndices.size() << " statements\n");
-      break;
+    }
+  } else {
+    // Increment 1+: mutate only statements added in this increment
+    // Find the round(s) that were added in the current increment
+    // Increment 1 adds round 5, increment 2 adds round 6, etc.
+    size_t expectedRound = 4 + currentIncrement;
+    for (const auto& round : history) {
+      if (round.roundNumber == expectedRound) {
+        for (size_t idx : round.addedStatementIndices) {
+          statementsToMutate.insert(idx);
+        }
+        FUZZER_DEBUG_LOG("Round " << round.roundNumber << " added " << round.addedStatementIndices.size() << " statements\n");
+        break;
+      }
     }
   }
   
-  if (currentRoundStatements.empty()) {
-    FUZZER_DEBUG_LOG("No new statements in current round, returning original program\n");
+  if (statementsToMutate.empty()) {
+    FUZZER_DEBUG_LOG("No statements to mutate in current increment, returning original program\n");
     // Can't copy Program, need to clone it
     interpreter::Program result;
     result.numThreadsX = seedProgram.numThreadsX;
@@ -1870,7 +1887,7 @@ interpreter::Program TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& 
   size_t bugsFound = 0;
   
   // Apply all mutations to new statements only
-  auto mutationResult = applyAllMutations(preparedProgram, goldenTrace, &history, currentRound);
+  auto mutationResult = applyAllMutations(preparedProgram, goldenTrace, &history, currentIncrement);
   
   // Track the final mutated program
   interpreter::Program finalMutant;
@@ -2295,33 +2312,46 @@ std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
   return mutants;
 }
 
-// Version that only generates mutants for statements added in the current round
+// Version that only generates mutants for statements added in the current increment
 std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
     const interpreter::Program& program,
     MutationStrategy* strategy,
     const ExecutionTrace& trace,
     const std::vector<GenerationRound>& history,
-    size_t currentRound) {
+    size_t currentIncrement) {
   
   std::vector<interpreter::Program> mutants;
   
-  // Find which statements were added in the current round
-  std::set<size_t> currentRoundStatements;
-  for (const auto& round : history) {
-    if (round.roundNumber == currentRound) {
-      for (size_t idx : round.addedStatementIndices) {
-        currentRoundStatements.insert(idx);
+  // Find which statements to mutate based on the increment
+  std::set<size_t> statementsToMutate;
+  if (currentIncrement == 0) {
+    // Increment 0: mutate all statements from rounds 0-4 (initial generation)
+    for (const auto& round : history) {
+      if (round.roundNumber <= 4) {
+        for (size_t idx : round.addedStatementIndices) {
+          statementsToMutate.insert(idx);
+        }
       }
-      break;
+    }
+  } else {
+    // Increment 1+: mutate only statements added in this increment
+    size_t expectedRound = 4 + currentIncrement;
+    for (const auto& round : history) {
+      if (round.roundNumber == expectedRound) {
+        for (size_t idx : round.addedStatementIndices) {
+          statementsToMutate.insert(idx);
+        }
+        break;
+      }
     }
   }
   
-  if (currentRoundStatements.empty()) {
+  if (statementsToMutate.empty()) {
     return mutants;
   }
   
-  FUZZER_DEBUG_LOG("Generating mutants for " << currentRoundStatements.size() 
-                   << " statements from round " << currentRound << "\n");
+  FUZZER_DEBUG_LOG("Generating mutants for " << statementsToMutate.size() 
+                   << " statements from increment " << currentIncrement << "\n");
   
   // Special handling for WaveParticipantTrackingMutation
   if (dynamic_cast<WaveParticipantTrackingMutation*>(strategy)) {
@@ -2368,8 +2398,8 @@ std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
     };
     
     for (size_t i = 0; i < program.statements.size(); ++i) {
-      // Only check statements from the current round
-      if (currentRoundStatements.find(i) != currentRoundStatements.end()) {
+      // Only check statements from the current increment
+      if (statementsToMutate.find(i) != statementsToMutate.end()) {
         if (hasWaveOpRecursive(program.statements[i].get())) {
           hasNewWaveOps = true;
           break;
@@ -2419,8 +2449,8 @@ std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
         const auto& stmt = program.statements[i];
         bool mutationApplied = false;
         
-        if (currentRoundStatements.find(i) != currentRoundStatements.end()) {
-          // This statement is from the current round, try to mutate it
+        if (statementsToMutate.find(i) != statementsToMutate.end()) {
+          // This statement is from the current increment, try to mutate it
           auto mutatedStmt = applyMutationToStatement(
               stmt.get(), strategy, trace, mutationApplied);
           
@@ -2443,8 +2473,8 @@ std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
   // Default behavior for other mutation strategies
   // Try to apply the mutation strategy only to statements from the current round
   for (size_t i = 0; i < program.statements.size(); ++i) {
-    // Skip statements not from the current round
-    if (currentRoundStatements.find(i) == currentRoundStatements.end()) {
+    // Skip statements not from the current increment
+    if (statementsToMutate.find(i) == statementsToMutate.end()) {
       continue;
     }
     
@@ -2587,7 +2617,7 @@ TraceGuidedFuzzer::MutationResult TraceGuidedFuzzer::applyAllMutations(
     const interpreter::Program& baseProgram,
     const ExecutionTrace& goldenTrace,
     const std::vector<GenerationRound>* history,
-    size_t currentRound) {
+    size_t currentIncrement) {
   
   MutationResult result;
   // Clone the base program since we can't use assignment
@@ -2608,7 +2638,7 @@ TraceGuidedFuzzer::MutationResult TraceGuidedFuzzer::applyAllMutations(
     
     std::vector<interpreter::Program> mutants;
     if (history) {
-      mutants = generateMutants(result.mutatedProgram, strategy.get(), goldenTrace, *history, currentRound);
+      mutants = generateMutants(result.mutatedProgram, strategy.get(), goldenTrace, *history, currentIncrement);
     } else {
       mutants = generateMutants(result.mutatedProgram, strategy.get(), goldenTrace);
     }

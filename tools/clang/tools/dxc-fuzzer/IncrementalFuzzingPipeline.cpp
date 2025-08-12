@@ -103,7 +103,8 @@ PipelineResult::IncrementResult IncrementalFuzzingPipeline::testMutations(
     const interpreter::Program& program,
     const ExecutionTrace& goldenTrace,
     interpreter::Program& mutatedProgram,
-    const ProgramState& state) {
+    const ProgramState& state,
+    size_t increment) {
     
     PipelineResult::IncrementResult result;
     result.baseProgramStr = serializeProgramToString(program);
@@ -139,12 +140,9 @@ PipelineResult::IncrementResult IncrementalFuzzingPipeline::testMutations(
         mutatedProgram = interpreter::Program();
         
         // Actually run the fuzzer and get the mutated program
-        // Pass the generation history so it only mutates new statements
-        size_t currentRound = 0;
-        if (!state.history.empty()) {
-            currentRound = state.history.back().roundNumber;
-        }
-        mutatedProgram = fuzzer->fuzzProgram(program, fuzzConfig, state.history, currentRound);
+        // Pass the generation history and current increment number
+        // Increment 0 generates rounds 0-4, increment 1 adds round 5, etc.
+        mutatedProgram = fuzzer->fuzzProgram(program, fuzzConfig, state.history, increment);
         
         // Track results
         result.mutantsTested = fuzzConfig.maxMutants;
@@ -252,7 +250,7 @@ PipelineResult IncrementalFuzzingPipeline::run(const uint8_t* data, size_t size)
         
         // Step 3: Apply mutations and test
         interpreter::Program mutatedProgram;
-        incrementResult = testMutations(state.program, goldenTrace, mutatedProgram, state);
+        incrementResult = testMutations(state.program, goldenTrace, mutatedProgram, state, increment);
         
         // Check if mutation was successful
         bool mutationSucceeded = mutatedProgram.statements.size() > 0;

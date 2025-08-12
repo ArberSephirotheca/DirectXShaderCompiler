@@ -61,7 +61,8 @@ private:
         const interpreter::Program& program,
         const ExecutionTrace& goldenTrace,
         interpreter::Program& mutatedProgram,
-        const ProgramState& state);
+        const ProgramState& state,
+        size_t increment);
     
 public:
     IncrementalFuzzingPipeline(const IncrementalFuzzingConfig& cfg = {});

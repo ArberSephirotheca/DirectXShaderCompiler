@@ -552,7 +552,7 @@ public:
   interpreter::Program fuzzProgram(const interpreter::Program& seedProgram, 
                   const FuzzingConfig& config,
                   const std::vector<GenerationRound>& history,
-                  size_t currentRound);
+                  size_t currentIncrement);
   
   // For libFuzzer integration
   std::unique_ptr<interpreter::Program> mutateAST(
@@ -624,7 +624,7 @@ private:
     const interpreter::Program& baseProgram,
     const ExecutionTrace& goldenTrace,
     const std::vector<GenerationRound>* history = nullptr,
-    size_t currentRound = 0);
+    size_t currentIncrement = 0);
 };
 
 // ===== LibFuzzer Integration =====
