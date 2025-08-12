@@ -86,6 +86,14 @@ struct ExecutionTrace {
     // Merge information
     bool isMergePoint;
     std::set<uint32_t> mergedFromBlocks;
+    
+    // Loop iteration information (if this is a loop body block)
+    struct LoopIterationInfo {
+      std::string loopVariable;  // e.g., "i", "counter0"
+      int iterationValue;        // Current value: 0, 1, 2...
+      uint32_t loopHeaderBlock;  // The LOOP_HEADER block ID
+    };
+    std::optional<LoopIterationInfo> loopIteration;
   };
   std::map<uint32_t, BlockExecutionRecord> blocks;
   

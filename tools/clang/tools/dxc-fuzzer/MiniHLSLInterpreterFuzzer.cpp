@@ -775,10 +775,16 @@ bool ContextAwareParticipantMutation::canApply(
       FUZZER_DEBUG_LOG("[ContextAwareParticipant] Checking block " << blockId 
                       << " type=" << static_cast<int>(block.blockType) << "\n");
       
-      // Method 1: Check block type directly
-      if (block.blockType == interpreter::BlockType::LOOP_BODY) {
-        FUZZER_DEBUG_LOG("[ContextAwareParticipant] Found LOOP_BODY block\n");
-        return true;
+      // Method 1: Check if block has a LOOP_HEADER as ancestor
+      // (Since LOOP_BODY is not used, we check for loop header ancestry)
+      uint32_t currentId = blockId;
+      while (currentId != 0 && trace.blocks.count(currentId)) {
+        const auto& currentBlock = trace.blocks.at(currentId);
+        if (currentBlock.blockType == interpreter::BlockType::LOOP_HEADER) {
+          FUZZER_DEBUG_LOG("[ContextAwareParticipant] Found LOOP_HEADER ancestor\n");
+          return true;
+        }
+        currentId = currentBlock.parentBlockId;
       }
       
       // Method 2: Check if same source statement appears multiple times
@@ -859,22 +865,68 @@ ContextAwareParticipantMutation::extractIterationContexts(
     }
     FUZZER_DEBUG_LOG("\n");
     
-    // Find the loop variable by checking the blocks
-    std::string loopVar = findLoopVariable(sortedOps[0]->blockId, trace);
-    if (loopVar.empty() && sortedOps.size() >= 2) {
-      // Try finding from a different block if first fails
-      loopVar = findLoopVariable(sortedOps[1]->blockId, trace);
-    }
-    
+    // Extract iteration contexts using block information
     for (size_t i = 0; i < sortedOps.size(); ++i) {
       IterationContext ctx;
       ctx.blockId = sortedOps[i]->blockId;
-      ctx.iterationValue = i;  // 0, 1, 2...
       ctx.existingParticipants = sortedOps[i]->arrivedParticipants;
       ctx.waveId = sortedOps[i]->waveId;
-      ctx.loopVariable = loopVar;
       
-      // Even if we don't find the loop variable, we can still identify iterations by block pattern
+      // Check if the block has loop iteration info
+      auto blockIt = trace.blocks.find(ctx.blockId);
+      if (blockIt != trace.blocks.end() && blockIt->second.loopIteration.has_value()) {
+        // Use the loop iteration info from the block
+        const auto& loopInfo = blockIt->second.loopIteration.value();
+        ctx.iterationValue = loopInfo.iterationValue;
+        ctx.loopVariable = loopInfo.loopVariable;
+        
+        // If loop variable is empty, try to find it
+        if (ctx.loopVariable.empty()) {
+          ctx.loopVariable = findLoopVariable(loopInfo.loopHeaderBlock, trace);
+        }
+        
+        FUZZER_DEBUG_LOG("[ContextAware] Block " << ctx.blockId 
+                         << " has loop iteration " << ctx.iterationValue
+                         << " (from block metadata)\n");
+      } else {
+        // Fallback: Try variable access tracking
+        std::string loopVar = findLoopVariable(ctx.blockId, trace);
+        ctx.loopVariable = loopVar;
+        
+        int actualIteration = -1;
+        
+        if (!loopVar.empty()) {
+          // Look for variable accesses in the same block
+          for (const auto& varAccess : trace.variableAccesses) {
+            if (varAccess.blockId == ctx.blockId && 
+                varAccess.varName == loopVar &&
+                !varAccess.isWrite) {  // We want reads of the loop variable
+              
+              // Get the value from the wave
+              auto waveIt = varAccess.values.find(ctx.waveId);
+              if (waveIt != varAccess.values.end() && !waveIt->second.empty()) {
+                // All lanes in a wave should have the same loop variable value
+                // Just get from the first lane
+                actualIteration = waveIt->second.begin()->second.asInt();
+                FUZZER_DEBUG_LOG("[ContextAware] Found loop var " << loopVar 
+                                 << " = " << actualIteration 
+                                 << " in block " << ctx.blockId << " (from variable access)\n");
+                break;
+              }
+            }
+          }
+        }
+        
+        // Final fallback: use position in sorted list
+        if (actualIteration == -1) {
+          actualIteration = i;
+          FUZZER_DEBUG_LOG("[ContextAware] Using fallback iteration " << i 
+                           << " for block " << ctx.blockId << "\n");
+        }
+        
+        ctx.iterationValue = actualIteration;
+      }
+      
       contexts.push_back(ctx);
     }
   }
@@ -895,8 +947,7 @@ std::string ContextAwareParticipantMutation::findLoopVariable(
     if (block.sourceStatement) {
       // For loop statements, we need to distinguish between for/while/do-while
       // by examining the actual statement type
-      if (block.blockType == interpreter::BlockType::LOOP_HEADER ||
-          block.blockType == interpreter::BlockType::LOOP_BODY) {
+      if (block.blockType == interpreter::BlockType::LOOP_HEADER) {
         
         // Try to cast the source statement to determine loop type
         const interpreter::Statement* stmtPtr = static_cast<const interpreter::Statement*>(block.sourceStatement);

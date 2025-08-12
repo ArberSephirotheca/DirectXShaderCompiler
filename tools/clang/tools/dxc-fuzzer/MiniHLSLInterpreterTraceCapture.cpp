@@ -165,6 +165,41 @@ void TraceCaptureInterpreter::recordBlockExecution(
     record.waveParticipation[waveId].participatingLanes = lanes;
   }
   
+  // Check if this is a loop iteration block
+  // Loop body blocks have REGULAR type and their parent is a LOOP_HEADER
+  if (block.getBlockType() == interpreter::BlockType::REGULAR && 
+      record.parentBlockId != 0) {
+    // Check if parent is a loop header
+    auto parentIt = trace_.blocks.find(record.parentBlockId);
+    if (parentIt != trace_.blocks.end() && 
+        parentIt->second.blockType == interpreter::BlockType::LOOP_HEADER) {
+      
+      // This is likely a loop body block
+      // Extract iteration number from the encoded pointer
+      // The iteration is encoded as: (loopStmt + (iteration << 16) + 0x3000)
+      if (block.getSourceStatement() != nullptr) {
+        uintptr_t ptrValue = reinterpret_cast<uintptr_t>(block.getSourceStatement());
+        
+        // Extract the iteration number (bits 16-31)
+        // First remove the 0x3000 offset, then shift right by 16
+        if ((ptrValue & 0xFFFF) == 0x3000) {  // Check for iteration block marker
+          int iteration = (ptrValue >> 16) & 0xFFFF;
+          
+          // Create loop iteration info
+          ExecutionTrace::BlockExecutionRecord::LoopIterationInfo loopInfo;
+          loopInfo.iterationValue = iteration;
+          loopInfo.loopHeaderBlock = record.parentBlockId;
+          
+          // Try to determine loop variable by checking parent block's source statement
+          // This is a heuristic - in practice we might need more sophisticated detection
+          loopInfo.loopVariable = ""; // Will be filled by findLoopVariable in fuzzer
+          
+          record.loopIteration = loopInfo;
+        }
+      }
+    }
+  }
+  
   // Store in trace
   trace_.blocks[blockId] = record;
 }
@@ -271,6 +306,7 @@ void TraceCaptureInterpreter::extractWaveOperationsFromContext(
     for (const auto& [key, syncPoint] : wave.activeSyncPoints) {
       ExecutionTrace::WaveOpRecord record;
       record.waveId = waveId;
+      record.instruction = key.first; // Store the instruction pointer!
       record.opType = syncPoint.instructionType;
       record.blockId = key.second; // blockId from the key pair
       record.waveOpEnumType = syncPoint.waveOpType; // Store the enum type
