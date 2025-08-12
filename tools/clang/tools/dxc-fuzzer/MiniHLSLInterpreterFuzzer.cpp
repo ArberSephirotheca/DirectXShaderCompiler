@@ -1623,115 +1623,65 @@ interpreter::Program TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& 
   }
   FUZZER_DEBUG_LOG("  - Control flow decisions: " << goldenTrace.controlFlowHistory.size() << "\n");
   
-  // Apply both WaveParticipantTracking and LanePermutation mutations to all programs
+  // Apply all mutations in sequence
   size_t mutantsTested = 0;
   size_t bugsFound = 0;
   
   // Track the final mutants to avoid copying
   std::vector<interpreter::Program> allMutantsGenerated;
   
-  // Find the specific mutation strategies we want to apply
-  MutationStrategy* waveParticipantStrategy = nullptr;
-  MutationStrategy* lanePermutationStrategy = nullptr;
+  // Apply all mutations
+  auto mutationResult = applyAllMutations(preparedProgram, goldenTrace);
   
-  for (auto& strategy : mutationStrategies) {
-    if (strategy->getName() == "WaveParticipantTracking") {
-      waveParticipantStrategy = strategy.get();
-    } else if (strategy->getName() == "LanePermutation") {
-      lanePermutationStrategy = strategy.get();
-    }
-  }
-  
-  // Apply WaveParticipantTracking first
-  if (waveParticipantStrategy) {
-    FUZZER_DEBUG_LOG("\nApplying WaveParticipantTracking mutation...\n");
+  // Test the mutated program if any mutations were applied
+  if (mutationResult.hasMutations() && mutantsTested < config.maxMutants) {
+    mutantsTested++;
     
-    auto mutants = generateMutants(preparedProgram, waveParticipantStrategy, goldenTrace);
+    FUZZER_DEBUG_LOG("\n=== Testing Mutant " << mutantsTested << " (" 
+                    << mutationResult.getMutationChainString() << ") ===\n");
     
-    if (!mutants.empty()) {
-      // Take the first mutant (WaveParticipantTracking generates only one)
-      auto waveTrackingMutant = std::move(mutants[0]);
+    FUZZER_DEBUG_LOG("\n--- Original Program ---\n");
+    FUZZER_DEBUG_LOG(serializeProgramToString(preparedProgram));
+    
+    FUZZER_DEBUG_LOG("\n--- Mutant Program ---\n");
+    FUZZER_DEBUG_LOG(serializeProgramToString(mutationResult.mutatedProgram));
+    FUZZER_DEBUG_LOG("--- End Mutant Program ---\n\n");
+    
+    try {
+      // Execute mutant
+      TraceCaptureInterpreter mutantInterpreter;
+      auto mutantTestResult = mutantInterpreter.executeAndCaptureTrace(
+        mutationResult.mutatedProgram, ordering, config.waveSize);
       
-      // Now apply LanePermutation to the already mutated program
-      if (lanePermutationStrategy) {
-        FUZZER_DEBUG_LOG("\nApplying LanePermutation mutation on top of WaveParticipantTracking...\n");
+      // Check if execution succeeded
+      if (!mutantTestResult.isValid()) {
+        FUZZER_DEBUG_LOG("Mutant execution failed: " << mutantTestResult.errorMessage << "\n");
+      } else {
+        const ExecutionTrace& mutantTrace = *mutantInterpreter.getTrace();
         
-        // Generate lane permutation mutants from the wave tracking mutant
-        auto finalMutants = generateMutants(waveTrackingMutant, lanePermutationStrategy, goldenTrace);
-        
-        bool lanePermutationApplied = !finalMutants.empty();
-        
-        if (!lanePermutationApplied) {
-          // LanePermutation couldn't be applied, just test WaveParticipantTracking alone
-          FUZZER_DEBUG_LOG("LanePermutation not applicable, testing WaveParticipantTracking only\n");
-          finalMutants.push_back(std::move(waveTrackingMutant));
+        FUZZER_DEBUG_LOG("Mutant trace captured:\n");
+        FUZZER_DEBUG_LOG("  - Waves in final state: " << mutantTrace.finalState.laneVariables.size() << "\n");
+        for (const auto& [waveId, waveVars] : mutantTrace.finalState.laneVariables) {
+          FUZZER_DEBUG_LOG("    Wave " << waveId << " has " << waveVars.size() << " lanes\n");
         }
         
-        for (const auto& mutant : finalMutants) {
-          if (mutantsTested >= config.maxMutants) {
-            break;
-          }
-          
-          mutantsTested++;
-          
-          // Always print original and mutated programs
-          FUZZER_DEBUG_LOG("\n=== Testing Mutant " << mutantsTested << " (" 
-                          << (lanePermutationApplied ? "Combined: WaveParticipantTracking + LanePermutation" : "WaveParticipantTracking only") 
-                          << ") ===\n");
-          
-          FUZZER_DEBUG_LOG("\n--- Original Program ---\n");
-          FUZZER_DEBUG_LOG(serializeProgramToString(preparedProgram));
-          
-          FUZZER_DEBUG_LOG("\n--- Mutant Program ---\n");
-          FUZZER_DEBUG_LOG(serializeProgramToString(mutant));
-          FUZZER_DEBUG_LOG("--- End Mutant Program ---\n\n");
-          
-          try {
-            // Execute mutant
-            TraceCaptureInterpreter mutantInterpreter;
-            auto mutantResult = mutantInterpreter.executeAndCaptureTrace(
-              mutant, ordering, config.waveSize);
-            
-            // Check if execution succeeded
-            if (!mutantResult.isValid()) {
-              FUZZER_DEBUG_LOG("Mutant execution failed: " << mutantResult.errorMessage << "\n");
-              continue;
-            }
-            
-            const ExecutionTrace& mutantTrace = *mutantInterpreter.getTrace();
-            
-            FUZZER_DEBUG_LOG("Mutant trace captured:\n");
-            FUZZER_DEBUG_LOG("  - Waves in final state: " << mutantTrace.finalState.laneVariables.size() << "\n");
-            for (const auto& [waveId, waveVars] : mutantTrace.finalState.laneVariables) {
-              FUZZER_DEBUG_LOG("    Wave " << waveId << " has " << waveVars.size() << " lanes\n");
-            }
-            
-            // Validate semantic equivalence
-            auto validation = validator->validate(goldenTrace, mutantTrace);
-            
-            if (!validation.isEquivalent) {
-              // Found a bug!
-              bugsFound++;
-              bugReporter->reportBug(preparedProgram, mutant, goldenTrace, 
-                                   mutantTrace, validation);
-            }
-            
-            // Store the successfully tested mutant
-            // Note: We can't store it directly due to const reference, it will be handled outside the loop
-            
-          } catch (const std::exception& e) {
-            // Mutant crashed - definitely a bug
-            bugsFound++;
-            bugReporter->reportCrash(preparedProgram, mutant, e);
-          }
-        }
+        // Validate semantic equivalence
+        auto validation = validator->validate(goldenTrace, mutantTrace);
         
-        // Store all final mutants
-        for (auto& mutant : finalMutants) {
-          allMutantsGenerated.push_back(std::move(mutant));
+        if (!validation.isEquivalent) {
+          // Found a bug!
+          bugsFound++;
+          bugReporter->reportBug(preparedProgram, mutationResult.mutatedProgram, goldenTrace, 
+                               mutantTrace, validation);
         }
       }
+    } catch (const std::exception& e) {
+      // Mutant crashed - definitely a bug
+      bugsFound++;
+      bugReporter->reportCrash(preparedProgram, mutationResult.mutatedProgram, e);
     }
+    
+    allMutantsGenerated.push_back(std::move(mutationResult.mutatedProgram));
   }
   
   logSummary(mutantsTested, bugsFound);
@@ -1809,86 +1759,58 @@ interpreter::Program TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& 
   FUZZER_DEBUG_LOG("Golden trace captured:\n");
   FUZZER_DEBUG_LOG("  - Wave operations: " << goldenTrace.waveOperations.size() << "\n");
   
-  // Apply mutations only to new statements
+  // Apply all mutations in sequence, but only to new statements
   size_t mutantsTested = 0;
   size_t bugsFound = 0;
   
-  // Find the specific mutation strategies we want to apply
-  MutationStrategy* waveParticipantStrategy = nullptr;
-  MutationStrategy* lanePermutationStrategy = nullptr;
+  // Apply all mutations to new statements only
+  auto mutationResult = applyAllMutations(preparedProgram, goldenTrace, &history, currentRound);
   
-  for (auto& strategy : mutationStrategies) {
-    if (strategy->getName() == "WaveParticipantTracking") {
-      waveParticipantStrategy = strategy.get();
-    } else if (strategy->getName() == "LanePermutation") {
-      lanePermutationStrategy = strategy.get();
-    }
-  }
-  
-  // Track the final mutated program - start with a clone of preparedProgram
+  // Track the final mutated program
   interpreter::Program finalMutant;
-  finalMutant.numThreadsX = preparedProgram.numThreadsX;
-  finalMutant.numThreadsY = preparedProgram.numThreadsY;
-  finalMutant.numThreadsZ = preparedProgram.numThreadsZ;
-  finalMutant.globalBuffers = preparedProgram.globalBuffers;
-  finalMutant.entryInputs = preparedProgram.entryInputs;
-  finalMutant.waveSize = preparedProgram.waveSize;
-  for (const auto& stmt : preparedProgram.statements) {
-    finalMutant.statements.push_back(stmt->clone());
-  }
   
-  // Apply WaveParticipantTracking first
-  if (waveParticipantStrategy) {
-    FUZZER_DEBUG_LOG("\nApplying WaveParticipantTracking mutation to new statements only...\n");
+  // Test the mutated program if any mutations were applied
+  if (mutationResult.hasMutations()) {
+    finalMutant = std::move(mutationResult.mutatedProgram);
+    mutantsTested++;
     
-    auto mutants = generateMutants(preparedProgram, waveParticipantStrategy, goldenTrace, history, currentRound);
+    FUZZER_DEBUG_LOG("\n=== Testing Mutant with " << mutationResult.getMutationChainString() 
+                    << " (new statements only) ===\n");
     
-    if (!mutants.empty()) {
-      // Take the first mutant (WaveParticipantTracking generates only one)
-      auto waveTrackingMutant = std::move(mutants[0]);
+    // Test the mutant
+    try {
+      TraceCaptureInterpreter mutantInterpreter;
+      auto mutantTestResult = mutantInterpreter.executeAndCaptureTrace(
+        finalMutant, ordering, config.waveSize);
       
-      // Now apply LanePermutation to the already mutated program
-      if (lanePermutationStrategy) {
-        FUZZER_DEBUG_LOG("\nApplying LanePermutation mutation on top of WaveParticipantTracking...\n");
-        
-        // Generate lane permutation mutants from the wave tracking mutant
-        auto finalMutants = generateMutants(waveTrackingMutant, lanePermutationStrategy, goldenTrace, history, currentRound);
-        
-        if (!finalMutants.empty()) {
-          finalMutant = std::move(finalMutants[0]);
-          mutantsTested++;
-          
-          // Test the mutant
-          try {
-            TraceCaptureInterpreter mutantInterpreter;
-            auto mutantResult = mutantInterpreter.executeAndCaptureTrace(
-              finalMutant, ordering, config.waveSize);
-            
-            if (!mutantResult.isValid()) {
-              FUZZER_DEBUG_LOG("Mutant execution failed: " << mutantResult.errorMessage << "\n");
-            } else {
-              const ExecutionTrace& mutantTrace = *mutantInterpreter.getTrace();
-              
-              // Validate semantic equivalence
-              auto validation = validator->validate(goldenTrace, mutantTrace);
-              
-              if (!validation.isEquivalent) {
-                bugsFound++;
-                bugReporter->reportBug(preparedProgram, finalMutant, goldenTrace, 
-                                     mutantTrace, validation);
-              }
-            }
-          } catch (const std::exception& e) {
-            bugsFound++;
-            bugReporter->reportCrash(preparedProgram, finalMutant, e);
-          }
-        } else {
-          // Just use the wave tracking mutant
-          finalMutant = std::move(waveTrackingMutant);
-        }
+      if (!mutantTestResult.isValid()) {
+        FUZZER_DEBUG_LOG("Mutant execution failed: " << mutantTestResult.errorMessage << "\n");
       } else {
-        finalMutant = std::move(waveTrackingMutant);
+        const ExecutionTrace& mutantTrace = *mutantInterpreter.getTrace();
+        
+        // Validate semantic equivalence
+        auto validation = validator->validate(goldenTrace, mutantTrace);
+        
+        if (!validation.isEquivalent) {
+          bugsFound++;
+          bugReporter->reportBug(preparedProgram, finalMutant, goldenTrace, 
+                               mutantTrace, validation);
+        }
       }
+    } catch (const std::exception& e) {
+      bugsFound++;
+      bugReporter->reportCrash(preparedProgram, finalMutant, e);
+    }
+  } else {
+    // No mutations applied, return the prepared program
+    finalMutant.numThreadsX = preparedProgram.numThreadsX;
+    finalMutant.numThreadsY = preparedProgram.numThreadsY;
+    finalMutant.numThreadsZ = preparedProgram.numThreadsZ;
+    finalMutant.globalBuffers = preparedProgram.globalBuffers;
+    finalMutant.entryInputs = preparedProgram.entryInputs;
+    finalMutant.waveSize = preparedProgram.waveSize;
+    for (const auto& stmt : preparedProgram.statements) {
+      finalMutant.statements.push_back(stmt->clone());
     }
   }
   
@@ -2528,6 +2450,83 @@ void TraceGuidedFuzzer::logSummary(size_t testedMutants, size_t bugsFound) {
   FUZZER_DEBUG_LOG("  Block patterns: " << seenBlockPatterns.size() << "\n");
   FUZZER_DEBUG_LOG("  Wave patterns: " << seenWavePatterns.size() << "\n");
   FUZZER_DEBUG_LOG("  Sync patterns: " << seenSyncPatterns.size() << "\n");
+}
+
+std::string TraceGuidedFuzzer::MutationResult::getMutationChainString() const {
+  std::string result;
+  
+  if ((appliedMutations & AppliedMutations::WaveParticipantTracking) != AppliedMutations::None) {
+    if (!result.empty()) result += " + ";
+    result += "WaveParticipantTracking";
+  }
+  
+  if ((appliedMutations & AppliedMutations::LanePermutation) != AppliedMutations::None) {
+    if (!result.empty()) result += " + ";
+    result += "LanePermutation";
+  }
+  
+  if ((appliedMutations & AppliedMutations::ContextAwareParticipant) != AppliedMutations::None) {
+    if (!result.empty()) result += " + ";
+    result += "ContextAwareParticipant";
+  }
+  
+  if (result.empty()) {
+    result = "None";
+  }
+  
+  return result;
+}
+
+TraceGuidedFuzzer::MutationResult TraceGuidedFuzzer::applyAllMutations(
+    const interpreter::Program& baseProgram,
+    const ExecutionTrace& goldenTrace,
+    const std::vector<GenerationRound>* history,
+    size_t currentRound) {
+  
+  MutationResult result;
+  // Clone the base program since we can't use assignment
+  result.mutatedProgram.numThreadsX = baseProgram.numThreadsX;
+  result.mutatedProgram.numThreadsY = baseProgram.numThreadsY;
+  result.mutatedProgram.numThreadsZ = baseProgram.numThreadsZ;
+  result.mutatedProgram.globalBuffers = baseProgram.globalBuffers;
+  result.mutatedProgram.entryInputs = baseProgram.entryInputs;
+  result.mutatedProgram.waveSize = baseProgram.waveSize;
+  for (const auto& stmt : baseProgram.statements) {
+    result.mutatedProgram.statements.push_back(stmt->clone());
+  }
+  result.appliedMutations = AppliedMutations::None;
+  
+  // Apply each mutation strategy in sequence
+  for (auto& strategy : mutationStrategies) {
+    FUZZER_DEBUG_LOG("\nTrying to apply " << strategy->getName() << " mutation...\n");
+    
+    std::vector<interpreter::Program> mutants;
+    if (history) {
+      mutants = generateMutants(result.mutatedProgram, strategy.get(), goldenTrace, *history, currentRound);
+    } else {
+      mutants = generateMutants(result.mutatedProgram, strategy.get(), goldenTrace);
+    }
+    
+    if (!mutants.empty()) {
+      // Take the first mutant (most strategies generate only one)
+      result.mutatedProgram = std::move(mutants[0]);
+      
+      // Update the applied mutations enum
+      if (strategy->getName() == "WaveParticipantTracking") {
+        result.appliedMutations |= AppliedMutations::WaveParticipantTracking;
+      } else if (strategy->getName() == "LanePermutation") {
+        result.appliedMutations |= AppliedMutations::LanePermutation;
+      } else if (strategy->getName() == "ContextAwareParticipant") {
+        result.appliedMutations |= AppliedMutations::ContextAwareParticipant;
+      }
+      
+      FUZZER_DEBUG_LOG("Successfully applied " << strategy->getName() << "\n");
+    } else {
+      FUZZER_DEBUG_LOG(strategy->getName() << " not applicable\n");
+    }
+  }
+  
+  return result;
 }
 
 // ===== LibFuzzer Integration =====

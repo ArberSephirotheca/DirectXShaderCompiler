@@ -582,6 +582,41 @@ private:
   void logTrace(const std::string& message, const ExecutionTrace& trace);
   void logMutation(const std::string& message, const std::string& strategy);
   void logSummary(size_t testedMutants, size_t bugsFound);
+  
+  // Enum to track which mutations were applied
+  enum class AppliedMutations : uint32_t {
+    None = 0,
+    WaveParticipantTracking = 1 << 0,
+    LanePermutation = 1 << 1,
+    ContextAwareParticipant = 1 << 2,
+    // Add more mutations here as needed
+  };
+  
+  // Enable bitwise operations for AppliedMutations
+  friend AppliedMutations operator|(AppliedMutations a, AppliedMutations b) {
+    return static_cast<AppliedMutations>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
+  }
+  friend AppliedMutations& operator|=(AppliedMutations& a, AppliedMutations b) {
+    a = a | b;
+    return a;
+  }
+  friend AppliedMutations operator&(AppliedMutations a, AppliedMutations b) {
+    return static_cast<AppliedMutations>(static_cast<uint32_t>(a) & static_cast<uint32_t>(b));
+  }
+  
+  // Helper to apply all mutations in sequence and test the result
+  struct MutationResult {
+    interpreter::Program mutatedProgram;
+    AppliedMutations appliedMutations;
+    bool hasMutations() const { return appliedMutations != AppliedMutations::None; }
+    std::string getMutationChainString() const;
+  };
+  
+  MutationResult applyAllMutations(
+    const interpreter::Program& baseProgram,
+    const ExecutionTrace& goldenTrace,
+    const std::vector<GenerationRound>* history = nullptr,
+    size_t currentRound = 0);
 };
 
 // ===== LibFuzzer Integration =====
