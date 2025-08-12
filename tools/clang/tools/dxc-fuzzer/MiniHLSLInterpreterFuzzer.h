@@ -328,55 +328,6 @@ private:
   bool usesThreadIdVariables(const interpreter::Expression* expr) const;
 };
 
-// Mutation strategy: Apply algebraic transformations to wave op inputs
-class DataTransformMutation : public MutationStrategy {
-public:
-  bool canApply(const interpreter::Statement* stmt,
-                const ExecutionTrace& trace) const override;
-  
-  std::unique_ptr<interpreter::Statement> apply(
-    const interpreter::Statement* stmt,
-    const ExecutionTrace& trace) const override;
-    
-  bool validateSemanticPreservation(
-    const interpreter::Statement* original,
-    const interpreter::Statement* mutated,
-    const ExecutionTrace& trace) const override;
-    
-  std::string getName() const override { return "DataTransform"; }
-  
-private:
-  // Transform types
-  enum class TransformType {
-    MultiplyDivide,    // x -> (x * k) / k
-    AddSubtract,       // x -> (x + k) - k  
-    DoubleNegate,      // x -> -(-x)
-    ShiftUnshift,      // x -> (x * k) / k (multiply/divide by power of 2)
-    BitwiseIdentity    // x -> x & ~0
-  };
-  
-  std::unique_ptr<interpreter::Expression> applyTransform(
-    std::unique_ptr<interpreter::Expression> expr,
-    TransformType type) const;
-};
-
-// Mutation strategy: Add redundant computations
-class RedundantComputeMutation : public MutationStrategy {
-public:
-  bool canApply(const interpreter::Statement* stmt,
-                const ExecutionTrace& trace) const override;
-  
-  std::unique_ptr<interpreter::Statement> apply(
-    const interpreter::Statement* stmt,
-    const ExecutionTrace& trace) const override;
-    
-  bool validateSemanticPreservation(
-    const interpreter::Statement* original,
-    const interpreter::Statement* mutated,
-    const ExecutionTrace& trace) const override;
-    
-  std::string getName() const override { return "RedundantCompute"; }
-};
 
 // Mutation strategy: Track wave operation participants in global buffer
 class WaveParticipantTrackingMutation : public MutationStrategy {
@@ -406,38 +357,6 @@ private:
   bool hasParticipantBuffer(const interpreter::Program& program) const;
 };
 
-// Mutation strategy: Add GPU-testable invariant checks using shared memory
-class GPUInvariantCheckMutation : public MutationStrategy {
-public:
-  bool canApply(const interpreter::Statement* stmt,
-                const ExecutionTrace& trace) const override;
-  
-  std::unique_ptr<interpreter::Statement> apply(
-    const interpreter::Statement* stmt,
-    const ExecutionTrace& trace) const override;
-    
-  bool validateSemanticPreservation(
-    const interpreter::Statement* original,
-    const interpreter::Statement* mutated,
-    const ExecutionTrace& trace) const override;
-    
-  std::string getName() const override { return "GPUInvariantCheck"; }
-  
-private:
-  // Different types of invariants to check
-  enum class InvariantType {
-    ParticipantCount,      // Check number of participants matches expected
-    UniformResult,         // Check all lanes get same result for uniform ops
-    ReductionIdentity,     // Check reduction with identity element
-    SymmetricOperation     // Check operation is symmetric
-  };
-  
-  std::unique_ptr<interpreter::Statement> 
-  createInvariantCheck(const interpreter::WaveActiveOp* waveOp,
-                      const std::string& resultVar,
-                      InvariantType type,
-                      const ExecutionTrace& trace) const;
-};
 
 // ===== Semantic Validator =====
 

@@ -91,10 +91,6 @@ void IncrementalGenerator::initializeBaseProgram(ProgramState& state, FuzzedData
 
 // findWaveOps is now handled by the mutation tracker's findAllWaveOps
 
-void IncrementalGenerator::applyMutationsToNew(ProgramState& state, FuzzedDataProvider& provider) {
-    // This method is now deprecated - mutations are applied inline during generation
-    // Kept for backward compatibility
-}
 
 ProgramState IncrementalGenerator::generateIncremental(const uint8_t* data, size_t size) {
     FuzzedDataProvider provider(data, size);

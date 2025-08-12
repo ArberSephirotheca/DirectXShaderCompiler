@@ -55,7 +55,6 @@ private:
     
     std::unique_ptr<ParticipantPattern> createPattern(FuzzedDataProvider& provider);
     void initializeBaseProgram(ProgramState& state, FuzzedDataProvider& provider);
-    void applyMutationsToNew(ProgramState& state, FuzzedDataProvider& provider);
     
 public:
     IncrementalGenerator();
