@@ -31,7 +31,7 @@ static constexpr bool ENABLE_INTERPRETER_DEBUG =
 static constexpr bool ENABLE_WAVE_DEBUG =
     false; // Set to true to enable wave operation tracing
 static constexpr bool ENABLE_BLOCK_DEBUG =
-    true; // Set to true to enable block lifecycle tracing
+    false; // Set to true to enable block lifecycle tracing
 static constexpr bool ENABLE_PARSER_DEBUG =
     false; // Set to true to enable AST conversion debug output
 
@@ -3410,10 +3410,12 @@ ExecutionResult MiniHLSLInterpreter::executeWithOrdering(
   // when allCompleted is true, ensuring all threads have finished
   
   // Print Dynamic Block Execution Graph (DBEG) for debugging merge blocks
-  tgContext.printDynamicExecutionGraph(true);
+  if (ENABLE_BLOCK_DEBUG == true)
+    tgContext.printDynamicExecutionGraph(true);
 
   // Print final variable values for all lanes
-  tgContext.printFinalVariableValues();
+    if (ENABLE_BLOCK_DEBUG == true)
+      tgContext.printFinalVariableValues();
 
   return result;
 }

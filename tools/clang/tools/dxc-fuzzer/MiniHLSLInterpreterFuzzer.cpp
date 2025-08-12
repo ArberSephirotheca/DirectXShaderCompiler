@@ -96,8 +96,9 @@ bool LanePermutationMutation::canApply(const interpreter::Statement* stmt,
                                        const ExecutionTrace& trace) const {
   // Check if this is an assignment with a wave operation
   if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
-    // Use dynamic_cast to check for wave operations instead of string matching
-    if (auto* waveOp = dynamic_cast<const interpreter::WaveActiveOp*>(assign->getExpression())) {
+    // Check for wave operation, including nested in binary expressions
+    const interpreter::WaveActiveOp* waveOp = getWaveOp(stmt);
+    if (waveOp) {
       // Check if this is an associative operation
       auto opType = waveOp->getOpType();
       bool isAssociative = opType == interpreter::WaveActiveOp::Sum ||
@@ -123,6 +124,49 @@ bool LanePermutationMutation::canApply(const interpreter::Statement* stmt,
     }
   }
   return false;
+}
+
+// Helper function to recursively find WaveActiveOp in an expression
+static const interpreter::WaveActiveOp* findWaveOpInExpression(const interpreter::Expression* expr) {
+  if (!expr) return nullptr;
+  
+  // Direct wave operation
+  if (auto* waveOp = dynamic_cast<const interpreter::WaveActiveOp*>(expr)) {
+    return waveOp;
+  }
+  
+  // Check binary expressions (e.g., result + WaveActiveSum(...))
+  if (auto* binOp = dynamic_cast<const interpreter::BinaryOpExpr*>(expr)) {
+    // Check left side
+    if (auto* waveOp = findWaveOpInExpression(binOp->getLeft())) {
+      return waveOp;
+    }
+    // Check right side
+    if (auto* waveOp = findWaveOpInExpression(binOp->getRight())) {
+      return waveOp;
+    }
+  }
+  
+  // Check unary expressions
+  if (auto* unaryOp = dynamic_cast<const interpreter::UnaryOpExpr*>(expr)) {
+    return findWaveOpInExpression(unaryOp->getExpr());
+  }
+  
+  return nullptr;
+}
+
+const interpreter::WaveActiveOp* LanePermutationMutation::getWaveOp(
+    const interpreter::Statement* stmt) const {
+  
+  if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
+    return findWaveOpInExpression(assign->getExpression());
+  } else if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
+    return findWaveOpInExpression(varDecl->getInit());
+  } else if (auto* exprStmt = dynamic_cast<const interpreter::ExprStmt*>(stmt)) {
+    return findWaveOpInExpression(exprStmt->getExpression());
+  }
+  
+  return nullptr;
 }
 
 std::unique_ptr<interpreter::Statement> LanePermutationMutation::apply(
@@ -569,18 +613,12 @@ bool LanePermutationMutation::validateSemanticPreservation(
 
 bool WaveParticipantTrackingMutation::canApply(const interpreter::Statement* stmt,
                                               const ExecutionTrace& trace) const {
-  // Can apply to assignments containing wave operations
+  // Check if statement contains any wave operations (including nested)
   if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
-    if (dynamic_cast<const interpreter::WaveActiveOp*>(assign->getExpression()) != nullptr) {
-      return true;
-    }
-  }
-  // Also check for variable declarations with wave operations
-  else if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
-    if (varDecl->getInit() && 
-        dynamic_cast<const interpreter::WaveActiveOp*>(varDecl->getInit()) != nullptr) {
-      return true;
-    }
+    return findWaveOpInExpression(assign->getExpression()) != nullptr;
+  } else if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
+    return varDecl->getInit() && 
+           findWaveOpInExpression(varDecl->getInit()) != nullptr;
   }
   return false;
 }
@@ -589,19 +627,19 @@ std::unique_ptr<interpreter::Statement> WaveParticipantTrackingMutation::apply(
     const interpreter::Statement* stmt,
     const ExecutionTrace& trace) const {
   
-  // Handle AssignStmt
+  // Find wave operation in the statement (including nested in expressions)
   const interpreter::WaveActiveOp* waveOp = nullptr;
   std::string resultVarName;
   
   if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
-    waveOp = dynamic_cast<const interpreter::WaveActiveOp*>(assign->getExpression());
+    waveOp = findWaveOpInExpression(assign->getExpression());
     if (!waveOp) return stmt->clone();
     resultVarName = assign->getName();
   }
   // Handle VarDeclStmt
   else if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
     if (varDecl->getInit()) {
-      waveOp = dynamic_cast<const interpreter::WaveActiveOp*>(varDecl->getInit());
+      waveOp = findWaveOpInExpression(varDecl->getInit());
       if (!waveOp) return stmt->clone();
       resultVarName = varDecl->getName();
     } else {
@@ -613,21 +651,27 @@ std::unique_ptr<interpreter::Statement> WaveParticipantTrackingMutation::apply(
   }
   
   // Find expected participants from trace based on the actual block execution
-  uint32_t expectedParticipants = 4; // default
+  uint32_t expectedParticipants = trace.threadHierarchy.totalThreads; // default to total threads
   uint32_t blockId = 0;
+  
+  FUZZER_DEBUG_LOG("[WaveParticipantTracking] Looking for wave op: " << waveOp->toString() << "\n");
+  FUZZER_DEBUG_LOG("[WaveParticipantTracking] Total threads: " << trace.threadHierarchy.totalThreads << "\n");
   
   // Find the wave operation in the trace to get its block ID
   for (const auto& waveOpRecord : trace.waveOperations) {
+    FUZZER_DEBUG_LOG("[WaveParticipantTracking] Checking trace op: " << waveOpRecord.opType 
+                     << " with " << waveOpRecord.arrivedParticipants.size() << " participants\n");
     if (waveOpRecord.instruction == static_cast<const void*>(waveOp) ||
         waveOpRecord.opType == waveOp->toString()) {
       expectedParticipants = waveOpRecord.arrivedParticipants.size();
       blockId = waveOpRecord.blockId;
+      FUZZER_DEBUG_LOG("[WaveParticipantTracking] Found match! Expected participants: " << expectedParticipants << "\n");
       
       
       // Also check the block's wave participation info for more accurate count
       if (trace.blocks.count(blockId)) {
         const auto& block = trace.blocks.at(blockId);
-        // Assuming wave 0 for simplicity - in real code would need to track wave ID
+        // TODO: Assuming wave 0 for simplicity - in real code would need to track wave ID
         if (block.waveParticipation.count(0)) {
           const auto& waveInfo = block.waveParticipation.at(0);
           if (!waveInfo.participatingLanes.empty()) {
@@ -737,14 +781,14 @@ bool ContextAwareParticipantMutation::canApply(
     const interpreter::Statement* stmt,
     const ExecutionTrace& trace) const {
   
-  // Check if statement contains wave operation
-  bool hasWaveOp = false;
+  // Check if statement contains wave operation (including nested)
+  // todo: what does it mean
+  bool hasWaveOp = findWaveOpInExpression(nullptr) != nullptr;
   if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
-    hasWaveOp = dynamic_cast<const interpreter::WaveActiveOp*>(
-      assign->getExpression()) != nullptr;
+    hasWaveOp = findWaveOpInExpression(assign->getExpression()) != nullptr;
   } else if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
     hasWaveOp = varDecl->getInit() && 
-      dynamic_cast<const interpreter::WaveActiveOp*>(varDecl->getInit()) != nullptr;
+      findWaveOpInExpression(varDecl->getInit()) != nullptr;
   }
   
   if (!hasWaveOp) {
@@ -2120,14 +2164,14 @@ std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
     hasWaveOp = [&hasWaveOp](const interpreter::Statement* stmt) -> bool {
       // Check AssignStmt
       if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
-        if (dynamic_cast<const interpreter::WaveActiveOp*>(assign->getExpression())) {
+        if (findWaveOpInExpression(assign->getExpression())) {
           return true;
         }
       } 
       // Check VarDeclStmt
       else if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
         if (varDecl->getInit() && 
-            dynamic_cast<const interpreter::WaveActiveOp*>(varDecl->getInit())) {
+            findWaveOpInExpression(varDecl->getInit())) {
           return true;
         }
       }
@@ -2288,14 +2332,14 @@ std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
     hasWaveOpRecursive = [&hasWaveOpRecursive](const interpreter::Statement* stmt) -> bool {
       // Check AssignStmt
       if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
-        if (dynamic_cast<const interpreter::WaveActiveOp*>(assign->getExpression())) {
+        if (findWaveOpInExpression(assign->getExpression())) {
           return true;
         }
       } 
       // Check VarDeclStmt
       else if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
         if (varDecl->getInit() && 
-            dynamic_cast<const interpreter::WaveActiveOp*>(varDecl->getInit())) {
+            findWaveOpInExpression(varDecl->getInit())) {
           return true;
         }
       }
