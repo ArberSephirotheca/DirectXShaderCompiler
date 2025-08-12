@@ -1,6 +1,7 @@
 #include "HLSLProgramGenerator.h"
 #include "HLSLParticipantPatterns.h"
 #include "MiniHLSLInterpreterFuzzer.h"
+#include "FuzzerDebug.h"
 #include <algorithm>
 
 // External verbosity flag from fuzzer
@@ -113,6 +114,10 @@ ProgramState IncrementalGenerator::generateIncremental(const uint8_t* data, size
         auto blockType = static_cast<ControlFlowGenerator::BlockSpec::Type>(
             provider.ConsumeIntegralInRange<int>(0, 5));  // 6 types: IF, IF_ELSE, NESTED_IF, FOR_LOOP, WHILE_LOOP, CASCADING_IF_ELSE
         
+        // Debug: Print selected block type
+        const char* blockTypeNames[] = {"IF", "IF_ELSE", "NESTED_IF", "FOR_LOOP", "WHILE_LOOP", "CASCADING_IF_ELSE"};
+        FUZZER_DEBUG_LOG("Round " << round << ": Selected block type: " << blockTypeNames[blockType] << " (" << blockType << ")\n");
+        
         // Only allow break/continue in loop contexts
         bool isLoop = (blockType == ControlFlowGenerator::BlockSpec::FOR_LOOP ||
                       blockType == ControlFlowGenerator::BlockSpec::WHILE_LOOP);
@@ -129,9 +134,9 @@ ProgramState IncrementalGenerator::generateIncremental(const uint8_t* data, size
             {} // nestingContext with default initialization
         };
         
-        // Enable nesting for this block
-        spec.nestingContext.allowNesting = provider.ConsumeBool();
-        spec.nestingContext.maxDepth = provider.ConsumeIntegralInRange<uint32_t>(2, 3);
+        // Enable nesting for this block - always allow nesting to maximize complexity
+        spec.nestingContext.allowNesting = true;  // Always allow nesting
+        spec.nestingContext.maxDepth = provider.ConsumeIntegralInRange<uint32_t>(2, 3);  // Reduced max depth to avoid timeout
         spec.nestingContext.currentDepth = 0;
         
         auto newStatements = cfGenerator->generateBlock(spec, state, provider);
@@ -585,7 +590,8 @@ ControlFlowGenerator::generateNestedBody(const BlockSpec& spec, ProgramState& st
     std::vector<std::unique_ptr<interpreter::Statement>> body;
     
     // Decision 1: Add wave operation at current level?
-    if (provider.ConsumeBool()) {
+    // 70% chance to add wave operation
+    if (provider.ConsumeIntegralInRange<uint32_t>(0, 9) < 7) {
         // Generate wave operation at this level
         uint32_t waveSize = state.program.waveSize > 0 ? state.program.waveSize : 32;
         auto participantCondition = spec.pattern->generateCondition(waveSize, provider);
@@ -612,9 +618,10 @@ ControlFlowGenerator::generateNestedBody(const BlockSpec& spec, ProgramState& st
     }
     
     // Decision 2: Add nested control flow?
+    // Heavily bias towards nesting (90% chance)
     if (spec.nestingContext.allowNesting && 
         spec.nestingContext.currentDepth < spec.nestingContext.maxDepth &&
-        provider.ConsumeBool()) {
+        provider.ConsumeIntegralInRange<uint32_t>(0, 9) < 9) {  // 90% chance
         
         // Generate nested control flow
         BlockSpec nestedSpec = createNestedBlockSpec(spec, state, provider);
@@ -626,7 +633,8 @@ ControlFlowGenerator::generateNestedBody(const BlockSpec& spec, ProgramState& st
     }
     
     // Decision 3: Add another wave operation after nesting?
-    if (provider.ConsumeBool()) {
+    // 60% chance to add another wave operation
+    if (provider.ConsumeIntegralInRange<uint32_t>(0, 9) < 6) {
         uint32_t waveSize = state.program.waveSize > 0 ? state.program.waveSize : 32;
         auto participantCondition = spec.pattern->generateCondition(waveSize, provider);
         
@@ -750,6 +758,8 @@ void saveBugReport(const uint8_t* data, size_t size,
 void IncrementalGenerator::addStatementsToProgram(ProgramState& state, const uint8_t* data, size_t size, size_t offset) {
     FuzzedDataProvider provider(data + offset, size - offset);
     
+    FUZZER_DEBUG_LOG("\naddStatementsToProgram: offset=" << offset << ", size=" << size << ", available data=" << (size - offset) << "\n");
+    
     // Add one round of new statements to the existing program
     GenerationRound roundInfo;
     roundInfo.roundNumber = state.history.size();
@@ -758,6 +768,10 @@ void IncrementalGenerator::addStatementsToProgram(ProgramState& state, const uin
     auto pattern = createPattern(provider);
     auto blockType = static_cast<ControlFlowGenerator::BlockSpec::Type>(
         provider.ConsumeIntegralInRange<int>(0, 5));
+    
+    // Debug: Print selected block type
+    const char* blockTypeNames[] = {"IF", "IF_ELSE", "NESTED_IF", "FOR_LOOP", "WHILE_LOOP", "CASCADING_IF_ELSE"};
+    FUZZER_DEBUG_LOG("addStatements: Selected block type: " << blockTypeNames[blockType] << " (" << blockType << ")\n");
     
     bool isLoop = (blockType == ControlFlowGenerator::BlockSpec::FOR_LOOP ||
                   blockType == ControlFlowGenerator::BlockSpec::WHILE_LOOP);
@@ -773,6 +787,11 @@ void IncrementalGenerator::addStatementsToProgram(ProgramState& state, const uin
             provider.ConsumeIntegralInRange<uint32_t>(2, 5) : 3,
         {} // nestingContext with default initialization
     };
+    
+    // Enable nesting for this block - always allow nesting to maximize complexity
+    spec.nestingContext.allowNesting = true;  // Always allow nesting
+    spec.nestingContext.maxDepth = provider.ConsumeIntegralInRange<uint32_t>(2, 3);  // Reduced max depth to avoid timeout
+    spec.nestingContext.currentDepth = 0;
     
     auto newStatements = cfGenerator->generateBlock(spec, state, provider);
     
