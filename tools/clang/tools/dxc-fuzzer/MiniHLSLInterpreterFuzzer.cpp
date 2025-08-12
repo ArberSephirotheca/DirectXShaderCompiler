@@ -2703,11 +2703,11 @@ bool deserializeAST(const uint8_t* data, size_t size,
       auto one = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(1));
       auto xInit = std::make_unique<interpreter::BinaryOpExpr>(
           std::move(laneIndex), std::move(one), interpreter::BinaryOpExpr::Add);
-      auto xDecl = std::make_unique<interpreter::VarDeclStmt>("x", std::move(xInit));
+      auto xDecl = std::make_unique<interpreter::VarDeclStmt>("x", interpreter::HLSLType::Uint, std::move(xInit));
       
       // var sum = 0;
       auto zero = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(0));
-      auto sumDecl = std::make_unique<interpreter::VarDeclStmt>("sum", std::move(zero));
+      auto sumDecl = std::make_unique<interpreter::VarDeclStmt>("sum", interpreter::HLSLType::Uint, std::move(zero));
       
       // sum = WaveActiveSum(x);
       auto xRef = std::make_unique<interpreter::VariableExpr>("x");
@@ -2732,11 +2732,11 @@ bool deserializeAST(const uint8_t* data, size_t size,
       auto one = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(1));
       auto xInit = std::make_unique<interpreter::BinaryOpExpr>(
           std::move(laneIndex), std::move(one), interpreter::BinaryOpExpr::Add);
-      auto xDecl = std::make_unique<interpreter::VarDeclStmt>("x", std::move(xInit));
+      auto xDecl = std::make_unique<interpreter::VarDeclStmt>("x", interpreter::HLSLType::Uint, std::move(xInit));
       
       // var sum = 0;
       auto zero = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(0));
-      auto sumDecl = std::make_unique<interpreter::VarDeclStmt>("sum", std::move(zero));
+      auto sumDecl = std::make_unique<interpreter::VarDeclStmt>("sum", interpreter::HLSLType::Uint, std::move(zero));
       
       // if (WaveGetLaneIndex() < 2) { sum = WaveActiveSum(x); } else { sum = 0; }
       auto laneIndex2 = std::make_unique<interpreter::LaneIndexExpr>();
@@ -2775,7 +2775,7 @@ bool deserializeAST(const uint8_t* data, size_t size,
       
       // var sum = 0;
       auto zero = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(0));
-      auto sumDecl = std::make_unique<interpreter::VarDeclStmt>("sum", std::move(zero));
+      auto sumDecl = std::make_unique<interpreter::VarDeclStmt>("sum", interpreter::HLSLType::Uint, std::move(zero));
       
       // for (var i = 0; i < 4; i++) { sum = WaveActiveSum(i); }
       auto iInit = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(0));
@@ -2785,8 +2785,9 @@ bool deserializeAST(const uint8_t* data, size_t size,
           std::move(iVar), std::move(four), interpreter::BinaryOpExpr::Lt);
       auto iVar2 = std::make_unique<interpreter::VariableExpr>("i");
       auto one = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(1));
-      auto increment = std::make_unique<interpreter::BinaryOpExpr>(
+      auto incrementExpr = std::make_unique<interpreter::BinaryOpExpr>(
           std::move(iVar2), std::move(one), interpreter::BinaryOpExpr::Add);
+      auto increment = std::make_unique<interpreter::AssignExpr>("i", std::move(incrementExpr));
       
       std::vector<std::unique_ptr<interpreter::Statement>> bodyStmts;
       auto iVar3 = std::make_unique<interpreter::VariableExpr>("i");
