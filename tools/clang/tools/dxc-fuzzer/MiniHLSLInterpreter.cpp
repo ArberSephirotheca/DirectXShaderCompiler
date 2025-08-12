@@ -2887,7 +2887,7 @@ ForStmt::execute_with_error_handling(LaneContext &lane, WaveContext &wave,
 std::string ForStmt::toString() const {
   std::string result = "for (uint " + loopVar_ + " = " + init_->toString() + "; ";
   result += condition_->toString() + "; ";
-  result += loopVar_ + " = " + increment_->toString() + ") {\n";
+  result += increment_->toString() + ") {\n";
   for (const auto &stmt : body_) {
     result += "    " + stmt->toString() + "\n";
   }
@@ -8625,9 +8625,9 @@ void ThreadgroupContext::printBlockDetails(uint32_t blockId,
   case BlockType::LOOP_HEADER:
     blockTypeName = "LOOP_HEADER";
     break;
-  case BlockType::LOOP_BODY:
-    blockTypeName = "LOOP_BODY";
-    break;
+  // case BlockType::LOOP_BODY:
+  //   blockTypeName = "LOOP_BODY";
+  //   break;
   case BlockType::LOOP_EXIT:
     blockTypeName = "LOOP_EXIT";
     break;

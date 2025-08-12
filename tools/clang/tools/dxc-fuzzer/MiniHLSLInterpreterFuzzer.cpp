@@ -747,7 +747,12 @@ bool ContextAwareParticipantMutation::canApply(
       dynamic_cast<const interpreter::WaveActiveOp*>(varDecl->getInit()) != nullptr;
   }
   
-  if (!hasWaveOp) return false;
+  if (!hasWaveOp) {
+    FUZZER_DEBUG_LOG("[ContextAwareParticipant] Statement does not contain wave operation\n");
+    return false;
+  }
+  
+  FUZZER_DEBUG_LOG("[ContextAwareParticipant] Found wave operation in statement\n");
   
   // Find all blocks where wave operations executed
   std::set<uint32_t> waveOpBlocks;
@@ -755,14 +760,24 @@ bool ContextAwareParticipantMutation::canApply(
     waveOpBlocks.insert(waveOp.blockId);
   }
   
+  FUZZER_DEBUG_LOG("[ContextAwareParticipant] Wave ops executed in blocks: ");
+  for (uint32_t blockId : waveOpBlocks) {
+    FUZZER_DEBUG_LOG(blockId << " ");
+  }
+  FUZZER_DEBUG_LOG("\n");
+  
   // Check if any of these blocks are inside loops
   for (uint32_t blockId : waveOpBlocks) {
     auto it = trace.blocks.find(blockId);
     if (it != trace.blocks.end()) {
       const auto& block = it->second;
       
+      FUZZER_DEBUG_LOG("[ContextAwareParticipant] Checking block " << blockId 
+                      << " type=" << static_cast<int>(block.blockType) << "\n");
+      
       // Method 1: Check block type directly
       if (block.blockType == interpreter::BlockType::LOOP_BODY) {
+        FUZZER_DEBUG_LOG("[ContextAwareParticipant] Found LOOP_BODY block\n");
         return true;
       }
       
@@ -770,16 +785,22 @@ bool ContextAwareParticipantMutation::canApply(
       // (indicates multiple iterations)
       int occurrences = 0;
       for (const auto& [id, b] : trace.blocks) {
-        if (b.sourceStatement == block.sourceStatement) {
+        if (b.sourceStatement == block.sourceStatement && b.sourceStatement != nullptr) {
           occurrences++;
         }
       }
+      FUZZER_DEBUG_LOG("[ContextAwareParticipant] Block " << blockId 
+                      << " sourceStatement=" << block.sourceStatement 
+                      << " occurrences=" << occurrences << "\n");
+      
       if (occurrences > 1) {
+        FUZZER_DEBUG_LOG("[ContextAwareParticipant] Found multiple occurrences!\n");
         return true;  // Same statement executed multiple times
       }
     }
   }
   
+  FUZZER_DEBUG_LOG("[ContextAwareParticipant] No loop context found\n");
   return false;
 }
 
@@ -809,48 +830,41 @@ ContextAwareParticipantMutation::extractIterationContexts(
     return false;
   };
   
-  // Group wave operations by their containing loop's source statement
-  std::map<const void*, std::vector<const ExecutionTrace::WaveOpRecord*>> loopIterations;
+  // Group wave operations by their instruction pointer - same instruction in different blocks means loop iterations
+  std::map<const void*, std::vector<const ExecutionTrace::WaveOpRecord*>> instructionGroups;
   
   for (const auto& waveOp : trace.waveOperations) {
     if (!matchesStatement(waveOp)) continue;
     
-    // Find the containing loop block
-    uint32_t currentId = waveOp.blockId;
-    const void* loopStmt = nullptr;
-    
-    while (currentId != 0 && trace.blocks.count(currentId)) {
-      const auto& block = trace.blocks.at(currentId);
-      
-      // Check if this is a loop block
-      if (block.blockType == interpreter::BlockType::LOOP_HEADER) {
-        loopStmt = block.sourceStatement;
-        break;
-      } else if (block.blockType == interpreter::BlockType::LOOP_BODY) {
-        // We're in a loop body, check parent for the loop statement
-        if (block.parentBlockId != 0 && trace.blocks.count(block.parentBlockId)) {
-          const auto& parentBlock = trace.blocks.at(block.parentBlockId);
-          if (parentBlock.blockType == interpreter::BlockType::LOOP_HEADER) {
-            loopStmt = parentBlock.sourceStatement;
-            break;
-          }
-        }
-      }
-      
-      currentId = block.parentBlockId;
-    }
-    
-    if (loopStmt) {
-      loopIterations[loopStmt].push_back(&waveOp);
+    // Group by instruction pointer
+    if (waveOp.instruction != nullptr) {
+      instructionGroups[waveOp.instruction].push_back(&waveOp);
     }
   }
   
-  // Extract iteration contexts for each loop
-  for (const auto& [loopStmt, waveOps] : loopIterations) {
+  // Extract iteration contexts for instructions that appear in multiple blocks (indicating loops)
+  for (const auto& [instruction, waveOps] : instructionGroups) {
+    // If the same instruction appears in multiple blocks, it's likely in a loop
+    if (waveOps.size() <= 1) continue;
+    
     // Sort by block ID to get iteration order
     std::vector<const ExecutionTrace::WaveOpRecord*> sortedOps = waveOps;
     std::sort(sortedOps.begin(), sortedOps.end(), 
       [](const auto* a, const auto* b) { return a->blockId < b->blockId; });
+    
+    FUZZER_DEBUG_LOG("[ContextAware] Instruction " << instruction << " appears in " 
+                     << sortedOps.size() << " blocks: ");
+    for (const auto* op : sortedOps) {
+      FUZZER_DEBUG_LOG(op->blockId << " ");
+    }
+    FUZZER_DEBUG_LOG("\n");
+    
+    // Find the loop variable by checking the blocks
+    std::string loopVar = findLoopVariable(sortedOps[0]->blockId, trace);
+    if (loopVar.empty() && sortedOps.size() >= 2) {
+      // Try finding from a different block if first fails
+      loopVar = findLoopVariable(sortedOps[1]->blockId, trace);
+    }
     
     for (size_t i = 0; i < sortedOps.size(); ++i) {
       IterationContext ctx;
@@ -858,13 +872,10 @@ ContextAwareParticipantMutation::extractIterationContexts(
       ctx.iterationValue = i;  // 0, 1, 2...
       ctx.existingParticipants = sortedOps[i]->arrivedParticipants;
       ctx.waveId = sortedOps[i]->waveId;
+      ctx.loopVariable = loopVar;
       
-      // Find loop variable based on the containing block
-      ctx.loopVariable = findLoopVariable(ctx.blockId, trace);
-      
-      if (!ctx.loopVariable.empty()) {
-        contexts.push_back(ctx);
-      }
+      // Even if we don't find the loop variable, we can still identify iterations by block pattern
+      contexts.push_back(ctx);
     }
   }
   

@@ -557,7 +557,7 @@ enum class BlockType {
   BRANCH_ELSE,    // Else branch of if statement
   MERGE,          // Merge/reconvergence point after divergent control flow
   LOOP_HEADER,    // Loop header/condition check
-  LOOP_BODY,      // Loop body iteration
+  // LOOP_BODY,      // Loop body iteration
   LOOP_EXIT,      // Loop exit/merge point
   SWITCH_HEADER,  // Switch header/condition evaluation
   SWITCH_CASE,    // Switch case block
