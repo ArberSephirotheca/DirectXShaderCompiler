@@ -121,32 +121,6 @@ if (i == 1 && WaveGetLaneIndex() == 3) {
 }
 ```
 
-### 3. Wave Operation Duplication
-Execute wave operations multiple times to test consistency:
-```hlsl
-// Original
-result = WaveActiveSum(value);
-
-// Mutated
-result = WaveActiveSum(value);
-uint _verify = WaveActiveSum(value);
-assert(result == _verify);
-```
-
-### 4. Explicit Reconvergence
-Force reconvergence points to test interpreter behavior:
-```hlsl
-// Original
-if (condition) {
-    x = WaveActiveSum(y);
-}
-
-// Mutated
-if (condition) {
-    x = WaveActiveSum(y);
-}
-WaveBarrier();  // Force reconvergence
-```
 
 ## Participant Pattern Generation
 

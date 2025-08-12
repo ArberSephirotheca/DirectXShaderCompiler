@@ -551,9 +551,15 @@ bool LanePermutationMutation::usesThreadIdVariables(const interpreter::Expressio
 
 bool LanePermutationMutation::validateSemanticPreservation(
     const interpreter::Statement* original,
-    const interpreter::Statement* mutated,
+    const interpreter::Statement* 
+    mutated,
     const ExecutionTrace& trace) const {
-  // Associative operations should produce the same result with permuted lanes
+  // TODO: Implement proper semantic validation
+  // This should verify that:
+  // 1. The permutation preserves the associative property
+  // 2. All lanes still participate in the same wave operation
+  // 3. The final result is mathematically equivalent
+  // For now, we rely on the fuzzer's end-to-end validation
   return true;
 }
 
@@ -716,7 +722,11 @@ bool WaveParticipantTrackingMutation::validateSemanticPreservation(
     const interpreter::Statement* original,
     const interpreter::Statement* mutated,
     const ExecutionTrace& trace) const {
-  // Tracking operations don't change the wave operation result
+  // TODO: Implement validation that verifies:
+  // 1. The tracking code doesn't modify the original wave operation result
+  // 2. All participant tracking is side-effect free
+  // 3. The added instrumentation doesn't affect control flow
+  // Currently relying on end-to-end semantic validation
   return true;
 }
 
