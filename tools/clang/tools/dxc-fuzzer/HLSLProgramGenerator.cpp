@@ -125,8 +125,14 @@ ProgramState IncrementalGenerator::generateIncremental(const uint8_t* data, size
             provider.ConsumeIntegralInRange<uint32_t>(0, 2),  // nestingDepth
             // numBranches for cascading if-else
             blockType == ControlFlowGenerator::BlockSpec::CASCADING_IF_ELSE ? 
-                provider.ConsumeIntegralInRange<uint32_t>(2, 5) : 3
+                provider.ConsumeIntegralInRange<uint32_t>(2, 5) : 3,
+            {} // nestingContext with default initialization
         };
+        
+        // Enable nesting for this block
+        spec.nestingContext.allowNesting = provider.ConsumeBool();
+        spec.nestingContext.maxDepth = provider.ConsumeIntegralInRange<uint32_t>(2, 3);
+        spec.nestingContext.currentDepth = 0;
         
         auto newStatements = cfGenerator->generateBlock(spec, state, provider);
         
@@ -211,51 +217,45 @@ ControlFlowGenerator::generateIf(const BlockSpec& spec, ProgramState& state,
                        state.program.waveSize : 32;
     auto condition = spec.pattern->generateCondition(waveSize, provider);
     
-    // Generate body with wave operation
-    std::vector<std::unique_ptr<interpreter::Statement>> thenBody;
+    // Generate then body with potential nesting
+    auto thenBody = generateNestedBody(spec, state, provider);
     
-    // Always include at least one wave operation
-    auto waveOp = generateWaveOperation(state, provider);
-    
-    // Use assignment to existing variable (result) to avoid scope issues
-    // Or use a variable that was declared at the function scope
-    if (!state.declaredVariables.empty() && provider.ConsumeBool()) {
-        // Assign to existing variable
-        std::vector<std::string> vars(state.declaredVariables.begin(), 
-                                     state.declaredVariables.end());
-        size_t idx = provider.ConsumeIntegralInRange<size_t>(0, vars.size() - 1);
-        thenBody.push_back(std::make_unique<interpreter::AssignStmt>(
-            vars[idx],
-            std::move(waveOp)
-        ));
-    } else {
-        // Always assign to 'result' which is declared at the beginning
-        thenBody.push_back(std::make_unique<interpreter::AssignStmt>(
-            "result",
-            std::move(waveOp)
+    // Add break/continue if specified AND we're in a loop context
+    if (spec.includeBreak && provider.ConsumeBool()) {
+        // This will only be true if hasEnclosingLoop was true when spec was created
+        std::vector<std::unique_ptr<interpreter::Statement>> breakBody;
+        breakBody.push_back(std::make_unique<interpreter::BreakStmt>());
+        
+        // Wrap break in another condition for variety
+        auto breakCondition = std::make_unique<interpreter::BinaryOpExpr>(
+            std::make_unique<interpreter::LaneIndexExpr>(),
+            std::make_unique<interpreter::LiteralExpr>(16),
+            interpreter::BinaryOpExpr::Gt
+        );
+        
+        thenBody.push_back(std::make_unique<interpreter::IfStmt>(
+            std::move(breakCondition),
+            std::move(breakBody)
         ));
     }
-    
-    // Break/continue should not be added in if statements - they're only valid in loops
     
     // Generate else body if requested
     std::vector<std::unique_ptr<interpreter::Statement>> elseBody;
     if (spec.type == BlockSpec::IF_ELSE) {
-        // Simple assignment in else
-        if (!state.declaredVariables.empty()) {
-            std::vector<std::string> vars(state.declaredVariables.begin(), 
-                                         state.declaredVariables.end());
-            size_t idx = provider.ConsumeIntegralInRange<size_t>(0, vars.size() - 1);
-            elseBody.push_back(std::make_unique<interpreter::AssignStmt>(
-                vars[idx],
-                std::make_unique<interpreter::LiteralExpr>(0)
-            ));
-        } else {
-            elseBody.push_back(std::make_unique<interpreter::AssignStmt>(
-                "result",
-                std::make_unique<interpreter::LiteralExpr>(0)
-            ));
-        }
+        // Create a separate spec for else branch
+        BlockSpec elseSpec{
+            spec.type,
+            createRandomPattern(provider),  // Create new pattern for else branch
+            spec.includeBreak,
+            spec.includeContinue,
+            spec.nestingDepth,
+            spec.numBranches,
+            spec.nestingContext  // Copy nesting context
+        };
+        elseSpec.nestingContext.parentTypes.push_back(BlockSpec::IF_ELSE);
+        
+        // Generate else body with potential nesting
+        elseBody = generateNestedBody(elseSpec, state, provider);
     }
     
     return std::make_unique<interpreter::IfStmt>(
@@ -268,9 +268,8 @@ ControlFlowGenerator::generateIf(const BlockSpec& spec, ProgramState& state,
 std::unique_ptr<interpreter::Statement>
 ControlFlowGenerator::generateForLoop(const BlockSpec& spec, ProgramState& state,
                                      FuzzedDataProvider& provider) {
-    // Initialize loop variable
-    std::string loopVar = "i" + std::to_string(state.nextVarIndex++);
-    state.declaredVariables.insert(loopVar);
+    // Initialize loop variable using context-aware naming
+    std::string loopVar = generateLoopVariable(spec.nestingContext, BlockSpec::FOR_LOOP, state);
     
     // Initialize expression for the loop variable
     auto initExpr = std::make_unique<interpreter::LiteralExpr>(0);
@@ -293,23 +292,10 @@ ControlFlowGenerator::generateForLoop(const BlockSpec& spec, ProgramState& state
         )
     );
     
-    // Generate body with participant pattern
-    std::vector<std::unique_ptr<interpreter::Statement>> body;
+    // Generate body with potential nesting
+    auto body = generateNestedBody(spec, state, provider);
     
-    // Use pattern for conditional wave operation
-    uint32_t waveSize = state.program.waveSize > 0 ? 
-                       state.program.waveSize : 32;
-    auto participantCondition = spec.pattern->generateCondition(waveSize, provider);
-    
-    std::vector<std::unique_ptr<interpreter::Statement>> waveBody;
-    auto waveOp = generateWaveOperation(state, provider);
-    // Use assignment to existing variable to avoid scope issues
-    waveBody.push_back(std::make_unique<interpreter::AssignStmt>(
-        "result",
-        std::move(waveOp)
-    ));
-    
-    // Add optional continue
+    // Add optional continue (only if we're generating a loop)
     if (spec.includeContinue && provider.ConsumeBool()) {
         auto continueCondition = std::make_unique<interpreter::BinaryOpExpr>(
             std::make_unique<interpreter::VariableExpr>(loopVar),
@@ -325,11 +311,6 @@ ControlFlowGenerator::generateForLoop(const BlockSpec& spec, ProgramState& state
             std::move(continueBody)
         ));
     }
-    
-    body.push_back(std::make_unique<interpreter::IfStmt>(
-        std::move(participantCondition),
-        std::move(waveBody)
-    ));
     
     // Add optional break
     if (spec.includeBreak && provider.ConsumeBool()) {
@@ -360,8 +341,8 @@ ControlFlowGenerator::generateForLoop(const BlockSpec& spec, ProgramState& state
 std::vector<std::unique_ptr<interpreter::Statement>>
 ControlFlowGenerator::generateWhileLoop(const BlockSpec& spec, ProgramState& state,
                                        FuzzedDataProvider& provider) {
-    // Create loop counter variable
-    std::string counterVar = "counter" + std::to_string(state.nextVarIndex++);
+    // Create loop counter variable using context-aware naming
+    std::string counterVar = generateLoopVariable(spec.nestingContext, BlockSpec::WHILE_LOOP, state);
     
     // Add counter initialization before the loop
     auto counterInit = std::make_unique<interpreter::VarDeclStmt>(
@@ -369,7 +350,6 @@ ControlFlowGenerator::generateWhileLoop(const BlockSpec& spec, ProgramState& sta
         interpreter::HLSLType::Uint,
         std::make_unique<interpreter::LiteralExpr>(0)
     );
-    state.declaredVariables.insert(counterVar);
     
     // While condition - limit to 3 iterations to avoid false deadlock detection
     uint32_t maxIterations = provider.ConsumeIntegralInRange<uint32_t>(2, 3);
@@ -382,7 +362,7 @@ ControlFlowGenerator::generateWhileLoop(const BlockSpec& spec, ProgramState& sta
     // Body
     std::vector<std::unique_ptr<interpreter::Statement>> body;
     
-    // Increment counter
+    // Increment counter first
     body.push_back(std::make_unique<interpreter::AssignStmt>(
         counterVar,
         std::make_unique<interpreter::BinaryOpExpr>(
@@ -392,23 +372,28 @@ ControlFlowGenerator::generateWhileLoop(const BlockSpec& spec, ProgramState& sta
         )
     ));
     
-    // Add wave operation with pattern
-    uint32_t waveSize = state.program.waveSize > 0 ? 
-                       state.program.waveSize : 32;
-    auto participantCondition = spec.pattern->generateCondition(waveSize, provider);
+    // Generate body with potential nesting
+    auto nestedStatements = generateNestedBody(spec, state, provider);
+    for (auto& stmt : nestedStatements) {
+        body.push_back(std::move(stmt));
+    }
     
-    std::vector<std::unique_ptr<interpreter::Statement>> waveBody;
-    auto waveOp = generateWaveOperation(state, provider);
-    // Use assignment to existing variable to avoid scope issues
-    waveBody.push_back(std::make_unique<interpreter::AssignStmt>(
-        "result",
-        std::move(waveOp)
-    ));
-    
-    body.push_back(std::make_unique<interpreter::IfStmt>(
-        std::move(participantCondition),
-        std::move(waveBody)
-    ));
+    // Add optional break/continue if we're in a loop context
+    if (spec.includeBreak && provider.ConsumeBool()) {
+        auto breakCondition = std::make_unique<interpreter::BinaryOpExpr>(
+            std::make_unique<interpreter::VariableExpr>(counterVar),
+            std::make_unique<interpreter::LiteralExpr>(static_cast<int32_t>(maxIterations - 1)),
+            interpreter::BinaryOpExpr::Eq
+        );
+        
+        std::vector<std::unique_ptr<interpreter::Statement>> breakBody;
+        breakBody.push_back(std::make_unique<interpreter::BreakStmt>());
+        
+        body.push_back(std::make_unique<interpreter::IfStmt>(
+            std::move(breakCondition),
+            std::move(breakBody)
+        ));
+    }
     
     // Return both the counter init and the while statement
     std::vector<std::unique_ptr<interpreter::Statement>> statements;
@@ -473,10 +458,16 @@ ControlFlowGenerator::generateCascadingIfElse(const BlockSpec& spec, ProgramStat
         
         auto waveOp = std::make_unique<interpreter::WaveActiveOp>(std::move(input), opType);
         
-        // Assign to result variable
+        // Use += for accumulation to see cumulative effects
+        auto currentResult = std::make_unique<interpreter::VariableExpr>("result");
+        auto addExpr = std::make_unique<interpreter::BinaryOpExpr>(
+            std::move(currentResult),
+            std::move(waveOp),
+            interpreter::BinaryOpExpr::Add
+        );
         body.push_back(std::make_unique<interpreter::AssignStmt>(
             "result",
-            std::move(waveOp)
+            std::move(addExpr)
         ));
         
         // Create else body (which contains the previous if-else chain)
@@ -494,6 +485,200 @@ ControlFlowGenerator::generateCascadingIfElse(const BlockSpec& spec, ProgramStat
     }
     
     return result;
+}
+
+// Helper to check if we're inside any loop
+static bool hasEnclosingLoop(const ControlFlowGenerator::BlockSpec::NestingContext& context) {
+    for (const auto& parentType : context.parentTypes) {
+        if (parentType == ControlFlowGenerator::BlockSpec::FOR_LOOP || 
+            parentType == ControlFlowGenerator::BlockSpec::WHILE_LOOP) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Nesting support methods
+ControlFlowGenerator::BlockSpec 
+ControlFlowGenerator::createNestedBlockSpec(const BlockSpec& parentSpec,
+                                           ProgramState& state,
+                                           FuzzedDataProvider& provider) {
+    BlockSpec nestedSpec;
+    
+    // Copy and update nesting context
+    nestedSpec.nestingContext = parentSpec.nestingContext;
+    nestedSpec.nestingContext.currentDepth++;
+    nestedSpec.nestingContext.parentTypes.push_back(parentSpec.type);
+    
+    // Don't allow nesting if we've reached max depth
+    if (nestedSpec.nestingContext.currentDepth >= nestedSpec.nestingContext.maxDepth) {
+        nestedSpec.nestingContext.allowNesting = false;
+    } else {
+        nestedSpec.nestingContext.allowNesting = true;
+    }
+    
+    // Choose what type of control flow to nest
+    if (parentSpec.type == BlockSpec::FOR_LOOP || parentSpec.type == BlockSpec::WHILE_LOOP) {
+        // Inside a loop, we can have another loop or an if
+        int choice = provider.ConsumeIntegralInRange<int>(0, 3);
+        switch (choice) {
+            case 0:
+                nestedSpec.type = BlockSpec::FOR_LOOP;
+                break;
+            case 1:
+                nestedSpec.type = BlockSpec::WHILE_LOOP;
+                break;
+            case 2:
+                nestedSpec.type = BlockSpec::IF;
+                break;
+            case 3:
+                nestedSpec.type = BlockSpec::IF_ELSE;
+                break;
+        }
+    } else {
+        // Inside an if, we can have a loop
+        nestedSpec.type = provider.ConsumeBool() ? BlockSpec::FOR_LOOP : BlockSpec::WHILE_LOOP;
+    }
+    
+    // Create pattern for nested block
+    nestedSpec.pattern = createRandomPattern(provider);
+    
+    // Handle break/continue based on context
+    bool hasLoop = hasEnclosingLoop(nestedSpec.nestingContext);
+    
+    if (nestedSpec.type == BlockSpec::FOR_LOOP || 
+        nestedSpec.type == BlockSpec::WHILE_LOOP) {
+        // Loops can always have break/continue
+        nestedSpec.includeBreak = provider.ConsumeBool();
+        nestedSpec.includeContinue = provider.ConsumeBool();
+    } else {
+        // If statements can only have break/continue if inside a loop
+        nestedSpec.includeBreak = hasLoop && provider.ConsumeBool();
+        nestedSpec.includeContinue = hasLoop && provider.ConsumeBool();
+    }
+    
+    return nestedSpec;
+}
+
+std::string ControlFlowGenerator::generateLoopVariable(
+    const BlockSpec::NestingContext& context,
+    BlockSpec::Type loopType,
+    ProgramState& state) {
+    
+    std::string varName;
+    
+    if (loopType == BlockSpec::FOR_LOOP) {
+        // For nested for loops: i0, i1, i2...
+        varName = "i" + std::to_string(state.nextVarIndex++);
+    } else {
+        // For while loops: counter0, counter1...
+        varName = "counter" + std::to_string(state.nextVarIndex++);
+    }
+    
+    state.declaredVariables.insert(varName);
+    return varName;
+}
+
+std::vector<std::unique_ptr<interpreter::Statement>>
+ControlFlowGenerator::generateNestedBody(const BlockSpec& spec, ProgramState& state,
+                                        FuzzedDataProvider& provider) {
+    std::vector<std::unique_ptr<interpreter::Statement>> body;
+    
+    // Decision 1: Add wave operation at current level?
+    if (provider.ConsumeBool()) {
+        // Generate wave operation at this level
+        uint32_t waveSize = state.program.waveSize > 0 ? state.program.waveSize : 32;
+        auto participantCondition = spec.pattern->generateCondition(waveSize, provider);
+        
+        std::vector<std::unique_ptr<interpreter::Statement>> waveBody;
+        auto waveOp = generateWaveOperation(state, provider);
+        
+        // Use += for accumulation to see cumulative effects
+        auto currentResult = std::make_unique<interpreter::VariableExpr>("result");
+        auto addExpr = std::make_unique<interpreter::BinaryOpExpr>(
+            std::move(currentResult),
+            std::move(waveOp),
+            interpreter::BinaryOpExpr::Add
+        );
+        waveBody.push_back(std::make_unique<interpreter::AssignStmt>(
+            "result",
+            std::move(addExpr)
+        ));
+        
+        body.push_back(std::make_unique<interpreter::IfStmt>(
+            std::move(participantCondition),
+            std::move(waveBody)
+        ));
+    }
+    
+    // Decision 2: Add nested control flow?
+    if (spec.nestingContext.allowNesting && 
+        spec.nestingContext.currentDepth < spec.nestingContext.maxDepth &&
+        provider.ConsumeBool()) {
+        
+        // Generate nested control flow
+        BlockSpec nestedSpec = createNestedBlockSpec(spec, state, provider);
+        auto nestedStatements = generateBlock(nestedSpec, state, provider);
+        
+        for (auto& stmt : nestedStatements) {
+            body.push_back(std::move(stmt));
+        }
+    }
+    
+    // Decision 3: Add another wave operation after nesting?
+    if (provider.ConsumeBool()) {
+        uint32_t waveSize = state.program.waveSize > 0 ? state.program.waveSize : 32;
+        auto participantCondition = spec.pattern->generateCondition(waveSize, provider);
+        
+        std::vector<std::unique_ptr<interpreter::Statement>> waveBody;
+        auto waveOp = generateWaveOperation(state, provider);
+        
+        // Use += for accumulation to see cumulative effects
+        auto currentResult = std::make_unique<interpreter::VariableExpr>("result");
+        auto addExpr = std::make_unique<interpreter::BinaryOpExpr>(
+            std::move(currentResult),
+            std::move(waveOp),
+            interpreter::BinaryOpExpr::Add
+        );
+        waveBody.push_back(std::make_unique<interpreter::AssignStmt>(
+            "result",
+            std::move(addExpr)
+        ));
+        
+        body.push_back(std::make_unique<interpreter::IfStmt>(
+            std::move(participantCondition),
+            std::move(waveBody)
+        ));
+    }
+    
+    // Ensure we have at least one statement
+    if (body.empty()) {
+        // Fallback: generate at least one wave operation
+        uint32_t waveSize = state.program.waveSize > 0 ? state.program.waveSize : 32;
+        auto participantCondition = spec.pattern->generateCondition(waveSize, provider);
+        
+        std::vector<std::unique_ptr<interpreter::Statement>> waveBody;
+        auto waveOp = generateWaveOperation(state, provider);
+        
+        // Use += for accumulation to see cumulative effects
+        auto currentResult = std::make_unique<interpreter::VariableExpr>("result");
+        auto addExpr = std::make_unique<interpreter::BinaryOpExpr>(
+            std::move(currentResult),
+            std::move(waveOp),
+            interpreter::BinaryOpExpr::Add
+        );
+        waveBody.push_back(std::make_unique<interpreter::AssignStmt>(
+            "result",
+            std::move(addExpr)
+        ));
+        
+        body.push_back(std::make_unique<interpreter::IfStmt>(
+            std::move(participantCondition),
+            std::move(waveBody)
+        ));
+    }
+    
+    return body;
 }
 
 std::unique_ptr<interpreter::Expression>
@@ -585,7 +770,8 @@ void IncrementalGenerator::addStatementsToProgram(ProgramState& state, const uin
         provider.ConsumeIntegralInRange<uint32_t>(0, 2),
         // numBranches for cascading if-else
         blockType == ControlFlowGenerator::BlockSpec::CASCADING_IF_ELSE ? 
-            provider.ConsumeIntegralInRange<uint32_t>(2, 5) : 3
+            provider.ConsumeIntegralInRange<uint32_t>(2, 5) : 3,
+        {} // nestingContext with default initialization
     };
     
     auto newStatements = cfGenerator->generateBlock(spec, state, provider);

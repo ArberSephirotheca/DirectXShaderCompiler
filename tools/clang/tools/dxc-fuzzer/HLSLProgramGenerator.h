@@ -75,6 +75,15 @@ public:
         uint32_t nestingDepth;
         // For cascading if-else patterns
         uint32_t numBranches = 3; // Number of if-else-if branches
+        
+        // Nesting control
+        struct NestingContext {
+            uint32_t currentDepth = 0;
+            uint32_t maxDepth = 3;
+            std::vector<Type> parentTypes;
+            std::set<std::string> usedLoopVariables;
+            bool allowNesting = false;
+        } nestingContext;
     };
     
     std::vector<std::unique_ptr<interpreter::Statement>>
@@ -100,6 +109,19 @@ private:
     
     std::unique_ptr<interpreter::Expression>
     generateWaveOperation(ProgramState& state, FuzzedDataProvider& provider);
+    
+    // Nesting support
+    BlockSpec createNestedBlockSpec(const BlockSpec& parentSpec, 
+                                   ProgramState& state,
+                                   FuzzedDataProvider& provider);
+    
+    std::vector<std::unique_ptr<interpreter::Statement>>
+    generateNestedBody(const BlockSpec& spec, ProgramState& state,
+                      FuzzedDataProvider& provider);
+    
+    std::string generateLoopVariable(const BlockSpec::NestingContext& context,
+                                    BlockSpec::Type loopType,
+                                    ProgramState& state);
 };
 
 // Utility functions
