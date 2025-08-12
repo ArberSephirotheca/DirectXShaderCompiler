@@ -32,9 +32,6 @@ public:
     std::set<std::string> declaredVariables;
     uint32_t nextVarIndex = 0;
     
-    // Pending statement to be added (e.g., loop counter init)
-    std::unique_ptr<interpreter::Statement> pendingStatement;
-    
     std::string getNewVariable() {
         std::string varName = "var" + std::to_string(nextVarIndex++);
         declaredVariables.insert(varName);
@@ -97,7 +94,7 @@ private:
     generateForLoop(const BlockSpec& spec, ProgramState& state,
                     FuzzedDataProvider& provider);
     
-    std::unique_ptr<interpreter::Statement>
+    std::vector<std::unique_ptr<interpreter::Statement>>
     generateWhileLoop(const BlockSpec& spec, ProgramState& state,
                       FuzzedDataProvider& provider);
     

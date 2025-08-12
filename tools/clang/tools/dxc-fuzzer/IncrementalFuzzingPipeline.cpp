@@ -196,7 +196,6 @@ PipelineResult IncrementalFuzzingPipeline::run(const uint8_t* data, size_t size)
             state.history = std::move(newState.history);
             state.declaredVariables = std::move(newState.declaredVariables);
             state.nextVarIndex = newState.nextVarIndex;
-            state.pendingStatement = std::move(newState.pendingStatement);
         } else {
             // Calculate offset for data consumption to ensure different statements each time
             size_t offset = (increment * size) / config.maxIncrements;

@@ -133,26 +133,6 @@ ProgramState IncrementalGenerator::generateIncremental(const uint8_t* data, size
         // Add to program and update metadata
         size_t insertPos = state.program.statements.size();
         
-        // Check if there's a pending statement to add first
-        if (state.pendingStatement) {
-            // Create metadata for pending statement
-            StatementMetadata meta;
-            meta.originalIndex = insertPos;
-            meta.currentIndex = insertPos;
-            meta.isNewlyAdded = true;
-            meta.generationRound = round;
-            meta.waveOps = ::minihlsl::fuzzer::findAllWaveOps(state.pendingStatement.get());
-            meta.context = StatementMetadata::TopLevel;
-            meta.nestingLevel = 0;
-            
-            // Register with mutation tracker
-            mutationTracker->registerStatement(state.pendingStatement.get(), meta);
-            
-            roundInfo.addedStatementIndices.push_back(insertPos);
-            state.program.statements.push_back(std::move(state.pendingStatement));
-            insertPos++;
-        }
-        
         // Process new statements
         for (auto& stmt : newStatements) {
             // Create metadata for new statement
@@ -204,9 +184,13 @@ ControlFlowGenerator::generateBlock(const BlockSpec& spec, ProgramState& state,
         case BlockSpec::FOR_LOOP:
             statements.push_back(generateForLoop(spec, state, provider));
             break;
-        case BlockSpec::WHILE_LOOP:
-            statements.push_back(generateWhileLoop(spec, state, provider));
+        case BlockSpec::WHILE_LOOP: {
+            auto whileStatements = generateWhileLoop(spec, state, provider);
+            for (auto& stmt : whileStatements) {
+                statements.push_back(std::move(stmt));
+            }
             break;
+        }
         case BlockSpec::NESTED_IF:
             // Generate nested if by creating two if statements
             statements.push_back(generateIf(spec, state, provider));
@@ -373,7 +357,7 @@ ControlFlowGenerator::generateForLoop(const BlockSpec& spec, ProgramState& state
     );
 }
 
-std::unique_ptr<interpreter::Statement>
+std::vector<std::unique_ptr<interpreter::Statement>>
 ControlFlowGenerator::generateWhileLoop(const BlockSpec& spec, ProgramState& state,
                                        FuzzedDataProvider& provider) {
     // Create loop counter variable
@@ -426,7 +410,7 @@ ControlFlowGenerator::generateWhileLoop(const BlockSpec& spec, ProgramState& sta
         std::move(waveBody)
     ));
     
-    // Create a compound statement to hold both the init and the while
+    // Return both the counter init and the while statement
     std::vector<std::unique_ptr<interpreter::Statement>> statements;
     statements.push_back(std::move(counterInit));
     statements.push_back(std::make_unique<interpreter::WhileStmt>(
@@ -434,11 +418,7 @@ ControlFlowGenerator::generateWhileLoop(const BlockSpec& spec, ProgramState& sta
         std::move(body)
     ));
     
-    // Store the counter init to be added before the while loop
-    state.pendingStatement = std::move(statements[0]);
-    
-    // Return just the while statement
-    return std::move(statements[1]);
+    return statements;
 }
 
 std::unique_ptr<interpreter::Statement>
