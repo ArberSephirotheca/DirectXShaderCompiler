@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <cstring>
 #include <cstdlib>
+#include <cctype>
 #include <sys/stat.h>
 #include <dirent.h>
 
@@ -730,6 +731,320 @@ bool WaveParticipantTrackingMutation::validateSemanticPreservation(
   return true;
 }
 
+// ===== ContextAwareParticipantMutation Implementation =====
+
+bool ContextAwareParticipantMutation::canApply(
+    const interpreter::Statement* stmt,
+    const ExecutionTrace& trace) const {
+  
+  // Check if statement contains wave operation
+  bool hasWaveOp = false;
+  if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
+    hasWaveOp = dynamic_cast<const interpreter::WaveActiveOp*>(
+      assign->getExpression()) != nullptr;
+  } else if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
+    hasWaveOp = varDecl->getInit() && 
+      dynamic_cast<const interpreter::WaveActiveOp*>(varDecl->getInit()) != nullptr;
+  }
+  
+  if (!hasWaveOp) return false;
+  
+  // Find all blocks where wave operations executed
+  std::set<uint32_t> waveOpBlocks;
+  for (const auto& waveOp : trace.waveOperations) {
+    waveOpBlocks.insert(waveOp.blockId);
+  }
+  
+  // Check if any of these blocks are inside loops
+  for (uint32_t blockId : waveOpBlocks) {
+    auto it = trace.blocks.find(blockId);
+    if (it != trace.blocks.end()) {
+      const auto& block = it->second;
+      
+      // Method 1: Check block type directly
+      if (block.blockType == interpreter::BlockType::LOOP_BODY) {
+        return true;
+      }
+      
+      // Method 2: Check if same source statement appears multiple times
+      // (indicates multiple iterations)
+      int occurrences = 0;
+      for (const auto& [id, b] : trace.blocks) {
+        if (b.sourceStatement == block.sourceStatement) {
+          occurrences++;
+        }
+      }
+      if (occurrences > 1) {
+        return true;  // Same statement executed multiple times
+      }
+    }
+  }
+  
+  return false;
+}
+
+std::vector<ContextAwareParticipantMutation::IterationContext> 
+ContextAwareParticipantMutation::extractIterationContexts(
+    const interpreter::Statement* stmt,
+    const ExecutionTrace& trace) const {
+  
+  std::vector<IterationContext> contexts;
+  
+  // Helper to match wave operations to our statement
+  auto matchesStatement = [stmt](const ExecutionTrace::WaveOpRecord& waveOp) -> bool {
+    // Match by operation type
+    if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
+      if (auto* waveExpr = dynamic_cast<const interpreter::WaveActiveOp*>(
+          assign->getExpression())) {
+        return waveOp.waveOpEnumType == static_cast<int>(waveExpr->getOpType());
+      }
+    } else if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
+      if (varDecl->getInit()) {
+        if (auto* waveExpr = dynamic_cast<const interpreter::WaveActiveOp*>(
+            varDecl->getInit())) {
+          return waveOp.waveOpEnumType == static_cast<int>(waveExpr->getOpType());
+        }
+      }
+    }
+    return false;
+  };
+  
+  // Group wave operations by their containing loop's source statement
+  std::map<const void*, std::vector<const ExecutionTrace::WaveOpRecord*>> loopIterations;
+  
+  for (const auto& waveOp : trace.waveOperations) {
+    if (!matchesStatement(waveOp)) continue;
+    
+    // Find the containing loop block
+    uint32_t currentId = waveOp.blockId;
+    const void* loopStmt = nullptr;
+    
+    while (currentId != 0 && trace.blocks.count(currentId)) {
+      const auto& block = trace.blocks.at(currentId);
+      
+      // Check if this is a loop block
+      if (block.blockType == interpreter::BlockType::LOOP_HEADER) {
+        loopStmt = block.sourceStatement;
+        break;
+      } else if (block.blockType == interpreter::BlockType::LOOP_BODY) {
+        // We're in a loop body, check parent for the loop statement
+        if (block.parentBlockId != 0 && trace.blocks.count(block.parentBlockId)) {
+          const auto& parentBlock = trace.blocks.at(block.parentBlockId);
+          if (parentBlock.blockType == interpreter::BlockType::LOOP_HEADER) {
+            loopStmt = parentBlock.sourceStatement;
+            break;
+          }
+        }
+      }
+      
+      currentId = block.parentBlockId;
+    }
+    
+    if (loopStmt) {
+      loopIterations[loopStmt].push_back(&waveOp);
+    }
+  }
+  
+  // Extract iteration contexts for each loop
+  for (const auto& [loopStmt, waveOps] : loopIterations) {
+    // Sort by block ID to get iteration order
+    std::vector<const ExecutionTrace::WaveOpRecord*> sortedOps = waveOps;
+    std::sort(sortedOps.begin(), sortedOps.end(), 
+      [](const auto* a, const auto* b) { return a->blockId < b->blockId; });
+    
+    for (size_t i = 0; i < sortedOps.size(); ++i) {
+      IterationContext ctx;
+      ctx.blockId = sortedOps[i]->blockId;
+      ctx.iterationValue = i;  // 0, 1, 2...
+      ctx.existingParticipants = sortedOps[i]->arrivedParticipants;
+      ctx.waveId = sortedOps[i]->waveId;
+      
+      // Find loop variable based on the containing block
+      ctx.loopVariable = findLoopVariable(ctx.blockId, trace);
+      
+      if (!ctx.loopVariable.empty()) {
+        contexts.push_back(ctx);
+      }
+    }
+  }
+  
+  return contexts;
+}
+
+std::string ContextAwareParticipantMutation::findLoopVariable(
+    uint32_t blockId,
+    const ExecutionTrace& trace) const {
+  
+  // Traverse up the block hierarchy to find the loop
+  uint32_t currentId = blockId;
+  while (currentId != 0 && trace.blocks.count(currentId)) {
+    const auto& block = trace.blocks.at(currentId);
+    
+    // Check if this block has a loop statement as its source
+    if (block.sourceStatement) {
+      // For loop statements, we need to distinguish between for/while/do-while
+      // by examining the actual statement type
+      if (block.blockType == interpreter::BlockType::LOOP_HEADER ||
+          block.blockType == interpreter::BlockType::LOOP_BODY) {
+        
+        // Try to cast the source statement to determine loop type
+        const interpreter::Statement* stmtPtr = static_cast<const interpreter::Statement*>(block.sourceStatement);
+        if (auto* forStmt = dynamic_cast<const interpreter::ForStmt*>(stmtPtr)) {
+          // For ForStmt, we can get the loop variable directly
+          return forStmt->getLoopVar();
+        }
+        
+        // For while/do-while loops, look for counter variable
+        if (dynamic_cast<const interpreter::WhileStmt*>(stmtPtr) ||
+            dynamic_cast<const interpreter::DoWhileStmt*>(stmtPtr)) {
+          // Look for counter variable accesses
+          for (const auto& varAccess : trace.variableAccesses) {
+            if (varAccess.blockId >= currentId && 
+                varAccess.blockId < currentId + 1000 &&  // Within reasonable range
+                varAccess.varName.substr(0, 7) == "counter") {
+              return varAccess.varName;
+            }
+          }
+          // Fallback: assume "counter0"
+          return "counter0";
+        }
+      }
+    }
+    
+    currentId = block.parentBlockId;
+  }
+  
+  // Final fallback based on block ID ranges
+  if (blockId >= 100 && blockId < 1000) {
+    // Likely in a loop, use common patterns
+    if (blockId < 300) {
+      return "i0";  // First for loop
+    } else {
+      return "counter0";  // First while loop
+    }
+  }
+  
+  return "";
+}
+
+std::unique_ptr<interpreter::Statement> 
+ContextAwareParticipantMutation::apply(
+    const interpreter::Statement* stmt,
+    const ExecutionTrace& trace) const {
+  
+  // Extract all iteration contexts where this wave op executed
+  auto contexts = extractIterationContexts(stmt, trace);
+  if (contexts.empty()) {
+    FUZZER_DEBUG_LOG("[ContextAware] No iteration contexts found for wave op\n");
+    return stmt->clone();
+  }
+  
+  FUZZER_DEBUG_LOG("[ContextAware] Found " << contexts.size() << " iteration contexts\n");
+  
+  // Choose a context to mutate
+  static std::mt19937 rng(std::random_device{}());
+  std::uniform_int_distribution<size_t> ctxDist(0, contexts.size() - 1);
+  const auto& targetContext = contexts[ctxDist(rng)];
+  
+  FUZZER_DEBUG_LOG("[ContextAware] Targeting iteration " << targetContext.iterationValue 
+                   << " in block " << targetContext.blockId 
+                   << " with loop var " << targetContext.loopVariable << "\n");
+  
+  // Find lanes that didn't participate in this iteration
+  std::set<interpreter::LaneId> availableLanes;
+  uint32_t waveSize = trace.threadHierarchy.waveSize;
+  
+  for (uint32_t lane = 0; lane < waveSize; ++lane) {
+    if (targetContext.existingParticipants.find(lane) == 
+        targetContext.existingParticipants.end()) {
+      availableLanes.insert(lane);
+    }
+  }
+  
+  if (availableLanes.empty()) {
+    FUZZER_DEBUG_LOG("[ContextAware] All lanes already participate\n");
+    return stmt->clone(); // All lanes already participate
+  }
+  
+  FUZZER_DEBUG_LOG("[ContextAware] " << availableLanes.size() << " lanes available\n");
+  
+  // Choose a new lane to add
+  std::vector<interpreter::LaneId> laneVec(availableLanes.begin(), 
+                                           availableLanes.end());
+  std::uniform_int_distribution<size_t> laneDist(0, laneVec.size() - 1);
+  interpreter::LaneId newLane = laneVec[laneDist(rng)];
+  
+  FUZZER_DEBUG_LOG("[ContextAware] Adding lane " << newLane 
+                   << " to iteration " << targetContext.iterationValue << "\n");
+  
+  // Create the iteration-specific condition
+  auto condition = createIterationSpecificCondition(targetContext, newLane);
+  
+  // Create a new if statement with our condition that executes the same wave operation
+  std::vector<std::unique_ptr<interpreter::Statement>> contextBody;
+  contextBody.push_back(stmt->clone()); // Same wave operation
+  
+  auto contextIf = std::make_unique<interpreter::IfStmt>(
+    std::move(condition),
+    std::move(contextBody),
+    std::vector<std::unique_ptr<interpreter::Statement>>{}
+  );
+  
+  // Create a compound statement that includes both the original and our mutation
+  std::vector<std::unique_ptr<interpreter::Statement>> statements;
+  statements.push_back(stmt->clone());  // Original statement
+  statements.push_back(std::move(contextIf));  // Our context-aware addition
+  
+  // Wrap in if(true) to return as single statement
+  auto trueCond = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(true));
+  return std::make_unique<interpreter::IfStmt>(
+    std::move(trueCond),
+    std::move(statements),
+    std::vector<std::unique_ptr<interpreter::Statement>>{}
+  );
+}
+
+std::unique_ptr<interpreter::Expression>
+ContextAwareParticipantMutation::createIterationSpecificCondition(
+    const IterationContext& context,
+    interpreter::LaneId newLane) const {
+  
+  // Create: (loopVar == iteration) && (laneId == newLane)
+  
+  // loopVar == iteration
+  auto loopVarExpr = std::make_unique<interpreter::VariableExpr>(context.loopVariable);
+  auto iterValue = std::make_unique<interpreter::LiteralExpr>(context.iterationValue);
+  auto iterCheck = std::make_unique<interpreter::BinaryOpExpr>(
+    std::move(loopVarExpr), std::move(iterValue), 
+    interpreter::BinaryOpExpr::Eq);
+  
+  // laneId == newLane  
+  auto laneExpr = std::make_unique<interpreter::LaneIndexExpr>();
+  auto laneValue = std::make_unique<interpreter::LiteralExpr>(static_cast<int>(newLane));
+  auto laneCheck = std::make_unique<interpreter::BinaryOpExpr>(
+    std::move(laneExpr), std::move(laneValue),
+    interpreter::BinaryOpExpr::Eq);
+  
+  // Combine with &&
+  return std::make_unique<interpreter::BinaryOpExpr>(
+    std::move(iterCheck), std::move(laneCheck),
+    interpreter::BinaryOpExpr::And);
+}
+
+bool ContextAwareParticipantMutation::validateSemanticPreservation(
+    const interpreter::Statement* original,
+    const interpreter::Statement* mutated,
+    const ExecutionTrace& trace) const {
+  
+  // The mutation adds participants but doesn't change the operation
+  // For associative operations, this should preserve semantics
+  // TODO: Implement full validation to verify:
+  // 1. The operation is associative (Sum, And, Or, etc.)
+  // 2. The added participant doesn't change the result
+  // 3. No side effects are introduced
+  return true;
+}
+
 // ===== Semantic Validator Implementation =====
 
 SemanticValidator::ValidationResult SemanticValidator::validate(
@@ -1234,14 +1549,10 @@ void BugReporter::logBug(const BugReport& report) {
 // ===== Main Fuzzer Implementation =====
 
 TraceGuidedFuzzer::TraceGuidedFuzzer() {
-  // Initialize only the mutation strategies we're using
+  // Initialize mutation strategies
   mutationStrategies.push_back(std::make_unique<WaveParticipantTrackingMutation>());
   mutationStrategies.push_back(std::make_unique<LanePermutationMutation>());
-  
-  // Commented out other strategies since we're focusing on WaveParticipantTracking + LanePermutation
-  // mutationStrategies.push_back(std::make_unique<DataTransformMutation>());
-  // mutationStrategies.push_back(std::make_unique<RedundantComputeMutation>());
-  // mutationStrategies.push_back(std::make_unique<GPUInvariantCheckMutation>());
+  mutationStrategies.push_back(std::make_unique<ContextAwareParticipantMutation>());
   
   // TODO: Add more semantics-preserving mutations:
   // - AlgebraicIdentityMutation (more complex algebraic identities)

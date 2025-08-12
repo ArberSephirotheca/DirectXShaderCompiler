@@ -357,6 +357,47 @@ private:
   bool hasParticipantBuffer(const interpreter::Program& program) const;
 };
 
+// Mutation strategy: Add participants to specific loop iterations
+class ContextAwareParticipantMutation : public MutationStrategy {
+public:
+  bool canApply(const interpreter::Statement* stmt, 
+                const ExecutionTrace& trace) const override;
+  
+  std::unique_ptr<interpreter::Statement> apply(
+    const interpreter::Statement* stmt, 
+    const ExecutionTrace& trace) const override;
+  
+  bool validateSemanticPreservation(
+    const interpreter::Statement* original,
+    const interpreter::Statement* mutated,
+    const ExecutionTrace& trace) const override;
+  
+  std::string getName() const override { return "ContextAwareParticipant"; }
+  
+private:
+  // Extract loop iteration info from block's execution path
+  struct IterationContext {
+    std::string loopVariable;
+    int iterationValue;
+    uint32_t blockId;
+    std::set<interpreter::LaneId> existingParticipants;
+    interpreter::WaveId waveId;
+  };
+  
+  std::vector<IterationContext> extractIterationContexts(
+    const interpreter::Statement* stmt,
+    const ExecutionTrace& trace) const;
+  
+  std::unique_ptr<interpreter::Expression> createIterationSpecificCondition(
+    const IterationContext& context,
+    interpreter::LaneId newLane) const;
+    
+  // Helper to find loop variable from parent blocks
+  std::string findLoopVariable(
+    uint32_t blockId,
+    const ExecutionTrace& trace) const;
+};
+
 
 // ===== Semantic Validator =====
 
