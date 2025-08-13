@@ -4,6 +4,15 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <fstream>
+#include <sstream>
+
+#ifdef _WIN32
+  #define NOMINMAX
+  #include <windows.h>
+#else
+  #include <sys/stat.h>
+#endif
 
 namespace minihlsl {
 namespace fuzzer {
@@ -207,6 +216,25 @@ PipelineResult IncrementalFuzzingPipeline::run(const uint8_t* data, size_t size)
             FUZZER_DEBUG_LOG("Generated program:\n");
             FUZZER_DEBUG_LOG(incrementResult.baseProgramStr);
             FUZZER_DEBUG_LOG("\n");
+        }
+        
+        // Save base program to file
+        const std::string outputDir = "mutant_outputs";
+#ifdef _WIN32
+        CreateDirectoryA(outputDir.c_str(), NULL);
+#else
+        mkdir(outputDir.c_str(), 0755);
+#endif
+        
+        std::stringstream baseFilename;
+        baseFilename << outputDir << "/increment_" << increment << "_base.hlsl";
+        std::ofstream baseFile(baseFilename.str());
+        if (baseFile.is_open()) {
+            baseFile << incrementResult.baseProgramStr;
+            baseFile.close();
+            if (config.enableLogging) {
+                FUZZER_DEBUG_LOG("Saved base program to: " << baseFilename.str() << "\n");
+            }
         }
         
         // Step 1: Validate syntax

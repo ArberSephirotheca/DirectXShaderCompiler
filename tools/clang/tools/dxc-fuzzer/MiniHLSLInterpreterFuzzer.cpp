@@ -29,6 +29,36 @@
 namespace minihlsl {
 namespace fuzzer {
 
+// Helper function to create output directory and generate filenames
+std::string createMutantOutputPath(size_t increment, const std::string& mutationChain) {
+  // Create output directory if it doesn't exist
+  const std::string outputDir = "mutant_outputs";
+  
+#ifdef _WIN32
+  CreateDirectoryA(outputDir.c_str(), NULL);
+#else
+  mkdir(outputDir.c_str(), 0755);
+#endif
+  
+  // Generate filename based on increment and mutation chain
+  std::stringstream filename;
+  filename << outputDir << "/increment_" << increment;
+  
+  // Clean up mutation chain string for filename
+  std::string cleanMutationChain = mutationChain;
+  std::replace(cleanMutationChain.begin(), cleanMutationChain.end(), ' ', '_');
+  std::replace(cleanMutationChain.begin(), cleanMutationChain.end(), '+', '_');
+  std::replace(cleanMutationChain.begin(), cleanMutationChain.end(), '(', '_');
+  std::replace(cleanMutationChain.begin(), cleanMutationChain.end(), ')', '_');
+  
+  if (!cleanMutationChain.empty()) {
+    filename << "_" << cleanMutationChain;
+  }
+  
+  filename << ".hlsl";
+  return filename.str();
+}
+
 
 // Global seed programs loaded from corpus
 
@@ -1983,6 +2013,17 @@ interpreter::Program TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& 
     FUZZER_DEBUG_LOG("\n=== Actual Mutated Program ===\n");
     FUZZER_DEBUG_LOG(serializeProgramToString(finalMutant));
     FUZZER_DEBUG_LOG("\n");
+    
+    // Save mutant program to file
+    std::string mutantPath = createMutantOutputPath(currentIncrement, mutationResult.getMutationChainString());
+    std::ofstream mutantFile(mutantPath);
+    if (mutantFile.is_open()) {
+      mutantFile << serializeProgramToString(finalMutant);
+      mutantFile.close();
+      FUZZER_DEBUG_LOG("Saved mutant to: " << mutantPath << "\n");
+    } else {
+      FUZZER_DEBUG_LOG("Failed to save mutant to: " << mutantPath << "\n");
+    }
     
     // Test the mutant
     try {
