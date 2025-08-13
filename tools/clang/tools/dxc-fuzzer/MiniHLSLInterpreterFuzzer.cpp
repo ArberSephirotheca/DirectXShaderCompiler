@@ -12,15 +12,18 @@
 #include <cstring>
 #include <cstdlib>
 #include <cctype>
-#include <sys/stat.h>
 
 #if defined(_WIN32)
   #define NOMINMAX
   #include <windows.h>
   #include <filesystem>
+  #include <sys/types.h>
+  #include <sys/stat.h>
   namespace fs = std::filesystem;
 #else
+  #include <sys/stat.h>
   #include <dirent.h>
+  #include <unistd.h>
 #endif
 
 namespace minihlsl {
@@ -1760,10 +1763,20 @@ std::string BugReporter::generateBugId() {
 void BugReporter::saveBugReport(const BugReport& report) {
   // Create bugs directory if it doesn't exist
   std::string bugDir = "./bugs";
+  
+#if defined(_WIN32)
+  // Windows: use CreateDirectory
+  DWORD dwAttrib = GetFileAttributesA(bugDir.c_str());
+  if (dwAttrib == INVALID_FILE_ATTRIBUTES || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) {
+    CreateDirectoryA(bugDir.c_str(), NULL);
+  }
+#else
+  // POSIX: use mkdir
   struct stat st = {0};
   if (stat(bugDir.c_str(), &st) == -1) {
     mkdir(bugDir.c_str(), 0755);
   }
+#endif
   
   std::string filename = bugDir + "/" + report.id + ".txt";
   std::ofstream file(filename);
