@@ -1,153 +1,78 @@
-# Find required packages
+# =================== Centralized fuzzer/ASan setup ===================
+set(THREADS_PREFER_PTHREAD_FLAG ON)  # adds -pthread when needed (Linux/MinGW)
 find_package(Threads REQUIRED)
+
+# Toggle once for your whole build
+option(ENABLE_FUZZ_ASAN "Enable libFuzzer + AddressSanitizer on fuzz targets" ON)
+option(DISABLE_MSVC_STL_ANNOTATIONS "Work around MSVC STL annotate_string mismatch" ON)
+
+# Enable GNU dialect for Clang/GCC so your ({ ... }) macro compiles (optional)
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+  set(CMAKE_CXX_EXTENSIONS ON)  # gnu++17 if CXX_STANDARD is 17
+endif()
+
+function(enable_fuzz_sanitizers tgt)
+  if (NOT ENABLE_FUZZ_ASAN)
+    return()
+  endif()
+
+  # Only Clang supports -fsanitize=fuzzer
+  if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    target_compile_options(${tgt} PRIVATE -fsanitize=address,fuzzer)
+    target_link_options(${tgt}    PRIVATE -fsanitize=address,fuzzer)
+  endif()
+
+  # If linking against prebuilt MSVC libs (dxcompiler/Clang), avoid LNK2038
+  # when mixing sanitized and unsanitized code.
+  if (DISABLE_MSVC_STL_ANNOTATIONS AND MSVC)
+    target_compile_definitions(${tgt} PRIVATE
+      _DISABLE_STRING_ANNOTATION
+      _DISABLE_VECTOR_ANNOTATION
+    )
+  endif()
+endfunction()
+
+# Keep MSVC iterator debug level consistent across configs
+function(sync_msvc_iterator_debug_level tgt)
+  if (MSVC)
+    target_compile_definitions(${tgt} PRIVATE
+      $<$<CONFIG:Debug>:_ITERATOR_DEBUG_LEVEL=2>
+      $<$<NOT:$<CONFIG:Debug>>:_ITERATOR_DEBUG_LEVEL=0>
+    )
+  endif()
+endfunction()
+# =====================================================================
 
 add_executable(dxc-fuzzer
   MiniHLSLValidator.cpp
 )
-target_link_libraries(dxc-fuzzer
-  dxcompiler            # from DXC build
-  clangAST clangBasic   # whatever front-end libs compileToDxil needs
-  # LLVMFuzzer            # gives libFuzzer runtime
-)
-set_target_properties(dxc-fuzzer PROPERTIES
-  COMPILE_FLAGS "-fsanitize=address,fuzzer"
-  LINK_FLAGS    "-fsanitize=address,fuzzer"
-)
 
-# Simple test runner - validates all .hlsl files in a directory
-# Commented out - missing test_runner.cpp
-# add_executable(test_runner
-#   test_runner.cpp
-#   MiniHLSLValidator.cpp
-# )
-# target_link_libraries(test_runner
-#   dxcompiler
-#   clangAST
-#   clangBasic
-#   clangFrontend
-#   clangLex
-#   clangParse
-#   clangSema
-#   LLVMSupport
-#   LLVMOption
-#   LLVMCore
-# )
-
-# Enable testing
-enable_testing()
-
-
-# MiniHLSL Interpreter - executes MiniHLSL programs and verifies order independence
-# Commented out - missing test_interpreter.cpp
-# add_executable(minihlsl-interpreter
-#   MiniHLSLInterpreter.cpp
-#   test_interpreter.cpp
-# )
-
-# Standalone MiniHLSL Interpreter - takes HLSL files as command line input
 add_executable(minihlsl-standalone
   MiniHLSLInterpreter.cpp
   MiniHLSLValidator.cpp
   minihlsl_interpreter_main.cpp
 )
-# target_link_libraries(minihlsl-interpreter
-#   # Use pthread for std::thread and std::mutex
-#   Threads::Threads
-#   # Clang/LLVM libraries needed for AST conversion
-#   dxcompiler
-#   clangAST
-#   clangBasic
-#   clangFrontend
-#   clangLex
-#   clangParse
-#   clangSema
-#   LLVMSupport
-#   LLVMOption
-#   LLVMCore
-# )
-
-target_link_libraries(minihlsl-standalone
-  # Use pthread for std::thread and std::mutex
-  Threads::Threads
-  # Clang/LLVM libraries needed for AST conversion
-  dxcompiler
-  clangAST
-  clangBasic
-  clangFrontend
-  clangLex
-  clangParse
-  clangSema
-  LLVMSupport
-  LLVMOption
-  LLVMCore
-)
-
-# Set C++17 standard for the interpreters (uses std::variant)
-# set_target_properties(minihlsl-interpreter PROPERTIES
-#   CXX_STANDARD 17
-#   CXX_STANDARD_REQUIRED ON
-# )
-
 set_target_properties(minihlsl-standalone PROPERTIES
   CXX_STANDARD 17
   CXX_STANDARD_REQUIRED ON
 )
 
-# Add test that runs all .hlsl files in test_cases directory
-# add_test(NAME MiniHLSLValidatorTest COMMAND test_runner test_cases)
-
-# Add test for the interpreter
-# add_test(NAME MiniHLSLInterpreterTest COMMAND minihlsl-interpreter)
-
-# MiniHLSL Interpreter Fuzzer - trace-guided fuzzing for interpreter
 add_executable(minihlsl-fuzzer
   MiniHLSLInterpreter.cpp
   MiniHLSLInterpreterFuzzer.cpp
   MiniHLSLInterpreterTraceCapture.cpp
-  MiniHLSLValidator.cpp  # For loadSeedCorpus
-  HLSLProgramGenerator.cpp  # For random program generation when FUZZ_GENERATE_RANDOM=1
+  MiniHLSLValidator.cpp
+  HLSLProgramGenerator.cpp
   HLSLProgramGeneratorUtils.cpp
   HLSLParticipantPatterns.cpp
-  HLSLMutationTracker.cpp  # Needed by HLSLProgramGenerator
-  IncrementalFuzzingPipeline.cpp  # For automated incremental fuzzing
-  # HLSLSemanticMutator.cpp  # Not needed - mutations are in MiniHLSLInterpreterFuzzer.cpp
+  HLSLMutationTracker.cpp
+  IncrementalFuzzingPipeline.cpp
 )
-target_link_libraries(minihlsl-fuzzer
-  # Use pthread for std::thread and std::mutex
-  Threads::Threads
-  # Clang/LLVM libraries needed for AST conversion
-  dxcompiler
-  clangAST
-  clangBasic
-  clangFrontend
-  clangLex
-  clangParse
-  clangSema
-  LLVMSupport
-  LLVMOption
-  LLVMCore
-  # LibFuzzer for fuzzing runtime
-  # LLVMFuzzer  # Comment out until linking is fixed
-)
-
-# Set C++17 standard
 set_target_properties(minihlsl-fuzzer PROPERTIES
   CXX_STANDARD 17
   CXX_STANDARD_REQUIRED ON
 )
 
-# Fix iterator debug level mismatch on Windows
-if(MSVC)
-  if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_compile_definitions(minihlsl-fuzzer PRIVATE _ITERATOR_DEBUG_LEVEL=2)
-  else()
-    target_compile_definitions(minihlsl-fuzzer PRIVATE _ITERATOR_DEBUG_LEVEL=0)
-  endif()
-endif()
-
-
-
-# Fuzzer for real HLSL files
 add_executable(fuzz-hlsl-file
   MiniHLSLInterpreter.cpp
   MiniHLSLInterpreterFuzzer.cpp
@@ -155,27 +80,43 @@ add_executable(fuzz-hlsl-file
   MiniHLSLValidator.cpp
   fuzz_hlsl_file.cpp
 )
-
-
-target_link_libraries(fuzz-hlsl-file
-  Threads::Threads
-  dxcompiler
-  clangAST
-  clangBasic
-  clangFrontend
-  clangLex
-  clangParse
-  clangSema
-  LLVMSupport
-  LLVMOption
-  LLVMCore
-)
 set_target_properties(fuzz-hlsl-file PROPERTIES
   CXX_STANDARD 17
   CXX_STANDARD_REQUIRED ON
 )
 
-# minihlsl-fuzzer uses the incremental fuzzing pipeline:
-# Usage: ./bin/minihlsl-fuzzer <input_file>
-# The fuzzer will generate random programs and apply trace-guided mutations
+target_link_libraries(dxc-fuzzer
+  dxcompiler
+  clangAST clangBasic
+)
 
+target_link_libraries(minihlsl-standalone
+  Threads::Threads
+  dxcompiler
+  clangAST clangBasic clangFrontend clangLex clangParse clangSema
+  LLVMSupport LLVMOption LLVMCore
+)
+
+target_link_libraries(minihlsl-fuzzer
+  Threads::Threads
+  dxcompiler
+  clangAST clangBasic clangFrontend clangLex clangParse clangSema
+  LLVMSupport LLVMOption LLVMCore
+)
+
+target_link_libraries(fuzz-hlsl-file
+  Threads::Threads
+  dxcompiler
+  clangAST clangBasic clangFrontend clangLex clangParse clangSema
+  LLVMSupport LLVMOption LLVMCore
+)
+
+# --- Apply centralized flags/defs ---
+enable_fuzz_sanitizers(dxc-fuzzer)
+enable_fuzz_sanitizers(minihlsl-fuzzer)
+# enable_fuzz_sanitizers(fuzz-hlsl-file)  # uncomment if you want ASan+Fuzzer here too
+
+sync_msvc_iterator_debug_level(dxc-fuzzer)
+sync_msvc_iterator_debug_level(minihlsl-fuzzer)
+sync_msvc_iterator_debug_level(fuzz-hlsl-file)
+sync_msvc_iterator_debug_level(minihlsl-standalone)
