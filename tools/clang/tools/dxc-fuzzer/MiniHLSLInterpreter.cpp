@@ -3424,6 +3424,7 @@ BarrierStmt::execute_result(LaneContext &lane, WaveContext &wave,
 
   // If all threads have arrived, the barrier will execute collectively in
   // processBarriers()
+  return Ok<Unit, ExecutionError>(Unit{});
 }
 
 Result<Unit, ExecutionError>
