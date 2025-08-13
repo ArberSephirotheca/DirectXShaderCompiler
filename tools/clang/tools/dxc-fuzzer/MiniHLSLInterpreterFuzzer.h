@@ -287,6 +287,17 @@ public:
     const ExecutionTrace& trace) const = 0;
   
   virtual std::string getName() const = 0;
+  
+  // New: Program-level mutation API
+  virtual bool requiresProgramLevelMutation() const { return false; }
+  
+  virtual std::vector<interpreter::Program> applyToProgram(
+    const interpreter::Program& program,
+    const ExecutionTrace& trace,
+    const std::set<size_t>& statementsToMutate) const {
+    // Default implementation returns empty vector
+    return std::vector<interpreter::Program>();
+  }
 };
 
 // ===== Semantics-Preserving Mutation Strategies =====
@@ -354,6 +365,14 @@ public:
     
   std::string getName() const override { return "WaveParticipantTracking"; }
   
+  // Program-level mutation API
+  bool requiresProgramLevelMutation() const override { return true; }
+  
+  std::vector<interpreter::Program> applyToProgram(
+    const interpreter::Program& program,
+    const ExecutionTrace& trace,
+    const std::set<size_t>& statementsToMutate) const override;
+  
   // Process statements recursively to inject tracking after wave operations
   void processStatementsForTracking(
       const std::vector<std::unique_ptr<interpreter::Statement>>& input,
@@ -371,6 +390,25 @@ private:
   
   // Check if program already has a participant buffer
   bool hasParticipantBuffer(const interpreter::Program& program) const;
+  
+  // Helper methods for program-level mutation
+  bool hasWaveOpsInStatements(
+    const interpreter::Program& program,
+    const std::set<size_t>& statementsToMutate) const;
+    
+  std::map<size_t, size_t> buildWaveOpMapping(
+    const interpreter::Program& program,
+    const ExecutionTrace& trace) const;
+    
+  interpreter::Program createMutantWithTracking(
+    const interpreter::Program& program,
+    const ExecutionTrace& trace,
+    const std::set<size_t>& statementsToMutate,
+    const std::map<size_t, size_t>& programIndexToTraceIndex) const;
+    
+  void ensureParticipantBuffer(interpreter::Program& mutant) const;
+  
+  interpreter::Program createBaseMutant(const interpreter::Program& program) const;
 };
 
 // Mutation strategy: Add participants to specific loop iterations
@@ -594,24 +632,11 @@ private:
     const std::vector<GenerationRound>& history,
     size_t currentIncrement);
   
-  bool checkForWaveOpsInStatements(
+  std::vector<interpreter::Program> applyStatementLevelMutation(
     const interpreter::Program& program,
-    const std::set<size_t>& statementsToMutate);
-  
-  std::map<size_t, size_t> buildWaveOpMapping(
-    const interpreter::Program& program,
-    const ExecutionTrace& trace);
-  
-  interpreter::Program createMutantWithParticipantTracking(
-    const interpreter::Program& program,
+    MutationStrategy* strategy,
     const ExecutionTrace& trace,
-    const std::set<size_t>& statementsToMutate,
-    const std::map<size_t, size_t>& programIndexToTraceIndex,
-    const WaveParticipantTrackingMutation* strategy);
-  
-  interpreter::Program createBaseMutant(const interpreter::Program& program);
-  
-  void ensureParticipantBuffer(interpreter::Program& mutant);
+    const std::set<size_t>& statementsToMutate);
   
   bool hasNewCoverage(const ExecutionTrace& trace);
   

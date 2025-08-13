@@ -2417,10 +2417,36 @@ std::set<size_t> TraceGuidedFuzzer::determineStatementsToMutate(
   return statementsToMutate;
 }
 
-// Helper method: Check if any statements contain wave operations
-bool TraceGuidedFuzzer::checkForWaveOpsInStatements(
+// Implementation of program-level mutation for WaveParticipantTracking
+std::vector<interpreter::Program> WaveParticipantTrackingMutation::applyToProgram(
     const interpreter::Program& program,
-    const std::set<size_t>& statementsToMutate) {
+    const ExecutionTrace& trace,
+    const std::set<size_t>& statementsToMutate) const {
+  
+  std::vector<interpreter::Program> mutants;
+  
+  // Check if any new statements have wave ops
+  if (!hasWaveOpsInStatements(program, statementsToMutate)) {
+    return mutants;
+  }
+  
+  FUZZER_DEBUG_LOG("Found wave operations in new statements, applying WaveParticipantTracking\n");
+  
+  // Build wave op mapping for dead code detection
+  std::map<size_t, size_t> programIndexToTraceIndex = buildWaveOpMapping(program, trace);
+  
+  // Create mutant with tracking
+  interpreter::Program mutant = createMutantWithTracking(
+      program, trace, statementsToMutate, programIndexToTraceIndex);
+  
+  mutants.push_back(std::move(mutant));
+  return mutants;
+}
+
+// Helper method: Check if any statements contain wave operations
+bool WaveParticipantTrackingMutation::hasWaveOpsInStatements(
+    const interpreter::Program& program,
+    const std::set<size_t>& statementsToMutate) const {
   
   std::function<bool(const interpreter::Statement*)> hasWaveOpRecursive;
   hasWaveOpRecursive = [&hasWaveOpRecursive](const interpreter::Statement* stmt) -> bool {
@@ -2472,7 +2498,7 @@ bool TraceGuidedFuzzer::checkForWaveOpsInStatements(
 }
 
 // Helper method: Create base mutant with copied program structure
-interpreter::Program TraceGuidedFuzzer::createBaseMutant(const interpreter::Program& program) {
+interpreter::Program WaveParticipantTrackingMutation::createBaseMutant(const interpreter::Program& program) const {
   interpreter::Program mutant;
   mutant.numThreadsX = program.numThreadsX;
   mutant.numThreadsY = program.numThreadsY;
@@ -2483,7 +2509,7 @@ interpreter::Program TraceGuidedFuzzer::createBaseMutant(const interpreter::Prog
 }
 
 // Helper method: Ensure participant buffer exists
-void TraceGuidedFuzzer::ensureParticipantBuffer(interpreter::Program& mutant) {
+void WaveParticipantTrackingMutation::ensureParticipantBuffer(interpreter::Program& mutant) const {
   bool hasParticipantBuffer = false;
   for (const auto& buffer : mutant.globalBuffers) {
     if (buffer.name == "_participant_check_sum") {
@@ -2511,9 +2537,9 @@ void TraceGuidedFuzzer::ensureParticipantBuffer(interpreter::Program& mutant) {
 }
 
 // Helper method: Build wave op mapping for dead code detection
-std::map<size_t, size_t> TraceGuidedFuzzer::buildWaveOpMapping(
+std::map<size_t, size_t> WaveParticipantTrackingMutation::buildWaveOpMapping(
     const interpreter::Program& program,
-    const ExecutionTrace& trace) {
+    const ExecutionTrace& trace) const {
   
   std::map<size_t, size_t> programIndexToTraceIndex;
   
@@ -2572,12 +2598,11 @@ std::map<size_t, size_t> TraceGuidedFuzzer::buildWaveOpMapping(
 }
 
 // Helper method: Create mutant with participant tracking
-interpreter::Program TraceGuidedFuzzer::createMutantWithParticipantTracking(
+interpreter::Program WaveParticipantTrackingMutation::createMutantWithTracking(
     const interpreter::Program& program,
     const ExecutionTrace& trace,
     const std::set<size_t>& statementsToMutate,
-    const std::map<size_t, size_t>& programIndexToTraceIndex,
-    const WaveParticipantTrackingMutation* participantStrategy) {
+    const std::map<size_t, size_t>& programIndexToTraceIndex) const {
   
   // Create base mutant
   interpreter::Program mutant = createBaseMutant(program);
@@ -2604,7 +2629,7 @@ interpreter::Program TraceGuidedFuzzer::createMutantWithParticipantTracking(
       inputStmts.push_back(program.statements[i]->clone());
       
       std::vector<std::unique_ptr<interpreter::Statement>> processedStmts;
-      participantStrategy->processStatementsForTracking(
+      processStatementsForTracking(
           inputStmts, processedStmts, trace, currentWaveOpIndex, programIndexToTraceIndex);
       
       // Add all processed statements (original + tracking)
@@ -2640,28 +2665,26 @@ std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
   FUZZER_DEBUG_LOG("Generating mutants for " << statementsToMutate.size() 
                    << " statements from increment " << currentIncrement << "\n");
   
-  // Special handling for WaveParticipantTrackingMutation
-  if (dynamic_cast<WaveParticipantTrackingMutation*>(strategy)) {
-    bool hasNewWaveOps = checkForWaveOpsInStatements(program, statementsToMutate);
-    
-    if (hasNewWaveOps) {
-      FUZZER_DEBUG_LOG("Found wave operations in new statements, applying WaveParticipantTracking\n");
-      
-      // Build wave op mapping for dead code detection
-      std::map<size_t, size_t> programIndexToTraceIndex = buildWaveOpMapping(program, trace);
-      
-      // Create mutant with participant tracking
-      auto participantStrategy = static_cast<const WaveParticipantTrackingMutation*>(strategy);
-      interpreter::Program mutant = createMutantWithParticipantTracking(
-          program, trace, statementsToMutate, programIndexToTraceIndex, participantStrategy);
-      
-      mutants.push_back(std::move(mutant));
-    }
-    return mutants;
+  // Unified handling for all mutations
+  if (strategy->requiresProgramLevelMutation()) {
+    // Use program-level mutation API
+    return strategy->applyToProgram(program, trace, statementsToMutate);
+  } else {
+    // Use statement-level mutation API
+    return applyStatementLevelMutation(program, strategy, trace, statementsToMutate);
   }
+}
+
+// Helper method: Apply statement-level mutations
+std::vector<interpreter::Program> TraceGuidedFuzzer::applyStatementLevelMutation(
+    const interpreter::Program& program,
+    MutationStrategy* strategy,
+    const ExecutionTrace& trace,
+    const std::set<size_t>& statementsToMutate) {
   
-  // Default behavior for other mutation strategies
-  // Try to apply the mutation strategy only to statements from the current round
+  std::vector<interpreter::Program> mutants;
+  
+  // Try to apply the mutation strategy to statements from the current round
   for (size_t i = 0; i < program.statements.size(); ++i) {
     // Skip statements not from the current increment
     if (statementsToMutate.find(i) == statementsToMutate.end()) {
