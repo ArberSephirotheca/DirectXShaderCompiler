@@ -4383,7 +4383,6 @@ static ParameterSig extractParamSig(const clang::ParmVarDecl* P,
     
     // Try to read more characters to capture the semantic
     const char* StartPtr = SM.getCharacterData(StartLoc);
-    const char* EndPtr = SM.getCharacterData(EndLoc);
     
     // Search for the semantic by looking for ':' after the parameter name
     std::string paramText;
