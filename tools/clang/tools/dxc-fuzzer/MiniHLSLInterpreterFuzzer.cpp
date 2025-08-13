@@ -610,6 +610,12 @@ bool LanePermutationMutation::applyPermutationToStatement(
     return false;
   }
   
+  // Check if the wave operation already uses WaveReadLaneAt (already mutated)
+  if (dynamic_cast<const interpreter::WaveReadLaneAt*>(waveOp->getInput())) {
+    FUZZER_DEBUG_LOG("[LanePermutation] Skipping already-mutated wave operation\n");
+    return false;
+  }
+  
   // Get the operation type and verify it's associative
   auto opType = waveOp->getOpType();
   bool isAssociative = (opType == interpreter::WaveActiveOp::Sum ||
@@ -709,7 +715,9 @@ std::unique_ptr<interpreter::Expression> LanePermutationMutation::replaceWaveOpI
 
 std::string LanePermutationMutation::generatePermVarName() const {
   static int counter = 0;
-  return "_perm_val_" + std::to_string(counter++);
+  // Use a thread-local counter to avoid issues in multi-threaded fuzzing
+  static thread_local int threadCounter = 0;
+  return "_perm_val_" + std::to_string(threadCounter++);
 }
 
 
