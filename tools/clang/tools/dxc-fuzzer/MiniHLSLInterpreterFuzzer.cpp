@@ -18,11 +18,8 @@
 namespace minihlsl {
 namespace fuzzer {
 
-// Global fuzzer instance
-std::unique_ptr<TraceGuidedFuzzer> g_fuzzer;
 
 // Global seed programs loaded from corpus
-std::unique_ptr<std::vector<interpreter::Program>> g_seedPrograms;
 
 // Helper function to serialize a program to string
 std::string serializeProgramToString(const interpreter::Program& program) {
@@ -631,8 +628,6 @@ std::unique_ptr<interpreter::Statement> WaveParticipantTrackingMutation::apply(
   // Just return the statement as-is
   return stmt->clone();
 }
-
-// Remove duplicate definition - this is already implemented above
 
 std::vector<std::unique_ptr<interpreter::Statement>>
 WaveParticipantTrackingMutation::createTrackingStatements(
@@ -1756,138 +1751,6 @@ TraceGuidedFuzzer::TraceGuidedFuzzer() {
   bugReporter = std::make_unique<BugReporter>();
 }
 
-interpreter::Program TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& seedProgram, 
-                                  const FuzzingConfig& config) {
-  
-  FUZZER_DEBUG_LOG("Starting trace-guided fuzzing...\n");
-  FUZZER_DEBUG_LOG("Threadgroup size: " << config.threadgroupSize << "\n");
-  FUZZER_DEBUG_LOG("Wave size: " << config.waveSize << "\n");
-  
-  
-  // Prepare program for mutation
-  interpreter::Program preparedProgram = prepareProgramForMutation(seedProgram);
-  
-  // Create trace capture interpreter
-  TraceCaptureInterpreter captureInterpreter;
-  
-  // Execute seed and capture golden trace
-  FUZZER_DEBUG_LOG("Capturing golden trace...\n");
-  
-  // Check if we should print programs (controlled by environment variable)
-  static bool printPrograms = getenv("FUZZ_PRINT_PROGRAMS") != nullptr;
-  
-  if (printPrograms) {
-    FUZZER_DEBUG_LOG("\n--- Original Program ---\n");
-    FUZZER_DEBUG_LOG(serializeProgramToString(preparedProgram));
-    FUZZER_DEBUG_LOG("--- End Original Program ---\n\n");
-  }
-  
-  // Use sequential ordering for deterministic execution
-  interpreter::ThreadOrdering ordering = interpreter::ThreadOrdering::sequential(preparedProgram.getTotalThreads());
-  
-  auto goldenResult = captureInterpreter.executeAndCaptureTrace(
-    preparedProgram, ordering, config.waveSize);
-  
-  // Check if execution succeeded
-  if (!goldenResult.isValid()) {
-    std::cerr << "Golden execution failed: " << goldenResult.errorMessage << "\n";
-    // Return a clone of the original program if golden execution fails
-    interpreter::Program result;
-    result.numThreadsX = seedProgram.numThreadsX;
-    result.numThreadsY = seedProgram.numThreadsY;
-    result.numThreadsZ = seedProgram.numThreadsZ;
-    result.globalBuffers = seedProgram.globalBuffers;
-    result.entryInputs = seedProgram.entryInputs;
-    result.waveSize = seedProgram.waveSize;
-    for (const auto& stmt : seedProgram.statements) {
-      result.statements.push_back(stmt->clone());
-    }
-    return result;
-  }
-  
-  const ExecutionTrace& goldenTrace = *captureInterpreter.getTrace();
-  
-  FUZZER_DEBUG_LOG("Golden trace captured:\n");
-  FUZZER_DEBUG_LOG("  - Blocks executed: " << goldenTrace.blocks.size() << "\n");
-  FUZZER_DEBUG_LOG("  - Wave operations: " << goldenTrace.waveOperations.size() << "\n");
-  FUZZER_DEBUG_LOG("  - Waves in final state: " << goldenTrace.finalState.laneVariables.size() << "\n");
-  for (const auto& [waveId, waveVars] : goldenTrace.finalState.laneVariables) {
-    FUZZER_DEBUG_LOG("    Wave " << waveId << " has " << waveVars.size() << " lanes\n");
-  }
-  FUZZER_DEBUG_LOG("  - Control flow decisions: " << goldenTrace.controlFlowHistory.size() << "\n");
-  
-  // Apply all mutations in sequence
-  size_t mutantsTested = 0;
-  size_t bugsFound = 0;
-  
-  // Track the final mutants to avoid copying
-  std::vector<interpreter::Program> allMutantsGenerated;
-  
-  // Apply all mutations
-  auto mutationResult = applyAllMutations(preparedProgram, goldenTrace);
-  
-  // Test the mutated program if any mutations were applied
-  if (mutationResult.hasMutations() && mutantsTested < config.maxMutants) {
-    mutantsTested++;
-    
-    FUZZER_DEBUG_LOG("\n=== Testing Mutant " << mutantsTested << " (" 
-                    << mutationResult.getMutationChainString() << ") ===\n");
-    
-    FUZZER_DEBUG_LOG("\n--- Original Program ---\n");
-    FUZZER_DEBUG_LOG(serializeProgramToString(preparedProgram));
-    
-    FUZZER_DEBUG_LOG("\n--- Mutant Program ---\n");
-    FUZZER_DEBUG_LOG(serializeProgramToString(mutationResult.mutatedProgram));
-    FUZZER_DEBUG_LOG("--- End Mutant Program ---\n\n");
-    
-    try {
-      // Execute mutant
-      TraceCaptureInterpreter mutantInterpreter;
-      auto mutantTestResult = mutantInterpreter.executeAndCaptureTrace(
-        mutationResult.mutatedProgram, ordering, config.waveSize);
-      
-      // Check if execution succeeded
-      if (!mutantTestResult.isValid()) {
-        FUZZER_DEBUG_LOG("Mutant execution failed: " << mutantTestResult.errorMessage << "\n");
-      } else {
-        const ExecutionTrace& mutantTrace = *mutantInterpreter.getTrace();
-        
-        FUZZER_DEBUG_LOG("Mutant trace captured:\n");
-        FUZZER_DEBUG_LOG("  - Waves in final state: " << mutantTrace.finalState.laneVariables.size() << "\n");
-        for (const auto& [waveId, waveVars] : mutantTrace.finalState.laneVariables) {
-          FUZZER_DEBUG_LOG("    Wave " << waveId << " has " << waveVars.size() << " lanes\n");
-        }
-        
-        // Validate semantic equivalence
-        auto validation = validator->validate(goldenTrace, mutantTrace);
-        
-        if (!validation.isEquivalent) {
-          // Found a bug!
-          bugsFound++;
-          bugReporter->reportBug(preparedProgram, mutationResult.mutatedProgram, goldenTrace, 
-                               mutantTrace, validation);
-        }
-      }
-    } catch (const std::exception& e) {
-      // Mutant crashed - definitely a bug
-      bugsFound++;
-      bugReporter->reportCrash(preparedProgram, mutationResult.mutatedProgram, e);
-    }
-    
-    allMutantsGenerated.push_back(std::move(mutationResult.mutatedProgram));
-  }
-  
-  logSummary(mutantsTested, bugsFound);
-  
-  // Return the final mutated program
-  if (!allMutantsGenerated.empty()) {
-    return std::move(allMutantsGenerated.back());
-  } else {
-    // No mutations were applied, return the prepared program
-    return preparedProgram;
-  }
-}
-
 // Version that accepts generation history to only mutate new statements
 interpreter::Program TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& seedProgram, 
                                   const FuzzingConfig& config,
@@ -2029,41 +1892,6 @@ interpreter::Program TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& 
   return finalMutant;
 }
 
-std::unique_ptr<interpreter::Program> TraceGuidedFuzzer::mutateAST(
-    const interpreter::Program& program, 
-    unsigned int seed) {
-  
-  // Create a random number generator with the provided seed
-  std::mt19937 rng(seed);
-  
-  // Execute the program to get a baseline trace
-  TraceCaptureInterpreter interpreter;
-  interpreter::ThreadOrdering ordering = interpreter::ThreadOrdering::sequential(program.getTotalThreads());
-  
-  interpreter.execute(program, ordering, 32); // Default wave size
-  
-  const ExecutionTrace& trace = static_cast<const TraceCaptureInterpreter&>(interpreter).getTrace();
-  
-  // Randomly select a mutation strategy
-  if (mutationStrategies.empty()) {
-    return nullptr;
-  }
-  
-  std::uniform_int_distribution<size_t> strategyDist(0, mutationStrategies.size() - 1);
-  size_t strategyIndex = strategyDist(rng);
-  auto* strategy = mutationStrategies[strategyIndex].get();
-  
-  // Try to generate mutants with the selected strategy
-  auto mutants = generateMutants(program, strategy, trace);
-  
-  if (mutants.empty()) {
-    return nullptr;
-  }
-  
-  // Return the first valid mutant
-  // In the future, we could add more sophisticated selection logic
-  return std::make_unique<interpreter::Program>(std::move(mutants[0]));
-}
 
 // Helper function to recursively apply mutations to statements
 std::unique_ptr<interpreter::Statement> TraceGuidedFuzzer::applyMutationToStatement(
@@ -2238,152 +2066,6 @@ interpreter::Program TraceGuidedFuzzer::prepareProgramForMutation(
   return preparedProgram;
 }
 
-std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
-    const interpreter::Program& program,
-    MutationStrategy* strategy,
-    const ExecutionTrace& trace) {
-  
-  std::vector<interpreter::Program> mutants;
-  
-  // Special handling for WaveParticipantTrackingMutation
-  if (dynamic_cast<WaveParticipantTrackingMutation*>(strategy)) {
-    
-    // Check if program contains wave operations (including in nested statements)
-    bool hasWaveOps = false;
-    std::function<bool(const interpreter::Statement*)> hasWaveOp;
-    hasWaveOp = [&hasWaveOp](const interpreter::Statement* stmt) -> bool {
-      // Check AssignStmt
-      if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
-        if (findWaveOpInExpression(assign->getExpression())) {
-          return true;
-        }
-      } 
-      // Check VarDeclStmt
-      else if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
-        if (varDecl->getInit() && 
-            findWaveOpInExpression(varDecl->getInit())) {
-          return true;
-        }
-      }
-      // Check IfStmt
-      else if (auto* ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt)) {
-        for (const auto& s : ifStmt->getThenBlock()) {
-          if (hasWaveOp(s.get())) return true;
-        }
-        for (const auto& s : ifStmt->getElseBlock()) {
-          if (hasWaveOp(s.get())) return true;
-        }
-      } else if (auto* forStmt = dynamic_cast<const interpreter::ForStmt*>(stmt)) {
-        for (const auto& s : forStmt->getBody()) {
-          if (hasWaveOp(s.get())) return true;
-        }
-      } else if (auto* whileStmt = dynamic_cast<const interpreter::WhileStmt*>(stmt)) {
-        for (const auto& s : whileStmt->getBody()) {
-          if (hasWaveOp(s.get())) return true;
-        }
-      } else if (auto* doWhileStmt = dynamic_cast<const interpreter::DoWhileStmt*>(stmt)) {
-        for (const auto& s : doWhileStmt->getBody()) {
-          if (hasWaveOp(s.get())) return true;
-        }
-      }
-      return false;
-    };
-    
-    for (const auto& stmt : program.statements) {
-      if (hasWaveOp(stmt.get())) {
-        hasWaveOps = true;
-        break;
-      }
-    }
-    
-    
-    if (hasWaveOps) {
-      
-      // Create a single mutant
-      interpreter::Program mutant;
-      mutant.numThreadsX = program.numThreadsX;
-      mutant.numThreadsY = program.numThreadsY;
-      mutant.numThreadsZ = program.numThreadsZ;
-      mutant.entryInputs = program.entryInputs;  // Copy entry function parameters
-      mutant.globalBuffers = program.globalBuffers;  // Copy existing global buffers
-      
-      // Add the participant tracking buffer if it doesn't exist
-      bool hasParticipantBuffer = false;
-      for (const auto& buffer : mutant.globalBuffers) {
-        if (buffer.name == "_participant_check_sum") {
-          hasParticipantBuffer = true;
-          break;
-        }
-      }
-      
-      if (!hasParticipantBuffer) {
-        minihlsl::interpreter::GlobalBufferDecl participantBuffer;
-        participantBuffer.name = "_participant_check_sum";
-        participantBuffer.bufferType = "RWBuffer";
-        participantBuffer.elementType = minihlsl::interpreter::HLSLType::Uint;
-        participantBuffer.size = program.getTotalThreads();  // Size based on threadgroup
-        participantBuffer.registerIndex = 1;  // Use u1 to avoid conflicts
-        participantBuffer.isReadWrite = true;
-        mutant.globalBuffers.push_back(participantBuffer);
-        
-      }
-      
-      // Add buffer initialization at the beginning
-      // Initialize current thread's entry: _participant_check_sum[tid.x] = 0
-      auto tidX = std::make_unique<interpreter::VariableExpr>("tid.x");
-      auto zero = std::make_unique<interpreter::LiteralExpr>(0);
-      mutant.statements.push_back(std::make_unique<interpreter::ArrayAssignStmt>(
-          "_participant_check_sum", std::move(tidX), std::move(zero)));
-      
-      // Apply mutation to all wave operations and clone other statements
-      for (const auto& stmt : program.statements) {
-        bool mutationApplied = false;
-        auto mutatedStmt = applyMutationToStatement(
-            stmt.get(), strategy, trace, mutationApplied);
-        
-        if (mutationApplied) {
-          mutant.statements.push_back(std::move(mutatedStmt));
-        } else {
-          mutant.statements.push_back(stmt->clone());
-        }
-      }
-      
-      
-      mutants.push_back(std::move(mutant));
-    }
-    return mutants;
-  }
-  
-  // Default behavior for other mutation strategies
-  // Try to apply the mutation strategy to each statement (including nested ones)
-  for (size_t i = 0; i < program.statements.size(); ++i) {
-    bool mutationApplied = false;
-    auto mutatedStmt = applyMutationToStatement(
-        program.statements[i].get(), strategy, trace, mutationApplied);
-    
-    if (mutationApplied) {
-      // Create a new program with the mutated statement
-      interpreter::Program mutant;
-      mutant.numThreadsX = program.numThreadsX;
-      mutant.numThreadsY = program.numThreadsY;
-      mutant.numThreadsZ = program.numThreadsZ;
-      mutant.entryInputs = program.entryInputs;  // Copy entry function parameters
-      
-      // Clone all statements except the mutated one
-      for (size_t j = 0; j < program.statements.size(); ++j) {
-        if (j == i) {
-          mutant.statements.push_back(std::move(mutatedStmt));
-        } else {
-          mutant.statements.push_back(program.statements[j]->clone());
-        }
-      }
-      
-      mutants.push_back(std::move(mutant));
-    }
-  }
-  
-  return mutants;
-}
 
 // Helper method: Determine which statements to mutate based on increment
 std::set<size_t> TraceGuidedFuzzer::determineStatementsToMutate(
@@ -2853,7 +2535,15 @@ TraceGuidedFuzzer::MutationResult TraceGuidedFuzzer::applyAllMutations(
     if (history) {
       mutants = generateMutants(result.mutatedProgram, strategy.get(), goldenTrace, *history, currentIncrement);
     } else {
-      mutants = generateMutants(result.mutatedProgram, strategy.get(), goldenTrace);
+      // No history - create a dummy history with all statements in round 0
+      std::vector<GenerationRound> dummyHistory;
+      GenerationRound round0;
+      round0.roundNumber = 0;
+      for (size_t i = 0; i < result.mutatedProgram.statements.size(); ++i) {
+        round0.addedStatementIndices.push_back(i);
+      }
+      dummyHistory.push_back(round0);
+      mutants = generateMutants(result.mutatedProgram, strategy.get(), goldenTrace, dummyHistory, 0);
     }
     
     if (!mutants.empty()) {
@@ -2878,470 +2568,48 @@ TraceGuidedFuzzer::MutationResult TraceGuidedFuzzer::applyAllMutations(
   return result;
 }
 
-// ===== LibFuzzer Integration =====
-
-void loadSeedCorpus(TraceGuidedFuzzer* fuzzer) {
-  // Check if HLSL_SEED_DIR environment variable is set
-  const char* seedDir = std::getenv("HLSL_SEED_DIR");
-  std::string seedDirStr; // Store the directory path to avoid use-after-free
-  
-  if (!seedDir) {
-    // Try default locations
-    std::vector<std::string> defaultDirs = {
-      "seeds",
-      "../seeds",
-      "../../tools/clang/tools/dxc-fuzzer/seeds",
-    };
-    
-    for (const auto& dir : defaultDirs) {
-      struct stat info;
-      if (stat(dir.c_str(), &info) == 0 && S_ISDIR(info.st_mode)) {
-        seedDirStr = dir;
-        seedDir = seedDirStr.c_str();
-        break;
-      }
-    }
-  }
-  
-  if (!seedDir) {
-    std::cerr << "No seed directory found. Set HLSL_SEED_DIR or create a 'seeds' directory.\n";
-    return;
-  }
-  
-  FUZZER_DEBUG_LOG("Loading seed corpus from: " << seedDir << "\n");
-  
-  // Load all .hlsl files from the seed directory
-  DIR* dir = opendir(seedDir);
-  if (!dir) {
-    std::cerr << "Failed to open seed directory: " << seedDir << "\n";
-    return;
-  }
-  
-  struct dirent* entry;
-  int seedCount = 0;
-  while ((entry = readdir(dir)) != nullptr) {
-    std::string filename = entry->d_name;
-    
-    // Check if it's an HLSL file
-    if (filename.size() > 5 && filename.substr(filename.size() - 5) == ".hlsl") {
-      std::string fullPath = std::string(seedDir) + "/" + filename;
-      
-      // Read the file
-      std::ifstream file(fullPath);
-      if (!file.is_open()) {
-        std::cerr << "Failed to open seed file: " << fullPath << "\n";
-        continue;
-      }
-      
-      std::stringstream buffer;
-      buffer << file.rdbuf();
-      std::string hlslContent = buffer.str();
-      
-      // Parse HLSL and convert to interpreter AST
-      FUZZER_DEBUG_LOG("  Loading seed: " << filename << " (" << hlslContent.size() << " bytes)");
-      
-      // Use the MiniHLSLValidator to parse HLSL
-      minihlsl::MiniHLSLValidator validator;
-      auto astResult = validator.validate_source_with_ast_ownership(hlslContent, fullPath);
-      
-      auto* astContext = astResult.get_ast_context();
-      auto* mainFunc = astResult.get_main_function();
-      
-      if (!astContext || !mainFunc) {
-        FUZZER_DEBUG_LOG(" - Failed to parse or find main function\n");
-        continue;
-      }
-      
-      // Convert to interpreter program
-      minihlsl::interpreter::MiniHLSLInterpreter interpreter(0);
-      auto conversionResult = interpreter.convertFromHLSLAST(mainFunc, *astContext);
-      if (!conversionResult.success) {
-        FUZZER_DEBUG_LOG(" - Failed to convert: " << conversionResult.errorMessage << "\n");
-        continue;
-      }
-      
-      // Add to fuzzer's seed programs (stored for mutation)
-      if (!g_seedPrograms) {
-        g_seedPrograms = std::make_unique<std::vector<interpreter::Program>>();
-      }
-      // Move the program - need to clone because Program can't be moved directly
-      interpreter::Program seedProgram;
-      seedProgram.numThreadsX = conversionResult.program.numThreadsX;
-      seedProgram.numThreadsY = conversionResult.program.numThreadsY;
-      seedProgram.numThreadsZ = conversionResult.program.numThreadsZ;
-      seedProgram.entryInputs = conversionResult.program.entryInputs;  // Copy entry function parameters
-      
-      for (auto& stmt : conversionResult.program.statements) {
-        seedProgram.statements.push_back(std::move(stmt));
-      }
-      
-      g_seedPrograms->push_back(std::move(seedProgram));
-      
-      seedCount++;
-      FUZZER_DEBUG_LOG(" - Success!\n");
-    }
-  }
-  
-  closedir(dir);
-  FUZZER_DEBUG_LOG("Loaded " << seedCount << " seed files.\n");
-}
-
-bool deserializeAST(const uint8_t* data, size_t size, 
-                   interpreter::Program& program) {
-  // Check if we should generate a random program instead
-  static bool generateRandom = getenv("FUZZ_GENERATE_RANDOM") != nullptr;
-  
-  if (generateRandom && size >= 16) {
-    // Use the input data as entropy for random generation
-    FuzzedDataProvider provider(data, size);
-    
-    // Import the incremental generator
-    IncrementalGenerator generator;
-    auto state = generator.generateIncremental(data, size);
-    
-    // Prepare the program for execution
-    program = prepareProgramForExecution(std::move(state.program));
-    
-    FUZZER_DEBUG_LOG("\n=== Randomly Generated Program ===\n");
-    FUZZER_DEBUG_LOG(serializeProgramToString(program));
-    FUZZER_DEBUG_LOG("=== End Generated Program ===\n\n");
-    
-    return true;
-  }
-  
-  // Original behavior: deserialize from seed programs
-  if (size < 4) return false;
-  
-  // Simple approach: Use input bytes to select from seed programs
-  // This gives libFuzzer meaningful starting points for mutation
-  
-  // Extract a seed selector from the first 4 bytes
-  uint32_t selector = 0;
-  memcpy(&selector, data, 4);
-  
-  // If we have loaded seed programs, use those
-  if (g_seedPrograms && !g_seedPrograms->empty()) {
-    size_t index = selector % g_seedPrograms->size();
-    const auto& seedProgram = (*g_seedPrograms)[index];
-    
-    // Clone the seed program (deep copy)
-    program.numThreadsX = seedProgram.numThreadsX;
-    program.numThreadsY = seedProgram.numThreadsY;
-    program.numThreadsZ = seedProgram.numThreadsZ;
-    program.entryInputs = seedProgram.entryInputs;  // Copy entry function parameters
-    program.statements.clear();
-    
-    for (const auto& stmt : seedProgram.statements) {
-      program.statements.push_back(stmt->clone());
-    }
-    
-    return true;
-  }
-  
-  // Otherwise, create different seed programs based on the selector
-  switch (selector % 3) {
-    case 0: {
-      // Simple wave operation program
-      program.numThreadsX = 4;
-      program.numThreadsY = 1;
-      program.numThreadsZ = 1;
-      
-      // var x = WaveGetLaneIndex() + 1;
-      auto laneIndex = std::make_unique<interpreter::LaneIndexExpr>();
-      auto one = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(1));
-      auto xInit = std::make_unique<interpreter::BinaryOpExpr>(
-          std::move(laneIndex), std::move(one), interpreter::BinaryOpExpr::Add);
-      auto xDecl = std::make_unique<interpreter::VarDeclStmt>("x", interpreter::HLSLType::Uint, std::move(xInit));
-      
-      // var sum = 0;
-      auto zero = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(0));
-      auto sumDecl = std::make_unique<interpreter::VarDeclStmt>("sum", interpreter::HLSLType::Uint, std::move(zero));
-      
-      // sum = WaveActiveSum(x);
-      auto xRef = std::make_unique<interpreter::VariableExpr>("x");
-      auto waveSum = std::make_unique<interpreter::WaveActiveOp>(
-          std::move(xRef), interpreter::WaveActiveOp::Sum);
-      auto assignment = std::make_unique<interpreter::AssignStmt>("sum", std::move(waveSum));
-      
-      program.statements.push_back(std::move(xDecl));
-      program.statements.push_back(std::move(sumDecl));
-      program.statements.push_back(std::move(assignment));
-      break;
-    }
-    
-    case 1: {
-      // Divergent control flow program
-      program.numThreadsX = 32;
-      program.numThreadsY = 1;
-      program.numThreadsZ = 1;
-      
-      // var x = WaveGetLaneIndex() + 1;
-      auto laneIndex = std::make_unique<interpreter::LaneIndexExpr>();
-      auto one = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(1));
-      auto xInit = std::make_unique<interpreter::BinaryOpExpr>(
-          std::move(laneIndex), std::move(one), interpreter::BinaryOpExpr::Add);
-      auto xDecl = std::make_unique<interpreter::VarDeclStmt>("x", interpreter::HLSLType::Uint, std::move(xInit));
-      
-      // var sum = 0;
-      auto zero = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(0));
-      auto sumDecl = std::make_unique<interpreter::VarDeclStmt>("sum", interpreter::HLSLType::Uint, std::move(zero));
-      
-      // if (WaveGetLaneIndex() < 2) { sum = WaveActiveSum(x); } else { sum = 0; }
-      auto laneIndex2 = std::make_unique<interpreter::LaneIndexExpr>();
-      auto two = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(2));
-      auto condition = std::make_unique<interpreter::BinaryOpExpr>(
-          std::move(laneIndex2), std::move(two), interpreter::BinaryOpExpr::Lt);
-      
-      // Then block: sum = WaveActiveSum(x);
-      std::vector<std::unique_ptr<interpreter::Statement>> thenStmts;
-      auto xRef = std::make_unique<interpreter::VariableExpr>("x");
-      auto waveSum = std::make_unique<interpreter::WaveActiveOp>(
-          std::move(xRef), interpreter::WaveActiveOp::Sum);
-      auto thenAssign = std::make_unique<interpreter::AssignStmt>("sum", std::move(waveSum));
-      thenStmts.push_back(std::move(thenAssign));
-      
-      // Else block: sum = 0;
-      std::vector<std::unique_ptr<interpreter::Statement>> elseStmts;
-      auto zero2 = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(0));
-      auto elseAssign = std::make_unique<interpreter::AssignStmt>("sum", std::move(zero2));
-      elseStmts.push_back(std::move(elseAssign));
-      
-      auto ifStmt = std::make_unique<interpreter::IfStmt>(
-          std::move(condition), std::move(thenStmts), std::move(elseStmts));
-      
-      program.statements.push_back(std::move(xDecl));
-      program.statements.push_back(std::move(sumDecl));
-      program.statements.push_back(std::move(ifStmt));
-      break;
-    }
-    
-    default: {
-      // Loop-based program
-      program.numThreadsX = 32;
-      program.numThreadsY = 1;
-      program.numThreadsZ = 1;
-      
-      // var sum = 0;
-      auto zero = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(0));
-      auto sumDecl = std::make_unique<interpreter::VarDeclStmt>("sum", interpreter::HLSLType::Uint, std::move(zero));
-      
-      // for (var i = 0; i < 4; i++) { sum = WaveActiveSum(i); }
-      auto iInit = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(0));
-      auto four = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(4));
-      auto iVar = std::make_unique<interpreter::VariableExpr>("i");
-      auto condition = std::make_unique<interpreter::BinaryOpExpr>(
-          std::move(iVar), std::move(four), interpreter::BinaryOpExpr::Lt);
-      auto iVar2 = std::make_unique<interpreter::VariableExpr>("i");
-      auto one = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(1));
-      auto incrementExpr = std::make_unique<interpreter::BinaryOpExpr>(
-          std::move(iVar2), std::move(one), interpreter::BinaryOpExpr::Add);
-      auto increment = std::make_unique<interpreter::AssignExpr>("i", std::move(incrementExpr));
-      
-      std::vector<std::unique_ptr<interpreter::Statement>> bodyStmts;
-      auto iVar3 = std::make_unique<interpreter::VariableExpr>("i");
-      auto waveSum = std::make_unique<interpreter::WaveActiveOp>(
-          std::move(iVar3), interpreter::WaveActiveOp::Sum);
-      auto bodyAssign = std::make_unique<interpreter::AssignStmt>("sum", std::move(waveSum));
-      bodyStmts.push_back(std::move(bodyAssign));
-      
-      auto forStmt = std::make_unique<interpreter::ForStmt>(
-          "i", std::move(iInit), std::move(condition), std::move(increment), std::move(bodyStmts));
-      
-      program.statements.push_back(std::move(sumDecl));
-      program.statements.push_back(std::move(forStmt));
-      break;
-    }
-  }
-  
-  return true;
-}
-
-size_t serializeAST(const interpreter::Program& program, 
-                   uint8_t* data, size_t maxSize) {
-  if (maxSize < 16) return 0; // Need at least 16 bytes
-  
-  // Simple approach: Create a fingerprint of the program that can guide future mutations
-  // This is not a full serialization but provides feedback for libFuzzer
-  
-  // Store thread configuration (12 bytes)
-  uint32_t threadInfo[3] = {
-    static_cast<uint32_t>(program.numThreadsX),
-    static_cast<uint32_t>(program.numThreadsY), 
-    static_cast<uint32_t>(program.numThreadsZ)
-  };
-  memcpy(data, threadInfo, 12);
-  
-  // Compute a simple hash based on program structure (4 bytes)
-  uint32_t hash = 0;
-  hash ^= static_cast<uint32_t>(program.statements.size()) << 16;
-  
-  // Add type information from statements
-  for (size_t i = 0; i < program.statements.size() && i < 8; ++i) {
-    const auto& stmt = program.statements[i];
-    uint32_t typeHash = 0;
-    
-    // Different statement types get different hash contributions
-    if (dynamic_cast<const interpreter::VarDeclStmt*>(stmt.get())) {
-      typeHash = 1;
-    } else if (dynamic_cast<const interpreter::AssignStmt*>(stmt.get())) {
-      typeHash = 2;
-      // Check if it contains a wave operation
-      auto* assign = static_cast<const interpreter::AssignStmt*>(stmt.get());
-      if (dynamic_cast<const interpreter::WaveActiveOp*>(assign->getExpression())) {
-        typeHash |= 0x10; // Wave operation flag
-      }
-    } else if (dynamic_cast<const interpreter::IfStmt*>(stmt.get())) {
-      typeHash = 3;
-    } else if (dynamic_cast<const interpreter::ForStmt*>(stmt.get())) {
-      typeHash = 4;
-    } else {
-      typeHash = 5;
-    }
-    
-    hash ^= typeHash << (i * 4);
-  }
-  
-  memcpy(data + 12, &hash, 4);
-  
-  return 16; // Return the number of bytes written
-}
-
-size_t hashAST(const interpreter::Program& program) {
-  // Simple hash based on program size
-  return program.statements.size();
-}
 
 } // namespace fuzzer
 } // namespace minihlsl
 
-// LibFuzzer entry points
-extern "C" {
-
-int LLVMFuzzerInitialize(int* argc, char*** argv) {
-  minihlsl::fuzzer::g_fuzzer = std::make_unique<minihlsl::fuzzer::TraceGuidedFuzzer>();
-  minihlsl::fuzzer::loadSeedCorpus(minihlsl::fuzzer::g_fuzzer.get());
-  return 0;
-}
-
-int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  if (size < 4) return 0;
-  
-  // Check if we should use incremental pipeline for random generation
-  static bool useIncrementalPipeline = getenv("FUZZ_INCREMENTAL_PIPELINE") != nullptr;
-  static bool generateRandom = getenv("FUZZ_GENERATE_RANDOM") != nullptr;
-  
-  if (useIncrementalPipeline && generateRandom && size >= 16) {
-    // Use the new incremental fuzzing pipeline
-    static int testInputCallCount = 0;
-    ++testInputCallCount;
-    FUZZER_DEBUG_LOG("DEBUG: LLVMFuzzerTestOneInput pipeline path (call #" << testInputCallCount << ")\n");
-    
-    minihlsl::fuzzer::IncrementalFuzzingConfig pipelineConfig;
-    pipelineConfig.maxIncrements = 5;
-    pipelineConfig.mutantsPerIncrement = 10;
-    pipelineConfig.enableLogging = true;
-    
-    minihlsl::fuzzer::IncrementalFuzzingPipeline pipeline(pipelineConfig);
-    auto result = pipeline.run(data, size);
-    
-    // Could use result.totalBugsFound to guide libFuzzer
-    FUZZER_DEBUG_LOG("DEBUG: LLVMFuzzerTestOneInput returning early\n");
-    return 0;
+// Simple main function for testing the incremental pipeline
+int main(int argc, char** argv) {
+  if (argc < 2) {
+    std::cerr << "Usage: " << argv[0] << " <input_file>\n";
+    return 1;
   }
   
-  // Original behavior
-  minihlsl::interpreter::Program program;
-  if (!minihlsl::fuzzer::deserializeAST(data, size, program)) {
-    return 0;
+  // Read input file
+  std::ifstream file(argv[1], std::ios::binary);
+  if (!file) {
+    std::cerr << "Error: Could not open file " << argv[1] << "\n";
+    return 1;
   }
   
-  // Run fuzzing
-  minihlsl::fuzzer::FuzzingConfig config;
-  config.maxMutants = 10; // Quick fuzzing
-  config.enableLogging = true; // Enable logging to see programs
+  std::vector<uint8_t> data((std::istreambuf_iterator<char>(file)),
+                             std::istreambuf_iterator<char>());
   
-  try {
-    minihlsl::fuzzer::g_fuzzer->fuzzProgram(program, config);
-  } catch (...) {
-    // Ignore exceptions during fuzzing
+  if (data.size() < 16) {
+    std::cerr << "Error: Input file too small (need at least 16 bytes)\n";
+    return 1;
+  }
+  
+  // Run the incremental fuzzing pipeline
+  minihlsl::fuzzer::IncrementalFuzzingConfig config;
+  config.maxIncrements = 5;
+  config.mutantsPerIncrement = 10;
+  config.enableLogging = true;
+  
+  minihlsl::fuzzer::IncrementalFuzzingPipeline pipeline(config);
+  auto result = pipeline.run(data.data(), data.size());
+  
+  std::cout << "\n=== Pipeline Results ===\n";
+  std::cout << "Total increments: " << result.increments.size() << "\n";
+  std::cout << "Total mutants tested: " << result.totalMutantsTested << "\n";
+  std::cout << "Total bugs found: " << result.totalBugsFound << "\n";
+  if (result.stoppedEarly) {
+    std::cout << "Stopped early: " << result.stopReason << "\n";
   }
   
   return 0;
 }
-
-size_t LLVMFuzzerCustomMutator(uint8_t* data, size_t size, 
-                              size_t maxSize, unsigned int seed) {
-  // Custom mutation based on trace-guided approach
-  minihlsl::interpreter::Program program;
-  if (!minihlsl::fuzzer::deserializeAST(data, size, program)) {
-    return 0;
-  }
-  
-  auto mutated = minihlsl::fuzzer::g_fuzzer->mutateAST(program, seed);
-  if (!mutated) {
-    return 0;
-  }
-  
-  size_t result = minihlsl::fuzzer::serializeAST(*mutated, data, maxSize);
-  if (result > 0 && minihlsl::fuzzer::g_fuzzer) {
-    // Success - our custom mutator is working
-  }
-  return result;
-}
-
-size_t LLVMFuzzerCustomCrossOver(const uint8_t* data1, size_t size1,
-                                const uint8_t* data2, size_t size2,
-                                uint8_t* out, size_t maxOutSize,
-                                unsigned int seed) {
-  // Crossover two ASTs by combining statements from both programs
-  minihlsl::interpreter::Program prog1, prog2;
-  
-  // Deserialize both inputs
-  if (!minihlsl::fuzzer::deserializeAST(data1, size1, prog1) || 
-      !minihlsl::fuzzer::deserializeAST(data2, size2, prog2)) {
-    return 0; // Failed to deserialize
-  }
-  
-  // Create a new program with crossover
-  minihlsl::interpreter::Program crossover;
-  crossover.numThreadsX = prog1.numThreadsX;
-  crossover.numThreadsY = prog1.numThreadsY;
-  crossover.numThreadsZ = prog1.numThreadsZ;
-  
-  // Use a random number generator for crossover decisions
-  std::mt19937 rng(seed);
-  std::uniform_real_distribution<float> dist(0.0f, 1.0f);
-  
-  // Crossover strategy: randomly select statements from both programs
-  size_t totalStatements = prog1.statements.size() + prog2.statements.size();
-  if (totalStatements == 0) return 0;
-  
-  // Take first half from prog1, second half from prog2 (with some randomness)
-  for (size_t i = 0; i < prog1.statements.size(); ++i) {
-    if (dist(rng) < 0.7f) { // 70% chance to take from prog1
-      crossover.statements.push_back(prog1.statements[i]->clone());
-    }
-  }
-  
-  for (size_t i = 0; i < prog2.statements.size(); ++i) {
-    if (dist(rng) < 0.3f) { // 30% chance to take from prog2
-      crossover.statements.push_back(prog2.statements[i]->clone());
-    }
-  }
-  
-  // If we ended up with no statements, take at least one from each
-  if (crossover.statements.empty()) {
-    if (!prog1.statements.empty()) {
-      crossover.statements.push_back(prog1.statements[0]->clone());
-    }
-    if (!prog2.statements.empty()) {
-      crossover.statements.push_back(prog2.statements[0]->clone());
-    }
-  }
-  
-  // Serialize the crossover result
-  size_t resultSize = minihlsl::fuzzer::serializeAST(crossover, out, maxOutSize);
-  return resultSize;
-}
-
-} // extern "C"

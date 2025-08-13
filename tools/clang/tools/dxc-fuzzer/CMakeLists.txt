@@ -130,12 +130,10 @@ target_link_libraries(minihlsl-fuzzer
   # LLVMFuzzer  # Comment out until linking is fixed
 )
 
-# Set C++17 standard and fuzzing flags
+# Set C++17 standard
 set_target_properties(minihlsl-fuzzer PROPERTIES
   CXX_STANDARD 17
   CXX_STANDARD_REQUIRED ON
-  COMPILE_FLAGS "-fsanitize=address,fuzzer -fno-omit-frame-pointer"
-  LINK_FLAGS    "-fsanitize=address,fuzzer"
 )
 
 

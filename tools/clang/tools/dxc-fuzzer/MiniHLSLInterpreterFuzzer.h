@@ -590,29 +590,15 @@ private:
 public:
   TraceGuidedFuzzer();
   
-  // Returns the final mutated program that was tested
-  interpreter::Program fuzzProgram(const interpreter::Program& seedProgram, 
-                  const FuzzingConfig& config);
-  
   // Version that accepts generation history to only mutate new statements
   interpreter::Program fuzzProgram(const interpreter::Program& seedProgram, 
                   const FuzzingConfig& config,
                   const std::vector<GenerationRound>& history,
                   size_t currentIncrement);
   
-  // For libFuzzer integration
-  std::unique_ptr<interpreter::Program> mutateAST(
-    const interpreter::Program& program, 
-    unsigned int seed);
-  
 private:
   interpreter::Program prepareProgramForMutation(
     const interpreter::Program& program);
-    
-  std::vector<interpreter::Program> generateMutants(
-    const interpreter::Program& program,
-    MutationStrategy* strategy,
-    const ExecutionTrace& trace);
     
   std::vector<interpreter::Program> generateMutants(
     const interpreter::Program& program,
@@ -686,42 +672,12 @@ private:
 
 // ===== LibFuzzer Integration =====
 
-// Global fuzzer instance
-extern std::unique_ptr<TraceGuidedFuzzer> g_fuzzer;
 
-// Seed corpus management
-void loadSeedCorpus(TraceGuidedFuzzer* fuzzer);
 
-// AST serialization for libFuzzer
-bool deserializeAST(const uint8_t* data, size_t size, 
-                   interpreter::Program& program);
 
-size_t serializeAST(const interpreter::Program& program, 
-                   uint8_t* data, size_t maxSize);
 
-size_t hashAST(const interpreter::Program& program);
 
-// Helper functions for creating expressions
-std::unique_ptr<interpreter::Expression> createLaneIdCheck(interpreter::LaneId laneId);
-std::unique_ptr<interpreter::Expression> createWaveIdCheck(interpreter::WaveId waveId);
-std::unique_ptr<interpreter::Expression> createConjunction(
-    std::unique_ptr<interpreter::Expression> left,
-    std::unique_ptr<interpreter::Expression> right);
-std::unique_ptr<interpreter::Expression> createDisjunction(
-    std::unique_ptr<interpreter::Expression> left,
-    std::unique_ptr<interpreter::Expression> right);
 
 } // namespace fuzzer
 } // namespace minihlsl
 
-// LibFuzzer entry points
-extern "C" {
-  int LLVMFuzzerInitialize(int* argc, char*** argv);
-  int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size);
-  size_t LLVMFuzzerCustomMutator(uint8_t* data, size_t size, 
-                                size_t maxSize, unsigned int seed);
-  size_t LLVMFuzzerCustomCrossOver(const uint8_t* data1, size_t size1,
-                                  const uint8_t* data2, size_t size2,
-                                  uint8_t* out, size_t maxOutSize,
-                                  unsigned int seed);
-}
