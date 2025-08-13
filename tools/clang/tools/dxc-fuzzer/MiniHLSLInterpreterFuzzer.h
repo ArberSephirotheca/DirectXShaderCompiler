@@ -589,6 +589,30 @@ private:
     const ExecutionTrace& trace,
     bool& mutationApplied);
   
+  // Helper methods for generateMutants refactoring
+  std::set<size_t> determineStatementsToMutate(
+    const std::vector<GenerationRound>& history,
+    size_t currentIncrement);
+  
+  bool checkForWaveOpsInStatements(
+    const interpreter::Program& program,
+    const std::set<size_t>& statementsToMutate);
+  
+  std::map<size_t, size_t> buildWaveOpMapping(
+    const interpreter::Program& program,
+    const ExecutionTrace& trace);
+  
+  interpreter::Program createMutantWithParticipantTracking(
+    const interpreter::Program& program,
+    const ExecutionTrace& trace,
+    const std::set<size_t>& statementsToMutate,
+    const std::map<size_t, size_t>& programIndexToTraceIndex,
+    const WaveParticipantTrackingMutation* strategy);
+  
+  interpreter::Program createBaseMutant(const interpreter::Program& program);
+  
+  void ensureParticipantBuffer(interpreter::Program& mutant);
+  
   bool hasNewCoverage(const ExecutionTrace& trace);
   
   uint64_t hashBlockPattern(const ExecutionTrace::BlockExecutionRecord& block);

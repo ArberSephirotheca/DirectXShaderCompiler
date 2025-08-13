@@ -2385,18 +2385,13 @@ std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
   return mutants;
 }
 
-// Version that only generates mutants for statements added in the current increment
-std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
-    const interpreter::Program& program,
-    MutationStrategy* strategy,
-    const ExecutionTrace& trace,
+// Helper method: Determine which statements to mutate based on increment
+std::set<size_t> TraceGuidedFuzzer::determineStatementsToMutate(
     const std::vector<GenerationRound>& history,
     size_t currentIncrement) {
   
-  std::vector<interpreter::Program> mutants;
-  
-  // Find which statements to mutate based on the increment
   std::set<size_t> statementsToMutate;
+  
   if (currentIncrement == 0) {
     // Increment 0: mutate all statements from rounds 0-4 (initial generation)
     for (const auto& round : history) {
@@ -2419,6 +2414,225 @@ std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
     }
   }
   
+  return statementsToMutate;
+}
+
+// Helper method: Check if any statements contain wave operations
+bool TraceGuidedFuzzer::checkForWaveOpsInStatements(
+    const interpreter::Program& program,
+    const std::set<size_t>& statementsToMutate) {
+  
+  std::function<bool(const interpreter::Statement*)> hasWaveOpRecursive;
+  hasWaveOpRecursive = [&hasWaveOpRecursive](const interpreter::Statement* stmt) -> bool {
+    // Check AssignStmt
+    if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
+      if (findWaveOpInExpression(assign->getExpression())) {
+        return true;
+      }
+    } 
+    // Check VarDeclStmt
+    else if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
+      if (varDecl->getInit() && findWaveOpInExpression(varDecl->getInit())) {
+        return true;
+      }
+    }
+    // Check control flow statements
+    else if (auto* ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt)) {
+      for (const auto& s : ifStmt->getThenBlock()) {
+        if (hasWaveOpRecursive(s.get())) return true;
+      }
+      for (const auto& s : ifStmt->getElseBlock()) {
+        if (hasWaveOpRecursive(s.get())) return true;
+      }
+    } else if (auto* forStmt = dynamic_cast<const interpreter::ForStmt*>(stmt)) {
+      for (const auto& s : forStmt->getBody()) {
+        if (hasWaveOpRecursive(s.get())) return true;
+      }
+    } else if (auto* whileStmt = dynamic_cast<const interpreter::WhileStmt*>(stmt)) {
+      for (const auto& s : whileStmt->getBody()) {
+        if (hasWaveOpRecursive(s.get())) return true;
+      }
+    } else if (auto* doWhileStmt = dynamic_cast<const interpreter::DoWhileStmt*>(stmt)) {
+      for (const auto& s : doWhileStmt->getBody()) {
+        if (hasWaveOpRecursive(s.get())) return true;
+      }
+    }
+    return false;
+  };
+  
+  for (size_t i = 0; i < program.statements.size(); ++i) {
+    if (statementsToMutate.find(i) != statementsToMutate.end()) {
+      if (hasWaveOpRecursive(program.statements[i].get())) {
+        return true;
+      }
+    }
+  }
+  
+  return false;
+}
+
+// Helper method: Create base mutant with copied program structure
+interpreter::Program TraceGuidedFuzzer::createBaseMutant(const interpreter::Program& program) {
+  interpreter::Program mutant;
+  mutant.numThreadsX = program.numThreadsX;
+  mutant.numThreadsY = program.numThreadsY;
+  mutant.numThreadsZ = program.numThreadsZ;
+  mutant.entryInputs = program.entryInputs;
+  mutant.globalBuffers = program.globalBuffers;
+  return mutant;
+}
+
+// Helper method: Ensure participant buffer exists
+void TraceGuidedFuzzer::ensureParticipantBuffer(interpreter::Program& mutant) {
+  bool hasParticipantBuffer = false;
+  for (const auto& buffer : mutant.globalBuffers) {
+    if (buffer.name == "_participant_check_sum") {
+      hasParticipantBuffer = true;
+      break;
+    }
+  }
+  
+  if (!hasParticipantBuffer) {
+    minihlsl::interpreter::GlobalBufferDecl participantBuffer;
+    participantBuffer.name = "_participant_check_sum";
+    participantBuffer.bufferType = "RWBuffer";
+    participantBuffer.elementType = minihlsl::interpreter::HLSLType::Uint;
+    participantBuffer.size = mutant.getTotalThreads();
+    participantBuffer.registerIndex = 1;
+    participantBuffer.isReadWrite = true;
+    mutant.globalBuffers.push_back(participantBuffer);
+    
+    // Add buffer initialization
+    auto tidX = std::make_unique<interpreter::VariableExpr>("tid.x");
+    auto zero = std::make_unique<interpreter::LiteralExpr>(0);
+    mutant.statements.push_back(std::make_unique<interpreter::ArrayAssignStmt>(
+        "_participant_check_sum", std::move(tidX), std::move(zero)));
+  }
+}
+
+// Helper method: Build wave op mapping for dead code detection
+std::map<size_t, size_t> TraceGuidedFuzzer::buildWaveOpMapping(
+    const interpreter::Program& program,
+    const ExecutionTrace& trace) {
+  
+  std::map<size_t, size_t> programIndexToTraceIndex;
+  
+  // Use sequential matching approach with dead code detection
+  size_t programWaveOpIndex = 0;
+  size_t traceWaveOpIndex = 0;
+  
+  // Helper lambda to match wave ops sequentially
+  auto matchWaveOps = [&](const interpreter::Statement* stmt) {
+    bool hasWaveOp = false;
+    if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
+      hasWaveOp = findWaveOpInExpression(assign->getExpression()) != nullptr;
+    } else if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
+      hasWaveOp = varDecl->getInit() && findWaveOpInExpression(varDecl->getInit()) != nullptr;
+    }
+    
+    if (hasWaveOp) {
+      // This program has a wave op at programWaveOpIndex
+      // Check if it exists in the trace
+      if (traceWaveOpIndex < trace.waveOperations.size()) {
+        // Assume sequential matching - this wave op was executed
+        programIndexToTraceIndex[programWaveOpIndex] = traceWaveOpIndex;
+        traceWaveOpIndex++;
+      } else {
+        // No more trace entries - this is dead code
+        FUZZER_DEBUG_LOG("[WaveParticipantTracking] Wave op at index " << programWaveOpIndex 
+                        << " appears to be dead code (no matching trace entry)\n");
+      }
+      programWaveOpIndex++;
+    }
+  };
+  
+  // Walk through all statements to match wave ops
+  std::function<void(const interpreter::Statement*)> walkStatement;
+  walkStatement = [&](const interpreter::Statement* stmt) {
+    matchWaveOps(stmt);
+    
+    // Recursively process nested statements
+    if (auto* ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt)) {
+      for (const auto& s : ifStmt->getThenBlock()) walkStatement(s.get());
+      for (const auto& s : ifStmt->getElseBlock()) walkStatement(s.get());
+    } else if (auto* forStmt = dynamic_cast<const interpreter::ForStmt*>(stmt)) {
+      for (const auto& s : forStmt->getBody()) walkStatement(s.get());
+    } else if (auto* whileStmt = dynamic_cast<const interpreter::WhileStmt*>(stmt)) {
+      for (const auto& s : whileStmt->getBody()) walkStatement(s.get());
+    } else if (auto* doWhileStmt = dynamic_cast<const interpreter::DoWhileStmt*>(stmt)) {
+      for (const auto& s : doWhileStmt->getBody()) walkStatement(s.get());
+    }
+  };
+  
+  for (const auto& stmt : program.statements) {
+    walkStatement(stmt.get());
+  }
+  
+  return programIndexToTraceIndex;
+}
+
+// Helper method: Create mutant with participant tracking
+interpreter::Program TraceGuidedFuzzer::createMutantWithParticipantTracking(
+    const interpreter::Program& program,
+    const ExecutionTrace& trace,
+    const std::set<size_t>& statementsToMutate,
+    const std::map<size_t, size_t>& programIndexToTraceIndex,
+    const WaveParticipantTrackingMutation* participantStrategy) {
+  
+  // Create base mutant
+  interpreter::Program mutant = createBaseMutant(program);
+  
+  // Ensure participant buffer exists
+  ensureParticipantBuffer(mutant);
+  
+  // Count wave ops before the new statements to get the starting index
+  size_t waveOpsBeforeNewStatements = 0;
+  size_t firstNewStatementIndex = statementsToMutate.empty() ? 
+      program.statements.size() : *statementsToMutate.begin();
+  for (size_t i = 0; i < firstNewStatementIndex; ++i) {
+    waveOpsBeforeNewStatements += countWaveOpsInStatement(program.statements[i].get());
+  }
+  
+  // Initialize wave op index for tracking
+  size_t currentWaveOpIndex = waveOpsBeforeNewStatements;
+  
+  // Process statements: only apply tracking to new statements from current increment
+  for (size_t i = 0; i < program.statements.size(); ++i) {
+    if (statementsToMutate.find(i) != statementsToMutate.end()) {
+      // This is a new statement from current increment - process it for tracking
+      std::vector<std::unique_ptr<interpreter::Statement>> inputStmts;
+      inputStmts.push_back(program.statements[i]->clone());
+      
+      std::vector<std::unique_ptr<interpreter::Statement>> processedStmts;
+      participantStrategy->processStatementsForTracking(
+          inputStmts, processedStmts, trace, currentWaveOpIndex, programIndexToTraceIndex);
+      
+      // Add all processed statements (original + tracking)
+      for (auto& stmt : processedStmts) {
+        mutant.statements.push_back(std::move(stmt));
+      }
+    } else {
+      // This is an old statement - copy it unchanged
+      mutant.statements.push_back(program.statements[i]->clone());
+    }
+  }
+  
+  return mutant;
+}
+
+// Version that only generates mutants for statements added in the current increment
+std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
+    const interpreter::Program& program,
+    MutationStrategy* strategy,
+    const ExecutionTrace& trace,
+    const std::vector<GenerationRound>& history,
+    size_t currentIncrement) {
+  
+  std::vector<interpreter::Program> mutants;
+  
+  // Determine which statements to mutate
+  std::set<size_t> statementsToMutate = determineStatementsToMutate(history, currentIncrement);
+  
   if (statementsToMutate.empty()) {
     return mutants;
   }
@@ -2428,182 +2642,18 @@ std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
   
   // Special handling for WaveParticipantTrackingMutation
   if (dynamic_cast<WaveParticipantTrackingMutation*>(strategy)) {
-    
-    // Check if any of the new statements contain wave operations
-    bool hasNewWaveOps = false;
-    std::function<bool(const interpreter::Statement*)> hasWaveOpRecursive;
-    hasWaveOpRecursive = [&hasWaveOpRecursive](const interpreter::Statement* stmt) -> bool {
-      // Check AssignStmt
-      if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
-        if (findWaveOpInExpression(assign->getExpression())) {
-          return true;
-        }
-      } 
-      // Check VarDeclStmt
-      else if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
-        if (varDecl->getInit() && 
-            findWaveOpInExpression(varDecl->getInit())) {
-          return true;
-        }
-      }
-      // Check IfStmt
-      else if (auto* ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt)) {
-        for (const auto& s : ifStmt->getThenBlock()) {
-          if (hasWaveOpRecursive(s.get())) return true;
-        }
-        for (const auto& s : ifStmt->getElseBlock()) {
-          if (hasWaveOpRecursive(s.get())) return true;
-        }
-      } else if (auto* forStmt = dynamic_cast<const interpreter::ForStmt*>(stmt)) {
-        for (const auto& s : forStmt->getBody()) {
-          if (hasWaveOpRecursive(s.get())) return true;
-        }
-      } else if (auto* whileStmt = dynamic_cast<const interpreter::WhileStmt*>(stmt)) {
-        for (const auto& s : whileStmt->getBody()) {
-          if (hasWaveOpRecursive(s.get())) return true;
-        }
-      } else if (auto* doWhileStmt = dynamic_cast<const interpreter::DoWhileStmt*>(stmt)) {
-        for (const auto& s : doWhileStmt->getBody()) {
-          if (hasWaveOpRecursive(s.get())) return true;
-        }
-      }
-      return false;
-    };
-    
-    for (size_t i = 0; i < program.statements.size(); ++i) {
-      // Only check statements from the current increment
-      if (statementsToMutate.find(i) != statementsToMutate.end()) {
-        if (hasWaveOpRecursive(program.statements[i].get())) {
-          hasNewWaveOps = true;
-          break;
-        }
-      }
-    }
+    bool hasNewWaveOps = checkForWaveOpsInStatements(program, statementsToMutate);
     
     if (hasNewWaveOps) {
       FUZZER_DEBUG_LOG("Found wave operations in new statements, applying WaveParticipantTracking\n");
       
-      // Create a single mutant
-      interpreter::Program mutant;
-      mutant.numThreadsX = program.numThreadsX;
-      mutant.numThreadsY = program.numThreadsY;
-      mutant.numThreadsZ = program.numThreadsZ;
-      mutant.entryInputs = program.entryInputs;
-      mutant.globalBuffers = program.globalBuffers;
+      // Build wave op mapping for dead code detection
+      std::map<size_t, size_t> programIndexToTraceIndex = buildWaveOpMapping(program, trace);
       
-      // Add the participant tracking buffer if it doesn't exist
-      bool hasParticipantBuffer = false;
-      for (const auto& buffer : mutant.globalBuffers) {
-        if (buffer.name == "_participant_check_sum") {
-          hasParticipantBuffer = true;
-          break;
-        }
-      }
-      
-      if (!hasParticipantBuffer) {
-        minihlsl::interpreter::GlobalBufferDecl participantBuffer;
-        participantBuffer.name = "_participant_check_sum";
-        participantBuffer.bufferType = "RWBuffer";
-        participantBuffer.elementType = minihlsl::interpreter::HLSLType::Uint;
-        participantBuffer.size = program.getTotalThreads();
-        participantBuffer.registerIndex = 1;
-        participantBuffer.isReadWrite = true;
-        mutant.globalBuffers.push_back(participantBuffer);
-        
-        // Add buffer initialization
-        auto tidX = std::make_unique<interpreter::VariableExpr>("tid.x");
-        auto zero = std::make_unique<interpreter::LiteralExpr>(0);
-        mutant.statements.push_back(std::make_unique<interpreter::ArrayAssignStmt>(
-            "_participant_check_sum", std::move(tidX), std::move(zero)));
-      }
-      
-      // Use special processing for WaveParticipantTracking to inject tracking after all wave ops
+      // Create mutant with participant tracking
       auto participantStrategy = static_cast<const WaveParticipantTrackingMutation*>(strategy);
-      
-      // Build a mapping of program wave op index to trace wave op index
-      // This handles dead code by only mapping wave ops that were actually executed
-      std::map<size_t, size_t> programIndexToTraceIndex;
-      
-      // Use sequential matching approach with dead code detection
-      size_t programWaveOpIndex = 0;
-      size_t traceWaveOpIndex = 0;
-      
-      // Helper lambda to match wave ops sequentially
-      auto matchWaveOps = [&](const interpreter::Statement* stmt) {
-        bool hasWaveOp = false;
-        if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
-          hasWaveOp = findWaveOpInExpression(assign->getExpression()) != nullptr;
-        } else if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
-          hasWaveOp = varDecl->getInit() && findWaveOpInExpression(varDecl->getInit()) != nullptr;
-        }
-        
-        if (hasWaveOp) {
-          // This program has a wave op at programWaveOpIndex
-          // Check if it exists in the trace
-          if (traceWaveOpIndex < trace.waveOperations.size()) {
-            // Assume sequential matching - this wave op was executed
-            programIndexToTraceIndex[programWaveOpIndex] = traceWaveOpIndex;
-            traceWaveOpIndex++;
-          } else {
-            // No more trace entries - this is dead code
-            FUZZER_DEBUG_LOG("[WaveParticipantTracking] Wave op at index " << programWaveOpIndex 
-                            << " appears to be dead code (no matching trace entry)\n");
-          }
-          programWaveOpIndex++;
-        }
-      };
-      
-      // Walk through all statements to match wave ops
-      std::function<void(const interpreter::Statement*)> walkStatement;
-      walkStatement = [&](const interpreter::Statement* stmt) {
-        matchWaveOps(stmt);
-        
-        // Recursively process nested statements
-        if (auto* ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt)) {
-          for (const auto& s : ifStmt->getThenBlock()) walkStatement(s.get());
-          for (const auto& s : ifStmt->getElseBlock()) walkStatement(s.get());
-        } else if (auto* forStmt = dynamic_cast<const interpreter::ForStmt*>(stmt)) {
-          for (const auto& s : forStmt->getBody()) walkStatement(s.get());
-        } else if (auto* whileStmt = dynamic_cast<const interpreter::WhileStmt*>(stmt)) {
-          for (const auto& s : whileStmt->getBody()) walkStatement(s.get());
-        } else if (auto* doWhileStmt = dynamic_cast<const interpreter::DoWhileStmt*>(stmt)) {
-          for (const auto& s : doWhileStmt->getBody()) walkStatement(s.get());
-        }
-      };
-      
-      for (const auto& stmt : program.statements) {
-        walkStatement(stmt.get());
-      }
-      
-      // Now count wave ops before the new statements to get the starting index
-      size_t waveOpsBeforeNewStatements = 0;
-      size_t firstNewStatementIndex = statementsToMutate.empty() ? program.statements.size() : *statementsToMutate.begin();
-      for (size_t i = 0; i < firstNewStatementIndex; ++i) {
-        waveOpsBeforeNewStatements += countWaveOpsInStatement(program.statements[i].get());
-      }
-      
-      // Initialize wave op index for tracking
-      size_t currentWaveOpIndex = waveOpsBeforeNewStatements;
-      
-      // Process statements: only apply tracking to new statements from current increment
-      for (size_t i = 0; i < program.statements.size(); ++i) {
-        if (statementsToMutate.find(i) != statementsToMutate.end()) {
-          // This is a new statement from current increment - process it for tracking
-          std::vector<std::unique_ptr<interpreter::Statement>> inputStmts;
-          inputStmts.push_back(program.statements[i]->clone());
-          
-          std::vector<std::unique_ptr<interpreter::Statement>> processedStmts;
-          participantStrategy->processStatementsForTracking(inputStmts, processedStmts, trace, currentWaveOpIndex, programIndexToTraceIndex);
-          
-          // Add all processed statements (original + tracking)
-          for (auto& stmt : processedStmts) {
-            mutant.statements.push_back(std::move(stmt));
-          }
-        } else {
-          // This is an old statement - copy it unchanged
-          mutant.statements.push_back(program.statements[i]->clone());
-        }
-      }
+      interpreter::Program mutant = createMutantWithParticipantTracking(
+          program, trace, statementsToMutate, programIndexToTraceIndex, participantStrategy);
       
       mutants.push_back(std::move(mutant));
     }
