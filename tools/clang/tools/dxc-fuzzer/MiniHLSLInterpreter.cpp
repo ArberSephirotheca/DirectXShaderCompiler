@@ -4567,7 +4567,7 @@ MiniHLSLInterpreter::convertBinaryOperator(const clang::BinaryOperator *binOp,
   auto rhs = convertExpression(binOp->getRHS(), context);
 
   if (!rhs) {
-    INTERPRETER_DEBUG_LOG("Failed to convert assignment RHS");
+    PARSER_DEBUG_LOG("Failed to convert assignment RHS");
     return nullptr;
   }
 
@@ -4599,7 +4599,7 @@ std::unique_ptr<Statement> MiniHLSLInterpreter::convertCompoundAssignOperator(
   auto rhs = convertExpression(compoundOp->getRHS(), context);
 
   if (!lhs || !rhs) {
-    INTERPRETER_DEBUG_LOG("Failed to convert compound assignment operands");
+    PARSER_DEBUG_LOG("Failed to convert compound assignment operands");
     return nullptr;
   }
 
@@ -4774,7 +4774,7 @@ MiniHLSLInterpreter::convertIfStatement(const clang::IfStmt *ifStmt,
   // Convert the condition expression
   auto condition = convertExpression(ifStmt->getCond(), context);
   if (!condition) {
-    INTERPRETER_DEBUG_LOG("Failed to convert if condition");
+    PARSER_DEBUG_LOG("Failed to convert if condition");
     return nullptr;
   }
 
@@ -4860,9 +4860,9 @@ MiniHLSLInterpreter::convertForStatement(const clang::ForStmt *forStmt,
     INTERPRETER_DEBUG_LOG("Converting for loop increment expression\n");
     increment = convertExpression(incExpr, context);
     if (!increment) {
-      INTERPRETER_DEBUG_LOG("Failed to convert for loop increment expression\n");
+      PARSER_DEBUG_LOG("Failed to convert for loop increment expression\n");
     } else {
-      INTERPRETER_DEBUG_LOG("Successfully converted increment to: " << increment->toString() << "\n");
+      PARSER_DEBUG_LOG("Successfully converted increment to: " << increment->toString() << "\n");
     }
   }
 
@@ -4905,7 +4905,7 @@ MiniHLSLInterpreter::convertWhileStatement(const clang::WhileStmt *whileStmt,
   // Convert the condition expression
   auto condition = convertExpression(whileStmt->getCond(), context);
   if (!condition) {
-    INTERPRETER_DEBUG_LOG("Failed to convert while condition");
+    PARSER_DEBUG_LOG("Failed to convert while condition");
     return nullptr;
   }
 
@@ -4951,7 +4951,7 @@ MiniHLSLInterpreter::convertDoStatement(const clang::DoStmt *doStmt,
   // Convert the condition expression
   auto condition = convertExpression(doStmt->getCond(), context);
   if (!condition) {
-    INTERPRETER_DEBUG_LOG("Failed to convert do-while condition");
+    PARSER_DEBUG_LOG("Failed to convert do-while condition");
     return nullptr;
   }
 
@@ -4965,7 +4965,7 @@ MiniHLSLInterpreter::convertSwitchStatement(const clang::SwitchStmt *switchStmt,
   // Convert the condition expression
   auto condition = convertExpression(switchStmt->getCond(), context);
   if (!condition) {
-    INTERPRETER_DEBUG_LOG("Failed to convert switch condition");
+    PARSER_DEBUG_LOG("Failed to convert switch condition");
     return nullptr;
   }
 
@@ -5134,7 +5134,7 @@ MiniHLSLInterpreter::convertExpression(const clang::Expr *expr,
     auto rhs = convertExpression(compoundOp->getRHS(), context);
     
     if (!lhs || !rhs) {
-      INTERPRETER_DEBUG_LOG("Failed to convert compound assignment operands\n");
+      PARSER_DEBUG_LOG("Failed to convert compound assignment operands\n");
       return nullptr;
     }
     
@@ -5259,7 +5259,7 @@ MiniHLSLInterpreter::convertUnaryExpression(const clang::UnaryOperator *unaryOp,
                                             clang::ASTContext &context) {
   auto operand = convertExpression(unaryOp->getSubExpr(), context);
   if (!operand) {
-    INTERPRETER_DEBUG_LOG("Failed to convert unary operand");
+    PARSER_DEBUG_LOG("Failed to convert unary operand");
     return nullptr;
   }
 
@@ -5405,21 +5405,21 @@ std::unique_ptr<Expression> MiniHLSLInterpreter::convertConditionalOperator(
   // Convert the condition
   auto condition = convertExpression(condOp->getCond(), context);
   if (!condition) {
-    INTERPRETER_DEBUG_LOG("Failed to convert conditional operator condition");
+    PARSER_DEBUG_LOG("Failed to convert conditional operator condition");
     return nullptr;
   }
 
   // Convert the true expression
   auto trueExpr = convertExpression(condOp->getTrueExpr(), context);
   if (!trueExpr) {
-    INTERPRETER_DEBUG_LOG("Failed to convert conditional operator true expression");
+    PARSER_DEBUG_LOG("Failed to convert conditional operator true expression");
     return nullptr;
   }
 
   // Convert the false expression
   auto falseExpr = convertExpression(condOp->getFalseExpr(), context);
   if (!falseExpr) {
-    INTERPRETER_DEBUG_LOG("Failed to convert conditional operator false expression");
+    PARSER_DEBUG_LOG("Failed to convert conditional operator false expression");
     return nullptr;
   }
 
