@@ -695,10 +695,50 @@ bool WaveParticipantTrackingMutation::hasParticipantBuffer(
   return false;
 }
 
+// Helper function to count wave operations in a statement recursively
+static size_t countWaveOpsInStatement(const interpreter::Statement* stmt) {
+  size_t count = 0;
+  
+  // Check current statement
+  if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
+    if (findWaveOpInExpression(assign->getExpression())) {
+      count++;
+    }
+  } else if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
+    if (varDecl->getInit() && findWaveOpInExpression(varDecl->getInit())) {
+      count++;
+    }
+  }
+  // Handle control flow structures
+  else if (auto* ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt)) {
+    for (const auto& thenStmt : ifStmt->getThenBlock()) {
+      count += countWaveOpsInStatement(thenStmt.get());
+    }
+    for (const auto& elseStmt : ifStmt->getElseBlock()) {
+      count += countWaveOpsInStatement(elseStmt.get());
+    }
+  } else if (auto* forStmt = dynamic_cast<const interpreter::ForStmt*>(stmt)) {
+    for (const auto& bodyStmt : forStmt->getBody()) {
+      count += countWaveOpsInStatement(bodyStmt.get());
+    }
+  } else if (auto* whileStmt = dynamic_cast<const interpreter::WhileStmt*>(stmt)) {
+    for (const auto& bodyStmt : whileStmt->getBody()) {
+      count += countWaveOpsInStatement(bodyStmt.get());
+    }
+  } else if (auto* doWhileStmt = dynamic_cast<const interpreter::DoWhileStmt*>(stmt)) {
+    for (const auto& bodyStmt : doWhileStmt->getBody()) {
+      count += countWaveOpsInStatement(bodyStmt.get());
+    }
+  }
+  
+  return count;
+}
+
 void WaveParticipantTrackingMutation::processStatementsForTracking(
     const std::vector<std::unique_ptr<interpreter::Statement>>& input,
     std::vector<std::unique_ptr<interpreter::Statement>>& output,
-    const ExecutionTrace& trace) const {
+    const ExecutionTrace& trace,
+    size_t& currentWaveOpIndex) const {
   
   for (const auto& stmt : input) {
     // First, add the original statement
@@ -720,13 +760,13 @@ void WaveParticipantTrackingMutation::processStatementsForTracking(
     
     // If we found a wave operation, add tracking after it
     if (waveOp) {
-      // Find expected participants from trace
-      uint32_t expectedParticipants = trace.threadHierarchy.totalThreads;
-      for (const auto& waveOpRecord : trace.waveOperations) {
-        if (waveOpRecord.opType == waveOp->toString()) {
-          expectedParticipants = waveOpRecord.arrivedParticipants.size();
-          break;
-        }
+      // Use sequential matching with trace using the current wave op index
+      uint32_t expectedParticipants = trace.threadHierarchy.totalThreads; // default
+      
+      if (currentWaveOpIndex < trace.waveOperations.size()) {
+        const auto& waveOpRecord = trace.waveOperations[currentWaveOpIndex];
+        expectedParticipants = waveOpRecord.arrivedParticipants.size();
+        currentWaveOpIndex++;
       }
       
       // Add tracking statements
@@ -740,11 +780,11 @@ void WaveParticipantTrackingMutation::processStatementsForTracking(
     else if (auto ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt.get())) {
       // Process then block
       std::vector<std::unique_ptr<interpreter::Statement>> processedThen;
-      processStatementsForTracking(ifStmt->getThenBlock(), processedThen, trace);
+      processStatementsForTracking(ifStmt->getThenBlock(), processedThen, trace, currentWaveOpIndex);
       
       // Process else block
       std::vector<std::unique_ptr<interpreter::Statement>> processedElse;
-      processStatementsForTracking(ifStmt->getElseBlock(), processedElse, trace);
+      processStatementsForTracking(ifStmt->getElseBlock(), processedElse, trace, currentWaveOpIndex);
       
       // We already added the statement at the beginning, need to replace it
       output.pop_back(); // Remove the cloned version we added above
@@ -757,7 +797,7 @@ void WaveParticipantTrackingMutation::processStatementsForTracking(
     else if (auto forStmt = dynamic_cast<const interpreter::ForStmt*>(stmt.get())) {
       // Process body
       std::vector<std::unique_ptr<interpreter::Statement>> processedBody;
-      processStatementsForTracking(forStmt->getBody(), processedBody, trace);
+      processStatementsForTracking(forStmt->getBody(), processedBody, trace, currentWaveOpIndex);
       
       // We already added the statement at the beginning, need to replace it
       output.pop_back(); // Remove the cloned version
@@ -772,7 +812,7 @@ void WaveParticipantTrackingMutation::processStatementsForTracking(
     else if (auto whileStmt = dynamic_cast<const interpreter::WhileStmt*>(stmt.get())) {
       // Process body
       std::vector<std::unique_ptr<interpreter::Statement>> processedBody;
-      processStatementsForTracking(whileStmt->getBody(), processedBody, trace);
+      processStatementsForTracking(whileStmt->getBody(), processedBody, trace, currentWaveOpIndex);
       
       // We already added the statement at the beginning, need to replace it
       output.pop_back(); // Remove the cloned version
@@ -784,7 +824,7 @@ void WaveParticipantTrackingMutation::processStatementsForTracking(
     else if (auto doWhileStmt = dynamic_cast<const interpreter::DoWhileStmt*>(stmt.get())) {
       // Process body
       std::vector<std::unique_ptr<interpreter::Statement>> processedBody;
-      processStatementsForTracking(doWhileStmt->getBody(), processedBody, trace);
+      processStatementsForTracking(doWhileStmt->getBody(), processedBody, trace, currentWaveOpIndex);
       
       // Replace the do-while statement with processed version
       output.pop_back(); // Remove the cloned version
@@ -2468,6 +2508,16 @@ std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
       // Use special processing for WaveParticipantTracking to inject tracking after all wave ops
       auto participantStrategy = static_cast<const WaveParticipantTrackingMutation*>(strategy);
       
+      // Calculate wave operation offset - count wave ops before the new statements
+      size_t waveOpsBeforeNewStatements = 0;
+      size_t firstNewStatementIndex = statementsToMutate.empty() ? program.statements.size() : *statementsToMutate.begin();
+      for (size_t i = 0; i < firstNewStatementIndex; ++i) {
+        waveOpsBeforeNewStatements += countWaveOpsInStatement(program.statements[i].get());
+      }
+      
+      // Initialize wave op index for tracking
+      size_t currentWaveOpIndex = waveOpsBeforeNewStatements;
+      
       // Process statements: only apply tracking to new statements from current increment
       for (size_t i = 0; i < program.statements.size(); ++i) {
         if (statementsToMutate.find(i) != statementsToMutate.end()) {
@@ -2476,7 +2526,7 @@ std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
           inputStmts.push_back(program.statements[i]->clone());
           
           std::vector<std::unique_ptr<interpreter::Statement>> processedStmts;
-          participantStrategy->processStatementsForTracking(inputStmts, processedStmts, trace);
+          participantStrategy->processStatementsForTracking(inputStmts, processedStmts, trace, currentWaveOpIndex);
           
           // Add all processed statements (original + tracking)
           for (auto& stmt : processedStmts) {

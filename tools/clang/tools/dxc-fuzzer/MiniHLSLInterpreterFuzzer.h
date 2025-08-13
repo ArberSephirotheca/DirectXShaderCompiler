@@ -358,7 +358,8 @@ public:
   void processStatementsForTracking(
       const std::vector<std::unique_ptr<interpreter::Statement>>& input,
       std::vector<std::unique_ptr<interpreter::Statement>>& output,
-      const ExecutionTrace& trace) const;
+      const ExecutionTrace& trace,
+      size_t& currentWaveOpIndex) const;
   
 private:
   // Helper to create participant tracking code
