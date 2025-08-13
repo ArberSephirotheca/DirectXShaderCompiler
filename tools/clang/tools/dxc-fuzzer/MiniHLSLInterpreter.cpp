@@ -8632,7 +8632,7 @@ void ThreadgroupContext::removeThreadFromAllSets(uint32_t blockId,
         membershipRegistry.getParticipatingLanes(waveId, blockId);
     auto waitingLanesBefore =
         membershipRegistry.getWaitingLanes(waveId, blockId);
-    size_t laneCountBefore = partLanesBefore.size() + waitingLanesBefore.size();
+    // size_t laneCountBefore = partLanesBefore.size() + waitingLanesBefore.size();
 
     // Show which lanes are in the block before removal
     // INTERPRETER_DEBUG_LOG("DEBUG: removeThreadFromAllSets - block " << blockId << " had "
@@ -8660,7 +8660,7 @@ void ThreadgroupContext::removeThreadFromAllSets(uint32_t blockId,
         membershipRegistry.getParticipatingLanes(waveId, blockId);
     auto waitingLanesAfter =
         membershipRegistry.getWaitingLanes(waveId, blockId);
-    size_t laneCountAfter = partLanesAfter.size() + waitingLanesAfter.size();
+    // size_t laneCountAfter = partLanesAfter.size() + waitingLanesAfter.size();
 
     // Show which lanes are in the block after removal
   //   std::cout << "DEBUG: removeThreadFromAllSets - block " << blockId << " has "
