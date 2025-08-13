@@ -354,6 +354,12 @@ public:
     
   std::string getName() const override { return "WaveParticipantTracking"; }
   
+  // Process statements recursively to inject tracking after wave operations
+  void processStatementsForTracking(
+      const std::vector<std::unique_ptr<interpreter::Statement>>& input,
+      std::vector<std::unique_ptr<interpreter::Statement>>& output,
+      const ExecutionTrace& trace) const;
+  
 private:
   // Helper to create participant tracking code
   std::vector<std::unique_ptr<interpreter::Statement>> 

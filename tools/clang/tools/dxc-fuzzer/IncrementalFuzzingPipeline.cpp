@@ -180,7 +180,7 @@ PipelineResult IncrementalFuzzingPipeline::run(const uint8_t* data, size_t size)
     
     for (size_t increment = 0; increment < config.maxIncrements; ++increment) {
         if (config.enableLogging) {
-            FUZZER_DEBUG_LOG("\n=== Increment " << (increment + 1) << " ===\n");
+            FUZZER_DEBUG_LOG("\n=== Increment " << increment << " ===\n");
         }
         
         PipelineResult::IncrementResult incrementResult;

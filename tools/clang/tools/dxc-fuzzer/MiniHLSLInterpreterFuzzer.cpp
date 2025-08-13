@@ -626,81 +626,13 @@ bool WaveParticipantTrackingMutation::canApply(const interpreter::Statement* stm
 std::unique_ptr<interpreter::Statement> WaveParticipantTrackingMutation::apply(
     const interpreter::Statement* stmt,
     const ExecutionTrace& trace) const {
-  
-  // Find wave operation in the statement (including nested in expressions)
-  const interpreter::WaveActiveOp* waveOp = nullptr;
-  std::string resultVarName;
-  
-  if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
-    waveOp = findWaveOpInExpression(assign->getExpression());
-    if (!waveOp) return stmt->clone();
-    resultVarName = assign->getName();
-  }
-  // Handle VarDeclStmt
-  else if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
-    if (varDecl->getInit()) {
-      waveOp = findWaveOpInExpression(varDecl->getInit());
-      if (!waveOp) return stmt->clone();
-      resultVarName = varDecl->getName();
-    } else {
-      return stmt->clone();
-    }
-  }
-  else {
-    return stmt->clone();
-  }
-  
-  // Find expected participants from trace based on the actual block execution
-  uint32_t expectedParticipants = trace.threadHierarchy.totalThreads; // default to total threads
-  uint32_t blockId = 0;
-  
-  FUZZER_DEBUG_LOG("[WaveParticipantTracking] Looking for wave op: " << waveOp->toString() << "\n");
-  FUZZER_DEBUG_LOG("[WaveParticipantTracking] Total threads: " << trace.threadHierarchy.totalThreads << "\n");
-  
-  // Find the wave operation in the trace to get its block ID
-  for (const auto& waveOpRecord : trace.waveOperations) {
-    FUZZER_DEBUG_LOG("[WaveParticipantTracking] Checking trace op: " << waveOpRecord.opType 
-                     << " with " << waveOpRecord.arrivedParticipants.size() << " participants\n");
-    if (waveOpRecord.instruction == static_cast<const void*>(waveOp) ||
-        waveOpRecord.opType == waveOp->toString()) {
-      expectedParticipants = waveOpRecord.arrivedParticipants.size();
-      blockId = waveOpRecord.blockId;
-      FUZZER_DEBUG_LOG("[WaveParticipantTracking] Found match! Expected participants: " << expectedParticipants << "\n");
-      
-      
-      // Also check the block's wave participation info for more accurate count
-      if (trace.blocks.count(blockId)) {
-        const auto& block = trace.blocks.at(blockId);
-        // TODO: Assuming wave 0 for simplicity - in real code would need to track wave ID
-        if (block.waveParticipation.count(0)) {
-          const auto& waveInfo = block.waveParticipation.at(0);
-          if (!waveInfo.participatingLanes.empty()) {
-            expectedParticipants = waveInfo.participatingLanes.size();
-          }
-        }
-      }
-      break;
-    }
-  }
-  
-  // Create compound statement with original operation plus tracking
-  std::vector<std::unique_ptr<interpreter::Statement>> statements;
-  
-  // 1. Original wave operation
-  statements.push_back(stmt->clone());
-  
-  // 2. Create tracking statements that use the global tid variable
-  auto trackingStmts = createTrackingStatements(waveOp, resultVarName, expectedParticipants);
-  for (auto& stmt : trackingStmts) {
-    statements.push_back(std::move(stmt));
-  }
-  
-  // Wrap in if(true) to create single statement
-  auto trueCond = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(true));
-  return std::make_unique<interpreter::IfStmt>(
-      std::move(trueCond), std::move(statements),
-      std::vector<std::unique_ptr<interpreter::Statement>>{});
+  // This mutation is handled specially at the program level via processStatementsForTracking
+  // The apply method should not be used for this mutation
+  // Just return the statement as-is
+  return stmt->clone();
 }
+
+// Remove duplicate definition - this is already implemented above
 
 std::vector<std::unique_ptr<interpreter::Statement>>
 WaveParticipantTrackingMutation::createTrackingStatements(
@@ -761,6 +693,107 @@ bool WaveParticipantTrackingMutation::hasParticipantBuffer(
   // Check if program already declares a participant tracking buffer
   // For now, return false as we're using variables instead of buffers
   return false;
+}
+
+void WaveParticipantTrackingMutation::processStatementsForTracking(
+    const std::vector<std::unique_ptr<interpreter::Statement>>& input,
+    std::vector<std::unique_ptr<interpreter::Statement>>& output,
+    const ExecutionTrace& trace) const {
+  
+  for (const auto& stmt : input) {
+    // First, add the original statement
+    output.push_back(stmt->clone());
+    
+    // Check if this statement contains a wave operation that we should track
+    const interpreter::WaveActiveOp* waveOp = nullptr;
+    std::string resultVarName;
+    
+    if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt.get())) {
+      waveOp = findWaveOpInExpression(assign->getExpression());
+      resultVarName = assign->getName();
+    } else if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt.get())) {
+      if (varDecl->getInit()) {
+        waveOp = findWaveOpInExpression(varDecl->getInit());
+        resultVarName = varDecl->getName();
+      }
+    }
+    
+    // If we found a wave operation, add tracking after it
+    if (waveOp) {
+      // Find expected participants from trace
+      uint32_t expectedParticipants = trace.threadHierarchy.totalThreads;
+      for (const auto& waveOpRecord : trace.waveOperations) {
+        if (waveOpRecord.opType == waveOp->toString()) {
+          expectedParticipants = waveOpRecord.arrivedParticipants.size();
+          break;
+        }
+      }
+      
+      // Add tracking statements
+      auto trackingStmts = createTrackingStatements(waveOp, resultVarName, expectedParticipants);
+      for (auto& trackStmt : trackingStmts) {
+        output.push_back(std::move(trackStmt));
+      }
+    }
+    
+    // Handle nested statements - process control flow structures recursively
+    else if (auto ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt.get())) {
+      // Process then block
+      std::vector<std::unique_ptr<interpreter::Statement>> processedThen;
+      processStatementsForTracking(ifStmt->getThenBlock(), processedThen, trace);
+      
+      // Process else block
+      std::vector<std::unique_ptr<interpreter::Statement>> processedElse;
+      processStatementsForTracking(ifStmt->getElseBlock(), processedElse, trace);
+      
+      // We already added the statement at the beginning, need to replace it
+      output.pop_back(); // Remove the cloned version we added above
+      output.push_back(std::make_unique<interpreter::IfStmt>(
+        ifStmt->getCondition()->clone(),
+        std::move(processedThen),
+        std::move(processedElse)
+      ));
+    }
+    else if (auto forStmt = dynamic_cast<const interpreter::ForStmt*>(stmt.get())) {
+      // Process body
+      std::vector<std::unique_ptr<interpreter::Statement>> processedBody;
+      processStatementsForTracking(forStmt->getBody(), processedBody, trace);
+      
+      // We already added the statement at the beginning, need to replace it
+      output.pop_back(); // Remove the cloned version
+      output.push_back(std::make_unique<interpreter::ForStmt>(
+        forStmt->getLoopVar(),
+        forStmt->getInit() ? forStmt->getInit()->clone() : nullptr,
+        forStmt->getCondition() ? forStmt->getCondition()->clone() : nullptr,
+        forStmt->getIncrement() ? forStmt->getIncrement()->clone() : nullptr,
+        std::move(processedBody)
+      ));
+    }
+    else if (auto whileStmt = dynamic_cast<const interpreter::WhileStmt*>(stmt.get())) {
+      // Process body
+      std::vector<std::unique_ptr<interpreter::Statement>> processedBody;
+      processStatementsForTracking(whileStmt->getBody(), processedBody, trace);
+      
+      // We already added the statement at the beginning, need to replace it
+      output.pop_back(); // Remove the cloned version
+      output.push_back(std::make_unique<interpreter::WhileStmt>(
+        whileStmt->getCondition()->clone(),
+        std::move(processedBody)
+      ));
+    }
+    else if (auto doWhileStmt = dynamic_cast<const interpreter::DoWhileStmt*>(stmt.get())) {
+      // Process body
+      std::vector<std::unique_ptr<interpreter::Statement>> processedBody;
+      processStatementsForTracking(doWhileStmt->getBody(), processedBody, trace);
+      
+      // Replace the do-while statement with processed version
+      output.pop_back(); // Remove the cloned version
+      output.push_back(std::make_unique<interpreter::DoWhileStmt>(
+        std::move(processedBody),
+        doWhileStmt->getCondition()->clone()
+      ));
+    }
+  }
 }
 
 bool WaveParticipantTrackingMutation::validateSemanticPreservation(
@@ -1101,7 +1134,8 @@ ContextAwareParticipantMutation::apply(
   statements.push_back(stmt->clone());  // Original statement
   statements.push_back(std::move(contextIf));  // Our context-aware addition
   
-  // Wrap in if(true) to return as single statement
+  // For now, we need to wrap in if(true) to return as single statement
+  // TODO: Redesign mutation framework to allow returning multiple statements
   auto trueCond = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(true));
   return std::make_unique<interpreter::IfStmt>(
     std::move(trueCond),
@@ -1657,8 +1691,9 @@ void BugReporter::logBug(const BugReport& report) {
 TraceGuidedFuzzer::TraceGuidedFuzzer() {
   // Initialize mutation strategies
   mutationStrategies.push_back(std::make_unique<WaveParticipantTrackingMutation>());
-  mutationStrategies.push_back(std::make_unique<LanePermutationMutation>());
-  mutationStrategies.push_back(std::make_unique<ContextAwareParticipantMutation>());
+  // Temporarily disabled to test WaveParticipantTracking in isolation
+  // mutationStrategies.push_back(std::make_unique<LanePermutationMutation>());
+  // mutationStrategies.push_back(std::make_unique<ContextAwareParticipantMutation>());
   
   // TODO: Add more semantics-preserving mutations:
   // - AlgebraicIdentityMutation (more complex algebraic identities)
@@ -1996,75 +2031,65 @@ std::unique_ptr<interpreter::Statement> TraceGuidedFuzzer::applyMutationToStatem
   
   // If no direct mutation, check for nested statements
   if (auto ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt)) {
-    // Try to mutate statements in the then block
+    // Apply mutations to all applicable statements in the then block
     std::vector<std::unique_ptr<interpreter::Statement>> mutatedThenStmts;
-    bool foundMutation = false;
+    bool anyMutationInThen = false;
     
     for (const auto& thenStmt : ifStmt->getThenBlock()) {
-      if (!foundMutation) {
-        auto mutated = applyMutationToStatement(thenStmt.get(), strategy, trace, foundMutation);
-        if (foundMutation) {
-          mutatedThenStmts.push_back(std::move(mutated));
-          mutationApplied = true;
-        } else {
-          mutatedThenStmts.push_back(thenStmt->clone());
-        }
+      bool thisMutationApplied = false;
+      auto mutated = applyMutationToStatement(thenStmt.get(), strategy, trace, thisMutationApplied);
+      if (thisMutationApplied) {
+        mutatedThenStmts.push_back(std::move(mutated));
+        anyMutationInThen = true;
+        mutationApplied = true;
       } else {
         mutatedThenStmts.push_back(thenStmt->clone());
       }
     }
     
-    // Try to mutate statements in the else block if we haven't found a mutation yet
+    // Apply mutations to all applicable statements in the else block
     std::vector<std::unique_ptr<interpreter::Statement>> mutatedElseStmts;
-    if (!foundMutation && ifStmt->hasElse()) {
+    bool anyMutationInElse = false;
+    if (ifStmt->hasElse()) {
       for (const auto& elseStmt : ifStmt->getElseBlock()) {
-        if (!foundMutation) {
-          auto mutated = applyMutationToStatement(elseStmt.get(), strategy, trace, foundMutation);
-          if (foundMutation) {
-            mutatedElseStmts.push_back(std::move(mutated));
-            mutationApplied = true;
-          } else {
-            mutatedElseStmts.push_back(elseStmt->clone());
-          }
+        bool thisMutationApplied = false;
+        auto mutated = applyMutationToStatement(elseStmt.get(), strategy, trace, thisMutationApplied);
+        if (thisMutationApplied) {
+          mutatedElseStmts.push_back(std::move(mutated));
+          anyMutationInElse = true;
+          mutationApplied = true;
         } else {
           mutatedElseStmts.push_back(elseStmt->clone());
         }
       }
-    } else if (ifStmt->hasElse()) {
-      // Clone else statements if we already found a mutation
-      for (const auto& elseStmt : ifStmt->getElseBlock()) {
-        mutatedElseStmts.push_back(elseStmt->clone());
-      }
     }
     
-    // If we found a mutation in nested statements, create a new IfStmt
-    if (mutationApplied) {
+    // If we found any mutations in nested statements, create a new IfStmt
+    if (anyMutationInThen || anyMutationInElse) {
       return std::make_unique<interpreter::IfStmt>(
           ifStmt->getCondition()->clone(),
           std::move(mutatedThenStmts),
           std::move(mutatedElseStmts));
     }
   } else if (auto forStmt = dynamic_cast<const interpreter::ForStmt*>(stmt)) {
-    // Try to mutate statements in the for loop body
+    // Apply mutations to all applicable statements in the for loop body
     std::vector<std::unique_ptr<interpreter::Statement>> mutatedBodyStmts;
-    bool foundMutation = false;
+    bool anyMutationInBody = false;
     
     for (const auto& bodyStmt : forStmt->getBody()) {
-      if (!foundMutation) {
-        auto mutated = applyMutationToStatement(bodyStmt.get(), strategy, trace, foundMutation);
-        if (foundMutation) {
-          mutatedBodyStmts.push_back(std::move(mutated));
-          mutationApplied = true;
-        } else {
-          mutatedBodyStmts.push_back(bodyStmt->clone());
-        }
+      bool thisMutationApplied = false;
+      auto mutated = applyMutationToStatement(bodyStmt.get(), strategy, trace, thisMutationApplied);
+      if (thisMutationApplied) {
+        mutatedBodyStmts.push_back(std::move(mutated));
+        anyMutationInBody = true;
+        mutationApplied = true;
       } else {
         mutatedBodyStmts.push_back(bodyStmt->clone());
       }
     }
     
-    // If we found a mutation in the body, create a new ForStmt
-    if (mutationApplied) {
+    // If we found any mutations in the body, create a new ForStmt
+    if (anyMutationInBody) {
       return std::make_unique<interpreter::ForStmt>(
           forStmt->getLoopVar(),
           forStmt->getInit() ? forStmt->getInit()->clone() : nullptr,
@@ -2073,51 +2098,47 @@ std::unique_ptr<interpreter::Statement> TraceGuidedFuzzer::applyMutationToStatem
           std::move(mutatedBodyStmts));
     }
   } else if (auto whileStmt = dynamic_cast<const interpreter::WhileStmt*>(stmt)) {
-    // Try to mutate statements in the while loop body
+    // Apply mutations to all applicable statements in the while loop body
     std::vector<std::unique_ptr<interpreter::Statement>> mutatedBodyStmts;
-    bool foundMutation = false;
+    bool anyMutationInBody = false;
     
     for (const auto& bodyStmt : whileStmt->getBody()) {
-      if (!foundMutation) {
-        auto mutated = applyMutationToStatement(bodyStmt.get(), strategy, trace, foundMutation);
-        if (foundMutation) {
-          mutatedBodyStmts.push_back(std::move(mutated));
-          mutationApplied = true;
-        } else {
-          mutatedBodyStmts.push_back(bodyStmt->clone());
-        }
+      bool thisMutationApplied = false;
+      auto mutated = applyMutationToStatement(bodyStmt.get(), strategy, trace, thisMutationApplied);
+      if (thisMutationApplied) {
+        mutatedBodyStmts.push_back(std::move(mutated));
+        anyMutationInBody = true;
+        mutationApplied = true;
       } else {
         mutatedBodyStmts.push_back(bodyStmt->clone());
       }
     }
     
-    // If we found a mutation in the body, create a new WhileStmt
-    if (mutationApplied) {
+    // If we found any mutations in the body, create a new WhileStmt
+    if (anyMutationInBody) {
       return std::make_unique<interpreter::WhileStmt>(
           whileStmt->getCondition()->clone(),
           std::move(mutatedBodyStmts));
     }
   } else if (auto doWhileStmt = dynamic_cast<const interpreter::DoWhileStmt*>(stmt)) {
-    // Try to mutate statements in the do-while loop body
+    // Apply mutations to all applicable statements in the do-while loop body
     std::vector<std::unique_ptr<interpreter::Statement>> mutatedBodyStmts;
-    bool foundMutation = false;
+    bool anyMutationInBody = false;
     
     for (const auto& bodyStmt : doWhileStmt->getBody()) {
-      if (!foundMutation) {
-        auto mutated = applyMutationToStatement(bodyStmt.get(), strategy, trace, foundMutation);
-        if (foundMutation) {
-          mutatedBodyStmts.push_back(std::move(mutated));
-          mutationApplied = true;
-        } else {
-          mutatedBodyStmts.push_back(bodyStmt->clone());
-        }
+      bool thisMutationApplied = false;
+      auto mutated = applyMutationToStatement(bodyStmt.get(), strategy, trace, thisMutationApplied);
+      if (thisMutationApplied) {
+        mutatedBodyStmts.push_back(std::move(mutated));
+        anyMutationInBody = true;
+        mutationApplied = true;
       } else {
         mutatedBodyStmts.push_back(bodyStmt->clone());
       }
     }
     
-    // If we found a mutation in the body, create a new DoWhileStmt
-    if (mutationApplied) {
+    // If we found any mutations in the body, create a new DoWhileStmt
+    if (anyMutationInBody) {
       return std::make_unique<interpreter::DoWhileStmt>(
           std::move(mutatedBodyStmts),
           doWhileStmt->getCondition()->clone());
@@ -2444,24 +2465,26 @@ std::vector<interpreter::Program> TraceGuidedFuzzer::generateMutants(
             "_participant_check_sum", std::move(tidX), std::move(zero)));
       }
       
-      // Apply mutation only to statements from the current round
+      // Use special processing for WaveParticipantTracking to inject tracking after all wave ops
+      auto participantStrategy = static_cast<const WaveParticipantTrackingMutation*>(strategy);
+      
+      // Process statements: only apply tracking to new statements from current increment
       for (size_t i = 0; i < program.statements.size(); ++i) {
-        const auto& stmt = program.statements[i];
-        bool mutationApplied = false;
-        
         if (statementsToMutate.find(i) != statementsToMutate.end()) {
-          // This statement is from the current increment, try to mutate it
-          auto mutatedStmt = applyMutationToStatement(
-              stmt.get(), strategy, trace, mutationApplied);
+          // This is a new statement from current increment - process it for tracking
+          std::vector<std::unique_ptr<interpreter::Statement>> inputStmts;
+          inputStmts.push_back(program.statements[i]->clone());
           
-          if (mutationApplied) {
-            mutant.statements.push_back(std::move(mutatedStmt));
-          } else {
-            mutant.statements.push_back(stmt->clone());
+          std::vector<std::unique_ptr<interpreter::Statement>> processedStmts;
+          participantStrategy->processStatementsForTracking(inputStmts, processedStmts, trace);
+          
+          // Add all processed statements (original + tracking)
+          for (auto& stmt : processedStmts) {
+            mutant.statements.push_back(std::move(stmt));
           }
         } else {
-          // Clone statements from previous rounds without mutation
-          mutant.statements.push_back(stmt->clone());
+          // This is an old statement - copy it unchanged
+          mutant.statements.push_back(program.statements[i]->clone());
         }
       }
       
