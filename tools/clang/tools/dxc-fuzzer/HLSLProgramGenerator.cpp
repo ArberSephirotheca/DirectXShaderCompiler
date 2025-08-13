@@ -723,13 +723,27 @@ ControlFlowGenerator::generateWaveOperation(ProgramState& state, FuzzedDataProvi
                 provider.ConsumeIntegralInRange<int>(1, 10));
         }
     } else {
-        // Use tid.x or literal
-        if (provider.ConsumeBool()) {
-            // Use DispatchThreadIdExpr for tid.x (component 0)
-            input = std::make_unique<interpreter::DispatchThreadIdExpr>(0);
-        } else {
-            input = std::make_unique<interpreter::LiteralExpr>(
-                provider.ConsumeIntegralInRange<int>(1, 10));
+        // Use lane-based expression or literal
+        uint32_t choice = provider.ConsumeIntegralInRange<uint32_t>(0, 2);
+        switch (choice) {
+            case 0:
+                // Use lane index directly
+                input = std::make_unique<interpreter::LaneIndexExpr>();
+                break;
+            case 1:
+                // Use lane index with some arithmetic
+                input = std::make_unique<interpreter::BinaryOpExpr>(
+                    std::make_unique<interpreter::LaneIndexExpr>(),
+                    std::make_unique<interpreter::LiteralExpr>(
+                        provider.ConsumeIntegralInRange<int>(1, 5)),
+                    interpreter::BinaryOpExpr::Add
+                );
+                break;
+            default:
+                // Use literal
+                input = std::make_unique<interpreter::LiteralExpr>(
+                    provider.ConsumeIntegralInRange<int>(1, 10));
+                break;
         }
     }
     

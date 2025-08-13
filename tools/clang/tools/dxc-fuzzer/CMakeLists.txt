@@ -166,7 +166,7 @@ set_target_properties(fuzz-hlsl-file PROPERTIES
   CXX_STANDARD_REQUIRED ON
 )
 
-# minihlsl-fuzzer supports two modes:
-# 1. Traditional seed corpus mode (default): ./bin/minihlsl-fuzzer seeds -runs=1000
-# 2. Random program generation mode: FUZZ_GENERATE_RANDOM=1 ./bin/minihlsl-fuzzer -runs=1000
+# minihlsl-fuzzer uses the incremental fuzzing pipeline:
+# Usage: ./bin/minihlsl-fuzzer <input_file>
+# The fuzzer will generate random programs and apply trace-guided mutations
 

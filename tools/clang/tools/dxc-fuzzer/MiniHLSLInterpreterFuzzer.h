@@ -319,6 +319,14 @@ public:
   
   std::string getName() const override { return "LanePermutation"; }
   
+  // Program-level mutation API
+  bool requiresProgramLevelMutation() const override { return true; }
+  
+  std::vector<interpreter::Program> applyToProgram(
+    const interpreter::Program& program,
+    const ExecutionTrace& trace,
+    const std::set<size_t>& statementsToMutate) const override;
+  
 private:
   // Permutation strategies
   enum class PermutationType {
@@ -345,6 +353,30 @@ private:
   
   // Check if expression uses built-in thread ID variables
   bool usesThreadIdVariables(const interpreter::Expression* expr) const;
+  
+  // Process statements recursively to apply lane permutations
+  void processStatementsForPermutation(
+      const std::vector<std::unique_ptr<interpreter::Statement>>& input,
+      std::vector<std::unique_ptr<interpreter::Statement>>& output,
+      const ExecutionTrace& trace,
+      const std::set<size_t>& statementsToMutate,
+      size_t& currentStmtIndex,
+      bool& anyMutationApplied) const;
+  
+  // Apply permutation to a single statement if it contains a wave op
+  bool applyPermutationToStatement(
+      const interpreter::Statement* stmt,
+      std::vector<std::unique_ptr<interpreter::Statement>>& output,
+      const ExecutionTrace& trace) const;
+  
+  // Generate unique variable name for permutation
+  std::string generatePermVarName() const;
+  
+  // Replace wave operation in expression tree
+  std::unique_ptr<interpreter::Expression> replaceWaveOpInExpression(
+      const interpreter::Expression* expr,
+      const interpreter::WaveActiveOp* targetWaveOp,
+      std::unique_ptr<interpreter::Expression> replacement) const;
 };
 
 

@@ -13,7 +13,15 @@
 #include <cstdlib>
 #include <cctype>
 #include <sys/stat.h>
-#include <dirent.h>
+
+#if defined(_WIN32)
+  #define NOMINMAX
+  #include <windows.h>
+  #include <filesystem>
+  namespace fs = std::filesystem;
+#else
+  #include <dirent.h>
+#endif
 
 namespace minihlsl {
 namespace fuzzer {
@@ -170,153 +178,10 @@ std::unique_ptr<interpreter::Statement> LanePermutationMutation::apply(
     const interpreter::Statement* stmt, 
     const ExecutionTrace& trace) const {
   
-  // Only apply to assignments containing associative wave operations
-  auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt);
-  if (!assign) {
-    return stmt->clone();
-  }
-  
-  auto* waveOp = dynamic_cast<const interpreter::WaveActiveOp*>(assign->getExpression());
-  if (!waveOp) {
-    return stmt->clone();
-  }
-  
-  // Get the operation type and verify it's associative
-  auto opType = waveOp->getOpType();
-  bool isAssociative = (opType == interpreter::WaveActiveOp::Sum ||
-                        opType == interpreter::WaveActiveOp::Product ||
-                        opType == interpreter::WaveActiveOp::And ||
-                        opType == interpreter::WaveActiveOp::Or ||
-                        opType == interpreter::WaveActiveOp::Xor);
-  
-  if (!isAssociative) {
-    return stmt->clone();
-  }
-  
-  // Get the input expression from the wave operation
-  const auto* inputExpr = waveOp->getInput();
-  if (!inputExpr) {
-    return stmt->clone();
-  }
-  
-  // Find the actual active lane count from the trace
-  // We need to find the specific dynamic block where this wave operation executes
-  uint32_t activeLaneCount = 4; // default fallback
-  uint32_t blockIdForWaveOp = 0;
-  std::set<interpreter::LaneId> participatingLanes; // Actual lane IDs that participate
-  
-  // Debug: print what we're looking for
-  FUZZER_DEBUG_LOG("[LanePermutation] Looking for wave op: " << waveOp->toString() 
-            << " ptr=" << static_cast<const void*>(waveOp) << "\n");
-  
-  // First, try to find the exact wave operation in the trace
-  for (const auto& waveOpRecord : trace.waveOperations) {
-    FUZZER_DEBUG_LOG("[LanePermutation] Checking trace wave op: " << waveOpRecord.opType 
-              << " enumType=" << waveOpRecord.waveOpEnumType
-              << " participants=" << waveOpRecord.arrivedParticipants.size() << "\n");
-    
-    // Match by enum type for precise matching
-    if (waveOpRecord.waveOpEnumType >= 0 && 
-        waveOpRecord.waveOpEnumType == static_cast<int>(waveOp->getOpType())) {
-      // Found a matching wave operation type by enum
-      activeLaneCount = waveOpRecord.arrivedParticipants.size();
-      blockIdForWaveOp = waveOpRecord.blockId;
-      participatingLanes = waveOpRecord.arrivedParticipants;
-      FUZZER_DEBUG_LOG("[LanePermutation] Found match by enum! Active lanes: " << activeLaneCount << "\n");
-      FUZZER_DEBUG_LOG("[LanePermutation] Participants: ");
-      for (auto laneId : waveOpRecord.arrivedParticipants) {
-        FUZZER_DEBUG_LOG(laneId << " ");
-      }
-      FUZZER_DEBUG_LOG("\n");
-      break;
-    }
-    // Fallback to string matching if enum not available
-    else if (waveOpRecord.opType.find(waveOp->toString()) != std::string::npos) {
-      // Found a matching wave operation type
-      activeLaneCount = waveOpRecord.arrivedParticipants.size();
-      blockIdForWaveOp = waveOpRecord.blockId;
-      participatingLanes = waveOpRecord.arrivedParticipants;
-      FUZZER_DEBUG_LOG("[LanePermutation] Found match by string! Active lanes: " << activeLaneCount << "\n");
-      FUZZER_DEBUG_LOG("[LanePermutation] Participants: ");
-      for (auto laneId : waveOpRecord.arrivedParticipants) {
-        FUZZER_DEBUG_LOG(laneId << " ");
-      }
-      FUZZER_DEBUG_LOG("\n");
-      break;
-    }
-  }
-  
-  // If we found the block, get more detailed participation info
-  if (blockIdForWaveOp > 0 && trace.blocks.count(blockIdForWaveOp)) {
-    const auto& block = trace.blocks.at(blockIdForWaveOp);
-    // Check wave participation in this specific block
-    for (const auto& [waveId, participation] : block.waveParticipation) {
-      if (!participation.participatingLanes.empty()) {
-        // This gives us the lanes that actually participated in this block
-        activeLaneCount = participation.participatingLanes.size();
-        if (participatingLanes.empty()) {
-          participatingLanes = participation.participatingLanes;
-        }
-        break;
-      }
-    }
-  }
-  
-  // Ensure we don't create invalid permutations
-  if (activeLaneCount == 0) {
-    activeLaneCount = 4; // Default fallback
-  }
-  
-  // If we didn't find specific participating lanes, use default consecutive lanes
-  if (participatingLanes.empty()) {
-    for (uint32_t i = 0; i < activeLaneCount; ++i) {
-      participatingLanes.insert(i);
-    }
-  }
-  
-  // Choose a random permutation type
-  static std::mt19937 rng(std::random_device{}());
-  std::uniform_int_distribution<int> dist(0, 2);
-  PermutationType permType = static_cast<PermutationType>(dist(rng));
-  
-  // Create compound statement
-  std::vector<std::unique_ptr<interpreter::Statement>> statements;
-  
-  // 1. Create permuted lane index
-  auto laneExpr = std::make_unique<interpreter::LaneIndexExpr>();
-  auto permutedLaneExpr = createPermutationExpr(permType, std::move(laneExpr), 
-                                                 activeLaneCount, participatingLanes);
-  statements.push_back(std::make_unique<interpreter::VarDeclStmt>(
-      "_perm_lane", interpreter::HLSLType::Uint, std::move(permutedLaneExpr)));
-  
-  // 2. Clone the input expression and create the WaveReadLaneAt
-  auto clonedInput = inputExpr->clone();
-  auto permLaneVar = std::make_unique<interpreter::VariableExpr>("_perm_lane");
-  auto readLaneAt = std::make_unique<interpreter::WaveReadLaneAt>(
-      std::move(clonedInput), std::move(permLaneVar));
-  
-  // Create a unique variable name for the permuted value
-  static int permVarCounter = 0;
-  std::string permVarName = "_perm_val_" + std::to_string(permVarCounter++);
-  
-  // Get the type from the input expression (WaveReadLaneAt returns the same type as its input)
-  interpreter::HLSLType valueType = inputExpr->getType();
-  
-  statements.push_back(std::make_unique<interpreter::VarDeclStmt>(
-      permVarName, valueType, std::move(readLaneAt)));
-  
-  // 3. Create the wave operation with the permuted input
-  auto permutedInput = std::make_unique<interpreter::VariableExpr>(permVarName);
-  auto newWaveOp = std::make_unique<interpreter::WaveActiveOp>(std::move(permutedInput), opType);
-  auto newAssign = std::make_unique<interpreter::AssignStmt>(
-      assign->getName(), std::move(newWaveOp));
-  statements.push_back(std::move(newAssign));
-  
-  // Wrap in if(true) block to create single statement
-  auto trueCond = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(true));
-  return std::make_unique<interpreter::IfStmt>(
-      std::move(trueCond), std::move(statements), 
-      std::vector<std::unique_ptr<interpreter::Statement>>{});
+  // This mutation requires program-level application to handle nested structures
+  // This method should not be called when requiresProgramLevelMutation() returns true
+  assert(false && "LanePermutation requires program-level mutation");
+  return stmt->clone();
 }
 
 std::unique_ptr<interpreter::Expression> LanePermutationMutation::createPermutationExpr(
@@ -605,6 +470,248 @@ bool LanePermutationMutation::validateSemanticPreservation(
   return true;
 }
 
+// Program-level mutation implementation
+std::vector<interpreter::Program> LanePermutationMutation::applyToProgram(
+    const interpreter::Program& program,
+    const ExecutionTrace& trace,
+    const std::set<size_t>& statementsToMutate) const {
+  
+  std::vector<interpreter::Program> mutants;
+  
+  // Create a base mutant
+  interpreter::Program mutant;
+  mutant.numThreadsX = program.numThreadsX;
+  mutant.numThreadsY = program.numThreadsY;
+  mutant.numThreadsZ = program.numThreadsZ;
+  mutant.entryInputs = program.entryInputs;
+  mutant.globalBuffers = program.globalBuffers;
+  mutant.waveSize = program.waveSize;
+  
+  // Process all statements recursively
+  size_t currentStmtIndex = 0;
+  bool anyMutationApplied = false;
+  processStatementsForPermutation(program.statements, mutant.statements, 
+                                  trace, statementsToMutate, 
+                                  currentStmtIndex, anyMutationApplied);
+  
+  if (anyMutationApplied) {
+    mutants.push_back(std::move(mutant));
+  }
+  
+  return mutants;
+}
+
+void LanePermutationMutation::processStatementsForPermutation(
+    const std::vector<std::unique_ptr<interpreter::Statement>>& input,
+    std::vector<std::unique_ptr<interpreter::Statement>>& output,
+    const ExecutionTrace& trace,
+    const std::set<size_t>& statementsToMutate,
+    size_t& currentStmtIndex,
+    bool& anyMutationApplied) const {
+  
+  for (const auto& stmt : input) {
+    // Handle control flow structures recursively
+    if (auto ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt.get())) {
+      // Increment statement index for the if statement itself
+      currentStmtIndex++;
+      
+      // Process then block
+      std::vector<std::unique_ptr<interpreter::Statement>> processedThen;
+      processStatementsForPermutation(ifStmt->getThenBlock(), processedThen, 
+                                      trace, statementsToMutate, 
+                                      currentStmtIndex, anyMutationApplied);
+      
+      // Process else block
+      std::vector<std::unique_ptr<interpreter::Statement>> processedElse;
+      processStatementsForPermutation(ifStmt->getElseBlock(), processedElse, 
+                                      trace, statementsToMutate, 
+                                      currentStmtIndex, anyMutationApplied);
+      
+      // Create new if statement with processed blocks
+      output.push_back(std::make_unique<interpreter::IfStmt>(
+          ifStmt->getCondition()->clone(),
+          std::move(processedThen),
+          std::move(processedElse)));
+    } else if (auto forStmt = dynamic_cast<const interpreter::ForStmt*>(stmt.get())) {
+      // Increment statement index for the for statement itself
+      currentStmtIndex++;
+      
+      // Process body
+      std::vector<std::unique_ptr<interpreter::Statement>> processedBody;
+      processStatementsForPermutation(forStmt->getBody(), processedBody, 
+                                      trace, statementsToMutate, 
+                                      currentStmtIndex, anyMutationApplied);
+      
+      // Create new for statement with processed body
+      output.push_back(std::make_unique<interpreter::ForStmt>(
+          forStmt->getLoopVar(),
+          forStmt->getInit() ? forStmt->getInit()->clone() : nullptr,
+          forStmt->getCondition() ? forStmt->getCondition()->clone() : nullptr,
+          forStmt->getIncrement() ? forStmt->getIncrement()->clone() : nullptr,
+          std::move(processedBody)));
+    } else if (auto whileStmt = dynamic_cast<const interpreter::WhileStmt*>(stmt.get())) {
+      // Increment statement index for the while statement itself
+      currentStmtIndex++;
+      
+      // Process body
+      std::vector<std::unique_ptr<interpreter::Statement>> processedBody;
+      processStatementsForPermutation(whileStmt->getBody(), processedBody, 
+                                      trace, statementsToMutate, 
+                                      currentStmtIndex, anyMutationApplied);
+      
+      // Create new while statement with processed body
+      output.push_back(std::make_unique<interpreter::WhileStmt>(
+          whileStmt->getCondition()->clone(),
+          std::move(processedBody)));
+    } else if (auto doWhileStmt = dynamic_cast<const interpreter::DoWhileStmt*>(stmt.get())) {
+      // Increment statement index for the do-while statement itself
+      currentStmtIndex++;
+      
+      // Process body
+      std::vector<std::unique_ptr<interpreter::Statement>> processedBody;
+      processStatementsForPermutation(doWhileStmt->getBody(), processedBody, 
+                                      trace, statementsToMutate, 
+                                      currentStmtIndex, anyMutationApplied);
+      
+      // Create new do-while statement with processed body
+      output.push_back(std::make_unique<interpreter::DoWhileStmt>(
+          std::move(processedBody),
+          doWhileStmt->getCondition()->clone()));
+    } else {
+      // Check if this statement index should be mutated
+      bool shouldMutate = statementsToMutate.find(currentStmtIndex) != statementsToMutate.end();
+      
+      if (shouldMutate && applyPermutationToStatement(stmt.get(), output, trace)) {
+        anyMutationApplied = true;
+      } else {
+        // For all other statement types, just clone
+        output.push_back(stmt->clone());
+      }
+      
+      currentStmtIndex++;
+    }
+  }
+}
+
+bool LanePermutationMutation::applyPermutationToStatement(
+    const interpreter::Statement* stmt,
+    std::vector<std::unique_ptr<interpreter::Statement>>& output,
+    const ExecutionTrace& trace) const {
+  
+  // Check if this is an assignment with a wave operation
+  auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt);
+  if (!assign) {
+    return false;
+  }
+  
+  // Use getWaveOp to find nested wave operations
+  const interpreter::WaveActiveOp* waveOp = getWaveOp(stmt);
+  if (!waveOp) {
+    return false;
+  }
+  
+  // Get the operation type and verify it's associative
+  auto opType = waveOp->getOpType();
+  bool isAssociative = (opType == interpreter::WaveActiveOp::Sum ||
+                        opType == interpreter::WaveActiveOp::Product ||
+                        opType == interpreter::WaveActiveOp::And ||
+                        opType == interpreter::WaveActiveOp::Or ||
+                        opType == interpreter::WaveActiveOp::Xor);
+  
+  if (!isAssociative) {
+    return false;
+  }
+  
+  // Get the input expression from the wave operation
+  const auto* inputExpr = waveOp->getInput();
+  if (!inputExpr) {
+    return false;
+  }
+  
+  // Find participant information from trace
+  uint32_t activeLaneCount = 4; // default
+  std::set<interpreter::LaneId> participatingLanes;
+  
+  // Look for this wave operation in the trace
+  for (const auto& waveOpRecord : trace.waveOperations) {
+    if (waveOpRecord.waveOpEnumType == static_cast<int>(opType)) {
+      activeLaneCount = waveOpRecord.arrivedParticipants.size();
+      participatingLanes = waveOpRecord.arrivedParticipants;
+      break;
+    }
+  }
+  
+  // Choose a permutation type (for now, just rotate)
+  PermutationType permType = PermutationType::Rotate;
+  
+  FUZZER_DEBUG_LOG("[LanePermutation] Active lanes: " << activeLaneCount 
+                   << ", participants: " << participatingLanes.size() << "\n");
+  
+  // Create the permutation expression
+  auto laneExpr = std::make_unique<interpreter::LaneIndexExpr>();
+  auto permutedExpr = createPermutationExpr(permType, std::move(laneExpr), 
+                                             activeLaneCount, participatingLanes);
+  
+  FUZZER_DEBUG_LOG("[LanePermutation] Permuted expr: " << permutedExpr->toString() << "\n");
+  
+  // Generate variable name
+  std::string varName = generatePermVarName();
+  
+  // Create variable declaration: uint _perm_val_N = permutedExpr;
+  output.push_back(std::make_unique<interpreter::VarDeclStmt>(
+      varName, interpreter::HLSLType::Uint, std::move(permutedExpr)));
+  
+  // Create WaveReadLaneAt to read the input from the permuted lane
+  auto permLaneVar = std::make_unique<interpreter::VariableExpr>(varName);
+  auto readLaneAt = std::make_unique<interpreter::WaveReadLaneAt>(
+      inputExpr->clone(), std::move(permLaneVar));
+  
+  FUZZER_DEBUG_LOG("[LanePermutation] Original input: " << inputExpr->toString() 
+                   << ", using WaveReadLaneAt with permuted lane\n");
+  
+  // Create the new wave operation with the WaveReadLaneAt input
+  auto newWaveOp = std::make_unique<interpreter::WaveActiveOp>(std::move(readLaneAt), opType);
+  
+  // Replace the wave operation in the original expression structure
+  auto newExpr = replaceWaveOpInExpression(assign->getExpression(), waveOp, std::move(newWaveOp));
+  
+  // Create the assignment with the modified expression
+  output.push_back(std::make_unique<interpreter::AssignStmt>(
+      assign->getName(), std::move(newExpr)));
+  
+  return true;
+}
+
+std::unique_ptr<interpreter::Expression> LanePermutationMutation::replaceWaveOpInExpression(
+    const interpreter::Expression* expr,
+    const interpreter::WaveActiveOp* targetWaveOp,
+    std::unique_ptr<interpreter::Expression> replacement) const {
+  
+  // If this is the target wave operation, return the replacement
+  if (expr == targetWaveOp) {
+    return std::move(replacement);
+  }
+  
+  // Handle different expression types
+  if (auto* binOp = dynamic_cast<const interpreter::BinaryOpExpr*>(expr)) {
+    // Recursively replace in left and right operands
+    auto newLeft = replaceWaveOpInExpression(binOp->getLeft(), targetWaveOp, 
+                                              (binOp->getLeft() == targetWaveOp) ? std::move(replacement) : replacement->clone());
+    auto newRight = replaceWaveOpInExpression(binOp->getRight(), targetWaveOp, std::move(replacement));
+    
+    return std::make_unique<interpreter::BinaryOpExpr>(
+        std::move(newLeft), std::move(newRight), binOp->getOp());
+  }
+  
+  // For other expression types, just clone if not the target
+  return expr->clone();
+}
+
+std::string LanePermutationMutation::generatePermVarName() const {
+  static int counter = 0;
+  return "_perm_val_" + std::to_string(counter++);
+}
+
 
 // ===== WaveParticipantTrackingMutation Implementation =====
 
@@ -737,7 +844,25 @@ void WaveParticipantTrackingMutation::processStatementsForTracking(
     const std::map<size_t, size_t>& programIndexToTraceIndex) const {
   
   for (const auto& stmt : input) {
-    // First, add the original statement
+    // Handle if statements specially - process recursively without cloning first
+    if (auto ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt.get())) {
+      // Process then block
+      std::vector<std::unique_ptr<interpreter::Statement>> processedThen;
+      processStatementsForTracking(ifStmt->getThenBlock(), processedThen, trace, currentWaveOpIndex, programIndexToTraceIndex);
+      
+      // Process else block
+      std::vector<std::unique_ptr<interpreter::Statement>> processedElse;
+      processStatementsForTracking(ifStmt->getElseBlock(), processedElse, trace, currentWaveOpIndex, programIndexToTraceIndex);
+      
+      // Create new if statement with processed blocks
+      output.push_back(std::make_unique<interpreter::IfStmt>(
+        ifStmt->getCondition()->clone(),
+        std::move(processedThen),
+        std::move(processedElse)));
+      continue;
+    }
+    
+    // For non-if statements, add the original statement first
     output.push_back(stmt->clone());
     
     // Check if this statement contains a wave operation that we should track
@@ -784,24 +909,8 @@ void WaveParticipantTrackingMutation::processStatementsForTracking(
     }
     
     // Handle nested statements - process control flow structures recursively
-    else if (auto ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt.get())) {
-      // Process then block
-      std::vector<std::unique_ptr<interpreter::Statement>> processedThen;
-      processStatementsForTracking(ifStmt->getThenBlock(), processedThen, trace, currentWaveOpIndex, programIndexToTraceIndex);
-      
-      // Process else block
-      std::vector<std::unique_ptr<interpreter::Statement>> processedElse;
-      processStatementsForTracking(ifStmt->getElseBlock(), processedElse, trace, currentWaveOpIndex, programIndexToTraceIndex);
-      
-      // We already added the statement at the beginning, need to replace it
-      output.pop_back(); // Remove the cloned version we added above
-      output.push_back(std::make_unique<interpreter::IfStmt>(
-        ifStmt->getCondition()->clone(),
-        std::move(processedThen),
-        std::move(processedElse)
-      ));
-    }
-    else if (auto forStmt = dynamic_cast<const interpreter::ForStmt*>(stmt.get())) {
+    // Note: if statements are handled at the beginning of the loop
+    if (auto forStmt = dynamic_cast<const interpreter::ForStmt*>(stmt.get())) {
       // Process body
       std::vector<std::unique_ptr<interpreter::Statement>> processedBody;
       processStatementsForTracking(forStmt->getBody(), processedBody, trace, currentWaveOpIndex, programIndexToTraceIndex);
@@ -1737,9 +1846,9 @@ void BugReporter::logBug(const BugReport& report) {
 
 TraceGuidedFuzzer::TraceGuidedFuzzer() {
   // Initialize mutation strategies
-  mutationStrategies.push_back(std::make_unique<WaveParticipantTrackingMutation>());
-  // Temporarily disabled to test WaveParticipantTracking in isolation
-  // mutationStrategies.push_back(std::make_unique<LanePermutationMutation>());
+  // Temporarily disable WaveParticipantTracking to test LanePermutation
+  // mutationStrategies.push_back(std::make_unique<WaveParticipantTrackingMutation>());
+  mutationStrategies.push_back(std::make_unique<LanePermutationMutation>());
   // mutationStrategies.push_back(std::make_unique<ContextAwareParticipantMutation>());
   
   // TODO: Add more semantics-preserving mutations:
@@ -1849,6 +1958,11 @@ interpreter::Program TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& 
     
     FUZZER_DEBUG_LOG("\n=== Testing Mutant with " << mutationResult.getMutationChainString() 
                     << " (new statements only) ===\n");
+    
+    // Debug: Print the actual mutated program
+    FUZZER_DEBUG_LOG("\n=== Actual Mutated Program ===\n");
+    FUZZER_DEBUG_LOG(serializeProgramToString(finalMutant));
+    FUZZER_DEBUG_LOG("\n");
     
     // Test the mutant
     try {
@@ -2378,6 +2492,11 @@ std::vector<interpreter::Program> TraceGuidedFuzzer::applyStatementLevelMutation
         program.statements[i].get(), strategy, trace, mutationApplied);
     
     if (mutationApplied) {
+      // Debug: Show what mutation was applied
+      FUZZER_DEBUG_LOG("Applied " << strategy->getName() << " to statement " << i << "\n");
+      FUZZER_DEBUG_LOG("Original statement: " << program.statements[i]->toString() << "\n");
+      FUZZER_DEBUG_LOG("Mutated statement: " << mutatedStmt->toString() << "\n");
+      
       // Create a new program with the mutated statement
       interpreter::Program mutant;
       mutant.numThreadsX = program.numThreadsX;
@@ -2572,7 +2691,7 @@ TraceGuidedFuzzer::MutationResult TraceGuidedFuzzer::applyAllMutations(
 } // namespace fuzzer
 } // namespace minihlsl
 
-// Simple main function for testing the incremental pipeline
+// Main function - always uses the incremental fuzzing pipeline
 int main(int argc, char** argv) {
   if (argc < 2) {
     std::cerr << "Usage: " << argv[0] << " <input_file>\n";
@@ -2594,12 +2713,13 @@ int main(int argc, char** argv) {
     return 1;
   }
   
-  // Run the incremental fuzzing pipeline
+  // Configure the incremental fuzzing pipeline
   minihlsl::fuzzer::IncrementalFuzzingConfig config;
   config.maxIncrements = 5;
   config.mutantsPerIncrement = 10;
   config.enableLogging = true;
   
+  // Always run the incremental fuzzing pipeline
   minihlsl::fuzzer::IncrementalFuzzingPipeline pipeline(config);
   auto result = pipeline.run(data.data(), data.size());
   
