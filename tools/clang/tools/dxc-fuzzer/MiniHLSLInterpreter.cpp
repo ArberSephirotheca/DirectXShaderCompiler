@@ -988,7 +988,13 @@ Result<Value, ExecutionError>
 AssignExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
                            ThreadgroupContext &tg) const {
   // Evaluate the value expression
+#ifdef _MSC_VER
+  auto _result = value_->evaluate_result(lane, wave, tg);
+  if (_result.is_err()) return Err<Value, ExecutionError>(_result.unwrap_err());
+  auto val = _result.unwrap();
+#else
   auto val = TRY_RESULT(value_->evaluate_result(lane, wave, tg), Value, ExecutionError);
+#endif
   
   INTERPRETER_DEBUG_LOG("DEBUG: AssignExpr - Lane " << lane.laneId 
                         << " assigning " << val.toString() 
@@ -1046,10 +1052,22 @@ BinaryOpExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
                               ThreadgroupContext &tg) const {
 
   // Evaluate left operand
+#ifdef _MSC_VER
+  auto _result = left_->evaluate_result(lane, wave, tg);
+  if (_result.is_err()) return Err<Value, ExecutionError>(_result.unwrap_err());
+  auto leftVal = _result.unwrap();
+#else
   auto leftVal = TRY_RESULT(left_->evaluate_result(lane, wave, tg), Value, ExecutionError);
+#endif
 
   // Evaluate right operand
+#ifdef _MSC_VER
+  auto _result2 = right_->evaluate_result(lane, wave, tg);
+  if (_result2.is_err()) return Err<Value, ExecutionError>(_result2.unwrap_err());
+  auto rightVal = _result2.unwrap();
+#else
   auto rightVal = TRY_RESULT(right_->evaluate_result(lane, wave, tg), Value, ExecutionError);
+#endif
 
   // Debug output for binary operations
   std::string opStr;
@@ -1139,7 +1157,13 @@ Result<Value, ExecutionError>
 UnaryOpExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
                              ThreadgroupContext &tg) const {
 
+#ifdef _MSC_VER
+  auto _result = expr_->evaluate_result(lane, wave, tg);
+  if (_result.is_err()) return Err<Value, ExecutionError>(_result.unwrap_err());
+  auto val = _result.unwrap();
+#else
   auto val = TRY_RESULT(expr_->evaluate_result(lane, wave, tg), Value, ExecutionError);
+#endif
 
   switch (op_) {
   case Neg:
@@ -1240,7 +1264,13 @@ ThreadIndexExpr::evaluate_result(LaneContext &lane, WaveContext &,
 Result<Value, ExecutionError>
 ConditionalExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
                                  ThreadgroupContext &tg) const {
+#ifdef _MSC_VER
+  auto _result = condition_->evaluate_result(lane, wave, tg);
+  if (_result.is_err()) return Err<Value, ExecutionError>(_result.unwrap_err());
+  auto condResult = _result.unwrap();
+#else
   auto condResult = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), Value, ExecutionError);
+#endif
 
   if (condResult.asInt()) {
     return trueExpr_->evaluate_result(lane, wave, tg);
@@ -1278,7 +1308,13 @@ WaveReadLaneAt::evaluate_result(LaneContext &lane, WaveContext &wave,
     return Err<Value, ExecutionError>(ExecutionError::InvalidState);
   
   // Evaluate the lane index
+#ifdef _MSC_VER
+  auto _result = laneIndex_->evaluate_result(lane, wave, tg);
+  if (_result.is_err()) return Err<Value, ExecutionError>(_result.unwrap_err());
+  auto laneIndexResult = _result.unwrap();
+#else
   auto laneIndexResult = TRY_RESULT(laneIndex_->evaluate_result(lane, wave, tg), Value, ExecutionError);
+#endif
   
   LaneId targetLane = laneIndexResult.asInt();
   
@@ -1305,8 +1341,14 @@ SharedReadExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
 Result<Value, ExecutionError>
 BufferAccessExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
                                   ThreadgroupContext &tg) const {
+#ifdef _MSC_VER
+  auto _result = indexExpr_->evaluate_result(lane, wave, tg);
+  if (_result.is_err()) return Err<Value, ExecutionError>(_result.unwrap_err());
+  Value indexValue = _result.unwrap();
+#else
   Value indexValue = TRY_RESULT(indexExpr_->evaluate_result(lane, wave, tg),
                                 Value, ExecutionError);
+#endif
   uint32_t index = indexValue.asInt();
 
   // Look up the global buffer
@@ -1322,8 +1364,14 @@ Result<Value, ExecutionError>
 ArrayAccessExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
                                 ThreadgroupContext &tg) const {
   // Evaluate index
+#ifdef _MSC_VER
+  auto _result = indexExpr_->evaluate_result(lane, wave, tg);
+  if (_result.is_err()) return Err<Value, ExecutionError>(_result.unwrap_err());
+  Value indexValue = _result.unwrap();
+#else
   Value indexValue = TRY_RESULT(indexExpr_->evaluate_result(lane, wave, tg),
                                 Value, ExecutionError);
+#endif
   uint32_t index = indexValue.asInt();
   
   // Check if this is a global buffer first
@@ -1404,8 +1452,14 @@ WaveActiveOp::evaluate_result(LaneContext &lane, WaveContext &wave,
       auto &syncPoint = syncPointIt->second;
       if (syncPoint.getPhase() == SyncPointState::Executed) {
         // Use state machine method to retrieve result
+#ifdef _MSC_VER
+        auto _result = syncPoint.retrieveResult(lane.laneId);
+        if (_result.is_err()) return Err<Value, ExecutionError>(_result.unwrap_err());
+        Value result = _result.unwrap();
+#else
         Value result = TRY_RESULT(syncPoint.retrieveResult(lane.laneId), Value,
                                   ExecutionError);
+#endif
         INTERPRETER_DEBUG_LOG("DEBUG: WAVE_OP: Lane " << lane.laneId
                   << " retrieving stored wave result: " << result.toString()
                   << " (phase: " << syncPointStateToString(syncPoint.getPhase())
@@ -1432,8 +1486,14 @@ WaveActiveOp::evaluate_result(LaneContext &lane, WaveContext &wave,
     auto &syncPoint = syncPointIt->second;
     if (syncPoint.getPhase() == SyncPointState::Executed) {
       // Use state machine method to retrieve result
+#ifdef _MSC_VER
+      auto _result = syncPoint.retrieveResult(lane.laneId);
+      if (_result.is_err()) return Err<Value, ExecutionError>(_result.unwrap_err());
+      Value result = _result.unwrap();
+#else
       Value result = TRY_RESULT(syncPoint.retrieveResult(lane.laneId), Value,
                                 ExecutionError);
+#endif
       INTERPRETER_DEBUG_LOG(
           "Lane " << lane.laneId
                   << " retrieving stored wave result: " << result.toString()
@@ -1630,8 +1690,14 @@ VarDeclStmt::execute_result(LaneContext &lane, WaveContext &wave,
   // Pure Result-based implementation - no exceptions!
   Value initVal;
   if (init_) {
+#ifdef _MSC_VER
+    auto _result = init_->evaluate_result(lane, wave, tg);
+    if (_result.is_err()) return Err<Unit, ExecutionError>(_result.unwrap_err());
+    initVal = _result.unwrap();
+#else
     initVal = TRY_RESULT(init_->evaluate_result(lane, wave, tg), Unit,
                          ExecutionError);
+#endif
   } else {
     initVal = Value(0);
   }
@@ -1666,8 +1732,14 @@ AssignStmt::execute_result(LaneContext &lane, WaveContext &wave,
     return Ok<Unit, ExecutionError>(Unit{});
 
   // Pure Result-based implementation - no exceptions!
+#ifdef _MSC_VER
+  auto _result = expr_->evaluate_result(lane, wave, tg);
+  if (_result.is_err()) return Err<Unit, ExecutionError>(_result.unwrap_err());
+  Value val = _result.unwrap();
+#else
   Value val =
       TRY_RESULT(expr_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+#endif
 
   INTERPRETER_DEBUG_LOG("DEBUG: AssignStmt - Lane " << lane.laneId << " assigned value "
             << val.toString() << " to variable '" << name_ << "'");
@@ -1693,11 +1765,23 @@ ArrayAssignStmt::execute_result(LaneContext &lane, WaveContext &wave,
     return Ok<Unit, ExecutionError>(Unit{});
   
   // Evaluate index
+#ifdef _MSC_VER
+  auto _result = indexExpr_->evaluate_result(lane, wave, tg);
+  if (_result.is_err()) return Err<Unit, ExecutionError>(_result.unwrap_err());
+  Value indexValue = _result.unwrap();
+#else
   Value indexValue = TRY_RESULT(indexExpr_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+#endif
   uint32_t index = indexValue.asInt();
   
   // Evaluate value to assign
+#ifdef _MSC_VER
+  auto _result2 = valueExpr_->evaluate_result(lane, wave, tg);
+  if (_result2.is_err()) return Err<Unit, ExecutionError>(_result2.unwrap_err());
+  Value val = _result2.unwrap();
+#else
   Value val = TRY_RESULT(valueExpr_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+#endif
   
   // Check if this is a global buffer
   if (tg.globalBuffers.count(arrayName_)) {
@@ -1834,9 +1918,15 @@ Result<Unit, ExecutionError> IfStmt::execute_result(LaneContext &lane,
   switch (ourEntry.phase) {
   case LaneContext::ControlFlowPhase::EvaluatingCondition: {
     // Evaluate condition and setup blocks using Result-based helper method
+#ifdef _MSC_VER
+    auto _result = evaluateConditionAndSetup_result(lane, wave, tg, ourStackIndex,
+                                                parentBlockId, hasElse);
+    if (_result.is_err()) return Err<Unit, ExecutionError>(_result.unwrap_err());
+#else
     TRY_RESULT(evaluateConditionAndSetup_result(lane, wave, tg, ourStackIndex,
                                                 parentBlockId, hasElse),
                Unit, ExecutionError);
+#endif
 
     // Set state to WaitingForResume to prevent currentStatement increment
     setThreadStateIfUnprotected(lane);
@@ -1849,12 +1939,22 @@ Result<Unit, ExecutionError> IfStmt::execute_result(LaneContext &lane,
     // Check which branch to execute based on saved condition result
     if (ourEntry.inThenBranch) {
       // Execute then branch using Result-based helper method
+#ifdef _MSC_VER
+      auto _result = executeThenBranch_result(lane, wave, tg, ourStackIndex);
+      if (_result.is_err()) return Err<Unit, ExecutionError>(_result.unwrap_err());
+#else
       TRY_RESULT(executeThenBranch_result(lane, wave, tg, ourStackIndex), Unit,
                  ExecutionError);
+#endif
     } else {
       // Execute else branch using Result-based helper method
+#ifdef _MSC_VER
+      auto _result = executeElseBranch_result(lane, wave, tg, ourStackIndex);
+      if (_result.is_err()) return Err<Unit, ExecutionError>(_result.unwrap_err());
+#else
       TRY_RESULT(executeElseBranch_result(lane, wave, tg, ourStackIndex), Unit,
                  ExecutionError);
+#endif
     }
 
     // Set state to WaitingForResume to prevent currentStatement increment
@@ -1988,8 +2088,14 @@ Result<Unit, ExecutionError> IfStmt::evaluateConditionAndSetup_result(
               << " evaluating condition for first time (Result-based)");
 
     // Evaluate condition using Result-based evaluation
+#ifdef _MSC_VER
+    auto _result = condition_->evaluate_result(lane, wave, tg);
+    if (_result.is_err()) return Err<Unit, ExecutionError>(_result.unwrap_err());
+    Value condVal = _result.unwrap();
+#else
     Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg),
                                Unit, ExecutionError);
+#endif
     bool conditionResult = condVal.asBool();
 
     lane.executionStack[ourStackIndex].conditionResult = conditionResult;
@@ -2189,8 +2295,14 @@ Result<Unit, ExecutionError> ForStmt::executeInit(LaneContext &lane,
             << " executing init (Result-based)");
 
   // Initialize loop variable using Result-based evaluation
+  #ifdef _MSC_VER
+    auto _result = init_->evaluate_result(lane, wave, tg);
+    if (_result.is_err()) return Err<Unit, ExecutionError>(_result.unwrap_err());
+    Value initVal = _result.unwrap();
+  #else
   Value initVal =
       TRY_RESULT(init_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+  #endif
   lane.variables[loopVar_] = initVal;
 
   return Ok<Unit, ExecutionError>(Unit{});
@@ -2203,8 +2315,14 @@ ForStmt::evaluateCondition(LaneContext &lane, WaveContext &wave,
             << " evaluating condition (Result-based)");
 
   // Evaluate condition using Result-based evaluation
-  Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), bool,
+  #ifdef _MSC_VER
+    auto _result = condition_->evaluate_result(lane, wave, tg);
+    if (_result.is_err()) return Err<bool, ExecutionError>(_result.unwrap_err());
+    Value condVal = _result.unwrap();
+  #else
+    Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), bool,
                              ExecutionError);
+  #endif
   bool shouldContinue = condVal.asBool();
     if (tg.interpreter) {
       tg.interpreter->onControlFlow(lane, wave, tg, this, shouldContinue);
@@ -2250,8 +2368,13 @@ Result<Unit, ExecutionError> ForStmt::executeIncrement(LaneContext &lane,
   INTERPRETER_DEBUG_LOG("DEBUG: ForStmt - Lane " << lane.laneId
             << " executing increment (Result-based)");
 
-  // Execute increment expression using Result-based evaluation
-  TRY_RESULT(increment_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+    // Execute increment expression using Result-based evaluation
+  #ifdef _MSC_VER
+    auto _result = increment_->evaluate_result(lane, wave, tg);
+    if (_result.is_err()) return Err<Unit, ExecutionError>(_result.unwrap_err());
+  #else
+    TRY_RESULT(increment_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+  #endif
 
   return Ok<Unit, ExecutionError>(Unit{});
 }
@@ -2304,9 +2427,14 @@ Result<Unit, ExecutionError> ForStmt::execute_result(LaneContext &lane,
   switch (ourEntry.phase) {
   case LaneContext::ControlFlowPhase::EvaluatingInit: {
     // Evaluate initialization using Result-based helper method
+    #ifdef _MSC_VER
+      auto _result = evaluateInitPhase_result(lane, wave, tg, ourStackIndex, headerBlockId);
+      if (_result.is_err()) return Err<Unit, ExecutionError>(_result.unwrap_err());
+    #else
     TRY_RESULT(
         evaluateInitPhase_result(lane, wave, tg, ourStackIndex, headerBlockId),
-        Unit, ExecutionError);
+        Unit, ExecutionError);   
+    #endif
 
     // Set state to WaitingForResume to prevent currentStatement increment
     setThreadStateIfUnprotected(lane);
@@ -2316,9 +2444,15 @@ Result<Unit, ExecutionError> ForStmt::execute_result(LaneContext &lane,
 
   case LaneContext::ControlFlowPhase::EvaluatingCondition: {
     // Evaluate condition using Result-based helper method
-    TRY_RESULT(evaluateConditionPhase_result(lane, wave, tg, ourStackIndex,
+    #ifdef _MSC_VER
+      auto _result = evaluateConditionPhase_result(lane, wave, tg, ourStackIndex,
+                                             headerBlockId);
+      if (_result.is_err()) return Err<Unit, ExecutionError>(_result.unwrap_err());
+    #else
+      TRY_RESULT(evaluateConditionPhase_result(lane, wave, tg, ourStackIndex,
                                              headerBlockId),
                Unit, ExecutionError);
+    #endif
 
     // Set state to WaitingForResume to prevent currentStatement increment
     setThreadStateIfUnprotected(lane);
@@ -2338,9 +2472,15 @@ Result<Unit, ExecutionError> ForStmt::execute_result(LaneContext &lane,
     }
 
     // Execute body statements using Result-based helper method
-    TRY_RESULT(executeBodyStatements_result(lane, wave, tg, ourStackIndex,
+    #ifdef _MSC_VER
+      auto _result = executeBodyStatements_result(lane, wave, tg, ourStackIndex,
+                                            headerBlockId);
+      if (_result.is_err()) return Err<Unit, ExecutionError>(_result.unwrap_err());
+    #else
+      TRY_RESULT(executeBodyStatements_result(lane, wave, tg, ourStackIndex,
                                             headerBlockId),
                Unit, ExecutionError);
+    #endif
 
     // Check if we need to return early (lane returned or needs resume)
     if (lane.hasReturned || lane.state != ThreadState::Ready) {
@@ -2361,8 +2501,13 @@ Result<Unit, ExecutionError> ForStmt::execute_result(LaneContext &lane,
 
   case LaneContext::ControlFlowPhase::EvaluatingIncrement: {
     // Evaluate increment using Result-based helper method
+    #ifdef _MSC_VER
+      auto _result = evaluateIncrementPhase_result(lane, wave, tg, ourStackIndex);
+      if (_result.is_err()) return Err<Unit, ExecutionError>(_result.unwrap_err());
+    #else
     TRY_RESULT(evaluateIncrementPhase_result(lane, wave, tg, ourStackIndex),
                Unit, ExecutionError);
+    #endif
 
     // Set state to WaitingForResume to prevent currentStatement increment
     setThreadStateIfUnprotected(lane);
@@ -2739,10 +2884,16 @@ ForStmt::evaluateInitPhase_result(LaneContext &lane, WaveContext &wave,
                                   uint32_t headerBlockId) {
   INTERPRETER_DEBUG_LOG("DEBUG: ForStmt - Lane " << lane.laneId
             << " evaluating init (Result-based)");
-
+            
+  #ifdef _MSC_VER
+    auto _result = init_->evaluate_result(lane, wave, tg);
+    if (_result.is_err()) return Err<Unit, ExecutionError>(_result.unwrap_err());
+    Value initVal = _result.unwrap();
+  #else
   // Initialize loop variable using Result-based evaluation
   Value initVal =
       TRY_RESULT(init_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+  #endif
   lane.variables[loopVar_] = initVal;
 
   // Move to loop header block
@@ -2766,9 +2917,15 @@ Result<Unit, ExecutionError> ForStmt::evaluateConditionPhase_result(
             << " evaluating condition for iteration " << ourEntry.loopIteration
             << " (Result-based)");
 
-  // Check loop condition using Result-based evaluation
-  Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), Unit,
+  #ifdef _MSC_VER
+    auto _result = condition_->evaluate_result(lane, wave, tg);
+    if (_result.is_err()) return Err<Unit, ExecutionError>(_result.unwrap_err());
+    Value condVal = _result.unwrap();
+  #else
+    // Check loop condition using Result-based evaluation
+    Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), Unit,
                              ExecutionError);
+  #endif
   bool shouldContinue = condVal.asBool();
     if (tg.interpreter) {
       tg.interpreter->onControlFlow(lane, wave, tg, this, shouldContinue);
@@ -2809,8 +2966,13 @@ ForStmt::evaluateIncrementPhase_result(LaneContext &lane, WaveContext &wave,
   // back to loop variable For b++, the result is the old value, but the side
   // effect is incrementing b For ++b, the result is the new value, but we still
   // don't want to assign it back
-  TRY_RESULT(increment_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
-
+  #ifdef _MSC_VER
+    auto _result = increment_->evaluate_result(lane, wave, tg);
+    if (_result.is_err()) return Err<Unit, ExecutionError>(_result.unwrap_err());
+  #else
+    TRY_RESULT(increment_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+  #endif
+  
   // Move back to condition evaluation
   lane.executionStack[ourStackIndex].phase =
       LaneContext::ControlFlowPhase::EvaluatingCondition;
@@ -3141,7 +3303,12 @@ Result<Unit, ExecutionError> ExprStmt::execute_result(LaneContext &lane,
   // Pure Result-based implementation - no exceptions!
   if (expr_) {
     // Execute the expression (evaluate it but don't store the result)
-    TRY_RESULT(expr_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+    #ifdef _MSC_VER
+      auto _result = expr_->evaluate_result(lane, wave, tg);
+      if (_result.is_err()) return Err<Unit, ExecutionError>(_result.unwrap_err());
+    #else
+      TRY_RESULT(expr_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+    #endif
   }
   return Ok<Unit, ExecutionError>(Unit{});
 }
@@ -3173,7 +3340,13 @@ ReturnStmt::execute_result(LaneContext &lane, WaveContext &wave,
             << " executing return (Result-based)");
 
   if (expr_) {
-    Value exprResult = TRY_RESULT(expr_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+    #ifdef _MSC_VER
+      auto _result = expr_->evaluate_result(lane, wave, tg);
+      if (_result.is_err()) return Err<Unit, ExecutionError>(_result.unwrap_err());
+      Value exprResult = _result.unwrap();
+    #else
+      Value exprResult = TRY_RESULT(expr_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+    #endif
     lane.returnValue = exprResult;
   }
 
@@ -3262,7 +3435,13 @@ SharedWriteStmt::execute_result(LaneContext &lane, WaveContext &wave,
   INTERPRETER_DEBUG_LOG("DEBUG: SharedWriteStmt - Lane " << lane.laneId
             << " executing shared write (Result-based)");
 
-  auto value = TRY_RESULT(expr_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+  #ifdef _MSC_VER
+    auto _result = expr_->evaluate_result(lane, wave, tg);
+    if (_result.is_err()) return Err<Unit, ExecutionError>(_result.unwrap_err());
+    Value value = _result.unwrap();
+  #else
+    auto value = TRY_RESULT(expr_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+  #endif
   ThreadId tid = tg.getGlobalThreadId(wave.waveId, lane.laneId);
   tg.sharedMemory->write(addr_, value, tid);
 
@@ -3635,9 +3814,16 @@ MiniHLSLInterpreter::executeCollectiveWaveOperation(
   for (LaneId laneId : syncPoint.arrivedParticipants) {
     if (laneId < wave.lanes.size()) {
       // Evaluate the expression for this lane
+      #ifdef _MSC_VER
+        auto _result = waveOp->getExpression()->evaluate_result(
+                                   *wave.lanes[laneId], wave, tgContext);
+        if (_result.is_err()) return Err<Unit, ExecutionError>(_result.unwrap_err());
+        Value value = _result.unwrap();
+      #else
       Value value = TRY_RESULT(waveOp->getExpression()->evaluate_result(
                                    *wave.lanes[laneId], wave, tgContext),
                                Unit, ExecutionError);
+      #endif
       values.push_back(value);
     }
   }
@@ -5567,8 +5753,14 @@ WhileStmt::evaluateCondition(LaneContext &lane, WaveContext &wave,
   INTERPRETER_DEBUG_LOG("DEBUG: WhileStmt - Lane " << lane.laneId
             << " evaluating condition (Result-based)");
 
-  Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), bool,
+  #ifdef _MSC_VER
+    auto _result = condition_->evaluate_result(lane, wave, tg);
+    if (_result.is_err()) return Err<bool, ExecutionError>(_result.unwrap_err());
+    Value condVal = _result.unwrap();
+  #else
+    Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), bool,
                              ExecutionError);
+  #endif
   bool shouldContinue = condVal.asBool();
     if (tg.interpreter) {
       tg.interpreter->onControlFlow(lane, wave, tg, this, shouldContinue);
@@ -5639,9 +5831,15 @@ Result<Unit, ExecutionError> WhileStmt::execute_result(LaneContext &lane,
   switch (ourEntry.phase) {
   case LaneContext::ControlFlowPhase::EvaluatingCondition: {
     // Evaluate condition using Result-based helper method
+    #ifdef _MSC_VER
+      auto _result = evaluateConditionPhase_result(lane, wave, tg, ourStackIndex,
+                                             headerBlockId);
+      if (_result.is_err()) return Err<Unit, ExecutionError>(_result.unwrap_err());
+    #else
     TRY_RESULT(evaluateConditionPhase_result(lane, wave, tg, ourStackIndex,
                                              headerBlockId),
                Unit, ExecutionError);
+    #endif
 
     // Set state to WaitingForResume to prevent currentStatement increment
     setThreadStateIfUnprotected(lane);
@@ -5668,9 +5866,15 @@ Result<Unit, ExecutionError> WhileStmt::execute_result(LaneContext &lane,
     }
 
     // Execute body statements using Result-based helper method
+    #ifdef _MSC_VER
+      auto _result = executeBodyStatements_result(lane, wave, tg, ourStackIndex,
+                                            headerBlockId);
+      if (_result.is_err()) return Err<Unit, ExecutionError>(_result.unwrap_err());
+    #else
     TRY_RESULT(executeBodyStatements_result(lane, wave, tg, ourStackIndex,
                                             headerBlockId),
                Unit, ExecutionError);
+    #endif
 
     // Check if we need to return early (lane returned or needs resume)
     if (lane.hasReturned || lane.state != ThreadState::Ready) {
@@ -6078,8 +6282,14 @@ Result<Unit, ExecutionError> WhileStmt::evaluateConditionPhase_result(
   }
 
   // Check loop condition using Result-based evaluation
-  Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), Unit,
+  #ifdef _MSC_VER
+    auto _result = condition_->evaluate_result(lane, wave, tg);
+    if (_result.is_err()) return Err<Unit, ExecutionError>(_result.unwrap_err());
+    Value condVal = _result.unwrap();
+  #else
+    Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), Unit,
                              ExecutionError);
+  #endif
   bool shouldContinue = condVal.asBool();
     if (tg.interpreter) {
       tg.interpreter->onControlFlow(lane, wave, tg, this, shouldContinue);
@@ -6493,7 +6703,13 @@ DoWhileStmt::evaluateCondition(LaneContext &lane, WaveContext &wave,
   INTERPRETER_DEBUG_LOG("DEBUG: DoWhileStmt - Lane " << lane.laneId
             << " evaluating condition (Result-based)");
 
-  auto condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), bool, ExecutionError);
+  #ifdef _MSC_VER
+    auto _result = condition_->evaluate_result(lane, wave, tg);
+    if (_result.is_err()) return Err<bool, ExecutionError>(_result.unwrap_err());
+    Value condVal = _result.unwrap();
+  #else
+    auto condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), bool, ExecutionError);
+  #endif
   bool shouldContinue = condVal.asBool();
     if (tg.interpreter) {
       tg.interpreter->onControlFlow(lane, wave, tg, this, shouldContinue);
@@ -6547,9 +6763,15 @@ DoWhileStmt::execute_result(LaneContext &lane, WaveContext &wave,
     }
 
     // Execute body statements using Result-based helper method
+    #ifdef _MSC_VER
+      auto _result = executeBodyStatements_result(lane, wave, tg, ourStackIndex,
+                                            headerBlockId);
+      if (_result.is_err()) return Err<Unit, ExecutionError>(_result.unwrap_err());
+    #else
     TRY_RESULT(executeBodyStatements_result(lane, wave, tg, ourStackIndex,
                                             headerBlockId),
                Unit, ExecutionError);
+    #endif
 
     if (lane.hasReturned || lane.state != ThreadState::Ready) {
       return Ok<Unit, ExecutionError>(Unit{});
@@ -6566,9 +6788,15 @@ DoWhileStmt::execute_result(LaneContext &lane, WaveContext &wave,
 
   case LaneContext::ControlFlowPhase::EvaluatingCondition: {
     // Evaluate condition using Result-based helper method
-    TRY_RESULT(evaluateConditionPhase_result(lane, wave, tg, ourStackIndex,
+    #ifdef _MSC_VER
+      auto _result = evaluateConditionPhase_result(lane, wave, tg, ourStackIndex,
+                                             headerBlockId);
+      if (_result.is_err()) return Err<Unit, ExecutionError>(_result.unwrap_err());
+    #else
+      TRY_RESULT(evaluateConditionPhase_result(lane, wave, tg, ourStackIndex,
                                              headerBlockId),
                Unit, ExecutionError);
+    #endif
 
     // Set state to WaitingForResume to prevent currentStatement increment
     setThreadStateIfUnprotected(lane);
@@ -6719,8 +6947,14 @@ Result<Unit, ExecutionError> DoWhileStmt::evaluateConditionPhase_result(
             << ourEntry.loopIteration << " (Result-based)");
 
   // Check loop condition using Result-based evaluation
-  Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), Unit,
+  #ifdef _MSC_VER
+    auto _result = condition_->evaluate_result(lane, wave, tg);
+    if (_result.is_err()) return Err<Unit, ExecutionError>(_result.unwrap_err());
+    Value condVal = _result.unwrap();
+  #else
+    Value condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), Unit,
                              ExecutionError);
+  #endif
   bool shouldContinue = condVal.asBool();
     if (tg.interpreter) {
       tg.interpreter->onControlFlow(lane, wave, tg, this, shouldContinue);
@@ -6961,7 +7195,13 @@ SwitchStmt::evaluateCondition(LaneContext &lane, WaveContext &wave,
   INTERPRETER_DEBUG_LOG("DEBUG: SwitchStmt - Lane " << lane.laneId
             << " evaluating condition (Result-based)");
 
-  auto condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), int, ExecutionError);
+  #ifdef _MSC_VER
+    auto _result = condition_->evaluate_result(lane, wave, tg);
+    if (_result.is_err()) return Err<int, ExecutionError>(_result.unwrap_err());
+    Value condVal = _result.unwrap();
+  #else
+    auto condVal = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), int, ExecutionError);
+  #endif
   int switchValue = condVal.asInt();
 
   INTERPRETER_DEBUG_LOG("SwitchStmt - Switch value: "<< switchValue);
@@ -7044,8 +7284,13 @@ SwitchStmt::execute_result(LaneContext &lane, WaveContext &wave,
   switch (ourEntry.phase) {
   case LaneContext::ControlFlowPhase::EvaluatingCondition: {
     // Evaluate switch value using Result-based helper method
-    TRY_RESULT(evaluateSwitchValue_result(lane, wave, tg, ourStackIndex), Unit,
+    #ifdef _MSC_VER
+      auto _result = evaluateSwitchValue_result(lane, wave, tg, ourStackIndex);
+      if (_result.is_err()) return Err<Unit, ExecutionError>(_result.unwrap_err());
+    #else
+      TRY_RESULT(evaluateSwitchValue_result(lane, wave, tg, ourStackIndex), Unit,
                ExecutionError);
+    #endif
 
     // Find matching case and set up execution using non-throwing helper method
     findMatchingCase(lane, wave, tg, ourStackIndex);
@@ -7063,8 +7308,13 @@ SwitchStmt::execute_result(LaneContext &lane, WaveContext &wave,
 
   case LaneContext::ControlFlowPhase::ExecutingCase: {
     // Execute case statements using Result-based helper method
+    #ifdef _MSC_VER
+      auto _result = executeCaseStatements_result(lane, wave, tg, ourStackIndex);
+      if (_result.is_err()) return Err<Unit, ExecutionError>(_result.unwrap_err());
+    #else
     TRY_RESULT(executeCaseStatements_result(lane, wave, tg, ourStackIndex),
                Unit, ExecutionError);
+    #endif
 
     if (lane.hasReturned || lane.state != ThreadState::Ready) {
       return Ok<Unit, ExecutionError>(Unit{});
@@ -7104,7 +7354,13 @@ SwitchStmt::evaluateSwitchValue_result(LaneContext &lane, WaveContext &wave,
     INTERPRETER_DEBUG_LOG("DEBUG: SwitchStmt - Lane " << lane.laneId
               << " evaluating condition for first time");
 
-    auto condValue = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+    #ifdef _MSC_VER
+      auto _result = condition_->evaluate_result(lane, wave, tg);
+      if (_result.is_err()) return Err<Unit, ExecutionError>(_result.unwrap_err());
+      Value condValue = _result.unwrap();
+    #else
+      auto condValue = TRY_RESULT(condition_->evaluate_result(lane, wave, tg), Unit, ExecutionError);
+    #endif
 
     lane.executionStack[ourStackIndex].switchValue = condValue;
     lane.executionStack[ourStackIndex].conditionEvaluated = true;

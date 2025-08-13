@@ -191,6 +191,14 @@ template <typename T, typename E> Result<T, E> Err(E error) {
 }
 
 // Rust-like ? operator macro for Result handling
+#ifdef _MSC_VER
+// On Windows/MSVC, don't use the macro - expand inline instead
+// Replace: auto val = TRY_RESULT(expr, Value, ExecutionError);
+// With:    auto _result = expr;
+//          if (_result.is_err()) return Err<Value, ExecutionError>(_result.unwrap_err());
+//          auto val = _result.unwrap();
+#else
+// On GCC/Clang, use statement expressions
 #define TRY_RESULT(expr, ret_type, err_type)                                   \
   ({                                                                           \
     auto _result = (expr);                                                     \
@@ -199,6 +207,7 @@ template <typename T, typename E> Result<T, E> Err(E error) {
     }                                                                          \
     _result.unwrap();                                                          \
   })
+#endif
 
 // Forward declarations
 class Expression;
