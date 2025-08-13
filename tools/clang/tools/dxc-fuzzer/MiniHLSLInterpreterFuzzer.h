@@ -359,7 +359,8 @@ public:
       const std::vector<std::unique_ptr<interpreter::Statement>>& input,
       std::vector<std::unique_ptr<interpreter::Statement>>& output,
       const ExecutionTrace& trace,
-      size_t& currentWaveOpIndex) const;
+      size_t& currentWaveOpIndex,
+      const std::map<size_t, size_t>& programIndexToTraceIndex) const;
   
 private:
   // Helper to create participant tracking code
