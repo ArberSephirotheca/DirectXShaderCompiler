@@ -54,7 +54,7 @@ static constexpr bool ENABLE_PARSER_DEBUG =
     }                                                                          \
   } while (0)
 
-#define INTERPRETER_DEBUG_LOG(msg)                                                  \
+#define PARSER_DEBUG_LOG(msg)                                                  \
   do {                                                                         \
     if (ENABLE_PARSER_DEBUG) {                                                 \
       std::cout << msg << std::endl;                                          \

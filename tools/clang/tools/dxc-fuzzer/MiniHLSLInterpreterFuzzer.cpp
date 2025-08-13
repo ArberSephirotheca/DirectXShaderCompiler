@@ -1867,8 +1867,7 @@ void BugReporter::logBug(const BugReport& report) {
 
 TraceGuidedFuzzer::TraceGuidedFuzzer() {
   // Initialize mutation strategies
-  // Temporarily disable WaveParticipantTracking to test LanePermutation
-  // mutationStrategies.push_back(std::make_unique<WaveParticipantTrackingMutation>());
+  mutationStrategies.push_back(std::make_unique<WaveParticipantTrackingMutation>());
   mutationStrategies.push_back(std::make_unique<LanePermutationMutation>());
   // mutationStrategies.push_back(std::make_unique<ContextAwareParticipantMutation>());
   
