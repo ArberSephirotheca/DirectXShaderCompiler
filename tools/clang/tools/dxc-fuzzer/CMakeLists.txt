@@ -136,6 +136,15 @@ set_target_properties(minihlsl-fuzzer PROPERTIES
   CXX_STANDARD_REQUIRED ON
 )
 
+# Fix iterator debug level mismatch on Windows
+if(MSVC)
+  if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_definitions(minihlsl-fuzzer PRIVATE _ITERATOR_DEBUG_LEVEL=2)
+  else()
+    target_compile_definitions(minihlsl-fuzzer PRIVATE _ITERATOR_DEBUG_LEVEL=0)
+  endif()
+endif()
+
 
 
 # Fuzzer for real HLSL files
