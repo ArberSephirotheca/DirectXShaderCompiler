@@ -162,8 +162,6 @@ void generateTestFile(const interpreter::Program& program,
     testFile << "  - Name: expected_participants\n";
     testFile << "    Format: UInt32\n";
     testFile << "    Stride: 4\n";
-    testFile << "    Fill: 0\n";
-    testFile << "    Size: " << bufferSize << "\n";
     testFile << "    Data: [";
     
     // Write expected data
