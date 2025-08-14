@@ -30,7 +30,7 @@ namespace minihlsl {
 namespace fuzzer {
 
 // Helper function to create output directory and generate filenames
-std::string createMutantOutputPath(size_t increment, const std::string& mutationChain) {
+std::string createMutantOutputPath(size_t increment, const std::string& mutationChain, const std::string& extension = ".hlsl") {
   // Create output directory if it doesn't exist
   const std::string outputDir = "mutant_outputs";
   
@@ -55,8 +55,158 @@ std::string createMutantOutputPath(size_t increment, const std::string& mutation
     filename << "_" << cleanMutationChain;
   }
   
-  filename << ".hlsl";
+  filename << extension;
   return filename.str();
+}
+
+// Helper function to generate test file with YAML pipeline
+void generateTestFile(const interpreter::Program& program, 
+                     const ExecutionTrace& trace,
+                     const std::string& testPath,
+                     const std::string& mutationChain) {
+  std::ofstream testFile(testPath);
+  if (!testFile.is_open()) {
+    FUZZER_DEBUG_LOG("Failed to create test file: " << testPath << "\n");
+    return;
+  }
+  
+  // Write HLSL source section
+  testFile << "#--- source.hlsl\n";
+  
+  // Add buffer declarations if using WaveParticipantTracking
+  bool hasParticipantTracking = mutationChain.find("WaveParticipantTracking") != std::string::npos;
+  if (hasParticipantTracking) {
+    testFile << "RWStructuredBuffer<uint> _participant_check_sum : register(u0);\n\n";
+  }
+  
+  // Write the program
+  testFile << serializeProgramToString(program);
+  
+  // Calculate buffer sizes
+  uint32_t totalThreads = program.numThreadsX * program.numThreadsY * program.numThreadsZ;
+  uint32_t bufferSize = totalThreads * sizeof(uint32_t);
+  
+  // Generate expected participant data from trace
+  std::vector<uint32_t> expectedParticipants(totalThreads, 0);
+  
+  if (hasParticipantTracking) {
+    // The WaveParticipantTracking mutation structure:
+    // 1. Original wave operation (e.g., WaveActiveSum(value))
+    // 2. Tracking operation: WaveActiveSum(1) to count participants
+    // 3. Check: _participant_check_sum[tid.x] += (count == expected) ? 1 : 0
+    
+    // Wave operations appear in pairs in the trace:
+    // - First: the original operation
+    // - Second: the WaveActiveSum(1) for counting
+    
+    // Process wave operations in pairs
+    for (size_t i = 0; i < trace.waveOperations.size(); i += 2) {
+      if (i + 1 >= trace.waveOperations.size()) break;
+      
+      const auto& originalOp = trace.waveOperations[i];
+      const auto& countingOp = trace.waveOperations[i + 1];
+      
+      // Convert lane IDs to global thread IDs
+      // The wave operation has a waveId, and each lane within that wave needs to be converted
+      uint32_t waveSize = trace.threadHierarchy.waveSize;
+      uint32_t waveBaseThreadId = originalOp.waveId * waveSize;
+      
+      // Each participating thread should increment their success counter by 1
+      for (auto laneId : originalOp.arrivedParticipants) {
+        uint32_t globalThreadId = waveBaseThreadId + laneId;
+        if (globalThreadId < totalThreads) {
+          expectedParticipants[globalThreadId]++;
+        }
+      }
+    }
+  }
+  
+  // Write pipeline YAML section
+  testFile << "\n#--- pipeline.yaml\n";
+  testFile << "---\n";
+  testFile << "Shaders:\n";
+  testFile << "  - Stage: Compute\n";
+  testFile << "    Entry: main\n";
+  testFile << "    DispatchSize: [1, 1, 1]  # Single dispatch for " << totalThreads << " threads\n";
+  
+  testFile << "Buffers:\n";
+  
+  if (hasParticipantTracking) {
+    // _participant_check_sum buffer
+    testFile << "  - Name: _participant_check_sum\n";
+    testFile << "    Format: UInt32\n";
+    testFile << "    Stride: 4\n";
+    testFile << "    Fill: 0\n";
+    testFile << "    Size: " << bufferSize << "\n";
+    
+    // expected_participants buffer with pre-calculated data
+    testFile << "  - Name: expected_participants\n";
+    testFile << "    Format: UInt32\n";
+    testFile << "    Stride: 4\n";
+    testFile << "    Fill: 0\n";
+    testFile << "    Size: " << bufferSize << "\n";
+    testFile << "    Data: [";
+    
+    // Write expected data
+    for (uint32_t i = 0; i < totalThreads; ++i) {
+      if (i > 0) testFile << ", ";
+      testFile << expectedParticipants[i];
+    }
+    testFile << "]\n";
+  }
+  
+  // Add any global buffers from the program
+  for (const auto& buffer : program.globalBuffers) {
+    testFile << "  - Name: " << buffer.name << "\n";
+    testFile << "    Format: UInt32\n";
+    testFile << "    Stride: 4\n";
+    testFile << "    Fill: 0\n";
+    testFile << "    Size: " << bufferSize << "\n";
+  }
+  
+  if (hasParticipantTracking) {
+    testFile << "Results:\n";
+    testFile << "  - Result: WaveOpValidation\n";
+    testFile << "    Rule: BufferExact\n";
+    testFile << "    Actual: _participant_check_sum\n";
+    testFile << "    Expected: expected_participants\n";
+  }
+  
+  testFile << "DescriptorSets:\n";
+  testFile << "  - Resources:\n";
+  
+  if (hasParticipantTracking) {
+    testFile << "    - Name: _participant_check_sum\n";
+    testFile << "      Kind: RWStructuredBuffer\n";
+    testFile << "      DirectXBinding:\n";
+    testFile << "        Register: 0\n";
+    testFile << "        Space: 0\n";
+    testFile << "      VulkanBinding:\n";
+    testFile << "        Binding: 0\n";
+  }
+  
+  // Add bindings for program buffers
+  uint32_t registerIndex = hasParticipantTracking ? 1 : 0;
+  for (const auto& buffer : program.globalBuffers) {
+    testFile << "    - Name: " << buffer.name << "\n";
+    testFile << "      Kind: " << buffer.bufferType << "\n";
+    testFile << "      DirectXBinding:\n";
+    testFile << "        Register: " << registerIndex++ << "\n";
+    testFile << "        Space: 0\n";
+    testFile << "      VulkanBinding:\n";
+    testFile << "        Binding: " << (registerIndex - 1) << "\n";
+  }
+  
+  testFile << "...\n";
+  testFile << "#--- end\n\n";
+  
+  // Write run commands
+  testFile << "# RUN: split-file %s %t\n";
+  testFile << "# RUN: %dxc_target -T cs_6_0 -Fo %t.o %t/source.hlsl\n";
+  testFile << "# RUN: %offloader %t/pipeline.yaml %t.o\n";
+  
+  testFile.close();
+  FUZZER_DEBUG_LOG("Generated test file: " << testPath << "\n");
 }
 
 
@@ -2023,6 +2173,12 @@ interpreter::Program TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& 
       FUZZER_DEBUG_LOG("Saved mutant to: " << mutantPath << "\n");
     } else {
       FUZZER_DEBUG_LOG("Failed to save mutant to: " << mutantPath << "\n");
+    }
+    
+    // Generate test file with YAML pipeline if using WaveParticipantTracking
+    if (mutationResult.getMutationChainString().find("WaveParticipantTracking") != std::string::npos) {
+      std::string testPath = createMutantOutputPath(currentIncrement, mutationResult.getMutationChainString(), ".test");
+      generateTestFile(finalMutant, goldenTrace, testPath, mutationResult.getMutationChainString());
     }
     
     // Test the mutant
