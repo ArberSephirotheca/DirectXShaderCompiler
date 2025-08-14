@@ -73,6 +73,11 @@ set_target_properties(minihlsl-fuzzer PROPERTIES
   CXX_STANDARD_REQUIRED ON
 )
 
+# Enable exception handling on Windows
+if(MSVC)
+  target_compile_options(minihlsl-fuzzer PRIVATE /EHsc)
+endif()
+
 add_executable(fuzz-hlsl-file
   MiniHLSLInterpreter.cpp
   MiniHLSLInterpreterFuzzer.cpp

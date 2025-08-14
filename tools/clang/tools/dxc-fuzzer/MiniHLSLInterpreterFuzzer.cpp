@@ -92,6 +92,10 @@ void generateTestFile(const interpreter::Program& program,
     // 3. Check: _participant_check_sum[tid.x] += (count == expected) ? 1 : 0
     
     // Debug: Print trace information
+    if (trace.waveOperations.empty()) {
+      FUZZER_DEBUG_LOG("WARNING: No wave operations in trace!\n");
+      return;  // Don't generate test file if no wave operations
+    }
     FUZZER_DEBUG_LOG("Generating expected data from trace with " << trace.waveOperations.size() << " wave operations\n");
     FUZZER_DEBUG_LOG("Total threads: " << totalThreads << ", Wave size: " << trace.threadHierarchy.waveSize << "\n");
     
@@ -104,7 +108,7 @@ void generateTestFile(const interpreter::Program& program,
       if (i + 1 >= trace.waveOperations.size()) break;
       
       const auto& originalOp = trace.waveOperations[i];
-      const auto& countingOp = trace.waveOperations[i + 1];
+      // const auto& countingOp = trace.waveOperations[i + 1];  // Not used currently
       
       FUZZER_DEBUG_LOG("Wave op pair " << i/2 << ": Wave " << originalOp.waveId 
                       << " with " << originalOp.arrivedParticipants.size() << " participants\n");
@@ -1206,8 +1210,8 @@ bool ContextAwareParticipantMutation::canApply(
   }
   
   FUZZER_DEBUG_LOG("[ContextAwareParticipant] Wave ops executed in blocks: ");
-  for (uint32_t blockId : waveOpBlocks) {
-    FUZZER_DEBUG_LOG(blockId << " ");
+  for (uint32_t blkId : waveOpBlocks) {
+    FUZZER_DEBUG_LOG(blkId << " ");
   }
   FUZZER_DEBUG_LOG("\n");
   
@@ -1305,8 +1309,8 @@ ContextAwareParticipantMutation::extractIterationContexts(
     
     FUZZER_DEBUG_LOG("[ContextAware] Instruction " << instruction << " appears in " 
                      << sortedOps.size() << " blocks: ");
-    for (const auto* op : sortedOps) {
-      FUZZER_DEBUG_LOG(op->blockId << " ");
+    for (const auto* waveOpPtr : sortedOps) {
+      FUZZER_DEBUG_LOG(waveOpPtr->blockId << " ");
     }
     FUZZER_DEBUG_LOG("\n");
     
@@ -2198,8 +2202,12 @@ interpreter::Program TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& 
     
     // Generate test file with YAML pipeline if using WaveParticipantTracking
     if (mutationResult.getMutationChainString().find("WaveParticipantTracking") != std::string::npos) {
-      std::string testPath = createMutantOutputPath(currentIncrement, mutationResult.getMutationChainString(), ".test");
-      generateTestFile(finalMutant, goldenTrace, testPath, mutationResult.getMutationChainString());
+      try {
+        std::string testPath = createMutantOutputPath(currentIncrement, mutationResult.getMutationChainString(), ".test");
+        generateTestFile(finalMutant, goldenTrace, testPath, mutationResult.getMutationChainString());
+      } catch (const std::exception& e) {
+        FUZZER_DEBUG_LOG("Failed to generate test file: " << e.what() << "\n");
+      }
     }
     
     // Test the mutant
