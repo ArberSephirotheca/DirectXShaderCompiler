@@ -113,7 +113,8 @@ target_link_libraries(fuzz-hlsl-file
 
 # --- Apply centralized flags/defs ---
 enable_fuzz_sanitizers(dxc-fuzzer)
-enable_fuzz_sanitizers(minihlsl-fuzzer)
+# Don't use fuzzer mode for minihlsl-fuzzer since it has its own main()
+# enable_fuzz_sanitizers(minihlsl-fuzzer)
 # enable_fuzz_sanitizers(fuzz-hlsl-file)  # uncomment if you want ASan+Fuzzer here too
 
 sync_msvc_iterator_debug_level(dxc-fuzzer)

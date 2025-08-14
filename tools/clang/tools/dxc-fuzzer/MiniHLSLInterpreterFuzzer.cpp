@@ -73,13 +73,9 @@ void generateTestFile(const interpreter::Program& program,
   // Write HLSL source section
   testFile << "#--- source.hlsl\n";
   
-  // Add buffer declarations if using WaveParticipantTracking
+  // The program already includes buffer declarations from WaveParticipantTracking
+  // Just write the program as-is
   bool hasParticipantTracking = mutationChain.find("WaveParticipantTracking") != std::string::npos;
-  if (hasParticipantTracking) {
-    testFile << "RWStructuredBuffer<uint> _participant_check_sum : register(u0);\n\n";
-  }
-  
-  // Write the program
   testFile << serializeProgramToString(program);
   
   // Calculate buffer sizes
@@ -95,6 +91,10 @@ void generateTestFile(const interpreter::Program& program,
     // 2. Tracking operation: WaveActiveSum(1) to count participants
     // 3. Check: _participant_check_sum[tid.x] += (count == expected) ? 1 : 0
     
+    // Debug: Print trace information
+    FUZZER_DEBUG_LOG("Generating expected data from trace with " << trace.waveOperations.size() << " wave operations\n");
+    FUZZER_DEBUG_LOG("Total threads: " << totalThreads << ", Wave size: " << trace.threadHierarchy.waveSize << "\n");
+    
     // Wave operations appear in pairs in the trace:
     // - First: the original operation
     // - Second: the WaveActiveSum(1) for counting
@@ -106,9 +106,16 @@ void generateTestFile(const interpreter::Program& program,
       const auto& originalOp = trace.waveOperations[i];
       const auto& countingOp = trace.waveOperations[i + 1];
       
+      FUZZER_DEBUG_LOG("Wave op pair " << i/2 << ": Wave " << originalOp.waveId 
+                      << " with " << originalOp.arrivedParticipants.size() << " participants\n");
+      
       // Convert lane IDs to global thread IDs
       // The wave operation has a waveId, and each lane within that wave needs to be converted
       uint32_t waveSize = trace.threadHierarchy.waveSize;
+      if (waveSize == 0) {
+        FUZZER_DEBUG_LOG("WARNING: Wave size is 0, using default 32\n");
+        waveSize = 32;
+      }
       uint32_t waveBaseThreadId = originalOp.waveId * waveSize;
       
       // Each participating thread should increment their success counter by 1
@@ -116,9 +123,17 @@ void generateTestFile(const interpreter::Program& program,
         uint32_t globalThreadId = waveBaseThreadId + laneId;
         if (globalThreadId < totalThreads) {
           expectedParticipants[globalThreadId]++;
+          FUZZER_DEBUG_LOG("  Thread " << globalThreadId << " (wave " << originalOp.waveId 
+                          << ", lane " << laneId << ") expected++\n");
         }
       }
     }
+    
+    FUZZER_DEBUG_LOG("Expected participant counts: ");
+    for (uint32_t i = 0; i < totalThreads; ++i) {
+      FUZZER_DEBUG_LOG(expectedParticipants[i] << " ");
+    }
+    FUZZER_DEBUG_LOG("\n");
   }
   
   // Write pipeline YAML section
@@ -155,13 +170,15 @@ void generateTestFile(const interpreter::Program& program,
     testFile << "]\n";
   }
   
-  // Add any global buffers from the program
+  // Add any global buffers from the program (skip _participant_check_sum as we already added it)
   for (const auto& buffer : program.globalBuffers) {
-    testFile << "  - Name: " << buffer.name << "\n";
-    testFile << "    Format: UInt32\n";
-    testFile << "    Stride: 4\n";
-    testFile << "    Fill: 0\n";
-    testFile << "    Size: " << bufferSize << "\n";
+    if (buffer.name != "_participant_check_sum") {
+      testFile << "  - Name: " << buffer.name << "\n";
+      testFile << "    Format: UInt32\n";
+      testFile << "    Stride: 4\n";
+      testFile << "    Fill: 0\n";
+      testFile << "    Size: " << bufferSize << "\n";
+    }
   }
   
   if (hasParticipantTracking) {
@@ -185,9 +202,13 @@ void generateTestFile(const interpreter::Program& program,
     testFile << "        Binding: 0\n";
   }
   
-  // Add bindings for program buffers
+  // Add bindings for program buffers (skip _participant_check_sum as we already handled it)
   uint32_t registerIndex = hasParticipantTracking ? 1 : 0;
   for (const auto& buffer : program.globalBuffers) {
+    if (buffer.name == "_participant_check_sum") {
+      // Skip - already handled above
+      continue;
+    }
     testFile << "    - Name: " << buffer.name << "\n";
     testFile << "      Kind: " << buffer.bufferType << "\n";
     testFile << "      DirectXBinding:\n";
