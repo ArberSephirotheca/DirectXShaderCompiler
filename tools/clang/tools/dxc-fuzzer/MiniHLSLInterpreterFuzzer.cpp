@@ -198,14 +198,14 @@ void generateTestFile(const interpreter::Program& program,
     testFile << "    - Name: _participant_check_sum\n";
     testFile << "      Kind: RWStructuredBuffer\n";
     testFile << "      DirectXBinding:\n";
-    testFile << "        Register: 0\n";
+    testFile << "        Register: 1\n";
     testFile << "        Space: 0\n";
     testFile << "      VulkanBinding:\n";
-    testFile << "        Binding: 0\n";
+    testFile << "        Binding: 1\n";
   }
   
   // Add bindings for program buffers (skip _participant_check_sum as we already handled it)
-  uint32_t registerIndex = hasParticipantTracking ? 1 : 0;
+  uint32_t registerIndex = hasParticipantTracking ? 2 : 0;
   for (const auto& buffer : program.globalBuffers) {
     if (buffer.name == "_participant_check_sum") {
       // Skip - already handled above
@@ -2561,7 +2561,7 @@ void WaveParticipantTrackingMutation::ensureParticipantBuffer(interpreter::Progr
   if (!hasParticipantBuffer) {
     minihlsl::interpreter::GlobalBufferDecl participantBuffer;
     participantBuffer.name = "_participant_check_sum";
-    participantBuffer.bufferType = "RWBuffer";
+    participantBuffer.bufferType = "RWStructuredBuffer";
     participantBuffer.elementType = minihlsl::interpreter::HLSLType::Uint;
     participantBuffer.size = mutant.getTotalThreads();
     participantBuffer.registerIndex = 1;

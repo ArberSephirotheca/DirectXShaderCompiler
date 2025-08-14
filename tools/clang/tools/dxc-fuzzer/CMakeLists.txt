@@ -122,7 +122,7 @@ enable_fuzz_sanitizers(dxc-fuzzer)
 # enable_fuzz_sanitizers(minihlsl-fuzzer)
 # enable_fuzz_sanitizers(fuzz-hlsl-file)  # uncomment if you want ASan+Fuzzer here too
 
-sync_msvc_iterator_debug_level(dxc-fuzzer)
-sync_msvc_iterator_debug_level(minihlsl-fuzzer)
-sync_msvc_iterator_debug_level(fuzz-hlsl-file)
-sync_msvc_iterator_debug_level(minihlsl-standalone)
+# sync_msvc_iterator_debug_level(dxc-fuzzer)
+# sync_msvc_iterator_debug_level(minihlsl-fuzzer)
+# sync_msvc_iterator_debug_level(fuzz-hlsl-file)
+# sync_msvc_iterator_debug_level(minihlsl-standalone)
