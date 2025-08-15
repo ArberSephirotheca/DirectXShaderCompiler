@@ -783,6 +783,32 @@ void LanePermutationMutation::processStatementsForPermutation(
       output.push_back(std::make_unique<interpreter::DoWhileStmt>(
           std::move(processedBody),
           doWhileStmt->getCondition()->clone()));
+    } else if (auto switchStmt = dynamic_cast<const interpreter::SwitchStmt*>(stmt.get())) {
+      // Increment statement index for the switch statement itself
+      currentStmtIndex++;
+      
+      // Process switch cases
+      auto newSwitch = std::make_unique<interpreter::SwitchStmt>(
+          switchStmt->getCondition()->clone());
+      
+      for (size_t i = 0; i < switchStmt->getCaseCount(); ++i) {
+        const auto& caseBlock = switchStmt->getCase(i);
+        std::vector<std::unique_ptr<interpreter::Statement>> processedCaseBody;
+        
+        // Process statements in this case
+        processStatementsForPermutation(caseBlock.statements, processedCaseBody,
+                                        trace, statementsToMutate,
+                                        currentStmtIndex, anyMutationApplied);
+        
+        // Add the processed case to the new switch
+        if (caseBlock.value.has_value()) {
+          newSwitch->addCase(caseBlock.value.value(), std::move(processedCaseBody));
+        } else {
+          newSwitch->addDefault(std::move(processedCaseBody));
+        }
+      }
+      
+      output.push_back(std::move(newSwitch));
     } else {
       // Check if this statement index should be mutated
       bool shouldMutate = statementsToMutate.find(currentStmtIndex) != statementsToMutate.end();
@@ -1045,6 +1071,14 @@ static size_t countWaveOpsInStatement(const interpreter::Statement* stmt) {
     for (const auto& bodyStmt : doWhileStmt->getBody()) {
       count += countWaveOpsInStatement(bodyStmt.get());
     }
+  } else if (auto* switchStmt = dynamic_cast<const interpreter::SwitchStmt*>(stmt)) {
+    // Count wave ops in all switch cases
+    for (size_t i = 0; i < switchStmt->getCaseCount(); ++i) {
+      const auto& caseBlock = switchStmt->getCase(i);
+      for (const auto& caseStmt : caseBlock.statements) {
+        count += countWaveOpsInStatement(caseStmt.get());
+      }
+    }
   }
   
   return count;
@@ -1162,6 +1196,31 @@ void WaveParticipantTrackingMutation::processStatementsForTracking(
         std::move(processedBody),
         doWhileStmt->getCondition()->clone()
       ));
+    }
+    else if (auto switchStmt = dynamic_cast<const interpreter::SwitchStmt*>(stmt.get())) {
+      // Process switch cases
+      auto newSwitch = std::make_unique<interpreter::SwitchStmt>(
+          switchStmt->getCondition()->clone());
+      
+      for (size_t i = 0; i < switchStmt->getCaseCount(); ++i) {
+        const auto& caseBlock = switchStmt->getCase(i);
+        std::vector<std::unique_ptr<interpreter::Statement>> processedCaseBody;
+        
+        // Process statements in this case
+        processStatementsForTracking(caseBlock.statements, processedCaseBody, 
+                                     trace, currentWaveOpIndex, programIndexToTraceIndex);
+        
+        // Add the processed case to the new switch
+        if (caseBlock.value.has_value()) {
+          newSwitch->addCase(caseBlock.value.value(), std::move(processedCaseBody));
+        } else {
+          newSwitch->addDefault(std::move(processedCaseBody));
+        }
+      }
+      
+      // Replace with the processed switch
+      output.pop_back(); // Remove the cloned version
+      output.push_back(std::move(newSwitch));
     }
   }
 }
@@ -2521,6 +2580,14 @@ bool WaveParticipantTrackingMutation::hasWaveOpsInStatements(
     } else if (auto* doWhileStmt = dynamic_cast<const interpreter::DoWhileStmt*>(stmt)) {
       for (const auto& s : doWhileStmt->getBody()) {
         if (hasWaveOpRecursive(s.get())) return true;
+      }
+    } else if (auto* switchStmt = dynamic_cast<const interpreter::SwitchStmt*>(stmt)) {
+      // Check all cases in the switch
+      for (size_t i = 0; i < switchStmt->getCaseCount(); ++i) {
+        const auto& caseBlock = switchStmt->getCase(i);
+        for (const auto& s : caseBlock.statements) {
+          if (hasWaveOpRecursive(s.get())) return true;
+        }
       }
     }
     return false;

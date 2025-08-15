@@ -112,7 +112,7 @@ ProgramState IncrementalGenerator::generateIncremental(const uint8_t* data, size
         // Generate new control flow block
         auto pattern = createPattern(provider);
         auto blockType = static_cast<ControlFlowGenerator::BlockSpec::Type>(
-            provider.ConsumeIntegralInRange<int>(0, 6));  // 7 types: IF, IF_ELSE, NESTED_IF, FOR_LOOP, WHILE_LOOP, CASCADING_IF_ELSE, SWITCH_STMT
+            provider.ConsumeIntegralInRange<int>(0, 9) < 4 ? provider.ConsumeIntegralInRange<int>(0, 5) : 6);  // 40% chance for SWITCH_STMT
         
         // Debug: Print selected block type
         const char* blockTypeNames[] = {"IF", "IF_ELSE", "NESTED_IF", "FOR_LOOP", "WHILE_LOOP", "CASCADING_IF_ELSE", "SWITCH_STMT"};
@@ -808,9 +808,9 @@ ControlFlowGenerator::generateSwitch(const BlockSpec& spec, ProgramState& state,
         break;
         
     case BlockSpec::SwitchConfig::THREAD_ID_BASED:
-        // tid.x % numCases
+        // Use WaveGetLaneIndex() instead of tid.x for better wave operation support
         condition = std::make_unique<interpreter::BinaryOpExpr>(
-            std::make_unique<interpreter::VariableExpr>("tid.x"),
+            std::make_unique<interpreter::LaneIndexExpr>(),
             std::make_unique<interpreter::LiteralExpr>(static_cast<int>(config.numCases)),
             interpreter::BinaryOpExpr::Mod
         );
@@ -983,7 +983,7 @@ void IncrementalGenerator::addStatementsToProgram(ProgramState& state, const uin
     // Generate new control flow block
     auto pattern = createPattern(provider);
     auto blockType = static_cast<ControlFlowGenerator::BlockSpec::Type>(
-        provider.ConsumeIntegralInRange<int>(0, 6));
+        provider.ConsumeIntegralInRange<int>(0, 9) < 4 ? provider.ConsumeIntegralInRange<int>(0, 5) : 6);  // 40% chance for SWITCH_STMT
     
     // Debug: Print selected block type
     const char* blockTypeNames[] = {"IF", "IF_ELSE", "NESTED_IF", "FOR_LOOP", "WHILE_LOOP", "CASCADING_IF_ELSE", "SWITCH_STMT"};

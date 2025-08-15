@@ -1997,11 +1997,14 @@ public:
 };
 
 class SwitchStmt : public Statement {
-  std::unique_ptr<Expression> condition_;
+public:
   struct CaseBlock {
     std::optional<int> value; // nullopt for default case
     std::vector<std::unique_ptr<Statement>> statements;
   };
+
+private:
+  std::unique_ptr<Expression> condition_;
   std::vector<CaseBlock> cases_;
 
   // Phase-based Result methods
@@ -2020,6 +2023,12 @@ public:
                                               WaveContext &wave,
                                               ThreadgroupContext &tg) override;
   std::string toString() const override;
+  
+  // Accessors for mutations to process cases
+  size_t getCaseCount() const { return cases_.size(); }
+  const CaseBlock& getCase(size_t index) const { return cases_[index]; }
+  std::vector<CaseBlock>& getMutableCases() { return cases_; }
+  const Expression* getCondition() const { return condition_.get(); }
 
   // Helper methods for phase execution
   void setupSwitchExecution(LaneContext &lane, WaveContext &wave,
