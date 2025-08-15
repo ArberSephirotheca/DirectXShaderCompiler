@@ -8,6 +8,13 @@
 #include <thread>
 #include <unordered_map>
 
+// Static member definitions
+namespace minihlsl {
+namespace interpreter {
+std::atomic<uint32_t> Expression::nextStableId{1};
+} // namespace interpreter
+} // namespace minihlsl
+
 // Clang AST includes for conversion
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/Attr.h"

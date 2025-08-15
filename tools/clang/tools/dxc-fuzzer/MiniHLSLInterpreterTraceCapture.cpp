@@ -307,6 +307,13 @@ void TraceCaptureInterpreter::extractWaveOperationsFromContext(
       ExecutionTrace::WaveOpRecord record;
       record.waveId = waveId;
       record.instruction = key.first; // Store the instruction pointer!
+      
+      // Capture stable ID from the wave operation expression
+      if (key.first != nullptr) {
+        auto* waveOp = static_cast<const interpreter::WaveActiveOp*>(key.first);
+        record.stableId = waveOp->getStableId();
+      }
+      
       record.opType = syncPoint.instructionType;
       record.blockId = key.second; // blockId from the key pair
       record.waveOpEnumType = syncPoint.waveOpType; // Store the enum type

@@ -1091,7 +1091,29 @@ void WaveParticipantTrackingMutation::processStatementsForTracking(
     size_t& currentWaveOpIndex,
     const std::map<size_t, size_t>& programIndexToTraceIndex) const {
   
+  // Helper lambda to check if this is a tracking operation we should skip
+  auto isTrackingOperation = [](const interpreter::Statement* stmt) -> bool {
+    auto* assignStmt = dynamic_cast<const interpreter::AssignStmt*>(stmt);
+    if (!assignStmt) return false;
+    
+    // Check for pattern: _participantCount = WaveActiveSum(1)
+    if (assignStmt->getName() != "_participantCount") return false;
+    
+    auto* waveOp = findWaveOpInExpression(assignStmt->getExpression());
+    if (!waveOp || waveOp->getOpType() != interpreter::WaveActiveOp::Sum) return false;
+    
+    // Check if input is literal 1
+    auto* literal = dynamic_cast<const interpreter::LiteralExpr*>(waveOp->getInput());
+    return literal && literal->getValue() == interpreter::Value(1);
+  };
+  
   for (const auto& stmt : input) {
+    // IMPORTANT: Skip tracking operations we previously added
+    if (isTrackingOperation(stmt.get())) {
+      output.push_back(stmt->clone());
+      continue;  // Don't process tracking ops
+    }
+    
     // Handle if statements specially - process recursively without cloning first
     if (auto ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt.get())) {
       // Process then block
@@ -1117,13 +1139,16 @@ void WaveParticipantTrackingMutation::processStatementsForTracking(
     const interpreter::WaveActiveOp* waveOp = nullptr;
     std::string resultVarName;
     
-    if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt.get())) {
-      waveOp = findWaveOpInExpression(assign->getExpression());
-      resultVarName = assign->getName();
-    } else if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt.get())) {
-      if (varDecl->getInit()) {
-        waveOp = findWaveOpInExpression(varDecl->getInit());
-        resultVarName = varDecl->getName();
+    // Don't process tracking operations (already skipped above, but double-check)
+    if (!isTrackingOperation(stmt.get())) {
+      if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt.get())) {
+        waveOp = findWaveOpInExpression(assign->getExpression());
+        resultVarName = assign->getName();
+      } else if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt.get())) {
+        if (varDecl->getInit()) {
+          waveOp = findWaveOpInExpression(varDecl->getInit());
+          resultVarName = varDecl->getName();
+        }
       }
     }
     
@@ -2648,32 +2673,62 @@ std::map<size_t, size_t> WaveParticipantTrackingMutation::buildWaveOpMapping(
     const interpreter::Program& program,
     const ExecutionTrace& trace) const {
   
+  // Build stable ID to trace index mapping
+  std::map<uint32_t, size_t> stableIdToTraceIndex;
+  for (size_t i = 0; i < trace.waveOperations.size(); i++) {
+    stableIdToTraceIndex[trace.waveOperations[i].stableId] = i;
+  }
+  
+  // Map program wave op indices to trace indices using stable IDs
   std::map<size_t, size_t> programIndexToTraceIndex;
-  
-  // Use sequential matching approach with dead code detection
   size_t programWaveOpIndex = 0;
-  size_t traceWaveOpIndex = 0;
   
-  // Helper lambda to match wave ops sequentially
+  // Helper lambda to check if this is a tracking operation we should skip
+  auto isTrackingOperation = [](const interpreter::Statement* stmt) -> bool {
+    auto* assignStmt = dynamic_cast<const interpreter::AssignStmt*>(stmt);
+    if (!assignStmt) return false;
+    
+    // Check for pattern: _participantCount = WaveActiveSum(1)
+    if (assignStmt->getName() != "_participantCount") return false;
+    
+    auto* waveOp = findWaveOpInExpression(assignStmt->getExpression());
+    if (!waveOp || waveOp->getOpType() != interpreter::WaveActiveOp::Sum) return false;
+    
+    // Check if input is literal 1
+    auto* literal = dynamic_cast<const interpreter::LiteralExpr*>(waveOp->getInput());
+    return literal && literal->getValue() == interpreter::Value(1);
+  };
+  
+  // Helper lambda to match wave ops by stable ID
   auto matchWaveOps = [&](const interpreter::Statement* stmt) {
-    bool hasWaveOp = false;
-    if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
-      hasWaveOp = findWaveOpInExpression(assign->getExpression()) != nullptr;
-    } else if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
-      hasWaveOp = varDecl->getInit() && findWaveOpInExpression(varDecl->getInit()) != nullptr;
+    // Skip tracking operations we previously added
+    if (isTrackingOperation(stmt)) {
+      return;
     }
     
-    if (hasWaveOp) {
-      // This program has a wave op at programWaveOpIndex
-      // Check if it exists in the trace
-      if (traceWaveOpIndex < trace.waveOperations.size()) {
-        // Assume sequential matching - this wave op was executed
-        programIndexToTraceIndex[programWaveOpIndex] = traceWaveOpIndex;
-        traceWaveOpIndex++;
+    const interpreter::WaveActiveOp* waveOp = nullptr;
+    if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
+      waveOp = findWaveOpInExpression(assign->getExpression());
+    } else if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
+      if (varDecl->getInit()) {
+        waveOp = findWaveOpInExpression(varDecl->getInit());
+      }
+    }
+    
+    if (waveOp) {
+      // Look up by stable ID
+      uint32_t stableId = waveOp->getStableId();
+      auto it = stableIdToTraceIndex.find(stableId);
+      
+      if (it != stableIdToTraceIndex.end()) {
+        // Found in trace - map the indices
+        programIndexToTraceIndex[programWaveOpIndex] = it->second;
+        FUZZER_DEBUG_LOG("[WaveParticipantTracking] Wave op at program index " << programWaveOpIndex 
+                        << " (stable ID " << stableId << ") maps to trace index " << it->second << "\n");
       } else {
-        // No more trace entries - this is dead code
-        FUZZER_DEBUG_LOG("[WaveParticipantTracking] Wave op at index " << programWaveOpIndex 
-                        << " appears to be dead code (no matching trace entry)\n");
+        // Not in trace - this is dead code
+        FUZZER_DEBUG_LOG("[WaveParticipantTracking] Wave op at program index " << programWaveOpIndex 
+                        << " (stable ID " << stableId << ") appears to be dead code (not in trace)\n");
       }
       programWaveOpIndex++;
     }
@@ -2694,6 +2749,11 @@ std::map<size_t, size_t> WaveParticipantTrackingMutation::buildWaveOpMapping(
       for (const auto& s : whileStmt->getBody()) walkStatement(s.get());
     } else if (auto* doWhileStmt = dynamic_cast<const interpreter::DoWhileStmt*>(stmt)) {
       for (const auto& s : doWhileStmt->getBody()) walkStatement(s.get());
+    } else if (auto* switchStmt = dynamic_cast<const interpreter::SwitchStmt*>(stmt)) {
+      for (size_t i = 0; i < switchStmt->getCaseCount(); ++i) {
+        const auto& caseBlock = switchStmt->getCase(i);
+        for (const auto& s : caseBlock.statements) walkStatement(s.get());
+      }
     }
   };
   

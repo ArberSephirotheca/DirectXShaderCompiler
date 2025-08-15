@@ -1158,18 +1158,30 @@ struct HLSLSemanticInfo {
 
 // Expression AST nodes
 class Expression {
+private:
+  static std::atomic<uint32_t> nextStableId;
+  uint32_t stableId_;
+  
 protected:
   HLSLType type_; // HLSL type extracted from Clang AST
   std::string customTypeStr_; // For custom types when type_ is HLSLType::Custom
   
 public:
-  explicit Expression(HLSLType type = HLSLType::Unknown) : type_(type) {}
-  explicit Expression(const std::string& typeStr) : type_(HLSLTypeInfo::fromString(typeStr)) {
+  explicit Expression(HLSLType type = HLSLType::Unknown) : stableId_(nextStableId++), type_(type) {}
+  explicit Expression(const std::string& typeStr) : stableId_(nextStableId++), type_(HLSLTypeInfo::fromString(typeStr)) {
     if (type_ == HLSLType::Custom) {
       customTypeStr_ = typeStr;
     }
   }
   virtual ~Expression() = default;
+  
+  // Stable ID methods
+  uint32_t getStableId() const { return stableId_; }
+  
+  // When cloning, preserve the stable ID
+  void copyStableIdFrom(const Expression* other) {
+    stableId_ = other->stableId_;
+  }
 
   // Primary evaluation method - all expressions must implement this
   virtual Result<Value, ExecutionError>
@@ -1210,7 +1222,9 @@ public:
   std::string toString() const override { return value_.toString(); }
   
   std::unique_ptr<Expression> clone() const override {
-    return std::make_unique<LiteralExpr>(value_, type_);
+    auto cloned = std::make_unique<LiteralExpr>(value_, type_);
+    cloned->copyStableIdFrom(this);
+    return cloned;
   }
   
   // Getter for type inference
@@ -1230,7 +1244,9 @@ public:
   std::string toString() const override { return name_; }
   
   std::unique_ptr<Expression> clone() const override {
-    return std::make_unique<VariableExpr>(name_, type_);
+    auto cloned = std::make_unique<VariableExpr>(name_, type_);
+    cloned->copyStableIdFrom(this);
+    return cloned;
   }
   
   // Getter for AST manipulation
@@ -1247,7 +1263,9 @@ public:
   std::string toString() const override { return "WaveGetLaneIndex()"; }
   
   std::unique_ptr<Expression> clone() const override {
-    return std::make_unique<LaneIndexExpr>(type_);
+    auto cloned = std::make_unique<LaneIndexExpr>(type_);
+    cloned->copyStableIdFrom(this);
+    return cloned;
   }
 };
 
@@ -1261,7 +1279,9 @@ public:
   std::string toString() const override { return "WaveGetWaveIndex()"; }
   
   std::unique_ptr<Expression> clone() const override {
-    return std::make_unique<WaveIndexExpr>(type_);
+    auto cloned = std::make_unique<WaveIndexExpr>(type_);
+    cloned->copyStableIdFrom(this);
+    return cloned;
   }
 };
 
@@ -1275,7 +1295,9 @@ public:
   std::string toString() const override { return "W()"; }
   
   std::unique_ptr<Expression> clone() const override {
-    return std::make_unique<ThreadIndexExpr>(type_);
+    auto cloned = std::make_unique<ThreadIndexExpr>(type_);
+    cloned->copyStableIdFrom(this);
+    return cloned;
   }
 };
 
@@ -1298,10 +1320,12 @@ public:
   std::string toString() const override;
   
   std::unique_ptr<Expression> clone() const override {
-    return std::make_unique<BinaryOpExpr>(
+    auto cloned = std::make_unique<BinaryOpExpr>(
         left_ ? left_->clone() : nullptr,
         right_ ? right_->clone() : nullptr,
         op_);
+    cloned->copyStableIdFrom(this);
+    return cloned;
   }
   
   // Public accessors for AST manipulation
@@ -1326,7 +1350,9 @@ public:
   std::string toString() const override;
   
   std::unique_ptr<Expression> clone() const override {
-    return std::make_unique<AssignExpr>(varName_, value_ ? value_->clone() : nullptr);
+    auto cloned = std::make_unique<AssignExpr>(varName_, value_ ? value_->clone() : nullptr);
+    cloned->copyStableIdFrom(this);
+    return cloned;
   }
 };
 
@@ -1357,9 +1383,11 @@ public:
   std::string toString() const override;
   
   std::unique_ptr<Expression> clone() const override {
-    return std::make_unique<UnaryOpExpr>(
+    auto cloned = std::make_unique<UnaryOpExpr>(
         expr_ ? expr_->clone() : nullptr,
         op_);
+    cloned->copyStableIdFrom(this);
+    return cloned;
   }
   
   // Public accessors for AST manipulation
@@ -1384,10 +1412,12 @@ public:
   std::string toString() const override;
   
   std::unique_ptr<Expression> clone() const override {
-    return std::make_unique<ConditionalExpr>(
+    auto cloned = std::make_unique<ConditionalExpr>(
         condition_ ? condition_->clone() : nullptr,
         trueExpr_ ? trueExpr_->clone() : nullptr,
         falseExpr_ ? falseExpr_->clone() : nullptr);
+    cloned->copyStableIdFrom(this);
+    return cloned;
   }
 };
 
@@ -1432,6 +1462,7 @@ public:
         expr_ ? expr_->clone() : nullptr,
         op_);
     cloned->setType(type_);
+    cloned->copyStableIdFrom(this);
     return cloned;
   }
 };
@@ -1446,7 +1477,9 @@ public:
   std::string toString() const override { return "WaveGetLaneCount()"; }
   
   std::unique_ptr<Expression> clone() const override {
-    return std::make_unique<WaveGetLaneCountExpr>(type_);
+    auto cloned = std::make_unique<WaveGetLaneCountExpr>(type_);
+    cloned->copyStableIdFrom(this);
+    return cloned;
   }
 };
 
@@ -1460,7 +1493,9 @@ public:
   std::string toString() const override { return "WaveIsFirstLane()"; }
   
   std::unique_ptr<Expression> clone() const override {
-    return std::make_unique<WaveIsFirstLaneExpr>(type_);
+    auto cloned = std::make_unique<WaveIsFirstLaneExpr>(type_);
+    cloned->copyStableIdFrom(this);
+    return cloned;
   }
 };
 
@@ -1492,10 +1527,12 @@ public:
   }
   
   std::unique_ptr<Expression> clone() const override {
-    return std::make_unique<WaveReadLaneAt>(
+    auto cloned = std::make_unique<WaveReadLaneAt>(
         value_ ? value_->clone() : nullptr,
         laneIndex_ ? laneIndex_->clone() : nullptr,
         type_);
+    cloned->copyStableIdFrom(this);
+    return cloned;
   }
   
   const Expression* getValue() const { return value_.get(); }
@@ -2195,7 +2232,9 @@ public:
   std::string toString() const override;
   
   std::unique_ptr<Expression> clone() const override {
-    return std::make_unique<SharedReadExpr>(addr_, type_);
+    auto cloned = std::make_unique<SharedReadExpr>(addr_, type_);
+    cloned->copyStableIdFrom(this);
+    return cloned;
   }
 };
 
@@ -2219,10 +2258,12 @@ public:
   std::string toString() const override;
   
   std::unique_ptr<Expression> clone() const override {
-    return std::make_unique<BufferAccessExpr>(
+    auto cloned = std::make_unique<BufferAccessExpr>(
         bufferName_,
         indexExpr_ ? indexExpr_->clone() : nullptr,
         type_);
+    cloned->copyStableIdFrom(this);
+    return cloned;
   }
 };
 
@@ -2248,10 +2289,12 @@ public:
   std::string toString() const override;
   
   std::unique_ptr<Expression> clone() const override {
-    return std::make_unique<ArrayAccessExpr>(
+    auto cloned = std::make_unique<ArrayAccessExpr>(
         arrayName_,
         indexExpr_ ? indexExpr_->clone() : nullptr,
         type_);
+    cloned->copyStableIdFrom(this);
+    return cloned;
   }
 };
 
@@ -2270,7 +2313,9 @@ public:
   std::string toString() const override;
   
   std::unique_ptr<Expression> clone() const override {
-    return std::make_unique<DispatchThreadIdExpr>(component_, type_);
+    auto cloned = std::make_unique<DispatchThreadIdExpr>(component_, type_);
+    cloned->copyStableIdFrom(this);
+    return cloned;
   }
   
   // Getter for AST manipulation

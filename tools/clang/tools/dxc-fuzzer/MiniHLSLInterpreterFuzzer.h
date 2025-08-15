@@ -118,6 +118,7 @@ struct ExecutionTrace {
   // Wave operation synchronization
   struct WaveOpRecord {
     // Identification
+    uint32_t stableId = 0;  // Stable ID of the wave operation expression
     const void* instruction;
     std::string opType;
     uint32_t blockId;
