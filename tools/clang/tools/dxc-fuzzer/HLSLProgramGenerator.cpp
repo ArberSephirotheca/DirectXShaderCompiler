@@ -131,6 +131,7 @@ ProgramState IncrementalGenerator::generateIncremental(const uint8_t* data, size
             // numBranches for cascading if-else
             blockType == ControlFlowGenerator::BlockSpec::CASCADING_IF_ELSE ? 
                 provider.ConsumeIntegralInRange<uint32_t>(2, 5) : 3,
+            std::nullopt,  // switchConfig - will be set below if needed
             {} // nestingContext with default initialization
         };
         
@@ -278,6 +279,7 @@ ControlFlowGenerator::generateIf(const BlockSpec& spec, ProgramState& state,
             spec.includeContinue,
             spec.nestingDepth,
             spec.numBranches,
+            std::nullopt,  // switchConfig - not needed for IF_ELSE
             spec.nestingContext  // Copy nesting context
         };
         elseSpec.nestingContext.parentTypes.push_back(BlockSpec::IF_ELSE);
@@ -785,10 +787,9 @@ ControlFlowGenerator::generateSwitch(const BlockSpec& spec, ProgramState& state,
         defaultConfig.includeDefault = false;
         defaultConfig.allCasesBreak = true;
         
-        // Create a new spec with the config
-        BlockSpec newSpec = spec;
-        newSpec.switchConfig = defaultConfig;
-        return generateSwitch(newSpec, state, provider);
+        // Cannot copy BlockSpec due to unique_ptr, just set the config directly
+        const_cast<BlockSpec&>(spec).switchConfig = defaultConfig;
+        return generateSwitch(spec, state, provider);
     }
     
     const auto& config = spec.switchConfig.value();
@@ -854,7 +855,6 @@ ControlFlowGenerator::generateSwitch(const BlockSpec& spec, ProgramState& state,
         std::vector<std::unique_ptr<interpreter::Statement>> caseBody;
         
         // Create case-specific participation pattern
-        uint32_t waveSize = state.program.waveSize > 0 ? state.program.waveSize : 32;
         std::unique_ptr<interpreter::Expression> participantCondition;
         
         // Different patterns for different cases
@@ -1001,6 +1001,7 @@ void IncrementalGenerator::addStatementsToProgram(ProgramState& state, const uin
         // numBranches for cascading if-else
         blockType == ControlFlowGenerator::BlockSpec::CASCADING_IF_ELSE ? 
             provider.ConsumeIntegralInRange<uint32_t>(2, 5) : 3,
+        std::nullopt,  // switchConfig - will be set below if needed
         {} // nestingContext with default initialization
     };
     
