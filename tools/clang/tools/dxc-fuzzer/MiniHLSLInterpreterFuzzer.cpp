@@ -144,7 +144,8 @@ void generateTestFile(const interpreter::Program& program,
   
   // Calculate buffer sizes
   uint32_t totalThreads = program.numThreadsX * program.numThreadsY * program.numThreadsZ;
-  uint32_t bufferSize = totalThreads * sizeof(uint32_t);
+  uint32_t bufferSizeInBytes = totalThreads * sizeof(uint32_t);
+  uint32_t bufferSizeInEntries = totalThreads;
   
   // Generate expected participant data from trace
   std::vector<uint32_t> expectedParticipants(totalThreads, 0);
@@ -289,7 +290,7 @@ void generateTestFile(const interpreter::Program& program,
     testFile << "    Format: UInt32\n";
     testFile << "    Stride: 4\n";
     testFile << "    Fill: 0\n";
-    testFile << "    Size: " << bufferSize << "\n";
+    testFile << "    Size: " << bufferSizeInEntries << "\n";
     
     // expected_participants buffer with pre-calculated data
     testFile << "  - Name: expected_participants\n";
@@ -312,7 +313,7 @@ void generateTestFile(const interpreter::Program& program,
       testFile << "    Format: UInt32\n";
       testFile << "    Stride: 4\n";
       testFile << "    Fill: 0\n";
-      testFile << "    Size: " << bufferSize << "\n";
+      testFile << "    Size: " << bufferSizeInEntries << "\n";
     }
   }
   
