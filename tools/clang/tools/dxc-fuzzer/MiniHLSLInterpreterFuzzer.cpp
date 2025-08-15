@@ -34,18 +34,35 @@ static const interpreter::WaveActiveOp* findWaveOpInExpression(const interpreter
 
 // Helper function to check if a statement is a tracking operation
 bool isTrackingStatement(const interpreter::Statement* stmt) {
-  auto* assignStmt = dynamic_cast<const interpreter::AssignStmt*>(stmt);
-  if (!assignStmt) return false;
+  // Check for VarDeclStmt pattern: uint _participantCount = WaveActiveSum(1)
+  if (auto* varDeclStmt = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
+    // Check for pattern: _participantCount = WaveActiveSum(1)
+    if (varDeclStmt->getName() != "_participantCount") return false;
+    
+    if (!varDeclStmt->getInit()) return false;
+    
+    auto* waveOp = findWaveOpInExpression(varDeclStmt->getInit());
+    if (!waveOp || waveOp->getOpType() != interpreter::WaveActiveOp::Sum) return false;
+    
+    // Check if input is literal 1
+    auto* literal = dynamic_cast<const interpreter::LiteralExpr*>(waveOp->getInput());
+    return literal && literal->getValue() == interpreter::Value(1);
+  }
   
-  // Check for pattern: _participantCount = WaveActiveSum(1)
-  if (assignStmt->getName() != "_participantCount") return false;
+  // Also check for AssignStmt pattern (in case it's used elsewhere)
+  if (auto* assignStmt = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
+    // Check for pattern: _participantCount = WaveActiveSum(1)
+    if (assignStmt->getName() != "_participantCount") return false;
+    
+    auto* waveOp = findWaveOpInExpression(assignStmt->getExpression());
+    if (!waveOp || waveOp->getOpType() != interpreter::WaveActiveOp::Sum) return false;
+    
+    // Check if input is literal 1
+    auto* literal = dynamic_cast<const interpreter::LiteralExpr*>(waveOp->getInput());
+    return literal && literal->getValue() == interpreter::Value(1);
+  }
   
-  auto* waveOp = findWaveOpInExpression(assignStmt->getExpression());
-  if (!waveOp || waveOp->getOpType() != interpreter::WaveActiveOp::Sum) return false;
-  
-  // Check if input is literal 1
-  auto* literal = dynamic_cast<const interpreter::LiteralExpr*>(waveOp->getInput());
-  return literal && literal->getValue() == interpreter::Value(1);
+  return false;
 }
 
 // Helper function to check if a wave operation in the trace is likely a tracking operation
@@ -211,9 +228,12 @@ void generateTestFile(const interpreter::Program& program,
     for (size_t i = 0; i < trace.waveOperations.size(); i++) {
       const auto& waveOp = trace.waveOperations[i];
       
-      // Check if this is a tracking operation based on stable ID
+      // Check if this is a tracking operation based on stable ID from the mutated program
       auto it = stableIdToIsTracking.find(waveOp.stableId);
-      if (it != stableIdToIsTracking.end() && it->second) {
+      bool isTrackingOperation = (it != stableIdToIsTracking.end() && it->second);
+      
+      // Skip if it's a tracking operation
+      if (isTrackingOperation) {
         FUZZER_DEBUG_LOG("Wave op " << i << " (stable ID " << waveOp.stableId 
                         << "): SKIPPING tracking operation\n");
         trackingOpsSkipped++;
