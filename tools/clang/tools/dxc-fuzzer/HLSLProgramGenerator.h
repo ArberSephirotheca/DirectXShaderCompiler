@@ -7,6 +7,7 @@
 #include "MiniHLSLInterpreterFuzzer.h"  // For MutationStrategy and TraceGuidedFuzzer
 #include <fuzzer/FuzzedDataProvider.h>
 #include <memory>
+#include <optional>
 #include <vector>
 #include <set>
 #include <string>
@@ -67,7 +68,7 @@ public:
 class ControlFlowGenerator {
 public:
     struct BlockSpec {
-        enum Type { IF, IF_ELSE, NESTED_IF, FOR_LOOP, WHILE_LOOP, CASCADING_IF_ELSE };
+        enum Type { IF, IF_ELSE, NESTED_IF, FOR_LOOP, WHILE_LOOP, CASCADING_IF_ELSE, SWITCH_STMT };
         Type type;
         std::unique_ptr<ParticipantPattern> pattern;
         bool includeBreak;
@@ -75,6 +76,21 @@ public:
         uint32_t nestingDepth;
         // For cascading if-else patterns
         uint32_t numBranches = 3; // Number of if-else-if branches
+        
+        // Switch-specific configuration
+        struct SwitchConfig {
+            enum SelectorType {
+                LANE_MODULO,      // laneId % N
+                VARIABLE_BASED,   // Use existing variable
+                THREAD_ID_BASED,  // tid.x % N
+            };
+            
+            SelectorType selectorType = LANE_MODULO;
+            uint32_t numCases = 3;        // 2-4 cases
+            bool includeDefault = false;  // Add default case
+            bool allCasesBreak = true;    // All cases end with break (no fall-through)
+        };
+        std::optional<SwitchConfig> switchConfig;
         
         // Nesting control
         struct NestingContext {
@@ -106,6 +122,10 @@ private:
     std::vector<std::unique_ptr<interpreter::Statement>>
     generateWhileLoop(const BlockSpec& spec, ProgramState& state,
                       FuzzedDataProvider& provider);
+    
+    std::unique_ptr<interpreter::Statement>
+    generateSwitch(const BlockSpec& spec, ProgramState& state,
+                   FuzzedDataProvider& provider);
     
     std::unique_ptr<interpreter::Expression>
     generateWaveOperation(ProgramState& state, FuzzedDataProvider& provider);

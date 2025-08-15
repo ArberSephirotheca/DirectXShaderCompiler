@@ -112,10 +112,10 @@ ProgramState IncrementalGenerator::generateIncremental(const uint8_t* data, size
         // Generate new control flow block
         auto pattern = createPattern(provider);
         auto blockType = static_cast<ControlFlowGenerator::BlockSpec::Type>(
-            provider.ConsumeIntegralInRange<int>(0, 5));  // 6 types: IF, IF_ELSE, NESTED_IF, FOR_LOOP, WHILE_LOOP, CASCADING_IF_ELSE
+            provider.ConsumeIntegralInRange<int>(0, 6));  // 7 types: IF, IF_ELSE, NESTED_IF, FOR_LOOP, WHILE_LOOP, CASCADING_IF_ELSE, SWITCH_STMT
         
         // Debug: Print selected block type
-        const char* blockTypeNames[] = {"IF", "IF_ELSE", "NESTED_IF", "FOR_LOOP", "WHILE_LOOP", "CASCADING_IF_ELSE"};
+        const char* blockTypeNames[] = {"IF", "IF_ELSE", "NESTED_IF", "FOR_LOOP", "WHILE_LOOP", "CASCADING_IF_ELSE", "SWITCH_STMT"};
         FUZZER_DEBUG_LOG("Round " << round << ": Selected block type: " << blockTypeNames[blockType] << " (" << blockType << ")\n");
         
         // Only allow break/continue in loop contexts
@@ -133,6 +133,26 @@ ProgramState IncrementalGenerator::generateIncremental(const uint8_t* data, size
                 provider.ConsumeIntegralInRange<uint32_t>(2, 5) : 3,
             {} // nestingContext with default initialization
         };
+        
+        // Configure switch-specific settings if it's a switch statement
+        if (blockType == ControlFlowGenerator::BlockSpec::SWITCH_STMT) {
+            ControlFlowGenerator::BlockSpec::SwitchConfig switchConfig;
+            
+            // Randomly select selector type
+            uint32_t selectorChoice = provider.ConsumeIntegralInRange<uint32_t>(0, 2);
+            switchConfig.selectorType = static_cast<ControlFlowGenerator::BlockSpec::SwitchConfig::SelectorType>(selectorChoice);
+            
+            // Number of cases (2-4)
+            switchConfig.numCases = provider.ConsumeIntegralInRange<uint32_t>(2, 4);
+            
+            // 30% chance to include default case
+            switchConfig.includeDefault = provider.ConsumeIntegralInRange<uint32_t>(0, 9) < 3;
+            
+            // For phase 1, always use break statements
+            switchConfig.allCasesBreak = true;
+            
+            spec.switchConfig = switchConfig;
+        }
         
         // Enable nesting for this block - always allow nesting to maximize complexity
         spec.nestingContext.allowNesting = true;  // Always allow nesting
@@ -208,6 +228,9 @@ ControlFlowGenerator::generateBlock(const BlockSpec& spec, ProgramState& state,
             break;
         case BlockSpec::CASCADING_IF_ELSE:
             statements.push_back(generateCascadingIfElse(spec, state, provider));
+            break;
+        case BlockSpec::SWITCH_STMT:
+            statements.push_back(generateSwitch(spec, state, provider));
             break;
     }
     
@@ -750,6 +773,185 @@ ControlFlowGenerator::generateWaveOperation(ProgramState& state, FuzzedDataProvi
     return std::make_unique<interpreter::WaveActiveOp>(std::move(input), opType);
 }
 
+std::unique_ptr<interpreter::Statement>
+ControlFlowGenerator::generateSwitch(const BlockSpec& spec, ProgramState& state,
+                                    FuzzedDataProvider& provider) {
+    // Ensure switch config is present
+    if (!spec.switchConfig.has_value()) {
+        // Fallback: create default switch config
+        BlockSpec::SwitchConfig defaultConfig;
+        defaultConfig.selectorType = BlockSpec::SwitchConfig::LANE_MODULO;
+        defaultConfig.numCases = 3;
+        defaultConfig.includeDefault = false;
+        defaultConfig.allCasesBreak = true;
+        
+        // Create a new spec with the config
+        BlockSpec newSpec = spec;
+        newSpec.switchConfig = defaultConfig;
+        return generateSwitch(newSpec, state, provider);
+    }
+    
+    const auto& config = spec.switchConfig.value();
+    
+    // Step 1: Generate switch condition based on selector type
+    std::unique_ptr<interpreter::Expression> condition;
+    
+    switch (config.selectorType) {
+    case BlockSpec::SwitchConfig::LANE_MODULO:
+        // laneId % numCases
+        condition = std::make_unique<interpreter::BinaryOpExpr>(
+            std::make_unique<interpreter::LaneIndexExpr>(),
+            std::make_unique<interpreter::LiteralExpr>(static_cast<int>(config.numCases)),
+            interpreter::BinaryOpExpr::Mod
+        );
+        break;
+        
+    case BlockSpec::SwitchConfig::THREAD_ID_BASED:
+        // tid.x % numCases
+        condition = std::make_unique<interpreter::BinaryOpExpr>(
+            std::make_unique<interpreter::VariableExpr>("tid.x"),
+            std::make_unique<interpreter::LiteralExpr>(static_cast<int>(config.numCases)),
+            interpreter::BinaryOpExpr::Mod
+        );
+        break;
+        
+    case BlockSpec::SwitchConfig::VARIABLE_BASED:
+        // Use existing variable or create a simple one
+        if (!state.declaredVariables.empty() && provider.ConsumeBool()) {
+            // Filter for integer variables that could be used as selector
+            std::vector<std::string> validVars;
+            for (const auto& var : state.declaredVariables) {
+                // Skip loop counters and result variable
+                if (var != "result" && var.substr(0, 1) != "i" && var.substr(0, 7) != "counter") {
+                    validVars.push_back(var);
+                }
+            }
+            
+            if (!validVars.empty()) {
+                size_t idx = provider.ConsumeIntegralInRange<size_t>(0, validVars.size() - 1);
+                condition = std::make_unique<interpreter::BinaryOpExpr>(
+                    std::make_unique<interpreter::VariableExpr>(validVars[idx]),
+                    std::make_unique<interpreter::LiteralExpr>(static_cast<int>(config.numCases)),
+                    interpreter::BinaryOpExpr::Mod
+                );
+                break;
+            }
+        }
+        // Fallback to lane modulo
+        condition = std::make_unique<interpreter::BinaryOpExpr>(
+            std::make_unique<interpreter::LaneIndexExpr>(),
+            std::make_unique<interpreter::LiteralExpr>(static_cast<int>(config.numCases)),
+            interpreter::BinaryOpExpr::Mod
+        );
+        break;
+    }
+    
+    // Step 2: Create switch statement
+    auto switchStmt = std::make_unique<interpreter::SwitchStmt>(std::move(condition));
+    
+    // Step 3: Generate cases
+    for (uint32_t i = 0; i < config.numCases; ++i) {
+        std::vector<std::unique_ptr<interpreter::Statement>> caseBody;
+        
+        // Create case-specific participation pattern
+        uint32_t waveSize = state.program.waveSize > 0 ? state.program.waveSize : 32;
+        std::unique_ptr<interpreter::Expression> participantCondition;
+        
+        // Different patterns for different cases
+        switch (i % 3) {
+        case 0:
+            // Threshold pattern: first N lanes
+            participantCondition = std::make_unique<interpreter::BinaryOpExpr>(
+                std::make_unique<interpreter::LaneIndexExpr>(),
+                std::make_unique<interpreter::LiteralExpr>(static_cast<int>(8 + i * 4)),
+                interpreter::BinaryOpExpr::Lt
+            );
+            break;
+            
+        case 1:
+            // Modulo pattern: every Nth lane
+            participantCondition = std::make_unique<interpreter::BinaryOpExpr>(
+                std::make_unique<interpreter::BinaryOpExpr>(
+                    std::make_unique<interpreter::LaneIndexExpr>(),
+                    std::make_unique<interpreter::LiteralExpr>(2),
+                    interpreter::BinaryOpExpr::Mod
+                ),
+                std::make_unique<interpreter::LiteralExpr>(0),
+                interpreter::BinaryOpExpr::Eq
+            );
+            break;
+            
+        case 2:
+            // All lanes in this case
+            participantCondition = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(true));
+            break;
+        }
+        
+        // Add wave operation with case-specific input
+        std::vector<std::unique_ptr<interpreter::Statement>> waveBody;
+        auto waveInput = std::make_unique<interpreter::LiteralExpr>(static_cast<int>(i + 1));
+        auto waveOp = std::make_unique<interpreter::WaveActiveOp>(
+            std::move(waveInput), 
+            interpreter::WaveActiveOp::Sum
+        );
+        
+        // Accumulate result
+        auto currentResult = std::make_unique<interpreter::VariableExpr>("result");
+        auto addExpr = std::make_unique<interpreter::BinaryOpExpr>(
+            std::move(currentResult),
+            std::move(waveOp),
+            interpreter::BinaryOpExpr::Add
+        );
+        waveBody.push_back(std::make_unique<interpreter::AssignStmt>(
+            "result",
+            std::move(addExpr)
+        ));
+        
+        // Wrap wave operation in participation condition
+        caseBody.push_back(std::make_unique<interpreter::IfStmt>(
+            std::move(participantCondition),
+            std::move(waveBody)
+        ));
+        
+        // Add break statement if configured
+        if (config.allCasesBreak) {
+            caseBody.push_back(std::make_unique<interpreter::BreakStmt>());
+        }
+        
+        switchStmt->addCase(i, std::move(caseBody));
+    }
+    
+    // Step 4: Optional default case
+    if (config.includeDefault) {
+        std::vector<std::unique_ptr<interpreter::Statement>> defaultBody;
+        
+        // Simple wave operation for default case
+        auto defaultWaveOp = std::make_unique<interpreter::WaveActiveOp>(
+            std::make_unique<interpreter::LiteralExpr>(99),  // Distinctive value
+            interpreter::WaveActiveOp::Sum
+        );
+        
+        auto currentResult = std::make_unique<interpreter::VariableExpr>("result");
+        auto addExpr = std::make_unique<interpreter::BinaryOpExpr>(
+            std::move(currentResult),
+            std::move(defaultWaveOp),
+            interpreter::BinaryOpExpr::Add
+        );
+        defaultBody.push_back(std::make_unique<interpreter::AssignStmt>(
+            "result",
+            std::move(addExpr)
+        ));
+        
+        if (config.allCasesBreak) {
+            defaultBody.push_back(std::make_unique<interpreter::BreakStmt>());
+        }
+        
+        switchStmt->addDefault(std::move(defaultBody));
+    }
+    
+    return switchStmt;
+}
+
 // Utility functions - these would typically be in MiniHLSLInterpreterFuzzer.cpp
 // but are defined here for completeness
 
@@ -781,10 +983,10 @@ void IncrementalGenerator::addStatementsToProgram(ProgramState& state, const uin
     // Generate new control flow block
     auto pattern = createPattern(provider);
     auto blockType = static_cast<ControlFlowGenerator::BlockSpec::Type>(
-        provider.ConsumeIntegralInRange<int>(0, 5));
+        provider.ConsumeIntegralInRange<int>(0, 6));
     
     // Debug: Print selected block type
-    const char* blockTypeNames[] = {"IF", "IF_ELSE", "NESTED_IF", "FOR_LOOP", "WHILE_LOOP", "CASCADING_IF_ELSE"};
+    const char* blockTypeNames[] = {"IF", "IF_ELSE", "NESTED_IF", "FOR_LOOP", "WHILE_LOOP", "CASCADING_IF_ELSE", "SWITCH_STMT"};
     FUZZER_DEBUG_LOG("addStatements: Selected block type: " << blockTypeNames[blockType] << " (" << blockType << ")\n");
     
     bool isLoop = (blockType == ControlFlowGenerator::BlockSpec::FOR_LOOP ||
@@ -801,6 +1003,26 @@ void IncrementalGenerator::addStatementsToProgram(ProgramState& state, const uin
             provider.ConsumeIntegralInRange<uint32_t>(2, 5) : 3,
         {} // nestingContext with default initialization
     };
+    
+    // Configure switch-specific settings if it's a switch statement
+    if (blockType == ControlFlowGenerator::BlockSpec::SWITCH_STMT) {
+        ControlFlowGenerator::BlockSpec::SwitchConfig switchConfig;
+        
+        // Randomly select selector type
+        uint32_t selectorChoice = provider.ConsumeIntegralInRange<uint32_t>(0, 2);
+        switchConfig.selectorType = static_cast<ControlFlowGenerator::BlockSpec::SwitchConfig::SelectorType>(selectorChoice);
+        
+        // Number of cases (2-4)
+        switchConfig.numCases = provider.ConsumeIntegralInRange<uint32_t>(2, 4);
+        
+        // 30% chance to include default case
+        switchConfig.includeDefault = provider.ConsumeIntegralInRange<uint32_t>(0, 9) < 3;
+        
+        // For phase 1, always use break statements
+        switchConfig.allCasesBreak = true;
+        
+        spec.switchConfig = switchConfig;
+    }
     
     // Enable nesting for this block - always allow nesting to maximize complexity
     spec.nestingContext.allowNesting = true;  // Always allow nesting
