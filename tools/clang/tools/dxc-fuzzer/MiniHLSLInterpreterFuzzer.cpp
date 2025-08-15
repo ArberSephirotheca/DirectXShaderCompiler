@@ -29,6 +29,53 @@
 namespace minihlsl {
 namespace fuzzer {
 
+// Forward declaration
+static const interpreter::WaveActiveOp* findWaveOpInExpression(const interpreter::Expression* expr);
+
+// Helper function to check if a statement is a tracking operation
+bool isTrackingStatement(const interpreter::Statement* stmt) {
+  auto* assignStmt = dynamic_cast<const interpreter::AssignStmt*>(stmt);
+  if (!assignStmt) return false;
+  
+  // Check for pattern: _participantCount = WaveActiveSum(1)
+  if (assignStmt->getName() != "_participantCount") return false;
+  
+  auto* waveOp = findWaveOpInExpression(assignStmt->getExpression());
+  if (!waveOp || waveOp->getOpType() != interpreter::WaveActiveOp::Sum) return false;
+  
+  // Check if input is literal 1
+  auto* literal = dynamic_cast<const interpreter::LiteralExpr*>(waveOp->getInput());
+  return literal && literal->getValue() == interpreter::Value(1);
+}
+
+// Helper function to check if a wave operation in the trace is likely a tracking operation
+bool isTrackingWaveOp(const ExecutionTrace::WaveOpRecord& waveOp, size_t index, 
+                      const std::vector<ExecutionTrace::WaveOpRecord>& allOps) {
+  // Tracking operations are WaveActiveSum operations
+  if (waveOp.opType != "WaveActiveSum") return false;
+  
+  // The key heuristic: tracking operations follow this pattern
+  // 1. They immediately follow another wave operation in the same block
+  // 2. They are WaveActiveSum operations (counting participants)
+  // 3. They have the exact same participants as the previous operation
+  
+  if (index > 0) {
+    const auto& prevOp = allOps[index - 1];
+    
+    // Check if this is in the same block and immediately follows the previous op
+    if (prevOp.blockId == waveOp.blockId) {
+      // Check if both operations have the same participants
+      // Tracking operations execute with the same lanes as the original operation
+      if (prevOp.arrivedParticipants == waveOp.arrivedParticipants) {
+        // This is very likely a tracking operation
+        return true;
+      }
+    }
+  }
+  
+  return false;
+}
+
 // Helper function to create output directory and generate filenames
 std::string createMutantOutputPath(size_t increment, const std::string& mutationChain, const std::string& extension = ".hlsl") {
   // Create output directory if it doesn't exist
@@ -99,35 +146,99 @@ void generateTestFile(const interpreter::Program& program,
     FUZZER_DEBUG_LOG("Generating expected data from trace with " << trace.waveOperations.size() << " wave operations\n");
     FUZZER_DEBUG_LOG("Total threads: " << totalThreads << ", Wave size: " << trace.threadHierarchy.waveSize << "\n");
     
-    // Wave operations appear in pairs in the trace:
-    // - First: the original operation
-    // - Second: the WaveActiveSum(1) for counting
+    // First, collect all wave operations from the program and mark which are tracking statements
+    std::map<uint32_t, bool> stableIdToIsTracking;  // stable ID -> is tracking operation
     
-    // Process wave operations in pairs
-    for (size_t i = 0; i < trace.waveOperations.size(); i += 2) {
-      if (i + 1 >= trace.waveOperations.size()) break;
+    // Helper to recursively find wave ops in statements
+    std::function<void(const interpreter::Statement*)> collectWaveOps;
+    collectWaveOps = [&](const interpreter::Statement* stmt) {
+      if (!stmt) return;
       
-      const auto& originalOp = trace.waveOperations[i];
-      // const auto& countingOp = trace.waveOperations[i + 1];  // Not used currently
+      // Check if this is a tracking statement
+      bool isTracking = isTrackingStatement(stmt);
       
-      FUZZER_DEBUG_LOG("Wave op pair " << i/2 << ": Wave " << originalOp.waveId 
-                      << " with " << originalOp.arrivedParticipants.size() << " participants\n");
+      // Find wave operation in this statement
+      const interpreter::WaveActiveOp* waveOp = nullptr;
+      if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
+        waveOp = findWaveOpInExpression(assign->getExpression());
+      } else if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
+        if (varDecl->getInit()) {
+          waveOp = findWaveOpInExpression(varDecl->getInit());
+        }
+      }
+      
+      if (waveOp) {
+        stableIdToIsTracking[waveOp->getStableId()] = isTracking;
+        FUZZER_DEBUG_LOG("Found wave op with stable ID " << waveOp->getStableId() 
+                        << " - tracking: " << (isTracking ? "yes" : "no") << "\n");
+      }
+      
+      // Recurse into nested statements
+      if (auto* ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt)) {
+        for (const auto& s : ifStmt->getThenBlock()) {
+          collectWaveOps(s.get());
+        }
+        for (const auto& s : ifStmt->getElseBlock()) {
+          collectWaveOps(s.get());
+        }
+      } else if (auto* whileStmt = dynamic_cast<const interpreter::WhileStmt*>(stmt)) {
+        for (const auto& s : whileStmt->getBody()) {
+          collectWaveOps(s.get());
+        }
+      } else if (auto* forStmt = dynamic_cast<const interpreter::ForStmt*>(stmt)) {
+        for (const auto& s : forStmt->getBody()) {
+          collectWaveOps(s.get());
+        }
+      } else if (auto* switchStmt = dynamic_cast<const interpreter::SwitchStmt*>(stmt)) {
+        for (size_t i = 0; i < switchStmt->getCaseCount(); ++i) {
+          const auto& caseBlock = switchStmt->getCase(i);
+          for (const auto& s : caseBlock.statements) {
+            collectWaveOps(s.get());
+          }
+        }
+      }
+    };
+    
+    // Collect wave ops from all statements
+    for (const auto& stmt : program.statements) {
+      collectWaveOps(stmt.get());
+    }
+    
+    // Process trace operations, skipping tracking operations
+    size_t trackingOpsSkipped = 0;
+    size_t originalOpsProcessed = 0;
+    
+    for (size_t i = 0; i < trace.waveOperations.size(); i++) {
+      const auto& waveOp = trace.waveOperations[i];
+      
+      // Check if this is a tracking operation based on stable ID
+      auto it = stableIdToIsTracking.find(waveOp.stableId);
+      if (it != stableIdToIsTracking.end() && it->second) {
+        FUZZER_DEBUG_LOG("Wave op " << i << " (stable ID " << waveOp.stableId 
+                        << "): SKIPPING tracking operation\n");
+        trackingOpsSkipped++;
+        continue;
+      }
+      
+      FUZZER_DEBUG_LOG("Wave op " << i << " (stable ID " << waveOp.stableId 
+                      << "): " << waveOp.opType << " on Wave " << waveOp.waveId 
+                      << " with " << waveOp.arrivedParticipants.size() << " participants\n");
+      originalOpsProcessed++;
       
       // Convert lane IDs to global thread IDs
-      // The wave operation has a waveId, and each lane within that wave needs to be converted
       uint32_t waveSize = trace.threadHierarchy.waveSize;
       if (waveSize == 0) {
         FUZZER_DEBUG_LOG("WARNING: Wave size is 0, using default 32\n");
         waveSize = 32;
       }
-      uint32_t waveBaseThreadId = originalOp.waveId * waveSize;
+      uint32_t waveBaseThreadId = waveOp.waveId * waveSize;
       
       // Each participating thread should increment their success counter by 1
-      for (auto laneId : originalOp.arrivedParticipants) {
+      for (auto laneId : waveOp.arrivedParticipants) {
         uint32_t globalThreadId = waveBaseThreadId + laneId;
         if (globalThreadId < totalThreads) {
           expectedParticipants[globalThreadId]++;
-          FUZZER_DEBUG_LOG("  Thread " << globalThreadId << " (wave " << originalOp.waveId 
+          FUZZER_DEBUG_LOG("  Thread " << globalThreadId << " (wave " << waveOp.waveId 
                           << ", lane " << laneId << ") expected++\n");
         }
       }
@@ -138,6 +249,8 @@ void generateTestFile(const interpreter::Program& program,
       FUZZER_DEBUG_LOG(expectedParticipants[i] << " ");
     }
     FUZZER_DEBUG_LOG("\n");
+    FUZZER_DEBUG_LOG("Total original operations processed: " << originalOpsProcessed << "\n");
+    FUZZER_DEBUG_LOG("Total tracking operations skipped: " << trackingOpsSkipped << "\n");
   }
   
   // Write pipeline YAML section
@@ -1091,25 +1204,9 @@ void WaveParticipantTrackingMutation::processStatementsForTracking(
     size_t& currentWaveOpIndex,
     const std::map<size_t, size_t>& programIndexToTraceIndex) const {
   
-  // Helper lambda to check if this is a tracking operation we should skip
-  auto isTrackingOperation = [](const interpreter::Statement* stmt) -> bool {
-    auto* assignStmt = dynamic_cast<const interpreter::AssignStmt*>(stmt);
-    if (!assignStmt) return false;
-    
-    // Check for pattern: _participantCount = WaveActiveSum(1)
-    if (assignStmt->getName() != "_participantCount") return false;
-    
-    auto* waveOp = findWaveOpInExpression(assignStmt->getExpression());
-    if (!waveOp || waveOp->getOpType() != interpreter::WaveActiveOp::Sum) return false;
-    
-    // Check if input is literal 1
-    auto* literal = dynamic_cast<const interpreter::LiteralExpr*>(waveOp->getInput());
-    return literal && literal->getValue() == interpreter::Value(1);
-  };
-  
   for (const auto& stmt : input) {
     // IMPORTANT: Skip tracking operations we previously added
-    if (isTrackingOperation(stmt.get())) {
+    if (isTrackingStatement(stmt.get())) {
       output.push_back(stmt->clone());
       continue;  // Don't process tracking ops
     }
@@ -1140,7 +1237,7 @@ void WaveParticipantTrackingMutation::processStatementsForTracking(
     std::string resultVarName;
     
     // Don't process tracking operations (already skipped above, but double-check)
-    if (!isTrackingOperation(stmt.get())) {
+    if (!isTrackingStatement(stmt.get())) {
       if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt.get())) {
         waveOp = findWaveOpInExpression(assign->getExpression());
         resultVarName = assign->getName();
@@ -2683,26 +2780,10 @@ std::map<size_t, size_t> WaveParticipantTrackingMutation::buildWaveOpMapping(
   std::map<size_t, size_t> programIndexToTraceIndex;
   size_t programWaveOpIndex = 0;
   
-  // Helper lambda to check if this is a tracking operation we should skip
-  auto isTrackingOperation = [](const interpreter::Statement* stmt) -> bool {
-    auto* assignStmt = dynamic_cast<const interpreter::AssignStmt*>(stmt);
-    if (!assignStmt) return false;
-    
-    // Check for pattern: _participantCount = WaveActiveSum(1)
-    if (assignStmt->getName() != "_participantCount") return false;
-    
-    auto* waveOp = findWaveOpInExpression(assignStmt->getExpression());
-    if (!waveOp || waveOp->getOpType() != interpreter::WaveActiveOp::Sum) return false;
-    
-    // Check if input is literal 1
-    auto* literal = dynamic_cast<const interpreter::LiteralExpr*>(waveOp->getInput());
-    return literal && literal->getValue() == interpreter::Value(1);
-  };
-  
   // Helper lambda to match wave ops by stable ID
   auto matchWaveOps = [&](const interpreter::Statement* stmt) {
     // Skip tracking operations we previously added
-    if (isTrackingOperation(stmt)) {
+    if (isTrackingStatement(stmt)) {
       return;
     }
     
