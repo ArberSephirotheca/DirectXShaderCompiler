@@ -144,7 +144,6 @@ void generateTestFile(const interpreter::Program& program,
   
   // Calculate buffer sizes
   uint32_t totalThreads = program.numThreadsX * program.numThreadsY * program.numThreadsZ;
-  uint32_t bufferSizeInBytes = totalThreads * sizeof(uint32_t);
   uint32_t bufferSizeInEntries = totalThreads;
   
   // Generate expected participant data from trace
@@ -1175,6 +1174,11 @@ bool WaveParticipantTrackingMutation::hasParticipantBuffer(
 static size_t countWaveOpsInStatement(const interpreter::Statement* stmt) {
   size_t count = 0;
   
+  // Skip tracking operations
+  if (isTrackingStatement(stmt)) {
+    return 0;
+  }
+  
   // Check current statement
   if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
     if (findWaveOpInExpression(assign->getExpression())) {
@@ -1283,10 +1287,21 @@ void WaveParticipantTrackingMutation::processStatementsForTracking(
         if (traceIndex < trace.waveOperations.size()) {
           const auto& waveOpRecord = trace.waveOperations[traceIndex];
           expectedParticipants = waveOpRecord.arrivedParticipants.size();
+          FUZZER_DEBUG_LOG("[WaveParticipantTracking] Wave op at index " << currentWaveOpIndex 
+                          << " (stable ID " << waveOp->getStableId() << ") maps to trace index " 
+                          << traceIndex << " with " << expectedParticipants << " participants\n");
         }
       } else {
         // This wave operation is not in the mapping - it's dead code
-        FUZZER_DEBUG_LOG("[WaveParticipantTracking] Wave op appears to be dead code (not in trace)\n");
+        FUZZER_DEBUG_LOG("[WaveParticipantTracking] Wave op at index " << currentWaveOpIndex 
+                        << " (stable ID " << waveOp->getStableId() 
+                        << ") appears to be dead code (not in trace)\n");
+        
+        // Debug: let's see what's in the mapping
+        FUZZER_DEBUG_LOG("[WaveParticipantTracking] Current mapping contains:\n");
+        for (const auto& pair : programIndexToTraceIndex) {
+          FUZZER_DEBUG_LOG("  Program index " << pair.first << " -> Trace index " << pair.second << "\n");
+        }
       }
       
       // Increment our program wave op index
@@ -2795,6 +2810,8 @@ std::map<size_t, size_t> WaveParticipantTrackingMutation::buildWaveOpMapping(
   std::map<uint32_t, size_t> stableIdToTraceIndex;
   for (size_t i = 0; i < trace.waveOperations.size(); i++) {
     stableIdToTraceIndex[trace.waveOperations[i].stableId] = i;
+    FUZZER_DEBUG_LOG("[WaveParticipantTracking] Trace contains wave op at index " << i 
+                    << " with stable ID " << trace.waveOperations[i].stableId << "\n");
   }
   
   // Map program wave op indices to trace indices using stable IDs
@@ -2879,18 +2896,10 @@ interpreter::Program WaveParticipantTrackingMutation::createMutantWithTracking(
   // Ensure participant buffer exists
   ensureParticipantBuffer(mutant);
   
-  // Count wave ops before the new statements to get the starting index
-  size_t waveOpsBeforeNewStatements = 0;
-  size_t firstNewStatementIndex = statementsToMutate.empty() ? 
-      program.statements.size() : *statementsToMutate.begin();
-  for (size_t i = 0; i < firstNewStatementIndex; ++i) {
-    waveOpsBeforeNewStatements += countWaveOpsInStatement(program.statements[i].get());
-  }
+  // Initialize wave op index for tracking - start from 0 to match the global indices
+  size_t currentWaveOpIndex = 0;
   
-  // Initialize wave op index for tracking
-  size_t currentWaveOpIndex = waveOpsBeforeNewStatements;
-  
-  // Process statements: only apply tracking to new statements from current increment
+  // Process statements: apply tracking to new statements, but track wave op index globally
   for (size_t i = 0; i < program.statements.size(); ++i) {
     if (statementsToMutate.find(i) != statementsToMutate.end()) {
       // This is a new statement from current increment - process it for tracking
@@ -2906,8 +2915,11 @@ interpreter::Program WaveParticipantTrackingMutation::createMutantWithTracking(
         mutant.statements.push_back(std::move(stmt));
       }
     } else {
-      // This is an old statement - copy it unchanged
+      // This is an old statement - copy it unchanged but still count its wave ops
       mutant.statements.push_back(program.statements[i]->clone());
+      
+      // Count wave ops in this statement to keep our index in sync
+      currentWaveOpIndex += countWaveOpsInStatement(program.statements[i].get());
     }
   }
   
