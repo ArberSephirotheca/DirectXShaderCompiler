@@ -2367,8 +2367,11 @@ interpreter::Program TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& 
   // Use sequential ordering for deterministic execution
   interpreter::ThreadOrdering ordering = interpreter::ThreadOrdering::sequential(preparedProgram.getTotalThreads());
   
+  // Use the program's wave size if specified, otherwise fall back to config
+  uint32_t effectiveWaveSize = preparedProgram.getEffectiveWaveSize(config.waveSize);
+  
   auto goldenResult = captureInterpreter.executeAndCaptureTrace(
-    preparedProgram, ordering, config.waveSize);
+    preparedProgram, ordering, effectiveWaveSize);
   
   // Check if execution succeeded
   if (!goldenResult.isValid()) {
@@ -2428,8 +2431,10 @@ interpreter::Program TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& 
     // Test the mutant
     try {
       TraceCaptureInterpreter mutantInterpreter;
+      // Use the mutant program's wave size if specified
+      uint32_t mutantWaveSize = finalMutant.getEffectiveWaveSize(config.waveSize);
       auto mutantTestResult = mutantInterpreter.executeAndCaptureTrace(
-        finalMutant, ordering, config.waveSize);
+        finalMutant, ordering, mutantWaveSize);
       
       if (!mutantTestResult.isValid()) {
         FUZZER_DEBUG_LOG("Mutant execution failed: " << mutantTestResult.errorMessage << "\n");
@@ -2613,6 +2618,7 @@ interpreter::Program TraceGuidedFuzzer::prepareProgramForMutation(
   preparedProgram.numThreadsZ = program.numThreadsZ;
   preparedProgram.globalBuffers = program.globalBuffers;
   preparedProgram.entryInputs = program.entryInputs;
+  preparedProgram.waveSize = program.waveSize;
   
   // Check if main function has SV_DispatchThreadID parameter
   bool hasDispatchThreadID = false;
@@ -2770,6 +2776,7 @@ interpreter::Program WaveParticipantTrackingMutation::createBaseMutant(const int
   mutant.numThreadsZ = program.numThreadsZ;
   mutant.entryInputs = program.entryInputs;
   mutant.globalBuffers = program.globalBuffers;
+  mutant.waveSize = program.waveSize;
   return mutant;
 }
 
@@ -3200,7 +3207,7 @@ int main(int argc, char** argv) {
   
   // Configure the incremental fuzzing pipeline
   minihlsl::fuzzer::IncrementalFuzzingConfig config;
-  config.maxIncrements = 5;
+  config.maxIncrements = 1;
   config.mutantsPerIncrement = 10;
   config.enableLogging = true;
   

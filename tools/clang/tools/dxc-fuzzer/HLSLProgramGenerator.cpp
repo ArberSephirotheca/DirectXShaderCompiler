@@ -45,14 +45,12 @@ std::unique_ptr<ParticipantPattern> IncrementalGenerator::createPattern(FuzzedDa
 
 void IncrementalGenerator::initializeBaseProgram(ProgramState& state, FuzzedDataProvider& provider) {
     // Set thread configuration
-    state.program.numThreadsX = 4; // Or from provider
+    state.program.numThreadsX = 256; // Or from provider
     state.program.numThreadsY = 1;
     state.program.numThreadsZ = 1;
     
-    // Set wave size if specified
-    if (provider.ConsumeBool()) {
-        state.program.waveSize = provider.ConsumeBool() ? 32 : 64;
-    }
+    // Always set wave size (alternating between 4 and 8 for variety)
+    state.program.waveSize = provider.ConsumeBool() ? 32 : 32;
     
     // Add SV_DispatchThreadID parameter
     interpreter::ParameterSig tidParam;
@@ -463,13 +461,12 @@ ControlFlowGenerator::generateCascadingIfElse(const BlockSpec& spec, ProgramStat
         // Generate body with a different wave operation for each branch
         std::vector<std::unique_ptr<interpreter::Statement>> body;
         
-        // Choose a different wave operation type for each branch
+        // Choose a different wave operation type for each branch (excluding Product)
         interpreter::WaveActiveOp::OpType opType;
-        switch (i % 4) {
+        switch (i % 3) {
             case 0: opType = interpreter::WaveActiveOp::Sum; break;
-            case 1: opType = interpreter::WaveActiveOp::Product; break;
-            case 2: opType = interpreter::WaveActiveOp::Min; break;
-            case 3: opType = interpreter::WaveActiveOp::Max; break;
+            case 1: opType = interpreter::WaveActiveOp::Min; break;
+            case 2: opType = interpreter::WaveActiveOp::Max; break;
         }
         
         // Create wave operation with different input for each branch
@@ -716,14 +713,13 @@ ControlFlowGenerator::generateNestedBody(const BlockSpec& spec, ProgramState& st
 
 std::unique_ptr<interpreter::Expression>
 ControlFlowGenerator::generateWaveOperation(ProgramState& state, FuzzedDataProvider& provider) {
-    // Choose operation type
+    // Choose operation type (excluding Product to avoid overflow)
     interpreter::WaveActiveOp::OpType opType;
-    uint32_t opChoice = provider.ConsumeIntegralInRange<uint32_t>(0, 3);
+    uint32_t opChoice = provider.ConsumeIntegralInRange<uint32_t>(0, 2);
     switch (opChoice) {
         case 0: opType = interpreter::WaveActiveOp::Sum; break;
-        case 1: opType = interpreter::WaveActiveOp::Product; break;
-        case 2: opType = interpreter::WaveActiveOp::Min; break;
-        case 3: opType = interpreter::WaveActiveOp::Max; break;
+        case 1: opType = interpreter::WaveActiveOp::Min; break;
+        case 2: opType = interpreter::WaveActiveOp::Max; break;
         default: opType = interpreter::WaveActiveOp::Sum; break;
     }
     

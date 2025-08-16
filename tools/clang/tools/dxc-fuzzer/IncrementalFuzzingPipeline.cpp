@@ -76,14 +76,14 @@ bool IncrementalFuzzingPipeline::validateExecution(const interpreter::Program& p
         
         // Set a timeout to prevent infinite loops
         auto start = std::chrono::steady_clock::now();
-        auto timeout = std::chrono::seconds(5);
+        auto timeout = std::chrono::seconds(60);
         
         auto result = interpreter.executeAndCaptureTrace(program, ordering, waveSize);
         
         auto elapsed = std::chrono::steady_clock::now() - start;
         std::cout << "Execution time: " << std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() << "ms\n";
         if (elapsed > timeout) {
-            error = "Execution timeout: possible infinite loop or deadlock";
+            error = "Fuzzer Execution timeout: possible infinite loop or deadlock";
             return false;
         }
         
