@@ -604,6 +604,7 @@ struct FuzzingConfig {
   uint32_t maxDepth = 5;
   bool enableLogging = true;
   std::string outputDir = "./fuzzing_results";
+  std::string seedId;  // Unique identifier for this seed/run
 };
 
 class TraceGuidedFuzzer {

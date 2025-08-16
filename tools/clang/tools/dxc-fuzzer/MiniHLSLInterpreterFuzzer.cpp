@@ -12,6 +12,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <cctype>
+#include <cstdlib>  // for std::getenv
 
 #if defined(_WIN32)
   #define NOMINMAX
@@ -94,19 +95,21 @@ bool isTrackingWaveOp(const ExecutionTrace::WaveOpRecord& waveOp, size_t index,
 }
 
 // Helper function to create output directory and generate filenames
-std::string createMutantOutputPath(size_t increment, const std::string& mutationChain, const std::string& extension = ".hlsl") {
+std::string createMutantOutputPath(size_t increment, const std::string& mutationChain, const std::string& extension = ".hlsl", const std::string& seedId = "", const std::string& outputDir = "mutant_outputs") {
   // Create output directory if it doesn't exist
-  const std::string outputDir = "mutant_outputs";
-  
 #ifdef _WIN32
   CreateDirectoryA(outputDir.c_str(), NULL);
 #else
   mkdir(outputDir.c_str(), 0755);
 #endif
   
-  // Generate filename based on increment and mutation chain
+  // Generate filename based on seed ID (if provided), increment and mutation chain
   std::stringstream filename;
-  filename << outputDir << "/increment_" << increment;
+  filename << outputDir << "/";
+  if (!seedId.empty()) {
+    filename << "program_" << seedId << "_";
+  }
+  filename << "increment_" << increment;
   
   // Clean up mutation chain string for filename
   std::string cleanMutationChain = mutationChain;
@@ -2408,7 +2411,7 @@ interpreter::Program TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& 
     FUZZER_DEBUG_LOG("\n");
     
     // Save mutant program to file
-    std::string mutantPath = createMutantOutputPath(currentIncrement, mutationResult.getMutationChainString());
+    std::string mutantPath = createMutantOutputPath(currentIncrement, mutationResult.getMutationChainString(), ".hlsl", config.seedId, config.outputDir);
     std::ofstream mutantFile(mutantPath);
     if (mutantFile.is_open()) {
       mutantFile << serializeProgramToString(finalMutant);
@@ -2421,7 +2424,7 @@ interpreter::Program TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& 
     // Generate test file with YAML pipeline if using WaveParticipantTracking
     if (mutationResult.getMutationChainString().find("WaveParticipantTracking") != std::string::npos) {
       try {
-        std::string testPath = createMutantOutputPath(currentIncrement, mutationResult.getMutationChainString(), ".test");
+        std::string testPath = createMutantOutputPath(currentIncrement, mutationResult.getMutationChainString(), ".test", config.seedId, config.outputDir);
         generateTestFile(finalMutant, goldenTrace, testPath, mutationResult.getMutationChainString());
       } catch (const std::exception& e) {
         FUZZER_DEBUG_LOG("Failed to generate test file: " << e.what() << "\n");
@@ -3207,7 +3210,25 @@ int main(int argc, char** argv) {
   
   // Configure the incremental fuzzing pipeline
   minihlsl::fuzzer::IncrementalFuzzingConfig config;
-  config.maxIncrements = 1;
+  
+  // Check environment variables for configuration
+  const char* maxIncrementsEnv = std::getenv("FUZZ_MAX_INCREMENTS");
+  if (maxIncrementsEnv) {
+    config.maxIncrements = std::stoul(maxIncrementsEnv);
+  } else {
+    config.maxIncrements = 1;
+  }
+  
+  const char* seedIdEnv = std::getenv("FUZZ_SEED_ID");
+  if (seedIdEnv) {
+    config.seedId = seedIdEnv;
+  }
+  
+  const char* outputDirEnv = std::getenv("FUZZ_OUTPUT_DIR");
+  if (outputDirEnv) {
+    config.outputDir = outputDirEnv;
+  }
+  
   config.mutantsPerIncrement = 10;
   config.enableLogging = true;
   

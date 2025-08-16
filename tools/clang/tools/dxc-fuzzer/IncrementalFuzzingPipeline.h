@@ -18,6 +18,8 @@ struct IncrementalFuzzingConfig {
     bool enableLogging = true;
     bool stopOnFirstBug = false;        // Stop pipeline on first bug found
     size_t randomSeed = 0;              // 0 = use random seed
+    std::string seedId;                 // Unique identifier for this seed/run
+    std::string outputDir = "mutant_outputs"; // Output directory for files
 };
 
 // Result from one pipeline iteration

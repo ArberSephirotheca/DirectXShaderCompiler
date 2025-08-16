@@ -122,6 +122,8 @@ PipelineResult::IncrementResult IncrementalFuzzingPipeline::testMutations(
     FuzzingConfig fuzzConfig;
     fuzzConfig.maxMutants = config.mutantsPerIncrement;
     fuzzConfig.enableLogging = config.enableLogging;
+    fuzzConfig.seedId = config.seedId;
+    fuzzConfig.outputDir = config.outputDir;
     // fuzzConfig.stopOnFirstBug = false; // Not available in FuzzingConfig
 
     // Run fuzzing with captured trace
@@ -219,7 +221,7 @@ PipelineResult IncrementalFuzzingPipeline::run(const uint8_t* data, size_t size)
         }
         
         // Save base program to file
-        const std::string outputDir = "mutant_outputs";
+        const std::string outputDir = config.outputDir;
 #ifdef _WIN32
         CreateDirectoryA(outputDir.c_str(), NULL);
 #else
@@ -227,7 +229,11 @@ PipelineResult IncrementalFuzzingPipeline::run(const uint8_t* data, size_t size)
 #endif
         
         std::stringstream baseFilename;
-        baseFilename << outputDir << "/increment_" << increment << "_base.hlsl";
+        if (!config.seedId.empty()) {
+            baseFilename << outputDir << "/program_" << config.seedId << "_increment_" << increment << "_base.hlsl";
+        } else {
+            baseFilename << outputDir << "/increment_" << increment << "_base.hlsl";
+        }
         std::ofstream baseFile(baseFilename.str());
         if (baseFile.is_open()) {
             baseFile << incrementResult.baseProgramStr;
