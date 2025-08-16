@@ -591,31 +591,66 @@ LaneBlockStatus BlockMembershipRegistry::getLaneStatus(uint32_t waveId,
   return (it != membership_.end()) ? it->second : LaneBlockStatus::Unknown;
 }
 
+void BlockMembershipRegistry::registerBlock(uint32_t blockId, BlockType type) {
+  blockTypes_[blockId] = type;
+}
+
 uint32_t BlockMembershipRegistry::getCurrentBlock(uint32_t waveId,
                                                   LaneId laneId) const {
-  // Find the block where this lane is currently participating or waiting
-  // Prefer non-header blocks over header blocks for dual membership scenarios
-  uint32_t headerBlock = 0;
-  uint32_t nonHeaderBlock = 0;
-
+  // Find all blocks where this lane is currently active
+  std::vector<std::pair<uint32_t, LaneBlockStatus>> activeBlocks;
+  
   for (const auto &[key, status] : membership_) {
     if (std::get<0>(key) == waveId && std::get<1>(key) == laneId) {
       if (status == LaneBlockStatus::Participating ||
           status == LaneBlockStatus::WaitingForWave) {
-        uint32_t blockId = std::get<2>(key);
-        // TODO: We need block type info to distinguish header vs non-header
-        // For now, use heuristic: higher block IDs are usually body blocks
-        if (blockId > headerBlock) {
-          nonHeaderBlock = blockId;
-        } else if (headerBlock == 0) {
-          headerBlock = blockId;
-        }
+        activeBlocks.push_back({std::get<2>(key), status});
       }
     }
   }
-
-  // Return non-header block if found, otherwise header block
-  return nonHeaderBlock != 0 ? nonHeaderBlock : headerBlock;
+  
+  if (activeBlocks.empty()) {
+    return 0;
+  }
+  
+  if (activeBlocks.size() == 1) {
+    return activeBlocks[0].first;
+  }
+  
+  // Multiple blocks - prioritize by:
+  // 1. WaitingForWave status (active synchronization)
+  // 2. Non-header blocks (actual execution location)
+  // 3. Highest block ID among non-headers (innermost)
+  
+  // First priority: blocks where lane is WaitingForWave
+  for (const auto& [blockId, status] : activeBlocks) {
+    if (status == LaneBlockStatus::WaitingForWave) {
+      return blockId;  // This is where the lane is actively synchronizing
+    }
+  }
+  
+  // Second priority: participating in non-header blocks
+  uint32_t bestNonHeaderBlock = 0;
+  for (const auto& [blockId, status] : activeBlocks) {
+    auto typeIt = blockTypes_.find(blockId);
+    if (typeIt != blockTypes_.end() && 
+        typeIt->second != BlockType::LOOP_HEADER) {
+      // Prefer higher block IDs among non-headers (likely innermost)
+      bestNonHeaderBlock = std::max(bestNonHeaderBlock, blockId);
+    }
+  }
+  
+  if (bestNonHeaderBlock > 0) {
+    return bestNonHeaderBlock;
+  }
+  
+  // Last resort: return highest block ID (maintains backward compatibility)
+  uint32_t maxBlock = 0;
+  for (const auto& [blockId, status] : activeBlocks) {
+    maxBlock = std::max(maxBlock, blockId);
+  }
+  
+  return maxBlock;
 }
 
 std::set<LaneId>
@@ -8019,6 +8054,9 @@ uint32_t ThreadgroupContext::findOrCreateBlockForPath(
   // Store the new block
   executionBlocks[newBlockId] = newBlock;
   identityToBlockId[identity] = newBlockId;
+  
+  // Register block type with the membership registry
+  membershipRegistry.registerBlock(newBlockId, identity.blockType);
 
   return newBlockId;
 }

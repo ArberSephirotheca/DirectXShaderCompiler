@@ -879,6 +879,8 @@ class BlockMembershipRegistry {
 private:
   // (waveId, laneId, blockId) -> status
   std::map<std::tuple<uint32_t, LaneId, uint32_t>, LaneBlockStatus> membership_;
+  // blockId -> BlockType
+  std::map<uint32_t, BlockType> blockTypes_;
 
 public:
   // Core operations
@@ -887,6 +889,9 @@ public:
   LaneBlockStatus getLaneStatus(uint32_t waveId, LaneId laneId,
                                 uint32_t blockId) const;
   uint32_t getCurrentBlock(uint32_t waveId, LaneId laneId) const;
+  
+  // Block type management
+  void registerBlock(uint32_t blockId, BlockType type);
 
   // Query methods (computed on-demand)
   std::set<LaneId> getParticipatingLanes(uint32_t waveId,
