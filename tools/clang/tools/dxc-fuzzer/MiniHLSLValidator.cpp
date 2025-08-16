@@ -2671,118 +2671,121 @@ MiniHLSLValidator::validate_source_with_full_ast(const string &hlsl_source,
 }
 
 ASTValidationResult
-MiniHLSLValidator::validate_source_with_ast_ownership(const string &hlsl_source,
-                                                     const string &filename) {
-  // This method is similar to parse_and_validate_hlsl but returns ownership
+MiniHLSLValidator::validate_source_with_ast_ownership(const std::string &hlsl_source,
+                                                      const std::string &filename) {
   ASTValidationResult result;
-  
+
   try {
     llvm::errs() << "\n=== Starting HLSL Parse with AST Ownership ===\n";
     llvm::errs() << "File: " << filename << "\n";
-    
-    // Create CompilerInstance - this will be returned for ownership
+
     result.compiler_instance = std::make_unique<clang::CompilerInstance>();
-    auto& CI = *result.compiler_instance;
-  
-    // Set up basic compiler instance (same as parse_and_validate_hlsl)
+    auto &CI = *result.compiler_instance;
+
+    // Diagnostics
     CI.createDiagnostics();
+
+    // Language/Target
     std::string abs_filename = filename;
-    // if (!llvm::sys::path::is_absolute(filename)) {
-    //     abs_filename = "/home/zheyuan/dxc_workspace/DirectXShaderCompiler/tools/clang/tools/dxc-fuzzer/test_cases/" + filename;
-    // }
-    
-    // Set up FrontendOptions
-    auto& FrontendOpts = CI.getFrontendOpts();
-    FrontendOpts.Inputs.clear();
-    FrontendOpts.Inputs.emplace_back(abs_filename, clang::IK_HLSL);
-    FrontendOpts.ProgramAction = clang::frontend::ParseSyntaxOnly;
-    
-    // Set up target
-    auto& Invocation = CI.getInvocation();
-    Invocation.TargetOpts = std::make_shared<clang::TargetOptions>();
-    Invocation.TargetOpts->Triple = "dxil-unknown-unknown";
-    
+
+    auto &FEOpts = CI.getFrontendOpts();
+    FEOpts.Inputs.clear();
+    FEOpts.Inputs.emplace_back(abs_filename, clang::IK_HLSL);
+    FEOpts.ProgramAction = clang::frontend::ParseSyntaxOnly;
+
+    CI.getInvocation().TargetOpts = std::make_shared<clang::TargetOptions>();
+    CI.getInvocation().TargetOpts->Triple = "dxil-unknown-unknown";
+
     clang::CompilerInvocation::setLangDefaults(
-      CI.getLangOpts(), clang::InputKind::IK_HLSL, clang::LangStandard::lang_hlsl);
+        CI.getLangOpts(), clang::InputKind::IK_HLSL, clang::LangStandard::lang_hlsl);
 
-    auto Target = clang::TargetInfo::CreateTargetInfo(CI.getDiagnostics(), CI.getInvocation().TargetOpts);
-    CI.setTarget(std::move(Target));
+    auto T = clang::TargetInfo::CreateTargetInfo(CI.getDiagnostics(), CI.getInvocation().TargetOpts);
+    CI.setTarget(std::move(T));
 
-    // Set up file system (copy from working parse_and_validate_hlsl)
+    // Files/Source
     CI.createFileManager();
     CI.createSourceManager(CI.getFileManager());
-    
-    // Set up preprocessor first (required before file operations)
-    CI.createPreprocessor(clang::TU_Complete);
-    const clang::FileEntry *File = CI.getFileManager().getFile(abs_filename);
-    if (!File) {
+
+    // ✅ Use FrontendInputFile, not std::string
+    if (FEOpts.Inputs.empty() || !CI.InitializeSourceManager(FEOpts.Inputs[0])) {
       llvm::errs() << "File not found: " << abs_filename << "\n";
       result.validation_result = ValidationResultBuilder::err(
-        ValidationError::IO_ERROR, "File not found: " + abs_filename);
+          ValidationError::IO_ERROR, "File not found: " + abs_filename);
       return result;
     }
-    CI.getSourceManager().setMainFileID(
-      CI.getSourceManager().createFileID(File, clang::SourceLocation(), clang::SrcMgr::C_User));
-    
-    // Create AST context (required before ASTConsumer)
+
+    // PP/AST
+    CI.createPreprocessor(clang::TU_Complete);
     CI.createASTContext();
-    
-    // Create custom AST consumer that captures main function AND runs validation
+
     class ASTOwnershipConsumer : public clang::ASTConsumer {
-        clang::FunctionDecl*& main_func_ref;
-        clang::ASTContext*& ast_context_ref;
-        ValidationResult& validation_result_ref;
-        MiniHLSLValidator* validator;
-        
-      public:
-        ASTOwnershipConsumer(clang::FunctionDecl*& main_func, clang::ASTContext*& ast_context, ValidationResult& validation_result, MiniHLSLValidator* val)
-          : main_func_ref(main_func), ast_context_ref(ast_context), validation_result_ref(validation_result), validator(val) {}
-        
-        void HandleTranslationUnit(clang::ASTContext &Context) override {
-          // Capture the ASTContext pointer directly
-          ast_context_ref = &Context;
-          llvm::errs() << "DEBUG: Captured ASTContext pointer: " << ast_context_ref << "\n";
-          
-          // Find the main function
-          // llvm::errs() << "DEBUG: Looking for main function in " << Context.getTranslationUnitDecl()->decls() << " declarations\n";
-          for (auto& Decl : Context.getTranslationUnitDecl()->decls()) {
-            if (auto FD = clang::dyn_cast<clang::FunctionDecl>(Decl)) {
-              llvm::errs() << "DEBUG: Found function: " << FD->getNameAsString() << "\n";
-              if (FD->getNameAsString() == "main") {
-                main_func_ref = FD;
-                llvm::errs() << "DEBUG: Captured main function: " << main_func_ref << "\n";
-                break;
-              }
+      clang::FunctionDecl *&main_func_ref;
+      clang::ASTContext *&  ast_context_ref;
+      ValidationResult &    validation_result_ref;
+      MiniHLSLValidator *   validator;
+    public:
+      ASTOwnershipConsumer(clang::FunctionDecl *&main_func,
+                           clang::ASTContext *&ast_context,
+                           ValidationResult &validation_result,
+                           MiniHLSLValidator *val)
+          : main_func_ref(main_func),
+            ast_context_ref(ast_context),
+            validation_result_ref(validation_result),
+            validator(val) {}
+
+      void HandleTranslationUnit(clang::ASTContext &Context) override {
+        ast_context_ref = &Context;
+        llvm::errs() << "DEBUG: Captured ASTContext pointer: " << ast_context_ref << "\n";
+
+        for (auto &Decl : Context.getTranslationUnitDecl()->decls()) {
+          if (auto *FD = llvm::dyn_cast<clang::FunctionDecl>(Decl)) {
+            llvm::errs() << "DEBUG: Found function: " << FD->getNameAsString() << "\n";
+            if (FD->getNameAsString() == "main") {
+              main_func_ref = FD;
+              llvm::errs() << "DEBUG: Captured main function: " << main_func_ref << "\n";
+              break;
             }
           }
-          
-          if (!main_func_ref) {
-            llvm::errs() << "DEBUG: Main function not found!\n";
-          }
-          
-          // Run validation on the parsed AST
-          validation_result_ref = validator->validate_ast(Context.getTranslationUnitDecl(), Context);
         }
-      };
-    
-    // Use direct ParseAST instead of ExecuteAction to avoid automatic cleanup
-    auto Consumer = std::make_unique<ASTOwnershipConsumer>(result.main_function, result.ast_context, result.validation_result, this);
-    
+        if (!main_func_ref) {
+          llvm::errs() << "DEBUG: Main function not found!\n";
+        }
+
+        validation_result_ref =
+            validator->validate_ast(Context.getTranslationUnitDecl(), Context);
+      }
+    };
+
+    auto Consumer = std::make_unique<ASTOwnershipConsumer>(
+        result.main_function, result.ast_context, result.validation_result, this);
+
+    // ✅ Do NOT call PP.EnterMainSourceFile(); ParseAST will.
+    clang::Preprocessor &PP = CI.getPreprocessor();
+
+    // Arm diagnostics for source-file mode
+    clang::DiagnosticsEngine &Diags = CI.getDiagnostics();
+    clang::DiagnosticConsumer *Client = Diags.getClient();
+    Client->BeginSourceFile(CI.getLangOpts(), &PP);
+
     llvm::errs() << "About to parse AST directly...\n";
-    // Parse directly without FrontendAction - this gives us full control over lifetime
-    clang::ParseAST(CI.getPreprocessor(), Consumer.get(), CI.getASTContext());
+    clang::ParseAST(PP, Consumer.get(), CI.getASTContext(), /*PrintStats=*/false);
     llvm::errs() << "Direct ParseAST complete\n";
-    
+
+    Client->EndSourceFile();
+
     llvm::errs() << "=== HLSL Parse with AST Ownership Complete ===\n";
     return result;
-    
-  } catch (const std::exception& e) {
+
+  } catch (const std::exception &e) {
     llvm::errs() << "Exception during parsing: " << e.what() << "\n";
-    result.validation_result = ValidationResultBuilder::err(
-      ValidationError::PARSING_ERROR, std::string("Exception: ") + e.what());
+    result.validation_result =
+        ValidationResultBuilder::err(ValidationError::PARSING_ERROR,
+                                     std::string("Exception: ") + e.what());
     return result;
   }
 }
+
+
 
 string
 MiniHLSLValidator::generate_formal_proof_alignment(const Program *program) {

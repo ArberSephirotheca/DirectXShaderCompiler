@@ -10,6 +10,8 @@ void main(uint3 id : SV_DispatchThreadID) {
     switch (laneId) {
         case 0:
           for (int b = 0; b < 3; b++) {
+                if (laneId == 1)
+                    break;
               result += WaveActiveSum(b);
           }
           result += WaveActiveSum(0);

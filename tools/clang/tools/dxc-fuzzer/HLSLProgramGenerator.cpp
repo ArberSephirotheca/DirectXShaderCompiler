@@ -45,7 +45,7 @@ std::unique_ptr<ParticipantPattern> IncrementalGenerator::createPattern(FuzzedDa
 
 void IncrementalGenerator::initializeBaseProgram(ProgramState& state, FuzzedDataProvider& provider) {
     // Set thread configuration
-    state.program.numThreadsX = 256; // Or from provider
+    state.program.numThreadsX = 64; // Or from provider
     state.program.numThreadsY = 1;
     state.program.numThreadsZ = 1;
     
@@ -525,6 +525,15 @@ static bool hasEnclosingLoop(const ControlFlowGenerator::BlockSpec::NestingConte
     return false;
 }
 
+static bool hasEnclosingSwitch(const ControlFlowGenerator::BlockSpec::NestingContext& context) {
+    for (const auto& parentType : context.parentTypes) {
+        if (parentType == ControlFlowGenerator::BlockSpec::SWITCH_STMT) {
+            return true;
+        }
+    }
+    return false;
+}
+
 // Nesting support methods
 ControlFlowGenerator::BlockSpec 
 ControlFlowGenerator::createNestedBlockSpec(const BlockSpec& parentSpec,
@@ -562,16 +571,67 @@ ControlFlowGenerator::createNestedBlockSpec(const BlockSpec& parentSpec,
                 nestedSpec.type = BlockSpec::IF_ELSE;
                 break;
         }
+    } else if (parentSpec.type == BlockSpec::SWITCH_STMT) {
+        // Inside a switch case, we can have loops or if statements
+        int choice = provider.ConsumeIntegralInRange<int>(0, 4);
+        switch (choice) {
+            case 0:
+                nestedSpec.type = BlockSpec::FOR_LOOP;
+                break;
+            case 1:
+                nestedSpec.type = BlockSpec::WHILE_LOOP;
+                break;
+            case 2:
+                nestedSpec.type = BlockSpec::IF;
+                break;
+            case 3:
+                nestedSpec.type = BlockSpec::IF_ELSE;
+                break;
+            case 4:
+                // Another nested switch, but only if we have depth left
+                if (nestedSpec.nestingContext.currentDepth < nestedSpec.nestingContext.maxDepth - 1) {
+                    nestedSpec.type = BlockSpec::SWITCH_STMT;
+                } else {
+                    nestedSpec.type = BlockSpec::IF;
+                }
+                break;
+        }
     } else {
-        // Inside an if, we can have a loop
-        nestedSpec.type = provider.ConsumeBool() ? BlockSpec::FOR_LOOP : BlockSpec::WHILE_LOOP;
+        // Inside an if, we can have a loop, switch, or another if
+        int choice = provider.ConsumeIntegralInRange<int>(0, 3);
+        switch (choice) {
+            case 0:
+                nestedSpec.type = BlockSpec::FOR_LOOP;
+                break;
+            case 1:
+                nestedSpec.type = BlockSpec::WHILE_LOOP;
+                break;
+            case 2:
+                nestedSpec.type = BlockSpec::IF;
+                break;
+            case 3:
+                nestedSpec.type = BlockSpec::SWITCH_STMT;
+                break;
+        }
     }
     
     // Create pattern for nested block
     nestedSpec.pattern = createRandomPattern(provider);
     
+    // Configure switch-specific settings if needed
+    if (nestedSpec.type == BlockSpec::SWITCH_STMT) {
+        BlockSpec::SwitchConfig switchConfig;
+        switchConfig.selectorType = static_cast<BlockSpec::SwitchConfig::SelectorType>(
+            provider.ConsumeIntegralInRange<int>(0, 2));
+        switchConfig.numCases = provider.ConsumeIntegralInRange<uint32_t>(2, 4);
+        switchConfig.includeDefault = provider.ConsumeBool();
+        switchConfig.allCasesBreak = true; // Always use break to avoid fall-through complexity
+        nestedSpec.switchConfig = switchConfig;
+    }
+    
     // Handle break/continue based on context
     bool hasLoop = hasEnclosingLoop(nestedSpec.nestingContext);
+    bool hasSwitch = hasEnclosingSwitch(nestedSpec.nestingContext);
     
     if (nestedSpec.type == BlockSpec::FOR_LOOP || 
         nestedSpec.type == BlockSpec::WHILE_LOOP) {
@@ -579,8 +639,9 @@ ControlFlowGenerator::createNestedBlockSpec(const BlockSpec& parentSpec,
         nestedSpec.includeBreak = provider.ConsumeBool();
         nestedSpec.includeContinue = provider.ConsumeBool();
     } else {
-        // If statements can only have break/continue if inside a loop
-        nestedSpec.includeBreak = hasLoop && provider.ConsumeBool();
+        // If statements can have break if inside a loop or switch
+        // Continue only if inside a loop
+        nestedSpec.includeBreak = (hasLoop || hasSwitch) && provider.ConsumeBool();
         nestedSpec.includeContinue = hasLoop && provider.ConsumeBool();
     }
     
@@ -850,64 +911,104 @@ ControlFlowGenerator::generateSwitch(const BlockSpec& spec, ProgramState& state,
     for (uint32_t i = 0; i < config.numCases; ++i) {
         std::vector<std::unique_ptr<interpreter::Statement>> caseBody;
         
-        // Create case-specific participation pattern
-        std::unique_ptr<interpreter::Expression> participantCondition;
+        // Decide whether to add nested control flow (50% chance)
+        bool addNestedControlFlow = provider.ConsumeBool() && spec.nestingContext.allowNesting;
         
-        // Different patterns for different cases
-        switch (i % 3) {
-        case 0:
-            // Threshold pattern: first N lanes
-            participantCondition = std::make_unique<interpreter::BinaryOpExpr>(
-                std::make_unique<interpreter::LaneIndexExpr>(),
-                std::make_unique<interpreter::LiteralExpr>(static_cast<int>(8 + i * 4)),
-                interpreter::BinaryOpExpr::Lt
-            );
-            break;
+        if (addNestedControlFlow && spec.nestingContext.currentDepth < spec.nestingContext.maxDepth) {
+            // Create a nested block spec for this case
+            BlockSpec caseBlockSpec = createNestedBlockSpec(spec, state, provider);
             
-        case 1:
-            // Modulo pattern: every Nth lane
-            participantCondition = std::make_unique<interpreter::BinaryOpExpr>(
-                std::make_unique<interpreter::BinaryOpExpr>(
+            // Override type selection for variety - allow for loops and other structures
+            int nestedChoice = provider.ConsumeIntegralInRange<int>(0, 4);
+            switch (nestedChoice) {
+                case 0:
+                    caseBlockSpec.type = BlockSpec::FOR_LOOP;
+                    break;
+                case 1:
+                    caseBlockSpec.type = BlockSpec::WHILE_LOOP;
+                    break;
+                case 2:
+                    caseBlockSpec.type = BlockSpec::IF;
+                    break;
+                case 3:
+                    caseBlockSpec.type = BlockSpec::IF_ELSE;
+                    break;
+                case 4:
+                    // Nested switch - but avoid too deep nesting
+                    if (spec.nestingContext.currentDepth < spec.nestingContext.maxDepth - 1) {
+                        caseBlockSpec.type = BlockSpec::SWITCH_STMT;
+                    } else {
+                        caseBlockSpec.type = BlockSpec::IF;
+                    }
+                    break;
+            }
+            
+            // Generate the nested control flow
+            auto nestedStatements = generateBlock(caseBlockSpec, state, provider);
+            for (auto& stmt : nestedStatements) {
+                caseBody.push_back(std::move(stmt));
+            }
+        } else {
+            // Original behavior: just add wave operation
+            // Create case-specific participation pattern
+            std::unique_ptr<interpreter::Expression> participantCondition;
+            
+            // Different patterns for different cases
+            switch (i % 3) {
+            case 0:
+                // Threshold pattern: first N lanes
+                participantCondition = std::make_unique<interpreter::BinaryOpExpr>(
                     std::make_unique<interpreter::LaneIndexExpr>(),
-                    std::make_unique<interpreter::LiteralExpr>(2),
-                    interpreter::BinaryOpExpr::Mod
-                ),
-                std::make_unique<interpreter::LiteralExpr>(0),
-                interpreter::BinaryOpExpr::Eq
-            );
-            break;
+                    std::make_unique<interpreter::LiteralExpr>(static_cast<int>(8 + i * 4)),
+                    interpreter::BinaryOpExpr::Lt
+                );
+                break;
+                
+            case 1:
+                // Modulo pattern: every Nth lane
+                participantCondition = std::make_unique<interpreter::BinaryOpExpr>(
+                    std::make_unique<interpreter::BinaryOpExpr>(
+                        std::make_unique<interpreter::LaneIndexExpr>(),
+                        std::make_unique<interpreter::LiteralExpr>(2),
+                        interpreter::BinaryOpExpr::Mod
+                    ),
+                    std::make_unique<interpreter::LiteralExpr>(0),
+                    interpreter::BinaryOpExpr::Eq
+                );
+                break;
+                
+            case 2:
+                // All lanes in this case
+                participantCondition = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(true));
+                break;
+            }
             
-        case 2:
-            // All lanes in this case
-            participantCondition = std::make_unique<interpreter::LiteralExpr>(interpreter::Value(true));
-            break;
+            // Add wave operation with case-specific input
+            std::vector<std::unique_ptr<interpreter::Statement>> waveBody;
+            auto waveInput = std::make_unique<interpreter::LiteralExpr>(static_cast<int>(i + 1));
+            auto waveOp = std::make_unique<interpreter::WaveActiveOp>(
+                std::move(waveInput), 
+                interpreter::WaveActiveOp::Sum
+            );
+            
+            // Accumulate result
+            auto currentResult = std::make_unique<interpreter::VariableExpr>("result");
+            auto addExpr = std::make_unique<interpreter::BinaryOpExpr>(
+                std::move(currentResult),
+                std::move(waveOp),
+                interpreter::BinaryOpExpr::Add
+            );
+            waveBody.push_back(std::make_unique<interpreter::AssignStmt>(
+                "result",
+                std::move(addExpr)
+            ));
+            
+            // Wrap wave operation in participation condition
+            caseBody.push_back(std::make_unique<interpreter::IfStmt>(
+                std::move(participantCondition),
+                std::move(waveBody)
+            ));
         }
-        
-        // Add wave operation with case-specific input
-        std::vector<std::unique_ptr<interpreter::Statement>> waveBody;
-        auto waveInput = std::make_unique<interpreter::LiteralExpr>(static_cast<int>(i + 1));
-        auto waveOp = std::make_unique<interpreter::WaveActiveOp>(
-            std::move(waveInput), 
-            interpreter::WaveActiveOp::Sum
-        );
-        
-        // Accumulate result
-        auto currentResult = std::make_unique<interpreter::VariableExpr>("result");
-        auto addExpr = std::make_unique<interpreter::BinaryOpExpr>(
-            std::move(currentResult),
-            std::move(waveOp),
-            interpreter::BinaryOpExpr::Add
-        );
-        waveBody.push_back(std::make_unique<interpreter::AssignStmt>(
-            "result",
-            std::move(addExpr)
-        ));
-        
-        // Wrap wave operation in participation condition
-        caseBody.push_back(std::make_unique<interpreter::IfStmt>(
-            std::move(participantCondition),
-            std::move(waveBody)
-        ));
         
         // Add break statement if configured
         if (config.allCasesBreak) {
