@@ -34,13 +34,13 @@ std::atomic<uint32_t> Expression::nextStableId{1};
 // - ENABLE_BLOCK_DEBUG: Shows block creation, merging, and convergence
 
 static constexpr bool ENABLE_INTERPRETER_DEBUG =
-    false; // Set to true to enable detailed execution tracing
+    true; // Set to true to enable detailed execution tracing
 static constexpr bool ENABLE_WAVE_DEBUG =
-    false; // Set to true to enable wave operation tracing
+    true; // Set to true to enable wave operation tracing
 static constexpr bool ENABLE_BLOCK_DEBUG =
-    false; // Set to true to enable block lifecycle tracing
+    true; // Set to true to enable block lifecycle tracing
 static constexpr bool ENABLE_PARSER_DEBUG =
-    false; // Set to true to enable AST conversion debug output
+    true; // Set to true to enable AST conversion debug output
 
 #define INTERPRETER_DEBUG_LOG(msg)                                             \
   do {                                                                         \
@@ -7488,13 +7488,14 @@ std::string SwitchStmt::toString() const {
   std::string result = "switch (" + condition_->toString() + ") {\n";
   for (const auto &caseBlock : cases_) {
     if (caseBlock.value.has_value()) {
-      result += "  case " + std::to_string(caseBlock.value.value()) + ":\n";
+      result += "  case " + std::to_string(caseBlock.value.value()) + ": {\n";
     } else {
-      result += "  default:\n";
+      result += "  default: {\n";
     }
     for (const auto &stmt : caseBlock.statements) {
       result += "    " + stmt->toString() + "\n";
     }
+    result += "  }\n";  // Close the case scope
   }
   result += "}";
   return result;

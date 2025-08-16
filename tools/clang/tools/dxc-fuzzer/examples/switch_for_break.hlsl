@@ -121,93 +121,93 @@ void main(uint3 tid : SV_DispatchThreadID) {
 }
     break;
 }
-//   if (((((laneId == 0) || (laneId == 16)) || (laneId == 20)) || (laneId == 16))) {
-//     result = (result + WaveActiveSum((laneId + 1)));
-// } else {
-//     if (((laneId & 1) == 0)) {
-//     result = (result + WaveActiveMin(2));
-// } else {
-//     if ((((laneId == 6) || (laneId == 16)) || (laneId == 11))) {
-//     result = (result + WaveActiveMax(3));
-// }
-// }
-// }
-//   if (((((laneId == 7) || (laneId == 10)) || (laneId == 21)) || (laneId == 29))) {
-//     if ((((laneId == 6) || (laneId == 14)) || (laneId == 29))) {
-//     result = (result + WaveActiveMax(result));
-// }
-//     switch ((laneId % 3)) {
-//   case 0:
-//     uint counter5 = 0;
-//     while ((counter5 < 2)) {
-//   counter5 = (counter5 + 1);
-//   if ((laneId == 31)) {
-//     result = (result + WaveActiveMin(result));
-// }
-//   if ((((laneId == 0) || (laneId == 16)) || (laneId == 11))) {
-//     if ((((((laneId == 7) || (laneId == 9)) || (laneId == 19)) || (laneId == 30)) || (laneId == 11))) {
-//     result = (result + WaveActiveMax(result));
-// }
-//     if ((laneId > 16)) {
-//     break;
-// }
-// } else {
-//     if (((laneId & 1) == 1)) {
-//     result = (result + WaveActiveSum((laneId + 2)));
-// }
-//     if (((laneId & 1) == 0)) {
-//     result = (result + WaveActiveSum(result));
-// }
-// }
-//   if ((laneId == 25)) {
-//     result = (result + WaveActiveSum(result));
-// }
-// }
-//     break;
-//   case 1:
-//     if (((laneId % 2) == 0)) {
-//     result = (result + WaveActiveSum(2));
-// }
-//     break;
-//   case 2:
-//     if (true) {
-//     result = (result + WaveActiveSum(3));
-// }
-//     break;
-//   default:
-//     result = (result + WaveActiveSum(99));
-//     break;
-// }
-//     if (((laneId == 8) || (laneId == 24))) {
-//     result = (result + WaveActiveMin(result));
-// }
-// } else {
-//     if ((((laneId == 1) || (laneId == 13)) || (laneId == 29))) {
-//     result = (result + WaveActiveMax(result));
-// }
-//     for (uint i6 = 0; (i6 < 3); i6 = (i6 + 1)) {
-//     if ((((laneId == 9) || (laneId == 13)) || (laneId == 25))) {
-//     result = (result + WaveActiveSum(result));
-// }
-//     for (uint i7 = 0; (i7 < 3); i7 = (i7 + 1)) {
-//     if (((((laneId == 2) || (laneId == 11)) || (laneId == 22)) || (laneId == 4))) {
-//     result = (result + WaveActiveMax(10));
-// }
-//     for (uint i8 = 0; (i8 < 2); i8 = (i8 + 1)) {
-//     if ((laneId >= 24)) {
-//     result = (result + WaveActiveMin(result));
-// }
-//     if ((laneId < 8)) {
-//     result = (result + WaveActiveMin(7));
-// }
-//     if ((i8 == 1)) {
-//     continue;
-// }
-// }
-// }
-//     if (((((laneId == 3) || (laneId == 9)) || (laneId == 17)) || (laneId == 24))) {
-//     result = (result + WaveActiveMin((laneId + 5)));
-// }
-// }
-// }
+  if (((((laneId == 0) || (laneId == 16)) || (laneId == 20)) || (laneId == 16))) {
+    result = (result + WaveActiveSum((laneId + 1)));
+} else {
+    if (((laneId & 1) == 0)) {
+    result = (result + WaveActiveMin(2));
+} else {
+    if ((((laneId == 6) || (laneId == 16)) || (laneId == 11))) {
+    result = (result + WaveActiveMax(3));
+}
+}
+}
+  if (((((laneId == 7) || (laneId == 10)) || (laneId == 21)) || (laneId == 29))) {
+    if ((((laneId == 6) || (laneId == 14)) || (laneId == 29))) {
+    result = (result + WaveActiveMax(result));
+}
+    switch ((laneId % 3)) {
+  case 0:
+    uint counter5 = 0;
+    while ((counter5 < 2)) {
+  counter5 = (counter5 + 1);
+  if ((laneId == 31)) {
+    result = (result + WaveActiveMin(result));
+}
+  if ((((laneId == 0) || (laneId == 16)) || (laneId == 11))) {
+    if ((((((laneId == 7) || (laneId == 9)) || (laneId == 19)) || (laneId == 30)) || (laneId == 11))) {
+    result = (result + WaveActiveMax(result));
+}
+    if ((laneId > 16)) {
+    break;
+}
+} else {
+    if (((laneId & 1) == 1)) {
+    result = (result + WaveActiveSum((laneId + 2)));
+}
+    if (((laneId & 1) == 0)) {
+    result = (result + WaveActiveSum(result));
+}
+}
+  if ((laneId == 25)) {
+    result = (result + WaveActiveSum(result));
+}
+}
+    break;
+  case 1:
+    if (((laneId % 2) == 0)) {
+    result = (result + WaveActiveSum(2));
+}
+    break;
+  case 2:
+    if (true) {
+    result = (result + WaveActiveSum(3));
+}
+    break;
+  default:
+    result = (result + WaveActiveSum(99));
+    break;
+}
+    if (((laneId == 8) || (laneId == 24))) {
+    result = (result + WaveActiveMin(result));
+}
+} else {
+    if ((((laneId == 1) || (laneId == 13)) || (laneId == 29))) {
+    result = (result + WaveActiveMax(result));
+}
+    for (uint i6 = 0; (i6 < 3); i6 = (i6 + 1)) {
+    if ((((laneId == 9) || (laneId == 13)) || (laneId == 25))) {
+    result = (result + WaveActiveSum(result));
+}
+    for (uint i7 = 0; (i7 < 3); i7 = (i7 + 1)) {
+    if (((((laneId == 2) || (laneId == 11)) || (laneId == 22)) || (laneId == 4))) {
+    result = (result + WaveActiveMax(10));
+}
+    for (uint i8 = 0; (i8 < 2); i8 = (i8 + 1)) {
+    if ((laneId >= 24)) {
+    result = (result + WaveActiveMin(result));
+}
+    if ((laneId < 8)) {
+    result = (result + WaveActiveMin(7));
+}
+    if ((i8 == 1)) {
+    continue;
+}
+}
+}
+    if (((((laneId == 3) || (laneId == 9)) || (laneId == 17)) || (laneId == 24))) {
+    result = (result + WaveActiveMin((laneId + 5)));
+}
+}
+}
 }
