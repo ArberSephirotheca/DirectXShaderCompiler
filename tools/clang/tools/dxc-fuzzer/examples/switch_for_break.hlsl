@@ -1,213 +1,267 @@
-[numthreads(4, 1, 1)]
-// [WaveSize(32)]
+[numthreads(64, 1, 1)]
+[WaveSize(32)]
 void main(uint3 tid : SV_DispatchThreadID) {
   uint result = 0;
-  uint laneId = WaveGetLaneIndex();
-  switch ((laneId % 3)) {
-  case 0:
-    if (((((laneId == 7) || (laneId == 15)) || (laneId == 19)) || (laneId == 30))) {
-    if (((laneId == 11) || (laneId == 29))) {
-    result = (result + WaveActiveMax(4));
-}
+  uint laneId= WaveGetLaneIndex();
+  switch ((laneId % 4)) {
+  case 0: {
     for (uint i0 = 0; (i0 < 2); i0 = (i0 + 1)) {
-    if ((laneId == 31)) {
+    if ((laneId == 25)) {
     result = (result + WaveActiveMin(laneId));
 }
-    if ((i0 == 1)) {
-    continue;
-}
-    if ((i0 == 1)) {
-    break;
-}
-}
-    if (((((laneId == 6) || (laneId == 10)) || (laneId == 17)) || (laneId == 25))) {
-    result = (result + WaveActiveMax((laneId + 5)));
-}
-}
-    break;
-  case 1:
-    if (((laneId & 1) == 1)) {
-    if (((laneId & 1) == 1)) {
-    result = (result + WaveActiveSum(result));
-}
-    switch ((laneId % 2)) {
-  case 0:
-    if (((laneId & 1) == 0)) {
-    if (((laneId & 1) == 1)) {
-    result = (result + WaveActiveSum((laneId + 1)));
-}
-    if (((laneId & 1) == 1)) {
-    result = (result + WaveActiveMax(result));
-}
-} else {
-    if (((laneId < 9) || (laneId >= 26))) {
+    uint counter1 = 0;
+    while ((counter1 < 3)) {
+  counter1 = (counter1 + 1);
+  if (((((laneId == 6) || (laneId == 10)) || (laneId == 26)) || (laneId == 12))) {
     result = (result + WaveActiveMin(laneId));
 }
-    if (((laneId < 2) || (laneId >= 28))) {
-    result = (result + WaveActiveMin(result));
+  if ((counter1 == 2)) {
+    break;
+}
 }
 }
     break;
-  case 1:
-    if (((laneId & 1) == 0)) {
-    if (((laneId & 1) == 0)) {
-    result = (result + WaveActiveMax(result));
-}
-    if (((laneId & 1) == 1)) {
+  }
+  case 1: {
+    if ((laneId == 8)) {
+    if ((laneId == 18)) {
     result = (result + WaveActiveSum(laneId));
 }
-}
-    break;
-}
-    if (((laneId & 1) == 1)) {
-    result = (result + WaveActiveMax(result));
-}
-} else {
-    if ((laneId >= 27)) {
-    result = (result + WaveActiveMin((laneId + 3)));
-}
-    for (uint i1 = 0; (i1 < 2); i1 = (i1 + 1)) {
-    if (((laneId & 1) == 1)) {
-    result = (result + WaveActiveMin(result));
-}
-    uint counter2 = 0;
-    while ((counter2 < 2)) {
-  counter2 = (counter2 + 1);
-  if (((laneId == 2) || (laneId == 28))) {
-    result = (result + WaveActiveMin(6));
-}
-  if ((counter2 == 1)) {
-    break;
-}
-}
-    if (((laneId & 1) == 0)) {
-    result = (result + WaveActiveMax(result));
-}
-}
-}
-    break;
-  case 2:
-    switch ((laneId % 3)) {
-  case 0:
+    switch ((laneId % 2)) {
+  case 0: {
     if ((laneId < 8)) {
     result = (result + WaveActiveSum(1));
 }
     break;
-  case 1:
+  }
+  case 1: {
     if (((laneId % 2) == 0)) {
     result = (result + WaveActiveSum(2));
 }
     break;
-  case 2:
-    uint counter3 = 0;
-    while ((counter3 < 3)) {
-  counter3 = (counter3 + 1);
-  if ((((laneId == 3) || (laneId == 19)) || (laneId == 20))) {
-    result = (result + WaveActiveMax((laneId + 4)));
-}
-  for (uint i4 = 0; (i4 < 3); i4 = (i4 + 1)) {
-    if (((laneId & 1) == 1)) {
-    result = (result + WaveActiveMin(laneId));
-}
-    if (((laneId & 1) == 1)) {
-    result = (result + WaveActiveMin(7));
-}
-}
-  if (((laneId == 13) || (laneId == 27))) {
-    result = (result + WaveActiveSum(result));
+  }
+  default: {
+    result = (result + WaveActiveSum(99));
+    break;
+  }
 }
 }
     break;
-}
-    break;
-}
-  if (((((laneId == 0) || (laneId == 16)) || (laneId == 20)) || (laneId == 16))) {
-    result = (result + WaveActiveSum((laneId + 1)));
-} else {
-    if (((laneId & 1) == 0)) {
-    result = (result + WaveActiveMin(2));
-} else {
-    if ((((laneId == 6) || (laneId == 16)) || (laneId == 11))) {
-    result = (result + WaveActiveMax(3));
-}
-}
-}
-  if (((((laneId == 7) || (laneId == 10)) || (laneId == 21)) || (laneId == 29))) {
-    if ((((laneId == 6) || (laneId == 14)) || (laneId == 29))) {
-    result = (result + WaveActiveMax(result));
-}
-    switch ((laneId % 3)) {
-  case 0:
-    uint counter5 = 0;
-    while ((counter5 < 2)) {
-  counter5 = (counter5 + 1);
-  if ((laneId == 31)) {
-    result = (result + WaveActiveMin(result));
-}
-  if ((((laneId == 0) || (laneId == 16)) || (laneId == 11))) {
-    if ((((((laneId == 7) || (laneId == 9)) || (laneId == 19)) || (laneId == 30)) || (laneId == 11))) {
-    result = (result + WaveActiveMax(result));
-}
-    if ((laneId > 16)) {
-    break;
-}
-} else {
-    if (((laneId & 1) == 1)) {
-    result = (result + WaveActiveSum((laneId + 2)));
-}
-    if (((laneId & 1) == 0)) {
-    result = (result + WaveActiveSum(result));
-}
-}
-  if ((laneId == 25)) {
-    result = (result + WaveActiveSum(result));
-}
-}
-    break;
-  case 1:
-    if (((laneId % 2) == 0)) {
-    result = (result + WaveActiveSum(2));
-}
-    break;
-  case 2:
+  }
+  case 2: {
     if (true) {
     result = (result + WaveActiveSum(3));
 }
     break;
-  default:
-    result = (result + WaveActiveSum(99));
+  }
+  case 3: {
+    if (((laneId < 6) || (laneId >= 24))) {
+    switch ((laneId % 3)) {
+  case 0: {
+    if ((laneId < 8)) {
+    result = (result + WaveActiveSum(1));
+}
     break;
+  }
+  case 1: {
+    if (((laneId % 2) == 0)) {
+    result = (result + WaveActiveSum(2));
 }
-    if (((laneId == 8) || (laneId == 24))) {
-    result = (result + WaveActiveMin(result));
+    break;
+  }
+  case 2: {
+    if (true) {
+    result = (result + WaveActiveSum(3));
 }
-} else {
-    if ((((laneId == 1) || (laneId == 13)) || (laneId == 29))) {
-    result = (result + WaveActiveMax(result));
+    break;
+  }
 }
-    for (uint i6 = 0; (i6 < 3); i6 = (i6 + 1)) {
-    if ((((laneId == 9) || (laneId == 13)) || (laneId == 25))) {
+    if (((laneId < 9) || (laneId >= 21))) {
     result = (result + WaveActiveSum(result));
 }
-    for (uint i7 = 0; (i7 < 3); i7 = (i7 + 1)) {
-    if (((((laneId == 2) || (laneId == 11)) || (laneId == 22)) || (laneId == 4))) {
-    result = (result + WaveActiveMax(10));
 }
-    for (uint i8 = 0; (i8 < 2); i8 = (i8 + 1)) {
-    if ((laneId >= 24)) {
+    break;
+  }
+}
+  switch ((laneId % 2)) {
+  case 0: {
+    switch ((laneId % 3)) {
+  case 0: {
+    switch ((laneId % 3)) {
+  case 0: {
+    if ((laneId < 8)) {
+    result = (result + WaveActiveSum(1));
+}
+    break;
+  }
+  case 1: {
+    for (uint i2 = 0; (i2 < 2); i2 = (i2 + 1)) {
+    if (((laneId & 1) == 0)) {
+    result = (result + WaveActiveMax(result));
+}
+    if (((laneId & 1) == 1)) {
     result = (result + WaveActiveMin(result));
 }
-    if ((laneId < 8)) {
-    result = (result + WaveActiveMin(7));
 }
-    if ((i8 == 1)) {
+    break;
+  }
+  case 2: {
+    if (true) {
+    result = (result + WaveActiveSum(3));
+}
+    break;
+  }
+}
+    break;
+  }
+  case 1: {
+    if (((laneId % 2) == 0)) {
+    result = (result + WaveActiveSum(2));
+}
+    break;
+  }
+  case 2: {
+    uint counter3 = 0;
+    while ((counter3 < 3)) {
+  counter3 = (counter3 + 1);
+  uint counter4 = 0;
+  while ((counter4 < 2)) {
+  counter4 = (counter4 + 1);
+  if (((((laneId == 6) || (laneId == 11)) || (laneId == 25)) || (laneId == 20))) {
+    result = (result + WaveActiveMax(result));
+}
+}
+  if (((laneId & 1) == 0)) {
+    result = (result + WaveActiveMax(7));
+}
+}
+    break;
+  }
+}
+    break;
+  }
+  case 1: {
+    if (((laneId % 2) == 0)) {
+    result = (result + WaveActiveSum(2));
+}
+    break;
+  }
+}
+  if (((laneId < 6) || (laneId >= 26))) {
+    if (((laneId < 5) || (laneId >= 30))) {
+    result = (result + WaveActiveMin(10));
+}
+    for (uint i5 = 0; (i5 < 2); i5 = (i5 + 1)) {
+    if ((((laneId == 6) || (laneId == 27)) || (laneId == 4))) {
+    result = (result + WaveActiveMax((laneId + 4)));
+}
+    if ((i5 == 1)) {
     continue;
 }
 }
-}
-    if (((((laneId == 3) || (laneId == 9)) || (laneId == 17)) || (laneId == 24))) {
-    result = (result + WaveActiveMin((laneId + 5)));
-}
+    if (((laneId < 8) || (laneId >= 28))) {
+    result = (result + WaveActiveSum(3));
 }
 }
+  for (uint i6 = 0; (i6 < 3); i6 = (i6 + 1)) {
+    if (((laneId == 4) || (laneId == 27))) {
+    result = (result + WaveActiveMax(result));
+}
+    for (uint i7 = 0; (i7 < 3); i7 = (i7 + 1)) {
+    if ((laneId < 16)) {
+    result = (result + WaveActiveMax((laneId + 4)));
+}
+    uint counter8 = 0;
+    while ((counter8 < 2)) {
+  counter8 = (counter8 + 1);
+  if ((laneId < 9)) {
+    result = (result + WaveActiveMin((laneId + 1)));
+}
+}
+//     if ((laneId >= 22)) {
+//     result = (result + WaveActiveMax((laneId + 4)));
+// }
+//     if ((i7 == 1)) {
+//     continue;
+// }
+//     if ((i7 == 2)) {
+//     break;
+// }
+}
+    if (((laneId == 7) || (laneId == 24))) {
+    result = (result + WaveActiveMax(result));
+}
+}
+//   if (((laneId & 1) == 1)) {
+//     uint counter9 = 0;
+//     while ((counter9 < 3)) {
+//   counter9 = (counter9 + 1);
+//   if ((((laneId == 2) || (laneId == 17)) || (laneId == 20))) {
+//     if (((laneId == 0) || (laneId == 17))) {
+//     result = (result + WaveActiveMax(result));
+// }
+//     switch ((laneId % 3)) {
+//   case 0: {
+//     if ((laneId < 8)) {
+//     result = (result + WaveActiveSum(1));
+// }
+//     break;
+//   }
+//   case 1: {
+//     if (((laneId % 2) == 0)) {
+//     result = (result + WaveActiveSum(2));
+// }
+//     break;
+//   }
+//   case 2: {
+//     if (true) {
+//     result = (result + WaveActiveSum(3));
+// }
+//     break;
+//   }
+// }
+//     if (((laneId == 8) || (laneId == 20))) {
+//     result = (result + WaveActiveMax((laneId + 5)));
+// }
+// }
+//   if ((counter9 == 2)) {
+//     break;
+// }
+// }
+//     if (((laneId & 1) == 1)) {
+//     result = (result + WaveActiveMin((laneId + 2)));
+// }
+// } else {
+//     if (((laneId == 11) || (laneId == 20))) {
+//     result = (result + WaveActiveMin(9));
+// }
+//     uint counter10 = 0;
+//     while ((counter10 < 3)) {
+//   counter10 = (counter10 + 1);
+//   if (((laneId & 1) == 0)) {
+//     result = (result + WaveActiveMax(laneId));
+// }
+//   uint counter11 = 0;
+//   while ((counter11 < 3)) {
+//   counter11 = (counter11 + 1);
+//   for (uint i12 = 0; (i12 < 3); i12 = (i12 + 1)) {
+//     if ((laneId == 3)) {
+//     result = (result + WaveActiveMax(result));
+// }
+//     if ((laneId == 21)) {
+//     result = (result + WaveActiveMax(5));
+// }
+// }
+//   if ((((laneId == 15) || (laneId == 30)) || (laneId == 27))) {
+//     result = (result + WaveActiveMax(result));
+// }
+// }
+//   if (((laneId & 1) == 0)) {
+//     result = (result + WaveActiveMax(result));
+// }
+// }
+//     if (((laneId == 11) || (laneId == 29))) {
+//     result = (result + WaveActiveSum(result));
+// }
+// }
 }
