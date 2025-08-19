@@ -99,7 +99,8 @@ ProgramState IncrementalGenerator::generateIncremental(const uint8_t* data, size
     initializeBaseProgram(state, provider);
     
     // Determine number of generation rounds
-    uint32_t rounds = provider.ConsumeIntegralInRange<uint32_t>(1, 5);
+    // Reduced from 1-5 to 1-3 to limit program complexity
+    uint32_t rounds = provider.ConsumeIntegralInRange<uint32_t>(1, 3);
     
     for (uint32_t round = 0; round < rounds; ++round) {
         GenerationRound roundInfo;
@@ -555,21 +556,63 @@ ControlFlowGenerator::createNestedBlockSpec(const BlockSpec& parentSpec,
     
     // Choose what type of control flow to nest
     if (parentSpec.type == BlockSpec::FOR_LOOP || parentSpec.type == BlockSpec::WHILE_LOOP) {
-        // Inside a loop, we can have another loop or an if
-        int choice = provider.ConsumeIntegralInRange<int>(0, 3);
-        switch (choice) {
-            case 0:
-                nestedSpec.type = BlockSpec::FOR_LOOP;
-                break;
-            case 1:
-                nestedSpec.type = BlockSpec::WHILE_LOOP;
-                break;
-            case 2:
-                nestedSpec.type = BlockSpec::IF;
-                break;
-            case 3:
-                nestedSpec.type = BlockSpec::IF_ELSE;
-                break;
+        // Check if we already have two consecutive loops in the parent chain
+        // This prevents triple-nested loops (loop->loop->loop) which create excessive blocks
+        // while still allowing patterns like switch->loop->loop or loop->if->loop
+        bool hasConsecutiveLoops = false;
+        if (nestedSpec.nestingContext.parentTypes.size() >= 2) {
+            size_t n = nestedSpec.nestingContext.parentTypes.size();
+            // Check if the last two parents are both loops
+            auto parent1 = nestedSpec.nestingContext.parentTypes[n-1];
+            auto parent2 = nestedSpec.nestingContext.parentTypes[n-2];
+            if ((parent1 == BlockSpec::FOR_LOOP || parent1 == BlockSpec::WHILE_LOOP) &&
+                (parent2 == BlockSpec::FOR_LOOP || parent2 == BlockSpec::WHILE_LOOP)) {
+                hasConsecutiveLoops = true;
+            }
+        }
+        
+        // If we already have two consecutive loops, don't allow a third loop
+        if (hasConsecutiveLoops) {
+            // Only allow non-loop structures
+            int choice = provider.ConsumeIntegralInRange<int>(0, 2);
+            switch (choice) {
+                case 0:
+                    nestedSpec.type = BlockSpec::IF;
+                    break;
+                case 1:
+                    nestedSpec.type = BlockSpec::IF_ELSE;
+                    break;
+                case 2:
+                    nestedSpec.type = BlockSpec::SWITCH_STMT;
+                    // Setup switch configuration
+                    {
+                        BlockSpec::SwitchConfig switchConfig;
+                        switchConfig.selectorType = static_cast<BlockSpec::SwitchConfig::SelectorType>(
+                            provider.ConsumeIntegralInRange<int>(0, 2));
+                        switchConfig.numCases = provider.ConsumeIntegralInRange<uint32_t>(2, 4);
+                        switchConfig.includeDefault = provider.ConsumeBool();
+                        switchConfig.allCasesBreak = true; // Always use break
+                        nestedSpec.switchConfig = switchConfig;
+                    }
+                    break;
+            }
+        } else {
+            // Inside a loop, we can have another loop or an if
+            int choice = provider.ConsumeIntegralInRange<int>(0, 3);
+            switch (choice) {
+                case 0:
+                    nestedSpec.type = BlockSpec::FOR_LOOP;
+                    break;
+                case 1:
+                    nestedSpec.type = BlockSpec::WHILE_LOOP;
+                    break;
+                case 2:
+                    nestedSpec.type = BlockSpec::IF;
+                    break;
+                case 3:
+                    nestedSpec.type = BlockSpec::IF_ELSE;
+                    break;
+            }
         }
     } else if (parentSpec.type == BlockSpec::SWITCH_STMT) {
         // Inside a switch case, we can have loops or if statements

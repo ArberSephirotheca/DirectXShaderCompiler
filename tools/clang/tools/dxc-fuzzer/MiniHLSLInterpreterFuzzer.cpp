@@ -393,10 +393,8 @@ std::string serializeProgramToString(const interpreter::Program& program) {
      << program.numThreadsY << ", " 
      << program.numThreadsZ << ")]\n";
   
-  // Add WaveSize attribute if specified
-  if (program.waveSize > 0) {
-    ss << "[WaveSize(" << program.waveSize << ")]\n";
-  }
+  // Removed WaveSize attribute generation as it requires Shader Model 6.6+
+  // which may not be available on all test systems
   
   ss << "void main(";
   
