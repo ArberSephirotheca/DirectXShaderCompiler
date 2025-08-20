@@ -3,6 +3,7 @@
 #include "MiniHLSLInterpreterFuzzer.h"
 #include "FuzzerDebug.h"
 #include <algorithm>
+#include <cstdlib>
 
 // External verbosity flag from fuzzer
 extern int g_verbosity;
@@ -45,12 +46,42 @@ std::unique_ptr<ParticipantPattern> IncrementalGenerator::createPattern(FuzzedDa
 
 void IncrementalGenerator::initializeBaseProgram(ProgramState& state, FuzzedDataProvider& provider) {
     // Set thread configuration
-    state.program.numThreadsX = 64; // Or from provider
+    // Check environment variable for thread count
+    const char* numThreadsEnv = std::getenv("FUZZ_NUM_THREADS");
+    uint32_t totalThreads = 64; // default
+    if (numThreadsEnv) {
+        try {
+            totalThreads = std::stoul(numThreadsEnv);
+            // Clamp to reasonable values
+            if (totalThreads < 1) totalThreads = 1;
+            if (totalThreads > 1024) totalThreads = 1024;
+        } catch (...) {
+            totalThreads = 64; // fallback to default
+        }
+    }
+    
+    state.program.numThreadsX = totalThreads;
     state.program.numThreadsY = 1;
     state.program.numThreadsZ = 1;
     
-    // Always set wave size (alternating between 4 and 8 for variety)
-    state.program.waveSize = provider.ConsumeBool() ? 32 : 32;
+    // Set wave size from environment variable if available
+    const char* waveSizeEnv = std::getenv("FUZZ_WAVE_SIZE");
+    if (waveSizeEnv) {
+        try {
+            uint32_t waveSize = std::stoul(waveSizeEnv);
+            // Validate wave size
+            if (waveSize == 4 || waveSize == 8 || waveSize == 16 || waveSize == 32 || waveSize == 64) {
+                state.program.waveSize = waveSize;
+            } else {
+                state.program.waveSize = 32; // default
+            }
+        } catch (...) {
+            state.program.waveSize = 32; // default
+        }
+    } else {
+        // Default wave size
+        state.program.waveSize = 32;
+    }
     
     // Add SV_DispatchThreadID parameter
     interpreter::ParameterSig tidParam;
@@ -250,21 +281,8 @@ ControlFlowGenerator::generateIf(const BlockSpec& spec, ProgramState& state,
     
     // Add break/continue if specified AND we're in a loop context
     if (spec.includeBreak && provider.ConsumeBool()) {
-        // This will only be true if hasEnclosingLoop was true when spec was created
-        std::vector<std::unique_ptr<interpreter::Statement>> breakBody;
-        breakBody.push_back(std::make_unique<interpreter::BreakStmt>());
-        
-        // Wrap break in another condition for variety
-        auto breakCondition = std::make_unique<interpreter::BinaryOpExpr>(
-            std::make_unique<interpreter::LaneIndexExpr>(),
-            std::make_unique<interpreter::LiteralExpr>(16),
-            interpreter::BinaryOpExpr::Gt
-        );
-        
-        thenBody.push_back(std::make_unique<interpreter::IfStmt>(
-            std::move(breakCondition),
-            std::move(breakBody)
-        ));
+        // Skip adding break here - we'll add uniform breaks in the loop generation functions
+        // This is because we need access to the loop variable for uniform conditions
     }
     
     // Generate else body if requested

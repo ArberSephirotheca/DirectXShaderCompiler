@@ -371,6 +371,113 @@ void generateTestFile(const interpreter::Program& program,
 
 // Global seed programs loaded from corpus
 
+// Helper function to add indentation to multi-line strings
+std::string indentString(const std::string& str, const std::string& indent) {
+  std::stringstream result;
+  std::istringstream stream(str);
+  std::string line;
+  bool firstLine = true;
+  
+  while (std::getline(stream, line)) {
+    if (!firstLine) {
+      result << "\n";
+    }
+    if (!line.empty()) {
+      result << indent << line;
+    }
+    firstLine = false;
+  }
+  
+  return result.str();
+}
+
+// Helper function to re-indent a multi-line string
+std::string reindentCode(const std::string& code, int baseIndentLevel) {
+  std::stringstream result;
+  std::istringstream stream(code);
+  std::string line;
+  std::vector<int> indentStack;
+  indentStack.push_back(0);
+  bool firstLine = true;
+  
+  while (std::getline(stream, line)) {
+    if (!firstLine) {
+      result << "\n";
+    }
+    firstLine = false;
+    
+    // Skip empty lines
+    if (line.empty()) {
+      continue;
+    }
+    
+    // Count leading spaces
+    size_t leadingSpaces = 0;
+    for (char c : line) {
+      if (c == ' ') leadingSpaces++;
+      else break;
+    }
+    
+    // Get the actual content
+    std::string content = line.substr(leadingSpaces);
+    
+    // Detect indent changes
+    bool isOpenBrace = content.find('{') != std::string::npos;
+    bool isCloseBrace = content.find('}') == 0;
+    bool isCaseLabel = content.find("case ") == 0 || content.find("default:") == 0;
+    
+    // Adjust indent level
+    if (isCloseBrace && !indentStack.empty() && indentStack.size() > 1) {
+      indentStack.pop_back();
+    }
+    
+    // Calculate actual indent
+    int currentIndent = baseIndentLevel;
+    if (!indentStack.empty()) {
+      currentIndent += indentStack.back();
+    }
+    
+    // Special handling for switch cases
+    if (isCaseLabel && currentIndent > baseIndentLevel) {
+      currentIndent -= 1; // Case labels are less indented than case body
+    }
+    
+    // Write the line with proper indentation
+    result << std::string(currentIndent * 2, ' ') << content;
+    
+    // Update indent stack for next line
+    if (isOpenBrace && !isCloseBrace) {
+      // Opening brace increases indent
+      indentStack.push_back(indentStack.back() + 1);
+    } else if (isCaseLabel) {
+      // After case label, increase indent for case body
+      if (!indentStack.empty() && indentStack.back() > 0) {
+        // We're already in a switch, adjust for case body
+        indentStack.back() = indentStack.back(); // Keep same level, body will be indented by the brace
+      }
+    }
+  }
+  
+  return result.str();
+}
+
+// Helper function to serialize a statement with proper indentation
+std::string serializeStatementWithIndent(const interpreter::Statement* stmt, int indentLevel) {
+  std::string stmtStr = stmt->toString();
+  
+  // For control flow statements that produce multi-line output, re-indent properly
+  if (dynamic_cast<const interpreter::IfStmt*>(stmt) ||
+      dynamic_cast<const interpreter::ForStmt*>(stmt) ||
+      dynamic_cast<const interpreter::WhileStmt*>(stmt) ||
+      dynamic_cast<const interpreter::DoWhileStmt*>(stmt) ||
+      dynamic_cast<const interpreter::SwitchStmt*>(stmt)) {
+    return reindentCode(stmtStr, indentLevel);
+  } else {
+    // Simple single-line statements
+    return std::string(indentLevel * 2, ' ') + stmtStr;
+  }
+}
+
 // Helper function to serialize a program to string
 std::string serializeProgramToString(const interpreter::Program& program) {
   std::stringstream ss;
@@ -426,9 +533,9 @@ std::string serializeProgramToString(const interpreter::Program& program) {
   
   ss << ") {\n";
   
-  // Add all statements
+  // Add all statements with proper indentation
   for (const auto& stmt : program.statements) {
-    ss << "  " << stmt->toString() << "\n";
+    ss << serializeStatementWithIndent(stmt.get(), 1) << "\n";
   }
   
   ss << "}\n";
@@ -3187,7 +3294,8 @@ TraceGuidedFuzzer::MutationResult TraceGuidedFuzzer::applyAllMutations(
 // Main function - always uses the incremental fuzzing pipeline
 int main(int argc, char** argv) {
   if (argc < 2) {
-    std::cerr << "Usage: " << argv[0] << " <input_file>\n";
+    std::cerr << "Usage: " << argv[0] << " <input_file> [wave_size]\n";
+    std::cerr << "  wave_size: optional, default is 32 (valid values: 4, 8, 16, 32, 64)\n";
     return 1;
   }
   
@@ -3208,6 +3316,31 @@ int main(int argc, char** argv) {
   
   // Configure the incremental fuzzing pipeline
   minihlsl::fuzzer::IncrementalFuzzingConfig config;
+  
+  // Parse wave size from command line if provided
+  if (argc >= 3) {
+    try {
+      uint32_t waveSize = std::stoul(argv[2]);
+      // Validate wave size
+      if (waveSize != 4 && waveSize != 8 && waveSize != 16 && waveSize != 32 && waveSize != 64) {
+        std::cerr << "Error: Invalid wave size " << waveSize << ". Valid values are: 4, 8, 16, 32, 64\n";
+        return 1;
+      }
+      config.waveSize = waveSize;
+      std::cout << "Using wave size: " << waveSize << "\n";
+      
+      // Also set environment variable for the program generator
+      std::string waveSizeStr = std::to_string(waveSize);
+      #ifdef _WIN32
+      _putenv_s("FUZZ_WAVE_SIZE", waveSizeStr.c_str());
+      #else
+      setenv("FUZZ_WAVE_SIZE", waveSizeStr.c_str(), 1);
+      #endif
+    } catch (const std::exception& e) {
+      std::cerr << "Error: Invalid wave size argument: " << argv[2] << "\n";
+      return 1;
+    }
+  }
   
   // Check environment variables for configuration
   const char* maxIncrementsEnv = std::getenv("FUZZ_MAX_INCREMENTS");

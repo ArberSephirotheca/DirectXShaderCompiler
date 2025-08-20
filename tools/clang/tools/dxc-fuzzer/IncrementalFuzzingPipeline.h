@@ -20,6 +20,7 @@ struct IncrementalFuzzingConfig {
     size_t randomSeed = 0;              // 0 = use random seed
     std::string seedId;                 // Unique identifier for this seed/run
     std::string outputDir = "mutant_outputs"; // Output directory for files
+    uint32_t waveSize = 32;             // Wave size for execution (default 32)
 };
 
 // Result from one pipeline iteration

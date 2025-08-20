@@ -59,7 +59,7 @@ bool IncrementalFuzzingPipeline::validateExecution(const interpreter::Program& p
         interpreter::ThreadOrdering ordering = interpreter::ThreadOrdering::sequential(program.getTotalThreads());
         
         // Execute with effective wave size
-        uint32_t waveSize = program.getEffectiveWaveSize(32);
+        uint32_t waveSize = program.getEffectiveWaveSize(config.waveSize);
         
         // Debug output for execution parameters
         std::cout << "\n=== Execution Parameters ===\n";
@@ -124,6 +124,7 @@ PipelineResult::IncrementResult IncrementalFuzzingPipeline::testMutations(
     fuzzConfig.enableLogging = config.enableLogging;
     fuzzConfig.seedId = config.seedId;
     fuzzConfig.outputDir = config.outputDir;
+    fuzzConfig.waveSize = config.waveSize;
     // fuzzConfig.stopOnFirstBug = false; // Not available in FuzzingConfig
 
     // Run fuzzing with captured trace
