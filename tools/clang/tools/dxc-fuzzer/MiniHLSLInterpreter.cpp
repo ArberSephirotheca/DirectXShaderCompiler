@@ -2386,10 +2386,11 @@ Result<Unit, ExecutionError> ForStmt::executeBody(LaneContext &lane,
       // Handle control flow errors
       ExecutionError error = result.unwrap_err();
       if (error == ExecutionError::ControlFlowBreak) {
-        INTERPRETER_DEBUG_LOG("ForStmt - Break encountered in body");
+        INTERPRETER_DEBUG_LOG("ForStmt - Break encountered in body, handled locally");
+        // Handle break locally - signal to exit the loop
         return Err<Unit, ExecutionError>(ExecutionError::ControlFlowBreak);
       } else if (error == ExecutionError::ControlFlowContinue) {
-        INTERPRETER_DEBUG_LOG("DEBUG: ForStmt - Continue encountered in body");
+        INTERPRETER_DEBUG_LOG("DEBUG: ForStmt - Continue encountered in body, handled locally");
         statementIndex = body_.size();           // Skip remaining statements
         return Ok<Unit, ExecutionError>(Unit{}); // Continue to increment phase
       } else {
@@ -2864,7 +2865,24 @@ ForStmt::executeBodyStatements_result(LaneContext &lane, WaveContext &wave,
     // handling
     auto stmt_result = body_[i]->execute_with_error_handling(lane, wave, tg);
     if (stmt_result.is_err()) {
-      return stmt_result; // Propagate the error
+      ExecutionError error = stmt_result.unwrap_err();
+      // Handle break locally - exit the loop
+      if (error == ExecutionError::ControlFlowBreak) {
+        INTERPRETER_DEBUG_LOG("DEBUG: ForStmt - Break encountered in body, handling locally");
+        // Set phase to reconverging so loop exits properly
+        lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::Reconverging;
+        return Ok<Unit, ExecutionError>(Unit{});
+      }
+      // Handle continue locally - skip to increment phase
+      else if (error == ExecutionError::ControlFlowContinue) {
+        INTERPRETER_DEBUG_LOG("DEBUG: ForStmt - Continue encountered in body, handling locally");
+        // Transition to increment phase
+        lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingIncrement;
+        lane.executionStack[ourStackIndex].statementIndex = 0;
+        return Ok<Unit, ExecutionError>(Unit{});
+      }
+      // Other errors propagate
+      return stmt_result;
     }
 
     if (lane.hasReturned) {
@@ -6378,7 +6396,24 @@ Result<Unit, ExecutionError> WhileStmt::executeBodyStatements_result(
     // handling
     auto stmt_result = body_[i]->execute_with_error_handling(lane, wave, tg);
     if (stmt_result.is_err()) {
-      return stmt_result; // Propagate the error
+      ExecutionError error = stmt_result.unwrap_err();
+      // Handle break locally - exit the loop
+      if (error == ExecutionError::ControlFlowBreak) {
+        INTERPRETER_DEBUG_LOG("DEBUG: WhileStmt - Break encountered in body, handling locally");
+        // Set phase to reconverging so loop exits properly
+        lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::Reconverging;
+        return Ok<Unit, ExecutionError>(Unit{});
+      }
+      // Handle continue locally - skip to condition evaluation
+      else if (error == ExecutionError::ControlFlowContinue) {
+        INTERPRETER_DEBUG_LOG("DEBUG: WhileStmt - Continue encountered in body, handling locally");
+        // Transition to condition evaluation phase for next iteration
+        lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingCondition;
+        lane.executionStack[ourStackIndex].statementIndex = 0;
+        return Ok<Unit, ExecutionError>(Unit{});
+      }
+      // Other errors propagate
+      return stmt_result;
     }
 
     if (lane.hasReturned) {
@@ -6939,7 +6974,24 @@ Result<Unit, ExecutionError> DoWhileStmt::executeBodyStatements_result(
     // handling
     auto stmt_result = body_[i]->execute_with_error_handling(lane, wave, tg);
     if (stmt_result.is_err()) {
-      return stmt_result; // Propagate the error
+      ExecutionError error = stmt_result.unwrap_err();
+      // Handle break locally - exit the loop
+      if (error == ExecutionError::ControlFlowBreak) {
+        INTERPRETER_DEBUG_LOG("DEBUG: DoWhileStmt - Break encountered in body, handling locally");
+        // Set phase to reconverging so loop exits properly
+        lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::Reconverging;
+        return Ok<Unit, ExecutionError>(Unit{});
+      }
+      // Handle continue locally - skip to condition evaluation
+      else if (error == ExecutionError::ControlFlowContinue) {
+        INTERPRETER_DEBUG_LOG("DEBUG: DoWhileStmt - Continue encountered in body, handling locally");
+        // Transition to condition evaluation phase
+        lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingCondition;
+        lane.executionStack[ourStackIndex].statementIndex = 0;
+        return Ok<Unit, ExecutionError>(Unit{});
+      }
+      // Other errors propagate
+      return stmt_result;
     }
 
     if (lane.hasReturned) {
