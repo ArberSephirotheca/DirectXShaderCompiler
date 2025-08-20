@@ -89,6 +89,10 @@ public:
             uint32_t numCases = 3;        // 2-4 cases
             bool includeDefault = false;  // Add default case
             bool allCasesBreak = true;    // All cases end with break (no fall-through)
+            
+            // Fallthrough configuration
+            bool enableFallthrough = false;      // Enable fallthrough behavior
+            std::vector<bool> caseFallthroughs;  // Per-case fallthrough decisions
         };
         std::optional<SwitchConfig> switchConfig;
         

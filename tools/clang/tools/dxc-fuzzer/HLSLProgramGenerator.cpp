@@ -179,8 +179,26 @@ ProgramState IncrementalGenerator::generateIncremental(const uint8_t* data, size
             // 30% chance to include default case
             switchConfig.includeDefault = provider.ConsumeIntegralInRange<uint32_t>(0, 9) < 3;
             
-            // For phase 1, always use break statements
-            switchConfig.allCasesBreak = true;
+            // Fallthrough configuration
+            switchConfig.enableFallthrough = provider.ConsumeIntegralInRange<uint32_t>(0, 9) < 3; // 30% chance
+            
+            if (switchConfig.enableFallthrough) {
+                // Randomly decide which cases fall through
+                switchConfig.allCasesBreak = false;
+                switchConfig.caseFallthroughs.resize(switchConfig.numCases);
+                for (uint32_t i = 0; i < switchConfig.numCases; ++i) {
+                    // Last case shouldn't fall through to avoid falling out of switch
+                    if (i == switchConfig.numCases - 1) {
+                        switchConfig.caseFallthroughs[i] = false;
+                    } else {
+                        // 50% chance of fallthrough for other cases
+                        switchConfig.caseFallthroughs[i] = provider.ConsumeBool();
+                    }
+                }
+            } else {
+                // Traditional switch with all breaks
+                switchConfig.allCasesBreak = true;
+            }
             
             spec.switchConfig = switchConfig;
         }
@@ -609,7 +627,22 @@ ControlFlowGenerator::createNestedBlockSpec(const BlockSpec& parentSpec,
                             provider.ConsumeIntegralInRange<int>(0, 2));
                         switchConfig.numCases = provider.ConsumeIntegralInRange<uint32_t>(2, 4);
                         switchConfig.includeDefault = provider.ConsumeBool();
-                        switchConfig.allCasesBreak = true; // Always use break
+                        // Fallthrough configuration for nested switch
+                        switchConfig.enableFallthrough = provider.ConsumeIntegralInRange<uint32_t>(0, 9) < 2; // 20% chance in nested
+                        
+                        if (switchConfig.enableFallthrough) {
+                            switchConfig.allCasesBreak = false;
+                            switchConfig.caseFallthroughs.resize(switchConfig.numCases);
+                            for (uint32_t i = 0; i < switchConfig.numCases; ++i) {
+                                if (i == switchConfig.numCases - 1) {
+                                    switchConfig.caseFallthroughs[i] = false;
+                                } else {
+                                    switchConfig.caseFallthroughs[i] = provider.ConsumeBool();
+                                }
+                            }
+                        } else {
+                            switchConfig.allCasesBreak = true;
+                        }
                         nestedSpec.switchConfig = switchConfig;
                     }
                     break;
@@ -686,7 +719,22 @@ ControlFlowGenerator::createNestedBlockSpec(const BlockSpec& parentSpec,
             provider.ConsumeIntegralInRange<int>(0, 2));
         switchConfig.numCases = provider.ConsumeIntegralInRange<uint32_t>(2, 4);
         switchConfig.includeDefault = provider.ConsumeBool();
-        switchConfig.allCasesBreak = true; // Always use break to avoid fall-through complexity
+        // Fallthrough configuration
+        switchConfig.enableFallthrough = provider.ConsumeIntegralInRange<uint32_t>(0, 9) < 2; // 20% chance in nested
+        
+        if (switchConfig.enableFallthrough) {
+            switchConfig.allCasesBreak = false;
+            switchConfig.caseFallthroughs.resize(switchConfig.numCases);
+            for (uint32_t i = 0; i < switchConfig.numCases; ++i) {
+                if (i == switchConfig.numCases - 1) {
+                    switchConfig.caseFallthroughs[i] = false;
+                } else {
+                    switchConfig.caseFallthroughs[i] = provider.ConsumeBool();
+                }
+            }
+        } else {
+            switchConfig.allCasesBreak = true;
+        }
         nestedSpec.switchConfig = switchConfig;
     }
     
@@ -1071,8 +1119,18 @@ ControlFlowGenerator::generateSwitch(const BlockSpec& spec, ProgramState& state,
             ));
         }
         
-        // Add break statement if configured
+        // Add break statement based on configuration
         if (config.allCasesBreak) {
+            // Traditional mode: all cases have break
+            caseBody.push_back(std::make_unique<interpreter::BreakStmt>());
+        } else if (config.enableFallthrough && i < config.caseFallthroughs.size()) {
+            // Fallthrough mode: check per-case decision
+            if (!config.caseFallthroughs[i]) {
+                caseBody.push_back(std::make_unique<interpreter::BreakStmt>());
+            }
+            // If caseFallthroughs[i] is true, no break - will fall through
+        } else {
+            // Default: add break
             caseBody.push_back(std::make_unique<interpreter::BreakStmt>());
         }
         
@@ -1100,9 +1158,8 @@ ControlFlowGenerator::generateSwitch(const BlockSpec& spec, ProgramState& state,
             std::move(addExpr)
         ));
         
-        if (config.allCasesBreak) {
-            defaultBody.push_back(std::make_unique<interpreter::BreakStmt>());
-        }
+        // Default case always has break (no fallthrough from default)
+        defaultBody.push_back(std::make_unique<interpreter::BreakStmt>());
         
         switchStmt->addDefault(std::move(defaultBody));
     }
@@ -1177,8 +1234,26 @@ void IncrementalGenerator::addStatementsToProgram(ProgramState& state, const uin
         // 30% chance to include default case
         switchConfig.includeDefault = provider.ConsumeIntegralInRange<uint32_t>(0, 9) < 3;
         
-        // For phase 1, always use break statements
-        switchConfig.allCasesBreak = true;
+        // Fallthrough configuration
+        switchConfig.enableFallthrough = provider.ConsumeIntegralInRange<uint32_t>(0, 9) < 3; // 30% chance
+        
+        if (switchConfig.enableFallthrough) {
+            // Randomly decide which cases fall through
+            switchConfig.allCasesBreak = false;
+            switchConfig.caseFallthroughs.resize(switchConfig.numCases);
+            for (uint32_t i = 0; i < switchConfig.numCases; ++i) {
+                // Last case shouldn't fall through to avoid falling out of switch
+                if (i == switchConfig.numCases - 1) {
+                    switchConfig.caseFallthroughs[i] = false;
+                } else {
+                    // 50% chance of fallthrough for other cases
+                    switchConfig.caseFallthroughs[i] = provider.ConsumeBool();
+                }
+            }
+        } else {
+            // Traditional switch with all breaks
+            switchConfig.allCasesBreak = true;
+        }
         
         spec.switchConfig = switchConfig;
     }
