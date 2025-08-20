@@ -7445,7 +7445,19 @@ SwitchStmt::executeCaseStatements_result(LaneContext &lane, WaveContext &wave,
       auto stmt_result =
           caseBlock.statements[i]->execute_result(lane, wave, tg);
       if (stmt_result.is_err()) {
-        return stmt_result; // Propagate the error
+        ExecutionError error = stmt_result.unwrap_err();
+        // Handle break locally for this switch
+        if (error == ExecutionError::ControlFlowBreak) {
+          INTERPRETER_DEBUG_LOG("DEBUG: SwitchStmt - Lane " << lane.laneId
+                    << " encountered break, exiting switch");
+          // Exit the switch - break was consumed by this switch
+          // Set phase to reconverging so proper cleanup happens
+          ourEntry.phase = LaneContext::ControlFlowPhase::Reconverging;
+          return Ok<Unit, ExecutionError>(Unit{});
+        }
+        // Continue should propagate to enclosing loop
+        // Other errors should also propagate
+        return stmt_result;
       }
 
       if (lane.hasReturned) {
