@@ -444,6 +444,66 @@ private:
   interpreter::Program createBaseMutant(const interpreter::Program& program) const;
 };
 
+// Mutation strategy: Track wave operation participation frequency per thread
+class WaveParticipantFrequencyMutation : public MutationStrategy {
+public:
+  bool canApply(const interpreter::Statement* stmt,
+                const ExecutionTrace& trace) const override;
+  
+  std::unique_ptr<interpreter::Statement> apply(
+    const interpreter::Statement* stmt,
+    const ExecutionTrace& trace) const override;
+    
+  bool validateSemanticPreservation(
+    const interpreter::Statement* original,
+    const interpreter::Statement* mutated,
+    const ExecutionTrace& trace) const override;
+    
+  std::string getName() const override { return "WaveParticipantFrequency"; }
+  
+  // Program-level mutation API
+  bool requiresProgramLevelMutation() const override { return true; }
+  
+  std::vector<interpreter::Program> applyToProgram(
+    const interpreter::Program& program,
+    const ExecutionTrace& trace,
+    const std::set<size_t>& statementsToMutate) const override;
+  
+private:
+  // Process statements recursively to inject frequency tracking
+  void processStatementsForFrequency(
+      const std::vector<std::unique_ptr<interpreter::Statement>>& input,
+      std::vector<std::unique_ptr<interpreter::Statement>>& output,
+      const ExecutionTrace& trace,
+      size_t& currentWaveOpIndex) const;
+  
+  // Helper to create frequency tracking code
+  std::vector<std::unique_ptr<interpreter::Statement>> 
+  createFrequencyTrackingStatements(const interpreter::WaveActiveOp* waveOp,
+                                   const std::string& resultVar) const;
+  
+  // Check if program already has a frequency buffer
+  bool hasFrequencyBuffer(const interpreter::Program& program) const;
+  
+  // Helper methods for program-level mutation
+  bool hasWaveOpsInStatements(
+    const interpreter::Program& program,
+    const std::set<size_t>& statementsToMutate) const;
+    
+  interpreter::Program createMutantWithFrequencyTracking(
+    const interpreter::Program& program,
+    const ExecutionTrace& trace,
+    const std::set<size_t>& statementsToMutate) const;
+    
+  void ensureFrequencyBuffer(interpreter::Program& mutant) const;
+  
+  interpreter::Program createBaseMutant(const interpreter::Program& program) const;
+  
+  // Compute expected frequencies from trace
+  std::map<interpreter::ThreadId, uint32_t> computeExpectedFrequencies(
+    const ExecutionTrace& trace) const;
+};
+
 // Mutation strategy: Add participants to specific loop iterations
 class ContextAwareParticipantMutation : public MutationStrategy {
 public:
@@ -674,6 +734,7 @@ private:
     WaveParticipantTracking = 1 << 0,
     LanePermutation = 1 << 1,
     ContextAwareParticipant = 1 << 2,
+    WaveParticipantFrequency = 1 << 3,
     // Add more mutations here as needed
   };
   

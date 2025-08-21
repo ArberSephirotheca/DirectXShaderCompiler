@@ -1503,6 +1503,393 @@ bool WaveParticipantTrackingMutation::validateSemanticPreservation(
   return true;
 }
 
+// ===== WaveParticipantFrequencyMutation Implementation =====
+
+bool WaveParticipantFrequencyMutation::canApply(
+    const interpreter::Statement* stmt,
+    const ExecutionTrace& trace) const {
+  // This mutation applies at the program level, not statement level
+  return false;
+}
+
+std::unique_ptr<interpreter::Statement> WaveParticipantFrequencyMutation::apply(
+    const interpreter::Statement* stmt, 
+    const ExecutionTrace& trace) const {
+  // This mutation is handled at the program level
+  return stmt->clone();
+}
+
+std::vector<std::unique_ptr<interpreter::Statement>>
+WaveParticipantFrequencyMutation::createFrequencyTrackingStatements(
+    const interpreter::WaveActiveOp* waveOp,
+    const std::string& resultVar) const {
+  
+  std::vector<std::unique_ptr<interpreter::Statement>> statements;
+  
+  // Simply increment the frequency counter for this thread: _participant_frequency[tid.x] += 1
+  auto tidX = std::make_unique<interpreter::VariableExpr>("tid.x");
+  auto bufferAccess = std::make_unique<interpreter::ArrayAccessExpr>(
+      "_participant_frequency",
+      std::move(tidX));
+  
+  auto oneExpr = std::make_unique<interpreter::LiteralExpr>(1);
+  auto addExpr = std::make_unique<interpreter::BinaryOpExpr>(
+      std::move(bufferAccess), std::move(oneExpr), 
+      interpreter::BinaryOpExpr::Add);
+  
+  auto tidX2 = std::make_unique<interpreter::VariableExpr>("tid.x");
+  statements.push_back(std::make_unique<interpreter::ArrayAssignStmt>(
+      "_participant_frequency", std::move(tidX2), std::move(addExpr)));
+  
+  return statements;
+}
+
+bool WaveParticipantFrequencyMutation::hasFrequencyBuffer(const interpreter::Program& program) const {
+  for (const auto& buffer : program.globalBuffers) {
+    if (buffer.name == "_participant_frequency") {
+      return true;
+    }
+  }
+  return false;
+}
+
+void WaveParticipantFrequencyMutation::processStatementsForFrequency(
+    const std::vector<std::unique_ptr<interpreter::Statement>>& input,
+    std::vector<std::unique_ptr<interpreter::Statement>>& output,
+    const ExecutionTrace& trace,
+    size_t& currentWaveOpIndex) const {
+  
+  for (const auto& stmt : input) {
+    // Skip tracking operations we previously added
+    if (isTrackingStatement(stmt.get())) {
+      output.push_back(stmt->clone());
+      continue;
+    }
+    
+    // Handle if statements specially - process recursively without cloning first
+    if (auto ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt.get())) {
+      // Process then block
+      std::vector<std::unique_ptr<interpreter::Statement>> processedThen;
+      processStatementsForFrequency(ifStmt->getThenBlock(), processedThen, trace, currentWaveOpIndex);
+      
+      // Process else block
+      std::vector<std::unique_ptr<interpreter::Statement>> processedElse;
+      processStatementsForFrequency(ifStmt->getElseBlock(), processedElse, trace, currentWaveOpIndex);
+      
+      // Create new if statement with processed blocks
+      output.push_back(std::make_unique<interpreter::IfStmt>(
+        ifStmt->getCondition()->clone(),
+        std::move(processedThen),
+        std::move(processedElse)));
+      continue;
+    }
+    
+    // For non-if statements, add the original statement first
+    output.push_back(stmt->clone());
+    
+    // Check if this statement contains a wave operation that we should track
+    const interpreter::WaveActiveOp* waveOp = nullptr;
+    std::string resultVarName;
+    
+    if (!isTrackingStatement(stmt.get())) {
+      if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt.get())) {
+        waveOp = findWaveOpInExpression(assign->getExpression());
+        resultVarName = assign->getName();
+      } else if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt.get())) {
+        if (varDecl->getInit()) {
+          waveOp = findWaveOpInExpression(varDecl->getInit());
+          resultVarName = varDecl->getName();
+        }
+      }
+    }
+    
+    // If we found a wave operation, add frequency tracking after it
+    if (waveOp) {
+      auto trackingStmts = createFrequencyTrackingStatements(waveOp, resultVarName);
+      for (auto& trackingStmt : trackingStmts) {
+        output.push_back(std::move(trackingStmt));
+      }
+      currentWaveOpIndex++;
+    }
+    
+    // Handle nested control flow statements
+    if (auto forStmt = dynamic_cast<const interpreter::ForStmt*>(stmt.get())) {
+      // Process body
+      std::vector<std::unique_ptr<interpreter::Statement>> processedBody;
+      processStatementsForFrequency(forStmt->getBody(), processedBody, trace, currentWaveOpIndex);
+      
+      // Replace with processed version
+      output.pop_back(); // Remove the cloned version
+      output.push_back(std::make_unique<interpreter::ForStmt>(
+        forStmt->getLoopVar(),
+        forStmt->getInit() ? forStmt->getInit()->clone() : nullptr,
+        forStmt->getCondition() ? forStmt->getCondition()->clone() : nullptr,
+        forStmt->getIncrement() ? forStmt->getIncrement()->clone() : nullptr,
+        std::move(processedBody)
+      ));
+    }
+    else if (auto whileStmt = dynamic_cast<const interpreter::WhileStmt*>(stmt.get())) {
+      // Process body
+      std::vector<std::unique_ptr<interpreter::Statement>> processedBody;
+      processStatementsForFrequency(whileStmt->getBody(), processedBody, trace, currentWaveOpIndex);
+      
+      // Replace with processed version
+      output.pop_back(); // Remove the cloned version
+      output.push_back(std::make_unique<interpreter::WhileStmt>(
+        whileStmt->getCondition()->clone(),
+        std::move(processedBody)
+      ));
+    }
+    else if (auto doWhileStmt = dynamic_cast<const interpreter::DoWhileStmt*>(stmt.get())) {
+      // Process body
+      std::vector<std::unique_ptr<interpreter::Statement>> processedBody;
+      processStatementsForFrequency(doWhileStmt->getBody(), processedBody, trace, currentWaveOpIndex);
+      
+      // Replace with processed version
+      output.pop_back(); // Remove the cloned version
+      output.push_back(std::make_unique<interpreter::DoWhileStmt>(
+        std::move(processedBody),
+        doWhileStmt->getCondition()->clone()
+      ));
+    }
+    else if (auto switchStmt = dynamic_cast<const interpreter::SwitchStmt*>(stmt.get())) {
+      // Process switch cases
+      auto newSwitch = std::make_unique<interpreter::SwitchStmt>(
+          switchStmt->getCondition()->clone());
+      
+      for (size_t i = 0; i < switchStmt->getCaseCount(); ++i) {
+        const auto& caseBlock = switchStmt->getCase(i);
+        std::vector<std::unique_ptr<interpreter::Statement>> processedCaseBody;
+        
+        // Process statements in this case
+        processStatementsForFrequency(caseBlock.statements, processedCaseBody, 
+                                    trace, currentWaveOpIndex);
+        
+        // Add the processed case to the new switch
+        if (caseBlock.value.has_value()) {
+          newSwitch->addCase(caseBlock.value.value(), std::move(processedCaseBody));
+        } else {
+          newSwitch->addDefault(std::move(processedCaseBody));
+        }
+      }
+      
+      // Replace with the processed switch
+      output.pop_back(); // Remove the cloned version
+      output.push_back(std::move(newSwitch));
+    }
+  }
+}
+
+bool WaveParticipantFrequencyMutation::validateSemanticPreservation(
+    const interpreter::Statement* original,
+    const interpreter::Statement* mutated,
+    const ExecutionTrace& trace) const {
+  // The frequency tracking is side-effect free on the main computation
+  return true;
+}
+
+// Helper method: Check if any statements contain wave operations
+bool WaveParticipantFrequencyMutation::hasWaveOpsInStatements(
+    const interpreter::Program& program,
+    const std::set<size_t>& statementsToMutate) const {
+  
+  std::function<bool(const interpreter::Statement*)> hasWaveOpRecursive;
+  hasWaveOpRecursive = [&hasWaveOpRecursive](const interpreter::Statement* stmt) -> bool {
+    // Check AssignStmt
+    if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
+      if (findWaveOpInExpression(assign->getExpression())) {
+        return true;
+      }
+    } 
+    // Check VarDeclStmt
+    else if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
+      if (varDecl->getInit() && findWaveOpInExpression(varDecl->getInit())) {
+        return true;
+      }
+    }
+    // Check control flow statements
+    else if (auto* ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt)) {
+      for (const auto& s : ifStmt->getThenBlock()) {
+        if (hasWaveOpRecursive(s.get())) return true;
+      }
+      for (const auto& s : ifStmt->getElseBlock()) {
+        if (hasWaveOpRecursive(s.get())) return true;
+      }
+    } else if (auto* forStmt = dynamic_cast<const interpreter::ForStmt*>(stmt)) {
+      for (const auto& s : forStmt->getBody()) {
+        if (hasWaveOpRecursive(s.get())) return true;
+      }
+    } else if (auto* whileStmt = dynamic_cast<const interpreter::WhileStmt*>(stmt)) {
+      for (const auto& s : whileStmt->getBody()) {
+        if (hasWaveOpRecursive(s.get())) return true;
+      }
+    } else if (auto* doWhileStmt = dynamic_cast<const interpreter::DoWhileStmt*>(stmt)) {
+      for (const auto& s : doWhileStmt->getBody()) {
+        if (hasWaveOpRecursive(s.get())) return true;
+      }
+    } else if (auto* switchStmt = dynamic_cast<const interpreter::SwitchStmt*>(stmt)) {
+      // Check all cases in the switch
+      for (size_t i = 0; i < switchStmt->getCaseCount(); ++i) {
+        const auto& caseBlock = switchStmt->getCase(i);
+        for (const auto& s : caseBlock.statements) {
+          if (hasWaveOpRecursive(s.get())) return true;
+        }
+      }
+    }
+    return false;
+  };
+  
+  for (size_t i = 0; i < program.statements.size(); ++i) {
+    if (statementsToMutate.find(i) != statementsToMutate.end()) {
+      if (hasWaveOpRecursive(program.statements[i].get())) {
+        return true;
+      }
+    }
+  }
+  
+  return false;
+}
+
+// Helper method: Create base mutant with copied program structure
+interpreter::Program WaveParticipantFrequencyMutation::createBaseMutant(const interpreter::Program& program) const {
+  interpreter::Program mutant;
+  mutant.numThreadsX = program.numThreadsX;
+  mutant.numThreadsY = program.numThreadsY;
+  mutant.numThreadsZ = program.numThreadsZ;
+  mutant.entryInputs = program.entryInputs;
+  mutant.globalBuffers = program.globalBuffers;
+  mutant.waveSize = program.waveSize;
+  return mutant;
+}
+
+// Helper method: Ensure frequency buffer exists
+void WaveParticipantFrequencyMutation::ensureFrequencyBuffer(interpreter::Program& mutant) const {
+  bool hasFrequencyBuffer = false;
+  for (const auto& buffer : mutant.globalBuffers) {
+    if (buffer.name == "_participant_frequency") {
+      hasFrequencyBuffer = true;
+      break;
+    }
+  }
+  
+  if (!hasFrequencyBuffer) {
+    minihlsl::interpreter::GlobalBufferDecl frequencyBuffer;
+    frequencyBuffer.name = "_participant_frequency";
+    frequencyBuffer.bufferType = "RWStructuredBuffer";
+    frequencyBuffer.elementType = minihlsl::interpreter::HLSLType::Uint;
+    frequencyBuffer.size = mutant.getTotalThreads();
+    frequencyBuffer.registerIndex = 2; // Use different register than participant buffer
+    frequencyBuffer.isReadWrite = true;
+    mutant.globalBuffers.push_back(frequencyBuffer);
+    
+    // Add buffer initialization
+    auto tidX = std::make_unique<interpreter::VariableExpr>("tid.x");
+    auto zero = std::make_unique<interpreter::LiteralExpr>(0);
+    mutant.statements.push_back(std::make_unique<interpreter::ArrayAssignStmt>(
+        "_participant_frequency", std::move(tidX), std::move(zero)));
+  }
+}
+
+// Compute expected frequencies from trace
+std::map<interpreter::ThreadId, uint32_t> WaveParticipantFrequencyMutation::computeExpectedFrequencies(
+    const ExecutionTrace& trace) const {
+  
+  std::map<interpreter::ThreadId, uint32_t> frequencies;
+  
+  // Initialize all threads with 0 frequency
+  for (const auto& [threadId, waveId] : trace.threadHierarchy.threadToWave) {
+    frequencies[threadId] = 0;
+  }
+  
+  // Count participation for each thread across all wave operations
+  for (const auto& waveOp : trace.waveOperations) {
+    for (interpreter::LaneId lane : waveOp.arrivedParticipants) {
+      // Convert lane to thread ID
+      interpreter::ThreadId threadId = 0;
+      for (const auto& [tid, wid] : trace.threadHierarchy.threadToWave) {
+        if (wid == waveOp.waveId && trace.threadHierarchy.threadToLane.at(tid) == lane) {
+          threadId = tid;
+          break;
+        }
+      }
+      frequencies[threadId]++;
+    }
+  }
+  
+  return frequencies;
+}
+
+// Helper method: Create mutant with frequency tracking
+interpreter::Program WaveParticipantFrequencyMutation::createMutantWithFrequencyTracking(
+    const interpreter::Program& program,
+    const ExecutionTrace& trace,
+    const std::set<size_t>& statementsToMutate) const {
+  
+  interpreter::Program mutant = createBaseMutant(program);
+  ensureFrequencyBuffer(mutant);
+  
+  size_t currentWaveOpIndex = 0;
+  
+  // Process each statement
+  for (size_t i = 0; i < program.statements.size(); ++i) {
+    if (statementsToMutate.find(i) != statementsToMutate.end()) {
+      // This is a new statement - process it for frequency tracking
+      std::vector<std::unique_ptr<interpreter::Statement>> inputStmts;
+      inputStmts.push_back(program.statements[i]->clone());
+      
+      std::vector<std::unique_ptr<interpreter::Statement>> processedStmts;
+      processStatementsForFrequency(inputStmts, processedStmts, trace, currentWaveOpIndex);
+      
+      // Add all processed statements (original + tracking)
+      for (auto& stmt : processedStmts) {
+        mutant.statements.push_back(std::move(stmt));
+      }
+    } else {
+      // This is an old statement - copy it unchanged but still count its wave ops
+      mutant.statements.push_back(program.statements[i]->clone());
+      
+      // Count wave ops in this statement to keep our index in sync
+      currentWaveOpIndex += countWaveOpsInStatement(program.statements[i].get());
+    }
+  }
+  
+  // Add frequency validation at the end
+  // Create a statement to compare actual vs expected frequencies
+  auto expectedFreqs = computeExpectedFrequencies(trace);
+  
+  // For now, we'll store the expected frequencies in comments or debug output
+  // In a real implementation, you'd compare these values
+  FUZZER_DEBUG_LOG("[WaveParticipantFrequency] Expected frequencies:\n");
+  for (const auto& [threadId, freq] : expectedFreqs) {
+    FUZZER_DEBUG_LOG("  Thread " << threadId << ": " << freq << " participations\n");
+  }
+  
+  return mutant;
+}
+
+// Implementation of program-level mutation for WaveParticipantFrequency
+std::vector<interpreter::Program> WaveParticipantFrequencyMutation::applyToProgram(
+    const interpreter::Program& program,
+    const ExecutionTrace& trace,
+    const std::set<size_t>& statementsToMutate) const {
+  
+  std::vector<interpreter::Program> mutants;
+  
+  // Check if any new statements have wave ops
+  if (!hasWaveOpsInStatements(program, statementsToMutate)) {
+    return mutants;
+  }
+  
+  FUZZER_DEBUG_LOG("Found wave operations in new statements, applying WaveParticipantFrequency\n");
+  
+  // Create mutant with frequency tracking
+  interpreter::Program mutant = createMutantWithFrequencyTracking(
+      program, trace, statementsToMutate);
+  
+  mutants.push_back(std::move(mutant));
+  return mutants;
+}
+
 // ===== ContextAwareParticipantMutation Implementation =====
 
 bool ContextAwareParticipantMutation::canApply(
@@ -2397,6 +2784,7 @@ TraceGuidedFuzzer::TraceGuidedFuzzer() {
   // Initialize mutation strategies
   mutationStrategies.push_back(std::make_unique<WaveParticipantTrackingMutation>());
   mutationStrategies.push_back(std::make_unique<LanePermutationMutation>());
+  // mutationStrategies.push_back(std::make_unique<WaveParticipantFrequencyMutation>());
   // mutationStrategies.push_back(std::make_unique<ContextAwareParticipantMutation>());
   
   // TODO: Add more semantics-preserving mutations:
@@ -3220,6 +3608,11 @@ std::string TraceGuidedFuzzer::MutationResult::getMutationChainString() const {
     result += "ContextAwareParticipant";
   }
   
+  if ((appliedMutations & AppliedMutations::WaveParticipantFrequency) != AppliedMutations::None) {
+    if (!result.empty()) result += " + ";
+    result += "WaveParticipantFrequency";
+  }
+  
   if (result.empty()) {
     result = "None";
   }
@@ -3276,6 +3669,8 @@ TraceGuidedFuzzer::MutationResult TraceGuidedFuzzer::applyAllMutations(
         result.appliedMutations |= AppliedMutations::LanePermutation;
       } else if (strategy->getName() == "ContextAwareParticipant") {
         result.appliedMutations |= AppliedMutations::ContextAwareParticipant;
+      } else if (strategy->getName() == "WaveParticipantFrequency") {
+        result.appliedMutations |= AppliedMutations::WaveParticipantFrequency;
       }
       
       FUZZER_DEBUG_LOG("Successfully applied " << strategy->getName() << "\n");
