@@ -411,8 +411,7 @@ public:
       const std::vector<std::unique_ptr<interpreter::Statement>>& input,
       std::vector<std::unique_ptr<interpreter::Statement>>& output,
       const ExecutionTrace& trace,
-      size_t& currentWaveOpIndex,
-      const std::map<size_t, size_t>& programIndexToTraceIndex) const;
+      size_t& nextTraceIndex) const;
   
 private:
   // Helper to create participant tracking code
@@ -429,15 +428,10 @@ private:
     const interpreter::Program& program,
     const std::set<size_t>& statementsToMutate) const;
     
-  std::map<size_t, size_t> buildWaveOpMapping(
-    const interpreter::Program& program,
-    const ExecutionTrace& trace) const;
-    
   interpreter::Program createMutantWithTracking(
     const interpreter::Program& program,
     const ExecutionTrace& trace,
-    const std::set<size_t>& statementsToMutate,
-    const std::map<size_t, size_t>& programIndexToTraceIndex) const;
+    const std::set<size_t>& statementsToMutate) const;
     
   void ensureParticipantBuffer(interpreter::Program& mutant) const;
   
