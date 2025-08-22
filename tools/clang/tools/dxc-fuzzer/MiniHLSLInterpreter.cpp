@@ -34,9 +34,9 @@ std::atomic<uint32_t> Expression::nextStableId{1};
 // - ENABLE_BLOCK_DEBUG: Shows block creation, merging, and convergence
 
 static constexpr bool ENABLE_INTERPRETER_DEBUG =
-    false; // Set to true to enable detailed execution tracing
+    true; // Set to true to enable detailed execution tracing
 static constexpr bool ENABLE_WAVE_DEBUG =
-    false; // Set to true to enable wave operation tracing
+    true; // Set to true to enable wave operation tracing
 static constexpr bool ENABLE_BLOCK_DEBUG =
     true; // Set to true to enable block lifecycle tracing
 static constexpr bool ENABLE_PARSER_DEBUG =
@@ -2250,18 +2250,22 @@ IfStmt::executeThenBranch_result(LaneContext &lane, WaveContext &wave,
         // Get block IDs before cleaning up
         uint32_t ifThenBlockId = lane.executionStack[ourStackIndex].ifThenBlockId;
         uint32_t ifElseBlockId = lane.executionStack[ourStackIndex].ifElseBlockId;
+        uint32_t ifMergeBlockId = lane.executionStack[ourStackIndex].ifMergeBlockId;
         
         // Pop our stack entry
         lane.executionStack.pop_back();
         tg.popMergePoint(wave.waveId, lane.laneId);
         
-        // Clean up then/else blocks - lane will never return to them
+        // Clean up then/else/merge blocks - lane will never return to them
         tg.removeThreadFromAllSets(ifThenBlockId, wave.waveId, lane.laneId);
         tg.removeThreadFromNestedBlocks(ifThenBlockId, wave.waveId, lane.laneId);
         if (ifElseBlockId != 0) {
           tg.removeThreadFromAllSets(ifElseBlockId, wave.waveId, lane.laneId);
           tg.removeThreadFromNestedBlocks(ifElseBlockId, wave.waveId, lane.laneId);
         }
+        // Also clean up merge block since we're continuing past it
+        tg.removeThreadFromAllSets(ifMergeBlockId, wave.waveId, lane.laneId);
+        tg.removeThreadFromNestedBlocks(ifMergeBlockId, wave.waveId, lane.laneId);
       }
       return stmt_result; // Propagate the error
     }
@@ -2328,18 +2332,22 @@ IfStmt::executeElseBranch_result(LaneContext &lane, WaveContext &wave,
         // Get block IDs before cleaning up
         uint32_t ifThenBlockId = lane.executionStack[ourStackIndex].ifThenBlockId;
         uint32_t ifElseBlockId = lane.executionStack[ourStackIndex].ifElseBlockId;
+        uint32_t ifMergeBlockId = lane.executionStack[ourStackIndex].ifMergeBlockId;
         
         // Pop our stack entry
         lane.executionStack.pop_back();
         tg.popMergePoint(wave.waveId, lane.laneId);
         
-        // Clean up then/else blocks - lane will never return to them
+        // Clean up then/else/merge blocks - lane will never return to them
         tg.removeThreadFromAllSets(ifThenBlockId, wave.waveId, lane.laneId);
         tg.removeThreadFromNestedBlocks(ifThenBlockId, wave.waveId, lane.laneId);
         if (ifElseBlockId != 0) {
           tg.removeThreadFromAllSets(ifElseBlockId, wave.waveId, lane.laneId);
           tg.removeThreadFromNestedBlocks(ifElseBlockId, wave.waveId, lane.laneId);
         }
+        // Also clean up merge block since we're continuing past it
+        tg.removeThreadFromAllSets(ifMergeBlockId, wave.waveId, lane.laneId);
+        tg.removeThreadFromNestedBlocks(ifMergeBlockId, wave.waveId, lane.laneId);
       }
       return stmt_result; // Propagate the error
     }
@@ -2809,6 +2817,13 @@ void ForStmt::handleBreakException(LaneContext &lane, WaveContext &wave,
                                    uint32_t headerBlockId) {
   // Break - exit loop
   INTERPRETER_DEBUG_LOG("DEBUG: ForStmt - Lane " << lane.laneId << " breaking from loop");
+  
+  // Update wave operations before leaving the block
+  auto &ourEntry = lane.executionStack[ourStackIndex];
+  if (ourEntry.loopBodyBlockId != 0) {
+    tg.updateWaveOperationsForLeavingBlock(wave.waveId, lane.laneId, ourEntry.loopBodyBlockId);
+  }
+  
   tg.popMergePoint(wave.waveId, lane.laneId);
 
   // Clean up - remove from blocks this lane will never reach
@@ -2823,22 +2838,17 @@ void ForStmt::handleBreakException(LaneContext &lane, WaveContext &wave,
 void ForStmt::handleContinueException(LaneContext &lane, WaveContext &wave,
                                       ThreadgroupContext &tg, int ourStackIndex,
                                       uint32_t headerBlockId) {
-  // Continue - go to increment phase and skip remaining statements
+  // Continue - skip to end of body to trigger normal cleanup
   INTERPRETER_DEBUG_LOG("DEBUG: ForStmt - Lane " << lane.laneId << " continuing loop");
 
-  // CRITICAL FIX: Mark lane as Left from current block when continuing
   auto &ourEntry = lane.executionStack[ourStackIndex];
-  if (ourEntry.loopBodyBlockId != 0) {
-    tg.membershipRegistry.setLaneStatus(wave.waveId, lane.laneId,
-                                        ourEntry.loopBodyBlockId,
-                                        LaneBlockStatus::Left);
-    INTERPRETER_DEBUG_LOG("DEBUG: ForStmt - Marked lane " << lane.laneId
-              << " as Left from block " << ourEntry.loopBodyBlockId);
-  }
-
-  tg.popMergePoint(wave.waveId, lane.laneId);
-
+  
+  // Set statementIndex to body size to indicate body execution is complete
+  // This will trigger cleanupAfterBodyExecution in the normal flow
+  ourEntry.statementIndex = body_.size();
+  
   // Clean up - remove from all nested blocks this lane is abandoning
+  // This is necessary to resolve unknown lanes in blocks that won't be entered
   if (lane.executionStack[ourStackIndex].loopBodyBlockId != 0) {
     tg.removeThreadFromAllSets(
         lane.executionStack[ourStackIndex].loopBodyBlockId, wave.waveId,
@@ -2847,13 +2857,8 @@ void ForStmt::handleContinueException(LaneContext &lane, WaveContext &wave,
         lane.executionStack[ourStackIndex].loopBodyBlockId, wave.waveId,
         lane.laneId);
   }
-  tg.moveThreadFromUnknownToParticipating(headerBlockId, wave.waveId,
-                                          lane.laneId);
-  lane.executionStack[ourStackIndex].loopBodyBlockId =
-      0; // Reset for next iteration
-  lane.executionStack[ourStackIndex].phase =
-      LaneContext::ControlFlowPhase::EvaluatingIncrement;
-
+  
+  // Don't change phase here - let the normal body completion logic handle it
   // Set state to WaitingForResume to prevent currentStatement increment
   setThreadStateIfUnprotected(lane);
 }
@@ -6352,6 +6357,13 @@ void WhileStmt::handleBreakException(LaneContext &lane, WaveContext &wave,
   // Break - exit loop
   INTERPRETER_DEBUG_LOG("DEBUG: WhileStmt - Lane " << lane.laneId
             << " breaking from while loop");
+  
+  // Update wave operations before leaving the block
+  auto &ourEntry = lane.executionStack[ourStackIndex];
+  if (ourEntry.loopBodyBlockId != 0) {
+    tg.updateWaveOperationsForLeavingBlock(wave.waveId, lane.laneId, ourEntry.loopBodyBlockId);
+  }
+  
   tg.popMergePoint(wave.waveId, lane.laneId);
   lane.executionStack[ourStackIndex].phase =
       LaneContext::ControlFlowPhase::Reconverging;
@@ -6375,6 +6387,9 @@ void WhileStmt::handleContinueException(LaneContext &lane, WaveContext &wave,
   // CRITICAL FIX: Mark lane as Left from current block when continuing
   auto &ourEntry = lane.executionStack[ourStackIndex];
   if (ourEntry.loopBodyBlockId != 0) {
+    // Update wave operations before leaving the block
+    tg.updateWaveOperationsForLeavingBlock(wave.waveId, lane.laneId, ourEntry.loopBodyBlockId);
+    
     tg.membershipRegistry.setLaneStatus(wave.waveId, lane.laneId,
                                         ourEntry.loopBodyBlockId,
                                         LaneBlockStatus::Left);
@@ -6778,6 +6793,13 @@ void DoWhileStmt::handleBreakException(LaneContext &lane, WaveContext &wave,
                                        uint32_t mergeBlockId) {
   INTERPRETER_DEBUG_LOG("DEBUG: DoWhileStmt - Lane " << lane.laneId
             << " breaking from do-while loop");
+  
+  // Update wave operations before leaving the block
+  auto &ourEntry = lane.executionStack[ourStackIndex];
+  if (ourEntry.loopBodyBlockId != 0) {
+    tg.updateWaveOperationsForLeavingBlock(wave.waveId, lane.laneId, ourEntry.loopBodyBlockId);
+  }
+  
   tg.popMergePoint(wave.waveId, lane.laneId);
 
   // Clean up - remove from blocks this lane will never reach
@@ -6799,6 +6821,9 @@ void DoWhileStmt::handleContinueException(LaneContext &lane, WaveContext &wave,
   // CRITICAL FIX: Mark lane as Left from current block when continuing
   auto &ourEntry = lane.executionStack[ourStackIndex];
   if (ourEntry.loopBodyBlockId != 0) {
+    // Update wave operations before leaving the block
+    tg.updateWaveOperationsForLeavingBlock(wave.waveId, lane.laneId, ourEntry.loopBodyBlockId);
+    
     tg.membershipRegistry.setLaneStatus(wave.waveId, lane.laneId,
                                         ourEntry.loopBodyBlockId,
                                         LaneBlockStatus::Left);
@@ -8513,6 +8538,58 @@ void ThreadgroupContext::releaseWaveSyncPoint(
   }
 }
 
+void ThreadgroupContext::updateWaveOperationsForLeavingBlock(WaveId waveId, LaneId laneId, uint32_t blockId) {
+  // Update all wave operation sync points when a lane leaves a block (e.g., via continue)
+  // This prevents deadlock when lanes leave blocks that have pending wave operations
+  INTERPRETER_DEBUG_LOG("DEBUG: updateWaveOperationsForLeavingBlock - Lane " << laneId
+            << " leaving block " << blockId << ", updating sync points");
+  
+  auto& wave = *waves[waveId];
+  std::vector<std::pair<const void *, uint32_t>> completedInstructions;
+  
+  for (auto &[instructionKey, syncPoint] : wave.activeSyncPoints) {
+    // Only update sync points for the block the lane is leaving
+    if (instructionKey.second == blockId) {
+      bool wasExpected = syncPoint.expectedParticipants.count(laneId) > 0;
+      bool hadArrived = syncPoint.arrivedParticipants.count(laneId) > 0;
+      
+      INTERPRETER_DEBUG_LOG("DEBUG: updateWaveOperationsForLeavingBlock - Sync point "
+                << instructionKey.first << " in block " << blockId
+                << ": wasExpected=" << wasExpected << ", hadArrived=" << hadArrived);
+      
+      // Remove lane from expected and arrived participants
+      syncPoint.expectedParticipants.erase(laneId);
+      syncPoint.arrivedParticipants.erase(laneId);
+      syncPoint.pendingResults.erase(laneId);
+      
+      // If no participants left, mark for removal
+      if (syncPoint.expectedParticipants.empty()) {
+        INTERPRETER_DEBUG_LOG("DEBUG: updateWaveOperationsForLeavingBlock - Sync point "
+                  << instructionKey.first << " in block " << blockId
+                  << " has no participants left, marking for removal");
+        completedInstructions.push_back(instructionKey);
+      }
+      // Check if sync point can now execute with remaining participants
+      else {
+        syncPoint.updatePhase(*this, waveId);
+        if (syncPoint.isReadyToExecute(*this, waveId)) {
+          INTERPRETER_DEBUG_LOG("DEBUG: updateWaveOperationsForLeavingBlock - Sync point "
+                    << instructionKey.first << " in block " << blockId
+                    << " is now ready to execute with remaining participants");
+          // The sync point will be processed in the next wave operation check
+        }
+      }
+    }
+  }
+  
+  // Clean up empty sync points
+  for (const auto& instructionKey : completedInstructions) {
+    wave.activeSyncPoints.erase(instructionKey);
+    INTERPRETER_DEBUG_LOG("DEBUG: updateWaveOperationsForLeavingBlock - Removed empty sync point "
+              << instructionKey.first << " in block " << instructionKey.second);
+  }
+}
+
 // Merge stack management methods
 void ThreadgroupContext::pushMergePoint(
     WaveId waveId, LaneId laneId, const void *sourceStmt,
@@ -8830,6 +8907,10 @@ void ThreadgroupContext::removeThreadFromAllSets(uint32_t blockId,
   if (block) {
     INTERPRETER_DEBUG_LOG("DEBUG: removeThreadFromAllSets - removing lane " << laneId
               << " from all sets of block " << blockId);
+
+    // Update wave operations BEFORE removing from block membership
+    // This ensures wave ops are properly updated when lanes leave blocks
+    updateWaveOperationsForLeavingBlock(waveId, laneId, blockId);
 
     // Also update the BlockMembershipRegistry
     auto partLanesBefore =

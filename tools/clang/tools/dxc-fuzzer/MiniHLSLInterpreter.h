@@ -1029,6 +1029,9 @@ struct ThreadgroupContext {
   void
   releaseWaveSyncPoint(WaveId waveId,
                        const std::pair<const void *, uint32_t> &instructionKey);
+                       
+  // Update wave operations when a lane leaves a block (e.g., via continue)
+  void updateWaveOperationsForLeavingBlock(WaveId waveId, LaneId laneId, uint32_t blockId);
 
   // Instruction identity management
   void
