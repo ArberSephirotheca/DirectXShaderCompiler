@@ -2234,11 +2234,35 @@ IfStmt::executeThenBranch_result(LaneContext &lane, WaveContext &wave,
       INTERPRETER_DEBUG_LOG(var.first << "=" << var.second.toString() << " ");
     }
 
-    // Use Result-based execute_with_error_handling for proper control flow
-    // handling
+    // Use Result-based execute_result for proper control flow handling
     auto stmt_result =
-        thenBlock_[i]->execute_with_error_handling(lane, wave, tg);
+        thenBlock_[i]->execute_result(lane, wave, tg);
     if (stmt_result.is_err()) {
+      ExecutionError error = stmt_result.unwrap_err();
+      // IfStmt does NOT consume break/continue - they should propagate to enclosing loop
+      if (error == ExecutionError::ControlFlowBreak || 
+          error == ExecutionError::ControlFlowContinue) {
+        // Clean up our stack entry and blocks before propagating
+        INTERPRETER_DEBUG_LOG("DEBUG: IfStmt - Lane " << lane.laneId
+                  << " encountered " << (error == ExecutionError::ControlFlowBreak ? "break" : "continue")
+                  << " in then branch, cleaning up and propagating");
+        
+        // Get block IDs before cleaning up
+        uint32_t ifThenBlockId = lane.executionStack[ourStackIndex].ifThenBlockId;
+        uint32_t ifElseBlockId = lane.executionStack[ourStackIndex].ifElseBlockId;
+        
+        // Pop our stack entry
+        lane.executionStack.pop_back();
+        tg.popMergePoint(wave.waveId, lane.laneId);
+        
+        // Clean up then/else blocks - lane will never return to them
+        tg.removeThreadFromAllSets(ifThenBlockId, wave.waveId, lane.laneId);
+        tg.removeThreadFromNestedBlocks(ifThenBlockId, wave.waveId, lane.laneId);
+        if (ifElseBlockId != 0) {
+          tg.removeThreadFromAllSets(ifElseBlockId, wave.waveId, lane.laneId);
+          tg.removeThreadFromNestedBlocks(ifElseBlockId, wave.waveId, lane.laneId);
+        }
+      }
       return stmt_result; // Propagate the error
     }
 
@@ -2288,11 +2312,35 @@ IfStmt::executeElseBranch_result(LaneContext &lane, WaveContext &wave,
   for (size_t i = ourEntry.statementIndex; i < elseBlock_.size(); i++) {
     lane.executionStack[ourStackIndex].statementIndex = i;
 
-    // Use Result-based execute_with_error_handling for proper control flow
-    // handling
+    // Use Result-based execute_result for proper control flow handling
     auto stmt_result =
-        elseBlock_[i]->execute_with_error_handling(lane, wave, tg);
+        elseBlock_[i]->execute_result(lane, wave, tg);
     if (stmt_result.is_err()) {
+      ExecutionError error = stmt_result.unwrap_err();
+      // IfStmt does NOT consume break/continue - they should propagate to enclosing loop
+      if (error == ExecutionError::ControlFlowBreak || 
+          error == ExecutionError::ControlFlowContinue) {
+        // Clean up our stack entry and blocks before propagating
+        INTERPRETER_DEBUG_LOG("DEBUG: IfStmt - Lane " << lane.laneId
+                  << " encountered " << (error == ExecutionError::ControlFlowBreak ? "break" : "continue")
+                  << " in else branch, cleaning up and propagating");
+        
+        // Get block IDs before cleaning up
+        uint32_t ifThenBlockId = lane.executionStack[ourStackIndex].ifThenBlockId;
+        uint32_t ifElseBlockId = lane.executionStack[ourStackIndex].ifElseBlockId;
+        
+        // Pop our stack entry
+        lane.executionStack.pop_back();
+        tg.popMergePoint(wave.waveId, lane.laneId);
+        
+        // Clean up then/else blocks - lane will never return to them
+        tg.removeThreadFromAllSets(ifThenBlockId, wave.waveId, lane.laneId);
+        tg.removeThreadFromNestedBlocks(ifThenBlockId, wave.waveId, lane.laneId);
+        if (ifElseBlockId != 0) {
+          tg.removeThreadFromAllSets(ifElseBlockId, wave.waveId, lane.laneId);
+          tg.removeThreadFromNestedBlocks(ifElseBlockId, wave.waveId, lane.laneId);
+        }
+      }
       return stmt_result; // Propagate the error
     }
 
@@ -2861,31 +2909,28 @@ ForStmt::executeBodyStatements_result(LaneContext &lane, WaveContext &wave,
               << " executing statement " << i << " in block "
               << blockBeforeStatement << " (Result-based)");
 
-    // Use Result-based execute_with_error_handling for proper control flow
-    // handling
-    auto stmt_result = body_[i]->execute_with_error_handling(lane, wave, tg);
+    // Use Result-based execute_result for proper control flow handling
+    auto stmt_result = body_[i]->execute_result(lane, wave, tg);
     if (stmt_result.is_err()) {
       ExecutionError error = stmt_result.unwrap_err();
       // Handle break locally - exit the loop
       if (error == ExecutionError::ControlFlowBreak) {
         INTERPRETER_DEBUG_LOG("DEBUG: ForStmt - Break encountered in body, handling locally");
-        // Set phase to reconverging so loop exits properly
-        lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::Reconverging;
+        // Handle break the same way as execute_with_error_handling
+        handleBreakException(lane, wave, tg, ourStackIndex, headerBlockId);
+        setThreadStateIfUnprotected(lane);
+        // Restore active state (reconvergence)
+        lane.isActive = lane.isActive && !lane.hasReturned;
         return Ok<Unit, ExecutionError>(Unit{});
       }
       // Handle continue locally - skip to increment phase
       else if (error == ExecutionError::ControlFlowContinue) {
         INTERPRETER_DEBUG_LOG("DEBUG: ForStmt - Continue encountered in body, handling locally");
-        // Perform cleanup before transitioning to increment phase
-        cleanupAfterBodyExecution(lane, wave, tg, ourStackIndex, headerBlockId);
-        // Transition to increment phase
-        lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingIncrement;
-        lane.executionStack[ourStackIndex].statementIndex = 0;
-        // Set state to WaitingForResume to ensure synchronization
-        setThreadStateIfUnprotected(lane);
+        // Handle continue the same way as execute_with_error_handling
+        handleContinueException(lane, wave, tg, ourStackIndex, headerBlockId);
         return Ok<Unit, ExecutionError>(Unit{});
       }
-      // Other errors propagate
+      // Other errors (including WaveOperationWait) propagate
       return stmt_result;
     }
 
@@ -6428,31 +6473,31 @@ Result<Unit, ExecutionError> WhileStmt::executeBodyStatements_result(
               << " executing statement " << i << " in block "
               << blockBeforeStatement << " (Result-based)");
 
-    // Use Result-based execute_with_error_handling for proper control flow
-    // handling
-    auto stmt_result = body_[i]->execute_with_error_handling(lane, wave, tg);
+    // Use Result-based execute_result for proper control flow handling
+    auto stmt_result = body_[i]->execute_result(lane, wave, tg);
     if (stmt_result.is_err()) {
       ExecutionError error = stmt_result.unwrap_err();
       // Handle break locally - exit the loop
       if (error == ExecutionError::ControlFlowBreak) {
         INTERPRETER_DEBUG_LOG("DEBUG: WhileStmt - Break encountered in body, handling locally");
-        // Set phase to reconverging so loop exits properly
-        lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::Reconverging;
+        // Handle break the same way as execute_with_error_handling
+        handleBreakException(lane, wave, tg, ourStackIndex, headerBlockId);
+        setThreadStateIfUnprotected(lane);
+        // Restore active state (reconvergence)
+        lane.isActive = lane.isActive && !lane.hasReturned;
         return Ok<Unit, ExecutionError>(Unit{});
       }
       // Handle continue locally - skip to condition evaluation
       else if (error == ExecutionError::ControlFlowContinue) {
         INTERPRETER_DEBUG_LOG("DEBUG: WhileStmt - Continue encountered in body, handling locally");
-        // Perform cleanup before transitioning to condition phase
-        cleanupAfterBodyExecution(lane, wave, tg, ourStackIndex, headerBlockId);
-        // Transition to condition evaluation phase for next iteration
-        lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingCondition;
-        lane.executionStack[ourStackIndex].statementIndex = 0;
-        // Set state to WaitingForResume to ensure synchronization
+        // Handle continue the same way as execute_with_error_handling
+        handleContinueException(lane, wave, tg, ourStackIndex, headerBlockId);
         setThreadStateIfUnprotected(lane);
+        // Restore active state (reconvergence)
+        lane.isActive = lane.isActive && !lane.hasReturned;
         return Ok<Unit, ExecutionError>(Unit{});
       }
-      // Other errors propagate
+      // Other errors (including WaveOperationWait) propagate
       return stmt_result;
     }
 
@@ -7010,31 +7055,32 @@ Result<Unit, ExecutionError> DoWhileStmt::executeBodyStatements_result(
   for (size_t i = ourEntry.statementIndex; i < body_.size(); i++) {
     lane.executionStack[ourStackIndex].statementIndex = i;
 
-    // Use Result-based execute_with_error_handling for proper control flow
-    // handling
-    auto stmt_result = body_[i]->execute_with_error_handling(lane, wave, tg);
+    // Use Result-based execute_result for proper control flow handling
+    auto stmt_result = body_[i]->execute_result(lane, wave, tg);
     if (stmt_result.is_err()) {
       ExecutionError error = stmt_result.unwrap_err();
       // Handle break locally - exit the loop
       if (error == ExecutionError::ControlFlowBreak) {
         INTERPRETER_DEBUG_LOG("DEBUG: DoWhileStmt - Break encountered in body, handling locally");
-        // Set phase to reconverging so loop exits properly
-        lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::Reconverging;
+        // Handle break the same way as execute_with_error_handling
+        uint32_t mergeBlockId = lane.executionStack[ourStackIndex].loopMergeBlockId;
+        handleBreakException(lane, wave, tg, ourStackIndex, headerBlockId, mergeBlockId);
+        setThreadStateIfUnprotected(lane);
+        // Restore active state (reconvergence)
+        lane.isActive = lane.isActive && !lane.hasReturned;
         return Ok<Unit, ExecutionError>(Unit{});
       }
       // Handle continue locally - skip to condition evaluation
       else if (error == ExecutionError::ControlFlowContinue) {
         INTERPRETER_DEBUG_LOG("DEBUG: DoWhileStmt - Continue encountered in body, handling locally");
-        // Perform cleanup before transitioning to condition phase
-        cleanupAfterBodyExecution(lane, wave, tg, ourStackIndex, headerBlockId);
-        // Transition to condition evaluation phase
-        lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingCondition;
-        lane.executionStack[ourStackIndex].statementIndex = 0;
-        // Set state to WaitingForResume to ensure synchronization
+        // Handle continue the same way as execute_with_error_handling
+        handleContinueException(lane, wave, tg, ourStackIndex, headerBlockId);
         setThreadStateIfUnprotected(lane);
+        // Restore active state (reconvergence)
+        lane.isActive = lane.isActive && !lane.hasReturned;
         return Ok<Unit, ExecutionError>(Unit{});
       }
-      // Other errors propagate
+      // Other errors (including WaveOperationWait) propagate
       return stmt_result;
     }
 
@@ -7554,14 +7600,6 @@ SwitchStmt::executeCaseStatements_result(LaneContext &lane, WaveContext &wave,
           lane.isActive = lane.isActive && !lane.hasReturned;
           
           return Ok<Unit, ExecutionError>(Unit{});
-        } else if (error == ExecutionError::ControlFlowContinue) {
-          INTERPRETER_DEBUG_LOG("DEBUG: SwitchStmt - Lane " << lane.laneId
-                    << " encountered continue, propagating to enclosing loop");
-          // Continue should propagate to enclosing loop
-          // Clean up our stack entry and propagate the error
-          lane.executionStack.pop_back();
-          tg.popMergePoint(wave.waveId, lane.laneId);
-          return Err<Unit, ExecutionError>(ExecutionError::ControlFlowContinue);
         }
         // Other errors (including WaveOperationWait) should propagate as-is
         return stmt_result;
