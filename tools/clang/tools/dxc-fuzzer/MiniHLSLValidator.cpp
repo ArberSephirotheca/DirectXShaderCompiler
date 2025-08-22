@@ -2363,8 +2363,10 @@ ControlFlowAnalyzer::analyze_nested_control_flow(const clang::Stmt *stmt,
 
   // Recursively analyze nested statements (Rust-style iteration)
   for (const auto child : stmt->children()) {
-    if (const auto child_stmt = clang::dyn_cast<clang::Stmt>(child)) {
-      results.push_back(analyze_statement(child_stmt, state));
+    if (child) {  // Check for null before casting
+      if (const auto child_stmt = clang::dyn_cast<clang::Stmt>(child)) {
+        results.push_back(analyze_statement(child_stmt, state));
+      }
     }
   }
 
