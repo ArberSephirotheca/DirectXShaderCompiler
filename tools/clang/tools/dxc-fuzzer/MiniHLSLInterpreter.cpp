@@ -36,7 +36,7 @@ std::atomic<uint32_t> Expression::nextStableId{1};
 static constexpr bool ENABLE_INTERPRETER_DEBUG =
     false; // Set to true to enable detailed execution tracing
 static constexpr bool ENABLE_WAVE_DEBUG =
-    true; // Set to true to enable wave operation tracing
+    false; // Set to true to enable wave operation tracing
 static constexpr bool ENABLE_BLOCK_DEBUG =
     true; // Set to true to enable block lifecycle tracing
 static constexpr bool ENABLE_PARSER_DEBUG =
@@ -7537,22 +7537,33 @@ SwitchStmt::executeCaseStatements_result(LaneContext &lane, WaveContext &wave,
                 << " (Result-based)");
 
       // Use Result-based execute_result instead of exception-based execute
-      // Match exception-based semantics by calling execute_result directly
+      // Call execute_result directly to properly propagate control flow errors
       auto stmt_result =
           caseBlock.statements[i]->execute_result(lane, wave, tg);
       if (stmt_result.is_err()) {
         ExecutionError error = stmt_result.unwrap_err();
-        // Handle break locally for this switch
+        // Handle control flow errors
         if (error == ExecutionError::ControlFlowBreak) {
           INTERPRETER_DEBUG_LOG("DEBUG: SwitchStmt - Lane " << lane.laneId
                     << " encountered break, exiting switch");
-          // Exit the switch - break was consumed by this switch
-          // Set phase to reconverging so proper cleanup happens
-          ourEntry.phase = LaneContext::ControlFlowPhase::Reconverging;
+          // Handle break the same way as execute_with_error_handling
+          handleBreakException(lane, wave, tg, ourStackIndex);
+          setThreadStateIfUnprotected(lane);
+          
+          // Restore active state (reconvergence)
+          lane.isActive = lane.isActive && !lane.hasReturned;
+          
           return Ok<Unit, ExecutionError>(Unit{});
+        } else if (error == ExecutionError::ControlFlowContinue) {
+          INTERPRETER_DEBUG_LOG("DEBUG: SwitchStmt - Lane " << lane.laneId
+                    << " encountered continue, propagating to enclosing loop");
+          // Continue should propagate to enclosing loop
+          // Clean up our stack entry and propagate the error
+          lane.executionStack.pop_back();
+          tg.popMergePoint(wave.waveId, lane.laneId);
+          return Err<Unit, ExecutionError>(ExecutionError::ControlFlowContinue);
         }
-        // Continue should propagate to enclosing loop
-        // Other errors should also propagate
+        // Other errors (including WaveOperationWait) should propagate as-is
         return stmt_result;
       }
 

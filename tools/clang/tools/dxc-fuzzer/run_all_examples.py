@@ -11,10 +11,10 @@ import re
 from pathlib import Path
 
 # Paths
-BUILD_DIR = "/home/t-zheychen/dxc_workspace/DirectXShaderCompiler/build-fuzzer"
-EXAMPLES_DIR = "/home/t-zheychen/dxc_workspace/DirectXShaderCompiler/tools/clang/tools/dxc-fuzzer/examples"
+BUILD_DIR = "/home/zheyuan/dxc_workspace/DirectXShaderCompiler/build-ninja"
+EXAMPLES_DIR = "/home/zheyuan/dxc_workspace/DirectXShaderCompiler/tools/clang/tools/dxc-fuzzer/examples"
 EXECUTABLE = os.path.join(BUILD_DIR, "bin", "minihlsl-standalone")
-OUTPUT_DIR = "/home/t-zheychen/dxc_workspace/DirectXShaderCompiler/tools/clang/tools/dxc-fuzzer/test_outputs"
+OUTPUT_DIR = "/home/zheyuan/dxc_workspace/DirectXShaderCompiler/tools/clang/tools/dxc-fuzzer/test_outputs"
 
 def parse_expected_results(hlsl_file):
     """Parse expected results from comments in HLSL file."""
