@@ -2820,9 +2820,9 @@ void ForStmt::handleBreakException(LaneContext &lane, WaveContext &wave,
   
   // Update wave operations before leaving the block
   auto &ourEntry = lane.executionStack[ourStackIndex];
-  if (ourEntry.loopBodyBlockId != 0) {
-    tg.updateWaveOperationsForLeavingBlock(wave.waveId, lane.laneId, ourEntry.loopBodyBlockId);
-  }
+  // if (ourEntry.loopBodyBlockId != 0) {
+  //   tg.updateWaveOperationsForLeavingBlock(wave.waveId, lane.laneId, ourEntry.loopBodyBlockId);
+  // }
   
   tg.popMergePoint(wave.waveId, lane.laneId);
 
@@ -6360,9 +6360,9 @@ void WhileStmt::handleBreakException(LaneContext &lane, WaveContext &wave,
   
   // Update wave operations before leaving the block
   auto &ourEntry = lane.executionStack[ourStackIndex];
-  if (ourEntry.loopBodyBlockId != 0) {
-    tg.updateWaveOperationsForLeavingBlock(wave.waveId, lane.laneId, ourEntry.loopBodyBlockId);
-  }
+  // if (ourEntry.loopBodyBlockId != 0) {
+  //   tg.updateWaveOperationsForLeavingBlock(wave.waveId, lane.laneId, ourEntry.loopBodyBlockId);
+  // }
   
   tg.popMergePoint(wave.waveId, lane.laneId);
   lane.executionStack[ourStackIndex].phase =
@@ -6370,7 +6370,7 @@ void WhileStmt::handleBreakException(LaneContext &lane, WaveContext &wave,
 
   // Clean up - remove from blocks this lane will never reach
   tg.removeThreadFromAllSets(headerBlockId, wave.waveId, lane.laneId);
-  tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId, nullptr);
+  tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId, this);
 
   setThreadStateIfUnprotected(lane);
 }
@@ -6388,7 +6388,7 @@ void WhileStmt::handleContinueException(LaneContext &lane, WaveContext &wave,
   auto &ourEntry = lane.executionStack[ourStackIndex];
   if (ourEntry.loopBodyBlockId != 0) {
     // Update wave operations before leaving the block
-    tg.updateWaveOperationsForLeavingBlock(wave.waveId, lane.laneId, ourEntry.loopBodyBlockId);
+    // tg.updateWaveOperationsForLeavingBlock(wave.waveId, lane.laneId, ourEntry.loopBodyBlockId);
     
     tg.membershipRegistry.setLaneStatus(wave.waveId, lane.laneId,
                                         ourEntry.loopBodyBlockId,
@@ -6796,15 +6796,15 @@ void DoWhileStmt::handleBreakException(LaneContext &lane, WaveContext &wave,
   
   // Update wave operations before leaving the block
   auto &ourEntry = lane.executionStack[ourStackIndex];
-  if (ourEntry.loopBodyBlockId != 0) {
-    tg.updateWaveOperationsForLeavingBlock(wave.waveId, lane.laneId, ourEntry.loopBodyBlockId);
-  }
+  // if (ourEntry.loopBodyBlockId != 0) {
+  //   tg.updateWaveOperationsForLeavingBlock(wave.waveId, lane.laneId, ourEntry.loopBodyBlockId);
+  // }
   
   tg.popMergePoint(wave.waveId, lane.laneId);
 
   // Clean up - remove from blocks this lane will never reach
   tg.removeThreadFromAllSets(headerBlockId, wave.waveId, lane.laneId);
-  tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId, nullptr);
+  tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId, this);
 
   lane.executionStack[ourStackIndex].phase =
       LaneContext::ControlFlowPhase::Reconverging;
@@ -6822,7 +6822,7 @@ void DoWhileStmt::handleContinueException(LaneContext &lane, WaveContext &wave,
   auto &ourEntry = lane.executionStack[ourStackIndex];
   if (ourEntry.loopBodyBlockId != 0) {
     // Update wave operations before leaving the block
-    tg.updateWaveOperationsForLeavingBlock(wave.waveId, lane.laneId, ourEntry.loopBodyBlockId);
+    // tg.updateWaveOperationsForLeavingBlock(wave.waveId, lane.laneId, ourEntry.loopBodyBlockId);
     
     tg.membershipRegistry.setLaneStatus(wave.waveId, lane.laneId,
                                         ourEntry.loopBodyBlockId,
@@ -7175,7 +7175,7 @@ Result<Unit, ExecutionError> DoWhileStmt::evaluateConditionPhase_result(
                                lane.laneId); // Remove from header
     tg.removeThreadFromNestedBlocks(
         headerBlockId, wave.waveId,
-        lane.laneId, nullptr); // Remove from iteration blocks
+        lane.laneId, this); // Remove from iteration blocks
 
     // Move to reconverging phase
     lane.executionStack[ourStackIndex].phase =
@@ -8517,57 +8517,57 @@ void ThreadgroupContext::releaseWaveSyncPoint(
   }
 }
 
-void ThreadgroupContext::updateWaveOperationsForLeavingBlock(WaveId waveId, LaneId laneId, uint32_t blockId) {
-  // Update all wave operation sync points when a lane leaves a block (e.g., via continue)
-  // This prevents deadlock when lanes leave blocks that have pending wave operations
-  INTERPRETER_DEBUG_LOG("DEBUG: updateWaveOperationsForLeavingBlock - Lane " << laneId
-            << " leaving block " << blockId << ", updating sync points");
+// void ThreadgroupContext::updateWaveOperationsForLeavingBlock(WaveId waveId, LaneId laneId, uint32_t blockId) {
+//   // Update all wave operation sync points when a lane leaves a block (e.g., via continue)
+//   // This prevents deadlock when lanes leave blocks that have pending wave operations
+//   INTERPRETER_DEBUG_LOG("DEBUG: updateWaveOperationsForLeavingBlock - Lane " << laneId
+//             << " leaving block " << blockId << ", updating sync points");
   
-  auto& wave = *waves[waveId];
-  std::vector<std::pair<const void *, uint32_t>> completedInstructions;
+//   auto& wave = *waves[waveId];
+//   std::vector<std::pair<const void *, uint32_t>> completedInstructions;
   
-  for (auto &[instructionKey, syncPoint] : wave.activeSyncPoints) {
-    // Only update sync points for the block the lane is leaving
-    if (instructionKey.second == blockId) {
-      bool wasExpected = syncPoint.expectedParticipants.count(laneId) > 0;
-      bool hadArrived = syncPoint.arrivedParticipants.count(laneId) > 0;
+//   for (auto &[instructionKey, syncPoint] : wave.activeSyncPoints) {
+//     // Only update sync points for the block the lane is leaving
+//     if (instructionKey.second == blockId) {
+//       bool wasExpected = syncPoint.expectedParticipants.count(laneId) > 0;
+//       bool hadArrived = syncPoint.arrivedParticipants.count(laneId) > 0;
       
-      INTERPRETER_DEBUG_LOG("DEBUG: updateWaveOperationsForLeavingBlock - Sync point "
-                << instructionKey.first << " in block " << blockId
-                << ": wasExpected=" << wasExpected << ", hadArrived=" << hadArrived);
+//       INTERPRETER_DEBUG_LOG("DEBUG: updateWaveOperationsForLeavingBlock - Sync point "
+//                 << instructionKey.first << " in block " << blockId
+//                 << ": wasExpected=" << wasExpected << ", hadArrived=" << hadArrived);
       
-      // Remove lane from expected and arrived participants
-      syncPoint.expectedParticipants.erase(laneId);
-      syncPoint.arrivedParticipants.erase(laneId);
-      syncPoint.pendingResults.erase(laneId);
+//       // Remove lane from expected and arrived participants
+//       syncPoint.expectedParticipants.erase(laneId);
+//       syncPoint.arrivedParticipants.erase(laneId);
+//       syncPoint.pendingResults.erase(laneId);
       
-      // If no participants left, mark for removal
-      if (syncPoint.expectedParticipants.empty()) {
-        INTERPRETER_DEBUG_LOG("DEBUG: updateWaveOperationsForLeavingBlock - Sync point "
-                  << instructionKey.first << " in block " << blockId
-                  << " has no participants left, marking for removal");
-        completedInstructions.push_back(instructionKey);
-      }
-      // Check if sync point can now execute with remaining participants
-      else {
-        syncPoint.updatePhase(*this, waveId);
-        if (syncPoint.isReadyToExecute(*this, waveId)) {
-          INTERPRETER_DEBUG_LOG("DEBUG: updateWaveOperationsForLeavingBlock - Sync point "
-                    << instructionKey.first << " in block " << blockId
-                    << " is now ready to execute with remaining participants");
-          // The sync point will be processed in the next wave operation check
-        }
-      }
-    }
-  }
+//       // If no participants left, mark for removal
+//       if (syncPoint.expectedParticipants.empty()) {
+//         INTERPRETER_DEBUG_LOG("DEBUG: updateWaveOperationsForLeavingBlock - Sync point "
+//                   << instructionKey.first << " in block " << blockId
+//                   << " has no participants left, marking for removal");
+//         completedInstructions.push_back(instructionKey);
+//       }
+//       // Check if sync point can now execute with remaining participants
+//       else {
+//         syncPoint.updatePhase(*this, waveId);
+//         if (syncPoint.isReadyToExecute(*this, waveId)) {
+//           INTERPRETER_DEBUG_LOG("DEBUG: updateWaveOperationsForLeavingBlock - Sync point "
+//                     << instructionKey.first << " in block " << blockId
+//                     << " is now ready to execute with remaining participants");
+//           // The sync point will be processed in the next wave operation check
+//         }
+//       }
+//     }
+//   }
   
-  // Clean up empty sync points
-  for (const auto& instructionKey : completedInstructions) {
-    wave.activeSyncPoints.erase(instructionKey);
-    INTERPRETER_DEBUG_LOG("DEBUG: updateWaveOperationsForLeavingBlock - Removed empty sync point "
-              << instructionKey.first << " in block " << instructionKey.second);
-  }
-}
+//   // Clean up empty sync points
+//   for (const auto& instructionKey : completedInstructions) {
+//     wave.activeSyncPoints.erase(instructionKey);
+//     INTERPRETER_DEBUG_LOG("DEBUG: updateWaveOperationsForLeavingBlock - Removed empty sync point "
+//               << instructionKey.first << " in block " << instructionKey.second);
+//   }
+// }
 
 // Merge stack management methods
 void ThreadgroupContext::pushMergePoint(
@@ -8889,7 +8889,7 @@ void ThreadgroupContext::removeThreadFromAllSets(uint32_t blockId,
 
     // Update wave operations BEFORE removing from block membership
     // This ensures wave ops are properly updated when lanes leave blocks
-    updateWaveOperationsForLeavingBlock(waveId, laneId, blockId);
+    // updateWaveOperationsForLeavingBlock(waveId, laneId, blockId);
 
     // Also update the BlockMembershipRegistry
     auto partLanesBefore =
