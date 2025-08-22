@@ -36,7 +36,7 @@ std::atomic<uint32_t> Expression::nextStableId{1};
 static constexpr bool ENABLE_INTERPRETER_DEBUG =
     false; // Set to true to enable detailed execution tracing
 static constexpr bool ENABLE_WAVE_DEBUG =
-    false; // Set to true to enable wave operation tracing
+    true; // Set to true to enable wave operation tracing
 static constexpr bool ENABLE_BLOCK_DEBUG =
     true; // Set to true to enable block lifecycle tracing
 static constexpr bool ENABLE_PARSER_DEBUG =
@@ -4155,6 +4155,12 @@ MiniHLSLInterpreter::verifyOrderIndependence(const Program &program,
 ExecutionResult MiniHLSLInterpreter::execute(const Program &program,
                                              const ThreadOrdering &ordering,
                                              uint32_t waveSize) {
+  // Output the interpreter's view of the IR
+  std::cout << "\n=== Interpreter-Received IR ===\n";
+  for (const auto& stmt : program.statements) {
+    std::cout << stmt->toString() << "\n";
+  }
+  std::cout << "================================\n" << std::endl;
   return executeWithOrdering(program, ordering, waveSize);
 }
 
@@ -4976,6 +4982,7 @@ MiniHLSLInterpreter::convertCallExpression(const clang::CallExpr *callExpr,
             std::move(arg), WaveActiveOp::Ballot));
       }
     } else if (funcName == "WaveGetLaneIndex" && callExpr->getNumArgs() == 0) {
+      PARSER_DEBUG_LOG("Converting WaveGetLaneIndex() statement to ExprStmt(LaneIndexExpr)");
       return std::make_unique<ExprStmt>(std::make_unique<LaneIndexExpr>());
     } else if (funcName == "WaveGetLaneCount" && callExpr->getNumArgs() == 0) {
       return std::make_unique<ExprStmt>(
@@ -5289,8 +5296,20 @@ MiniHLSLInterpreter::convertSwitchStatement(const clang::SwitchStmt *switchStmt,
               substmt = nestedCase->getSubStmt();
             } else {
               // This is the actual statement for the case
-              if (auto converted = convertStatement(substmt, context)) {
-                currentCase.push_back(std::move(converted));
+              // Check if it's a compound statement containing multiple statements
+              if (auto compound = clang::dyn_cast<clang::CompoundStmt>(substmt)) {
+                INTERPRETER_DEBUG_LOG("DEBUG: Switch parsing - case body is CompoundStmt with "
+                          << compound->size() << " statements");
+                for (auto innerStmt : compound->body()) {
+                  if (auto converted = convertStatement(innerStmt, context)) {
+                    currentCase.push_back(std::move(converted));
+                  }
+                }
+              } else {
+                // Single statement
+                if (auto converted = convertStatement(substmt, context)) {
+                  currentCase.push_back(std::move(converted));
+                }
               }
               break;
             }
@@ -5314,8 +5333,20 @@ MiniHLSLInterpreter::convertSwitchStatement(const clang::SwitchStmt *switchStmt,
 
           // Process the default statement's sub-statement
           if (auto substmt = defaultStmt->getSubStmt()) {
-            if (auto converted = convertStatement(substmt, context)) {
-              currentCase.push_back(std::move(converted));
+            // Check if it's a compound statement containing multiple statements
+            if (auto compound = clang::dyn_cast<clang::CompoundStmt>(substmt)) {
+              INTERPRETER_DEBUG_LOG("DEBUG: Switch parsing - default body is CompoundStmt with "
+                        << compound->size() << " statements");
+              for (auto innerStmt : compound->body()) {
+                if (auto converted = convertStatement(innerStmt, context)) {
+                  currentCase.push_back(std::move(converted));
+                }
+              }
+            } else {
+              // Single statement
+              if (auto converted = convertStatement(substmt, context)) {
+                currentCase.push_back(std::move(converted));
+              }
             }
           }
         } else {
@@ -5601,6 +5632,7 @@ MiniHLSLInterpreter::convertCallExpressionToExpression(
                                               WaveActiveOp::CountBits);
       }
     } else if (funcName == "WaveGetLaneIndex" && callExpr->getNumArgs() == 0) {
+      PARSER_DEBUG_LOG("Converting WaveGetLaneIndex() to LaneIndexExpr");
       return std::make_unique<LaneIndexExpr>();
     } else if (funcName == "WaveGetLaneCount" && callExpr->getNumArgs() == 0) {
       return std::make_unique<WaveGetLaneCountExpr>();

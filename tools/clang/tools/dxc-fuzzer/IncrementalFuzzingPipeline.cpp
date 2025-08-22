@@ -74,6 +74,13 @@ bool IncrementalFuzzingPipeline::validateExecution(const interpreter::Program& p
         std::cout << "Wave Size: " << waveSize << "\n";
         std::cout << "===========================\n" << std::endl;
         
+        // Output the fuzzer-generated IR
+        std::cout << "\n=== Fuzzer-Generated IR ===\n";
+        for (const auto& stmt : program.statements) {
+            std::cout << stmt->toString() << "\n";
+        }
+        std::cout << "===========================\n" << std::endl;
+        
         // Set a timeout to prevent infinite loops
         auto start = std::chrono::steady_clock::now();
         auto timeout = std::chrono::seconds(60);

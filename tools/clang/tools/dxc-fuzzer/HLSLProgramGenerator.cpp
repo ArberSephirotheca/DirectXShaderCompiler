@@ -320,7 +320,13 @@ ControlFlowGenerator::generateIf(const BlockSpec& spec, ProgramState& state,
         elseSpec.nestingContext.parentTypes.push_back(BlockSpec::IF_ELSE);
         
         // Generate else body with potential nesting
+        // IMPORTANT: For else blocks, we need to be careful about generating
+        // multiple top-level statements (like switch followed by if)
+        // The interpreter correctly handles this when parsing HLSL
         elseBody = generateNestedBody(elseSpec, state, provider);
+        
+        // DEBUG: Log the structure being generated
+        FUZZER_DEBUG_LOG("generateIf: else block has " << elseBody.size() << " statements\n");
     }
     
     return std::make_unique<interpreter::IfStmt>(
@@ -818,6 +824,9 @@ ControlFlowGenerator::generateNestedBody(const BlockSpec& spec, ProgramState& st
         // Generate nested control flow
         BlockSpec nestedSpec = createNestedBlockSpec(spec, state, provider);
         auto nestedStatements = generateBlock(nestedSpec, state, provider);
+        
+        FUZZER_DEBUG_LOG("generateNestedBody: Adding " << nestedStatements.size() 
+                         << " nested statements (type: " << nestedSpec.type << ")\n");
         
         for (auto& stmt : nestedStatements) {
             body.push_back(std::move(stmt));
