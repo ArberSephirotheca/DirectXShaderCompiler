@@ -1902,13 +1902,13 @@ void IfStmt::performReconvergence(LaneContext &lane, WaveContext &wave,
     tg.removeThreadFromAllSets(ourEntry.ifThenBlockId, wave.waveId,
                                lane.laneId);
     tg.removeThreadFromNestedBlocks(ourEntry.ifThenBlockId, wave.waveId,
-                                    lane.laneId);
+                                    lane.laneId, nullptr);
 
     if (hasElse && ourEntry.ifElseBlockId != 0) {
       tg.removeThreadFromAllSets(ourEntry.ifElseBlockId, wave.waveId,
                                  lane.laneId);
       tg.removeThreadFromNestedBlocks(ourEntry.ifElseBlockId, wave.waveId,
-                                      lane.laneId);
+                                      lane.laneId, nullptr);
     }
   }
 
@@ -2089,17 +2089,17 @@ IfStmt::execute_with_error_handling(LaneContext &lane, WaveContext &wave,
           // Clean up then/else blocks - lane will never return to them
           tg.removeThreadFromAllSets(ifThenBlockId, wave.waveId, lane.laneId);
           tg.removeThreadFromNestedBlocks(ifThenBlockId, wave.waveId,
-                                          lane.laneId);
+                                          lane.laneId, nullptr);
           if (ifElseBlockId != 0) {
             tg.removeThreadFromAllSets(ifElseBlockId, wave.waveId, lane.laneId);
             tg.removeThreadFromNestedBlocks(ifElseBlockId, wave.waveId,
-                                            lane.laneId);
+                                            lane.laneId, nullptr);
           }
 
           // Also clean up merge block since we're not going there
           tg.removeThreadFromAllSets(ifMergeBlockId, wave.waveId, lane.laneId);
           tg.removeThreadFromNestedBlocks(ifMergeBlockId, wave.waveId,
-                                          lane.laneId);
+                                          lane.laneId, nullptr);
 
           // Restore active state (reconvergence)
           lane.isActive = lane.isActive && !lane.hasReturned;
@@ -2182,7 +2182,7 @@ Result<Unit, ExecutionError> IfStmt::evaluateConditionAndSetup_result(
       tg.removeThreadFromUnknown(ourEntry.ifElseBlockId, wave.waveId,
                                  lane.laneId);
       tg.removeThreadFromNestedBlocks(ourEntry.ifElseBlockId, wave.waveId,
-                                      lane.laneId);
+                                      lane.laneId, nullptr);
     }
     // Don't remove from merge block yet - lane will reconverge there later
     ourEntry.phase = LaneContext::ControlFlowPhase::ExecutingBody;
@@ -2192,7 +2192,7 @@ Result<Unit, ExecutionError> IfStmt::evaluateConditionAndSetup_result(
     tg.removeThreadFromUnknown(ourEntry.ifThenBlockId, wave.waveId,
                                lane.laneId);
     tg.removeThreadFromNestedBlocks(ourEntry.ifThenBlockId, wave.waveId,
-                                    lane.laneId);
+                                    lane.laneId, nullptr);
     if (hasElse) {
       tg.moveThreadFromUnknownToParticipating(ourEntry.ifElseBlockId,
                                               wave.waveId, lane.laneId);
@@ -2258,14 +2258,14 @@ IfStmt::executeThenBranch_result(LaneContext &lane, WaveContext &wave,
         
         // Clean up then/else/merge blocks - lane will never return to them
         tg.removeThreadFromAllSets(ifThenBlockId, wave.waveId, lane.laneId);
-        tg.removeThreadFromNestedBlocks(ifThenBlockId, wave.waveId, lane.laneId);
+        tg.removeThreadFromNestedBlocks(ifThenBlockId, wave.waveId, lane.laneId, nullptr);
         if (ifElseBlockId != 0) {
           tg.removeThreadFromAllSets(ifElseBlockId, wave.waveId, lane.laneId);
-          tg.removeThreadFromNestedBlocks(ifElseBlockId, wave.waveId, lane.laneId);
+          tg.removeThreadFromNestedBlocks(ifElseBlockId, wave.waveId, lane.laneId, nullptr);
         }
         // Also clean up merge block since we're continuing past it
         tg.removeThreadFromAllSets(ifMergeBlockId, wave.waveId, lane.laneId);
-        tg.removeThreadFromNestedBlocks(ifMergeBlockId, wave.waveId, lane.laneId);
+        tg.removeThreadFromNestedBlocks(ifMergeBlockId, wave.waveId, lane.laneId, nullptr);
       }
       return stmt_result; // Propagate the error
     }
@@ -2340,14 +2340,14 @@ IfStmt::executeElseBranch_result(LaneContext &lane, WaveContext &wave,
         
         // Clean up then/else/merge blocks - lane will never return to them
         tg.removeThreadFromAllSets(ifThenBlockId, wave.waveId, lane.laneId);
-        tg.removeThreadFromNestedBlocks(ifThenBlockId, wave.waveId, lane.laneId);
+        tg.removeThreadFromNestedBlocks(ifThenBlockId, wave.waveId, lane.laneId, nullptr);
         if (ifElseBlockId != 0) {
           tg.removeThreadFromAllSets(ifElseBlockId, wave.waveId, lane.laneId);
-          tg.removeThreadFromNestedBlocks(ifElseBlockId, wave.waveId, lane.laneId);
+          tg.removeThreadFromNestedBlocks(ifElseBlockId, wave.waveId, lane.laneId, nullptr);
         }
         // Also clean up merge block since we're continuing past it
         tg.removeThreadFromAllSets(ifMergeBlockId, wave.waveId, lane.laneId);
-        tg.removeThreadFromNestedBlocks(ifMergeBlockId, wave.waveId, lane.laneId);
+        tg.removeThreadFromNestedBlocks(ifMergeBlockId, wave.waveId, lane.laneId, nullptr);
       }
       return stmt_result; // Propagate the error
     }
@@ -2828,7 +2828,7 @@ void ForStmt::handleBreakException(LaneContext &lane, WaveContext &wave,
 
   // Clean up - remove from blocks this lane will never reach
   tg.removeThreadFromAllSets(headerBlockId, wave.waveId, lane.laneId);
-  tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId);
+  tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId, this);
   lane.executionStack[ourStackIndex].phase =
       LaneContext::ControlFlowPhase::Reconverging;
   setThreadStateIfUnprotected(lane);
@@ -2855,7 +2855,7 @@ void ForStmt::handleContinueException(LaneContext &lane, WaveContext &wave,
         lane.laneId);
     tg.removeThreadFromNestedBlocks(
         lane.executionStack[ourStackIndex].loopBodyBlockId, wave.waveId,
-        lane.laneId);
+        lane.laneId, this);
   }
   
   // Don't change phase here - let the normal body completion logic handle it
@@ -3051,7 +3051,7 @@ Result<Unit, ExecutionError> ForStmt::evaluateConditionPhase_result(
                                lane.laneId); // Remove from header
     tg.removeThreadFromNestedBlocks(
         headerBlockId, wave.waveId,
-        lane.laneId); // Remove from iteration blocks
+        lane.laneId, this); // Remove from iteration blocks
 
     // Move to reconverging phase
     lane.executionStack[ourStackIndex].phase =
@@ -6370,7 +6370,7 @@ void WhileStmt::handleBreakException(LaneContext &lane, WaveContext &wave,
 
   // Clean up - remove from blocks this lane will never reach
   tg.removeThreadFromAllSets(headerBlockId, wave.waveId, lane.laneId);
-  tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId);
+  tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId, nullptr);
 
   setThreadStateIfUnprotected(lane);
 }
@@ -6408,7 +6408,7 @@ void WhileStmt::handleContinueException(LaneContext &lane, WaveContext &wave,
         lane.laneId);
     tg.removeThreadFromNestedBlocks(
         lane.executionStack[ourStackIndex].loopBodyBlockId, wave.waveId,
-        lane.laneId);
+        lane.laneId, this);
   }
 
   // Move lane back to header block for proper context
@@ -6457,7 +6457,7 @@ Result<Unit, ExecutionError> WhileStmt::evaluateConditionPhase_result(
                                lane.laneId); // Remove from header
     tg.removeThreadFromNestedBlocks(
         headerBlockId, wave.waveId,
-        lane.laneId); // Remove from iteration blocks
+        lane.laneId, this); // Remove from iteration blocks
 
     // Move to reconverging phase
     ourEntry.phase = LaneContext::ControlFlowPhase::Reconverging;
@@ -6804,7 +6804,7 @@ void DoWhileStmt::handleBreakException(LaneContext &lane, WaveContext &wave,
 
   // Clean up - remove from blocks this lane will never reach
   tg.removeThreadFromAllSets(headerBlockId, wave.waveId, lane.laneId);
-  tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId);
+  tg.removeThreadFromNestedBlocks(headerBlockId, wave.waveId, lane.laneId, nullptr);
 
   lane.executionStack[ourStackIndex].phase =
       LaneContext::ControlFlowPhase::Reconverging;
@@ -6841,7 +6841,7 @@ void DoWhileStmt::handleContinueException(LaneContext &lane, WaveContext &wave,
         lane.laneId);
     tg.removeThreadFromNestedBlocks(
         lane.executionStack[ourStackIndex].loopBodyBlockId, wave.waveId,
-        lane.laneId);
+        lane.laneId, this);
   }
 
   // Move lane back to header block for proper context
@@ -7175,7 +7175,7 @@ Result<Unit, ExecutionError> DoWhileStmt::evaluateConditionPhase_result(
                                lane.laneId); // Remove from header
     tg.removeThreadFromNestedBlocks(
         headerBlockId, wave.waveId,
-        lane.laneId); // Remove from iteration blocks
+        lane.laneId, nullptr); // Remove from iteration blocks
 
     // Move to reconverging phase
     lane.executionStack[ourStackIndex].phase =
@@ -7302,7 +7302,7 @@ void SwitchStmt::findMatchingCase(LaneContext &lane, WaveContext &wave,
                 << " removing from case block " << caseBlockId << " (case " << i
                 << ") - no matching case");
       tg.removeThreadFromAllSets(caseBlockId, wave.waveId, lane.laneId);
-      tg.removeThreadFromNestedBlocks(caseBlockId, wave.waveId, lane.laneId);
+      tg.removeThreadFromNestedBlocks(caseBlockId, wave.waveId, lane.laneId, nullptr);
     }
 
     ourEntry.phase = LaneContext::ControlFlowPhase::Reconverging;
@@ -7340,7 +7340,7 @@ void SwitchStmt::findMatchingCase(LaneContext &lane, WaveContext &wave,
                 << " (case " << i << ")");
       tg.removeThreadFromUnknown(previousCaseBlockId, wave.waveId, lane.laneId);
       tg.removeThreadFromNestedBlocks(previousCaseBlockId, wave.waveId,
-                                      lane.laneId);
+                                      lane.laneId, nullptr);
     }
 
     // Remove from header block
@@ -7360,12 +7360,19 @@ void SwitchStmt::handleReconvergence(LaneContext &lane, WaveContext &wave,
   INTERPRETER_DEBUG_LOG("DEBUG: SwitchStmt - Lane " << lane.laneId
             << " reconverging from switch");
 
-  // Get merge block before popping execution stack
+  // Get merge block and case blocks before popping execution stack
   uint32_t mergeBlockId = ourEntry.switchMergeBlockId;
+  std::vector<uint32_t> caseBlockIds = ourEntry.switchCaseBlockIds;
 
   // Pop our entry from execution stack
   lane.executionStack.pop_back();
-
+  // Clean up any remaining case blocks and their nested blocks
+  // This ensures lanes are marked as "Left" from blocks in cases they never entered
+  for (size_t i = 0; i < caseBlockIds.size(); ++i) {
+    uint32_t caseBlockId = caseBlockIds[i];
+    tg.removeThreadFromAllSets(caseBlockId, wave.waveId, lane.laneId);
+    tg.removeThreadFromNestedBlocks(caseBlockId, wave.waveId, lane.laneId, nullptr);
+  }
   // Pop merge point and move to merge block
   tg.popMergePoint(wave.waveId, lane.laneId);
   // tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
@@ -7382,16 +7389,18 @@ void SwitchStmt::handleBreakException(LaneContext &lane, WaveContext &wave,
 
   auto &ourEntry = lane.executionStack[ourStackIndex];
 
-  // Remove this lane from ALL case blocks (it's breaking out of the entire
-  // switch)
+  // When breaking from a switch, we need to clean up ALL blocks in ALL cases
+  // This includes blocks in cases that haven't been entered yet
+  // This prevents "Unknown" lanes in blocks within unentered cases
   for (size_t i = 0; i < ourEntry.switchCaseBlockIds.size(); ++i) {
     uint32_t caseBlockId = ourEntry.switchCaseBlockIds[i];
     INTERPRETER_DEBUG_LOG("DEBUG: SwitchStmt - Lane " << lane.laneId
               << " removing from case block " << caseBlockId << " (case " << i
               << ") due to break");
     tg.removeThreadFromAllSets(caseBlockId, wave.waveId, lane.laneId);
-    tg.removeThreadFromNestedBlocks(caseBlockId, wave.waveId, lane.laneId);
+    tg.removeThreadFromNestedBlocks(caseBlockId, wave.waveId, lane.laneId, nullptr);
   }
+  
   // Use Reconverging phase instead of direct exit
   lane.executionStack[ourStackIndex].phase =
       LaneContext::ControlFlowPhase::Reconverging;
@@ -7417,36 +7426,6 @@ SwitchStmt::evaluateCondition(LaneContext &lane, WaveContext &wave,
   return Ok<int, ExecutionError>(switchValue);
 }
 
-Result<Unit, ExecutionError> SwitchStmt::executeCase(size_t caseIndex,
-                                                     LaneContext &lane,
-                                                     WaveContext &wave,
-                                                     ThreadgroupContext &tg) {
-  INTERPRETER_DEBUG_LOG("DEBUG: SwitchStmt - Lane " << lane.laneId << " executing case "
-            << caseIndex << " (Result-based)");
-
-  const auto &caseBlock = cases_[caseIndex];
-
-  for (const auto &stmt : caseBlock.statements) {
-    auto result = stmt->execute_result(lane, wave, tg);
-    if (result.is_err()) {
-      ExecutionError error = result.unwrap_err();
-      INTERPRETER_DEBUG_LOG("SwitchStmt - Case encountered error");
-
-      // Break exits the switch (normal behavior)
-      if (error == ExecutionError::ControlFlowBreak) {
-        INTERPRETER_DEBUG_LOG("DEBUG: SwitchStmt - Break encountered in case");
-        return Ok<Unit, ExecutionError>(
-            Unit{}); // Break stops switch execution successfully
-      }
-
-      // Continue should be handled by containing loop, not switch
-      // Other errors propagate up
-      return result;
-    }
-  }
-
-  return Ok<Unit, ExecutionError>(Unit{});
-}
 
 Result<Unit, ExecutionError>
 SwitchStmt::execute_result(LaneContext &lane, WaveContext &wave,
@@ -8971,28 +8950,35 @@ void ThreadgroupContext::removeThreadFromAllSets(uint32_t blockId,
 // TODO: verify the functional correctness of this method
 void ThreadgroupContext::removeThreadFromNestedBlocks(uint32_t parentBlockId,
                                                       WaveId waveId,
-                                                      LaneId laneId) {
+                                                      LaneId laneId,
+                                                      const void* breakingFromStmt) {
   // Find all blocks that are nested within the parent block and remove the lane
   for (auto &[blockId, block] : executionBlocks) {
     if (block.getParentBlockId() == parentBlockId) {
-      // Skip LOOP_EXIT/MERGE blocks - those are where lanes go when they exit
-      // the loop! if (block.getBlockType() == BlockType::LOOP_EXIT ||
-      // block.getBlockType() == BlockType::MERGE) {
-      if (block.getBlockType() == BlockType::LOOP_EXIT) {
-        INTERPRETER_DEBUG_LOG("DEBUG: removeThreadFromNestedBlocks - skipping "
-                  << blockId << " (LOOP_EXIT block where lanes should go)"
-        );
-        continue;
+      bool shouldSkip = false;
+      
+      // Only skip LOOP_EXIT if we're breaking from its specific loop
+      if (block.getBlockType() == BlockType::LOOP_EXIT && breakingFromStmt) {
+        // Check if this LOOP_EXIT belongs to the loop we're breaking from
+        auto* parentBlock = getBlock(parentBlockId);
+        if (parentBlock && parentBlock->getSourceStatement() == breakingFromStmt) {
+          INTERPRETER_DEBUG_LOG("DEBUG: removeThreadFromNestedBlocks - skipping "
+                    << blockId << " (LOOP_EXIT block for the loop we're breaking from)"
+          );
+          shouldSkip = true;
+        }
       }
 
-      // This is a direct child of the parent block - remove from all sets
-      INTERPRETER_DEBUG_LOG("DEBUG: removeThreadFromNestedBlocks - removing lane "
-                << laneId << " from block " << blockId << " (child of "
-                << parentBlockId << ")");
-      removeThreadFromAllSets(blockId, waveId, laneId);
+      if (!shouldSkip) {
+        // This is a direct child of the parent block - remove from all sets
+        INTERPRETER_DEBUG_LOG("DEBUG: removeThreadFromNestedBlocks - removing lane "
+                  << laneId << " from block " << blockId << " (child of "
+                  << parentBlockId << ")");
+        removeThreadFromAllSets(blockId, waveId, laneId);
+      }
 
-      // Recursively remove from nested blocks of this child
-      removeThreadFromNestedBlocks(blockId, waveId, laneId);
+      // Always recurse into nested blocks (even for skipped LOOP_EXIT blocks)
+      removeThreadFromNestedBlocks(blockId, waveId, laneId, breakingFromStmt);
     }
   }
 }

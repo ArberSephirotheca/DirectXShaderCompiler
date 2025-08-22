@@ -1004,7 +1004,7 @@ struct ThreadgroupContext {
   void removeThreadFromUnknown(uint32_t blockId, WaveId waveId, LaneId laneId);
   void removeThreadFromAllSets(uint32_t blockId, WaveId waveId, LaneId laneId);
   void removeThreadFromNestedBlocks(uint32_t parentBlockId, WaveId waveId,
-                                    LaneId laneId);
+                                    LaneId laneId, const void* breakingFromStmt = nullptr);
   std::map<WaveId, std::set<LaneId>>
   getCurrentBlockParticipants(uint32_t blockId) const;
   uint32_t getCurrentBlock(WaveId waveId, LaneId laneId) const;
