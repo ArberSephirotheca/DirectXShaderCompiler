@@ -2876,9 +2876,13 @@ ForStmt::executeBodyStatements_result(LaneContext &lane, WaveContext &wave,
       // Handle continue locally - skip to increment phase
       else if (error == ExecutionError::ControlFlowContinue) {
         INTERPRETER_DEBUG_LOG("DEBUG: ForStmt - Continue encountered in body, handling locally");
+        // Perform cleanup before transitioning to increment phase
+        cleanupAfterBodyExecution(lane, wave, tg, ourStackIndex, headerBlockId);
         // Transition to increment phase
         lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingIncrement;
         lane.executionStack[ourStackIndex].statementIndex = 0;
+        // Set state to WaitingForResume to ensure synchronization
+        setThreadStateIfUnprotected(lane);
         return Ok<Unit, ExecutionError>(Unit{});
       }
       // Other errors propagate
@@ -6407,9 +6411,13 @@ Result<Unit, ExecutionError> WhileStmt::executeBodyStatements_result(
       // Handle continue locally - skip to condition evaluation
       else if (error == ExecutionError::ControlFlowContinue) {
         INTERPRETER_DEBUG_LOG("DEBUG: WhileStmt - Continue encountered in body, handling locally");
+        // Perform cleanup before transitioning to condition phase
+        cleanupAfterBodyExecution(lane, wave, tg, ourStackIndex, headerBlockId);
         // Transition to condition evaluation phase for next iteration
         lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingCondition;
         lane.executionStack[ourStackIndex].statementIndex = 0;
+        // Set state to WaitingForResume to ensure synchronization
+        setThreadStateIfUnprotected(lane);
         return Ok<Unit, ExecutionError>(Unit{});
       }
       // Other errors propagate
@@ -6985,9 +6993,13 @@ Result<Unit, ExecutionError> DoWhileStmt::executeBodyStatements_result(
       // Handle continue locally - skip to condition evaluation
       else if (error == ExecutionError::ControlFlowContinue) {
         INTERPRETER_DEBUG_LOG("DEBUG: DoWhileStmt - Continue encountered in body, handling locally");
+        // Perform cleanup before transitioning to condition phase
+        cleanupAfterBodyExecution(lane, wave, tg, ourStackIndex, headerBlockId);
         // Transition to condition evaluation phase
         lane.executionStack[ourStackIndex].phase = LaneContext::ControlFlowPhase::EvaluatingCondition;
         lane.executionStack[ourStackIndex].statementIndex = 0;
+        // Set state to WaitingForResume to ensure synchronization
+        setThreadStateIfUnprotected(lane);
         return Ok<Unit, ExecutionError>(Unit{});
       }
       // Other errors propagate
