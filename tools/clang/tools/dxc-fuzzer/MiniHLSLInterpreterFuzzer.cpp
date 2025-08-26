@@ -35,32 +35,71 @@ static const interpreter::WaveActiveOp* findWaveOpInExpression(const interpreter
 
 // Helper function to check if a statement is a tracking operation
 bool isTrackingStatement(const interpreter::Statement* stmt) {
-  // Check for VarDeclStmt pattern: uint _participantCount = WaveActiveSum(1)
+  // Check for VarDeclStmt patterns used by various tracking mutations
   if (auto* varDeclStmt = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
-    // Check for pattern: _participantCount = WaveActiveSum(1)
-    if (varDeclStmt->getName() != "_participantCount") return false;
+    const std::string& name = varDeclStmt->getName();
     
-    if (!varDeclStmt->getInit()) return false;
+    // WaveParticipantTracking pattern: uint _participantCount = WaveActiveSum(1)
+    if (name == "_participantCount") {
+      if (!varDeclStmt->getInit()) return false;
+      
+      auto* waveOp = findWaveOpInExpression(varDeclStmt->getInit());
+      if (!waveOp || waveOp->getOpType() != interpreter::WaveActiveOp::Sum) return false;
+      
+      // Check if input is literal 1
+      auto* literal = dynamic_cast<const interpreter::LiteralExpr*>(waveOp->getInput());
+      return literal && literal->getValue() == interpreter::Value(1);
+    }
     
-    auto* waveOp = findWaveOpInExpression(varDeclStmt->getInit());
-    if (!waveOp || waveOp->getOpType() != interpreter::WaveActiveOp::Sum) return false;
+    // WaveParticipantBitTracking patterns
+    if (name == "temp" && !varDeclStmt->getInit()) {
+      // uint temp;
+      return true;
+    }
     
-    // Check if input is literal 1
-    auto* literal = dynamic_cast<const interpreter::LiteralExpr*>(waveOp->getInput());
-    return literal && literal->getValue() == interpreter::Value(1);
+    if (name == "ballot") {
+      // uint4 ballot = WaveActiveBallot(1);
+      if (!varDeclStmt->getInit()) return false;
+      auto* waveOp = findWaveOpInExpression(varDeclStmt->getInit());
+      return waveOp && waveOp->getOpType() == interpreter::WaveActiveOp::Ballot;
+    }
+    
+    // Other tracking-related variables
+    if (name == "_isCorrect" || name == "_frequency_index" || name == "_tempIndex") {
+      return true;
+    }
   }
   
-  // Also check for AssignStmt pattern (in case it's used elsewhere)
+  // Check for AssignStmt patterns
   if (auto* assignStmt = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
-    // Check for pattern: _participantCount = WaveActiveSum(1)
-    if (assignStmt->getName() != "_participantCount") return false;
+    const std::string& name = assignStmt->getName();
     
-    auto* waveOp = findWaveOpInExpression(assignStmt->getExpression());
-    if (!waveOp || waveOp->getOpType() != interpreter::WaveActiveOp::Sum) return false;
-    
-    // Check if input is literal 1
-    auto* literal = dynamic_cast<const interpreter::LiteralExpr*>(waveOp->getInput());
-    return literal && literal->getValue() == interpreter::Value(1);
+    // WaveParticipantTracking pattern: _participantCount = WaveActiveSum(1)
+    if (name == "_participantCount") {
+      auto* waveOp = findWaveOpInExpression(assignStmt->getExpression());
+      if (!waveOp || waveOp->getOpType() != interpreter::WaveActiveOp::Sum) return false;
+      
+      // Check if input is literal 1
+      auto* literal = dynamic_cast<const interpreter::LiteralExpr*>(waveOp->getInput());
+      return literal && literal->getValue() == interpreter::Value(1);
+    }
+  }
+  
+  // Check for ArrayAssignStmt patterns (used by bit tracking)
+  if (auto* arrayAssign = dynamic_cast<const interpreter::ArrayAssignStmt*>(stmt)) {
+    const std::string& arrayName = arrayAssign->getArrayName();
+    // Bit tracking uses _participant_bit array assignments
+    if (arrayName == "_participant_bit" || arrayName == "_participant_count" || 
+        arrayName == "_frequency_buffer") {
+      return true;
+    }
+  }
+  
+  // Check for ExprStmt with InterlockedAdd (used by bit tracking)
+  if (auto* exprStmt = dynamic_cast<const interpreter::ExprStmt*>(stmt)) {
+    if (dynamic_cast<const interpreter::InterlockedAddExpr*>(exprStmt->getExpression())) {
+      return true;
+    }
   }
   
   return false;
@@ -143,6 +182,7 @@ void generateTestFile(const interpreter::Program& program,
   // The program already includes buffer declarations from WaveParticipantTracking
   // Just write the program as-is
   bool hasParticipantTracking = mutationChain.find("WaveParticipantTracking") != std::string::npos;
+  bool hasBitTracking = mutationChain.find("WaveParticipantBitTracking") != std::string::npos;
   testFile << serializeProgramToString(program);
   
   // Calculate buffer sizes
@@ -151,6 +191,7 @@ void generateTestFile(const interpreter::Program& program,
   
   // Generate expected participant data from trace
   std::vector<uint32_t> expectedParticipants(totalThreads, 0);
+  std::vector<uint32_t> expectedBitPatterns;
   
   if (hasParticipantTracking) {
     // The WaveParticipantTracking mutation structure:
@@ -276,6 +317,60 @@ void generateTestFile(const interpreter::Program& program,
     FUZZER_DEBUG_LOG("Total tracking operations skipped: " << trackingOpsSkipped << "\n");
   }
   
+  if (hasBitTracking) {
+    // Generate expected bit patterns from trace
+    // WaveParticipantBitTrackingMutation records:
+    // - Combined ID: (iteration << 16) | waveOpId
+    // - Participant masks: WaveActiveBallot results (x, y components)
+    
+    FUZZER_DEBUG_LOG("Generating expected bit patterns from trace\n");
+    
+    // Group wave operations by stable ID and iteration
+    std::map<std::pair<uint32_t, uint32_t>, std::vector<const ExecutionTrace::WaveOpRecord*>> 
+      groupedOps;
+    
+    for (const auto& waveOp : trace.waveOperations) {
+      // Skip Ballot operations (they're used for tracking)
+      if (waveOp.waveOpEnumType == static_cast<int>(interpreter::WaveActiveOp::OpType::Ballot)) {
+        continue;
+      }
+      
+      // Extract iteration from block execution record if available
+      uint32_t iteration = 0;
+      auto blockIt = trace.blocks.find(waveOp.blockId);
+      if (blockIt != trace.blocks.end() && blockIt->second.loopIteration.has_value()) {
+        iteration = blockIt->second.loopIteration->iterationValue;
+      }
+      
+      groupedOps[{waveOp.stableId, iteration}].push_back(&waveOp);
+    }
+    
+    // Generate expected data in execution order
+    for (const auto& [key, ops] : groupedOps) {
+      uint32_t stableId = key.first;
+      uint32_t iteration = key.second;
+      uint32_t combinedId = (iteration << 16) | stableId;
+      
+      // Compute participant bitmask
+      uint64_t mask = 0;
+      for (const auto* op : ops) {
+        for (interpreter::LaneId lane : op->arrivedParticipants) {
+          mask |= (1ULL << lane);
+        }
+      }
+      
+      // Store: [combinedId, mask_low, mask_high]
+      expectedBitPatterns.push_back(combinedId);
+      expectedBitPatterns.push_back(static_cast<uint32_t>(mask & 0xFFFFFFFF));
+      expectedBitPatterns.push_back(static_cast<uint32_t>(mask >> 32));
+      
+      FUZZER_DEBUG_LOG("Wave op " << stableId << " iteration " << iteration 
+                      << " mask: 0x" << std::hex << mask << std::dec << "\n");
+    }
+    
+    FUZZER_DEBUG_LOG("Total bit pattern records: " << expectedBitPatterns.size() / 3 << "\n");
+  }
+  
   // Write pipeline YAML section
   testFile << "\n#--- pipeline.yaml\n";
   testFile << "---\n";
@@ -308,9 +403,36 @@ void generateTestFile(const interpreter::Program& program,
     testFile << "]\n";
   }
   
-  // Add any global buffers from the program (skip _participant_check_sum as we already added it)
+  // Add bit tracking buffers if needed
+  if (hasBitTracking) {
+    // _participant_bit buffer with expected data
+    testFile << "  - Name: _participant_bit\n";
+    testFile << "    Format: UInt32\n";
+    testFile << "    Stride: 4\n";
+    if (!expectedBitPatterns.empty()) {
+      testFile << "    Data: [";
+      for (size_t i = 0; i < expectedBitPatterns.size(); ++i) {
+        if (i > 0) testFile << ", ";
+        testFile << expectedBitPatterns[i];
+      }
+      testFile << "]\n";
+    } else {
+      testFile << "    Fill: 0\n";
+      testFile << "    Size: 1024\n";  // Default size
+    }
+    
+    // _wave_op_index buffer (counter)
+    testFile << "  - Name: _wave_op_index\n";
+    testFile << "    Format: UInt32\n";
+    testFile << "    Stride: 4\n";
+    testFile << "    Data: [" << expectedBitPatterns.size() << "]\n";  // Final counter value
+  }
+  
+  // Add any global buffers from the program (skip special buffers we already added)
   for (const auto& buffer : program.globalBuffers) {
-    if (buffer.name != "_participant_check_sum") {
+    if (buffer.name != "_participant_check_sum" && 
+        buffer.name != "_participant_bit" &&
+        buffer.name != "_wave_op_index") {
       testFile << "  - Name: " << buffer.name << "\n";
       testFile << "    Format: UInt32\n";
       testFile << "    Stride: 4\n";
@@ -319,12 +441,22 @@ void generateTestFile(const interpreter::Program& program,
     }
   }
   
-  if (hasParticipantTracking) {
+  if (hasParticipantTracking || hasBitTracking) {
     testFile << "Results:\n";
+  }
+  
+  if (hasParticipantTracking) {
     testFile << "  - Result: WaveOpValidation\n";
     testFile << "    Rule: BufferExact\n";
     testFile << "    Actual: _participant_check_sum\n";
     testFile << "    Expected: expected_participants\n";
+  }
+  
+  if (hasBitTracking) {
+    testFile << "  - Result: BitTrackingValidation\n";
+    testFile << "    Rule: BufferPrefix\n";  // Use prefix since buffer size is dynamic
+    testFile << "    Actual: _participant_bit\n";
+    testFile << "    Expected: _participant_bit\n";  // Expected data is already in the buffer
   }
   
   testFile << "DescriptorSets:\n";
@@ -340,20 +472,19 @@ void generateTestFile(const interpreter::Program& program,
     testFile << "        Binding: 1\n";
   }
   
-  // Add bindings for program buffers (skip _participant_check_sum as we already handled it)
-  uint32_t registerIndex = hasParticipantTracking ? 2 : 0;
+  // Add bindings for program buffers
   for (const auto& buffer : program.globalBuffers) {
-    if (buffer.name == "_participant_check_sum") {
+    if (buffer.name == "_participant_check_sum" && hasParticipantTracking) {
       // Skip - already handled above
       continue;
     }
     testFile << "    - Name: " << buffer.name << "\n";
-    testFile << "      Kind: " << buffer.bufferType << "\n";
+    testFile << "      Kind: " << (buffer.isReadWrite ? "RWStructuredBuffer" : "StructuredBuffer") << "\n";
     testFile << "      DirectXBinding:\n";
-    testFile << "        Register: " << registerIndex++ << "\n";
+    testFile << "        Register: " << buffer.registerIndex << "\n";
     testFile << "        Space: 0\n";
     testFile << "      VulkanBinding:\n";
-    testFile << "        Binding: " << (registerIndex - 1) << "\n";
+    testFile << "        Binding: " << buffer.registerIndex << "\n";
   }
   
   testFile << "...\n";
@@ -1888,6 +2019,515 @@ std::vector<interpreter::Program> WaveParticipantFrequencyMutation::applyToProgr
   return mutants;
 }
 
+// ===== WaveParticipantBitTrackingMutation Implementation =====
+
+bool WaveParticipantBitTrackingMutation::canApply(
+    const interpreter::Statement* stmt,
+    const ExecutionTrace& trace) const {
+  // This is a program-level mutation
+  return false;
+}
+
+std::unique_ptr<interpreter::Statement> WaveParticipantBitTrackingMutation::apply(
+    const interpreter::Statement* stmt,
+    const ExecutionTrace& trace) const {
+  // This is a program-level mutation
+  return nullptr;
+}
+
+bool WaveParticipantBitTrackingMutation::validateSemanticPreservation(
+    const interpreter::Statement* original,
+    const interpreter::Statement* mutated,
+    const ExecutionTrace& trace) const {
+  // All bit tracking mutations preserve semantics - they only add observation
+  return true;
+}
+
+// requiresProgramLevelMutation is already defined in the header via override
+
+bool WaveParticipantBitTrackingMutation::hasBitTrackingBuffers(
+    const interpreter::Program& program) const {
+  // Check if program already has bit tracking buffers
+  for (const auto& buffer : program.globalBuffers) {
+    if (buffer.name == "_participant_bit" || buffer.name == "_wave_op_index") {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool WaveParticipantBitTrackingMutation::hasWaveOpsInStatements(
+    const interpreter::Program& program,
+    const std::set<size_t>& statementsToMutate) const {
+  
+  std::function<bool(const interpreter::Statement*)> hasWaveOpRecursive;
+  hasWaveOpRecursive = [&hasWaveOpRecursive](const interpreter::Statement* stmt) -> bool {
+    // Check AssignStmt
+    if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
+      if (findWaveOpInExpression(assign->getExpression())) {
+        return true;
+      }
+    } 
+    // Check VarDeclStmt
+    else if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
+      if (varDecl->getInit() && findWaveOpInExpression(varDecl->getInit())) {
+        return true;
+      }
+    }
+    // Check control flow statements
+    else if (auto* ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt)) {
+      for (const auto& s : ifStmt->getThenBlock()) {
+        if (hasWaveOpRecursive(s.get())) return true;
+      }
+      for (const auto& s : ifStmt->getElseBlock()) {
+        if (hasWaveOpRecursive(s.get())) return true;
+      }
+    } else if (auto* forStmt = dynamic_cast<const interpreter::ForStmt*>(stmt)) {
+      for (const auto& s : forStmt->getBody()) {
+        if (hasWaveOpRecursive(s.get())) return true;
+      }
+    } else if (auto* whileStmt = dynamic_cast<const interpreter::WhileStmt*>(stmt)) {
+      for (const auto& s : whileStmt->getBody()) {
+        if (hasWaveOpRecursive(s.get())) return true;
+      }
+    } else if (auto* doWhileStmt = dynamic_cast<const interpreter::DoWhileStmt*>(stmt)) {
+      for (const auto& s : doWhileStmt->getBody()) {
+        if (hasWaveOpRecursive(s.get())) return true;
+      }
+    } else if (auto* switchStmt = dynamic_cast<const interpreter::SwitchStmt*>(stmt)) {
+      // Check all cases in the switch
+      for (size_t i = 0; i < switchStmt->getCaseCount(); ++i) {
+        const auto& caseBlock = switchStmt->getCase(i);
+        for (const auto& s : caseBlock.statements) {
+          if (hasWaveOpRecursive(s.get())) return true;
+        }
+      }
+    }
+    return false;
+  };
+  
+  for (size_t i = 0; i < program.statements.size(); ++i) {
+    if (statementsToMutate.find(i) != statementsToMutate.end()) {
+      if (hasWaveOpRecursive(program.statements[i].get())) {
+        return true;
+      }
+    }
+  }
+  
+  return false;
+}
+
+uint32_t WaveParticipantBitTrackingMutation::getRecordSize(uint32_t waveSize) const {
+  // wave32: 1 (id) + 2 (ballot.x, ballot.y for 32 lanes)
+  // wave64: 1 (id) + 2 (ballot.x, ballot.y for 64 lanes)
+  // WaveActiveBallot returns uint4, but only x,y are used for up to 64 lanes
+  return 3; // id + ballot.x + ballot.y
+}
+
+std::vector<std::unique_ptr<interpreter::Statement>>
+WaveParticipantBitTrackingMutation::createBitTrackingStatements(
+    const interpreter::WaveActiveOp* waveOp,
+    const std::string& resultVar,
+    uint32_t waveOpId,
+    uint32_t loopIteration) const {
+  
+  std::vector<std::unique_ptr<interpreter::Statement>> trackingStmts;
+  
+  // Create combined ID: (iteration << 16) | waveOpId
+  uint32_t combinedId = (loopIteration << 16) | waveOpId;
+  
+  // 1. Declare temp variable for InterlockedAdd
+  // uint temp;
+  trackingStmts.push_back(std::make_unique<interpreter::VarDeclStmt>(
+    "temp", interpreter::HLSLType::Uint, nullptr));
+  
+  // 2. Atomic increment of index and get offset
+  // InterlockedAdd(_wave_op_index[0], 3, temp);
+  auto indexAccess = std::make_unique<interpreter::ArrayAccessExpr>(
+    "_wave_op_index",
+    std::make_unique<interpreter::LiteralExpr>(0));
+  
+  auto addExpr = std::make_unique<interpreter::InterlockedAddExpr>(
+    std::move(indexAccess),
+    std::make_unique<interpreter::LiteralExpr>(3), // record size
+    std::make_unique<interpreter::VariableExpr>("temp"));
+  
+  auto atomicStmt = std::make_unique<interpreter::ExprStmt>(std::move(addExpr));
+  trackingStmts.push_back(std::move(atomicStmt));
+  
+  // 3. Store combined ID
+  // _participant_bit[temp] = combinedId;
+  auto tempVar1 = std::make_unique<interpreter::VariableExpr>("temp");
+  auto idStore = std::make_unique<interpreter::ArrayAssignStmt>(
+    "_participant_bit",
+    std::move(tempVar1),
+    std::make_unique<interpreter::LiteralExpr>(static_cast<int>(combinedId)));
+  trackingStmts.push_back(std::move(idStore));
+  
+  // 4. Call WaveActiveBallot and store result
+  // uint4 ballot = WaveActiveBallot(true);
+  auto ballotCall = std::make_unique<interpreter::WaveActiveOp>(
+    std::make_unique<interpreter::LiteralExpr>(1), // true
+    interpreter::WaveActiveOp::OpType::Ballot);
+  
+  trackingStmts.push_back(std::make_unique<interpreter::VarDeclStmt>(
+    "ballot", interpreter::HLSLType::Uint4, std::move(ballotCall)));
+  
+  // 5. Store ballot.x
+  // _participant_bit[temp + 1] = ballot.x;
+  auto tempPlus1 = std::make_unique<interpreter::BinaryOpExpr>(
+    std::make_unique<interpreter::VariableExpr>("temp"),
+    std::make_unique<interpreter::LiteralExpr>(1),
+    interpreter::BinaryOpExpr::Add);
+  auto xStore = std::make_unique<interpreter::ArrayAssignStmt>(
+    "_participant_bit",
+    std::move(tempPlus1),
+    std::make_unique<interpreter::MemberAccessExpr>(
+      std::make_unique<interpreter::VariableExpr>("ballot"), "x"));
+  trackingStmts.push_back(std::move(xStore));
+  
+  // 6. Store ballot.y
+  // _participant_bit[temp + 2] = ballot.y;
+  auto tempPlus2 = std::make_unique<interpreter::BinaryOpExpr>(
+    std::make_unique<interpreter::VariableExpr>("temp"),
+    std::make_unique<interpreter::LiteralExpr>(2),
+    interpreter::BinaryOpExpr::Add);
+  auto yStore = std::make_unique<interpreter::ArrayAssignStmt>(
+    "_participant_bit",
+    std::move(tempPlus2),
+    std::make_unique<interpreter::MemberAccessExpr>(
+      std::make_unique<interpreter::VariableExpr>("ballot"), "y"));
+  trackingStmts.push_back(std::move(yStore));
+  
+  return trackingStmts;
+}
+
+void WaveParticipantBitTrackingMutation::processStatementsForBitTracking(
+    const std::vector<std::unique_ptr<interpreter::Statement>>& input,
+    std::vector<std::unique_ptr<interpreter::Statement>>& output,
+    const ExecutionTrace& trace,
+    size_t& nextWaveOpIndex,
+    std::map<const void*, uint32_t>& loopIterationMap,
+    uint32_t currentLoopIteration) const {
+  
+  FUZZER_DEBUG_LOG("[WaveParticipantBitTracking] Processing statements\n");
+  
+  for (const auto& stmt : input) {
+    // Skip null statements
+    if (!stmt) {
+      continue;
+    }
+    
+    // Skip if this is already a tracking operation
+    if (isTrackingStatement(stmt.get())) {
+      FUZZER_DEBUG_LOG("[WaveParticipantBitTracking] Skipping tracking operation\n");
+      output.push_back(cloneStatement(stmt.get()));
+      continue;
+    }
+    
+    // Handle if statements specially - process recursively without cloning first
+    if (auto* ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt.get())) {
+      // Process then block
+      std::vector<std::unique_ptr<interpreter::Statement>> processedThen;
+      processStatementsForBitTracking(ifStmt->getThenBlock(), processedThen, trace,
+                                     nextWaveOpIndex, loopIterationMap,
+                                     currentLoopIteration);
+      
+      // Process else block
+      std::vector<std::unique_ptr<interpreter::Statement>> processedElse;
+      processStatementsForBitTracking(ifStmt->getElseBlock(), processedElse, trace,
+                                     nextWaveOpIndex, loopIterationMap,
+                                     currentLoopIteration);
+      
+      // Create new if statement with processed blocks
+      output.push_back(std::make_unique<interpreter::IfStmt>(
+        ifStmt->getCondition()->clone(),
+        std::move(processedThen),
+        std::move(processedElse)));
+      continue;
+    }
+    
+    // For non-if statements, add the original statement first
+    output.push_back(cloneStatement(stmt.get()));
+    
+    // Check if this statement contains a wave operation
+    const interpreter::WaveActiveOp* waveOp = nullptr;
+    std::string resultVar;
+    
+    if (auto* exprStmt = dynamic_cast<const interpreter::ExprStmt*>(stmt.get())) {
+      waveOp = findWaveOpInExpression(exprStmt->getExpression());
+    } else if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt.get())) {
+      waveOp = findWaveOpInExpression(assign->getExpression());
+      if (waveOp) {
+        resultVar = assign->getName();
+      }
+    } else if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt.get())) {
+      if (varDecl->getInit()) {
+        waveOp = findWaveOpInExpression(varDecl->getInit());
+        if (waveOp) {
+          resultVar = varDecl->getName();
+        }
+      }
+    }
+    
+    // If we found a wave operation, inject tracking
+    if (waveOp) {
+      // Don't track Ballot operations themselves (used for tracking)
+      if (waveOp->getOpType() != interpreter::WaveActiveOp::OpType::Ballot) {
+        uint32_t waveOpId = waveOp->getStableId();
+        auto trackingStmts = createBitTrackingStatements(
+          waveOp, resultVar, waveOpId, currentLoopIteration);
+        
+        for (auto& trackingStmt : trackingStmts) {
+          output.push_back(std::move(trackingStmt));
+        }
+        
+        nextWaveOpIndex++;
+      }
+    }
+    
+    // Handle nested statements - process control flow structures recursively
+    // Note: if statements are handled at the beginning of the loop
+    if (auto* forStmt = dynamic_cast<const interpreter::ForStmt*>(stmt.get())) {
+      // Process body
+      std::vector<std::unique_ptr<interpreter::Statement>> processedBody;
+      processStatementsForBitTracking(forStmt->getBody(), processedBody, trace,
+                                     nextWaveOpIndex, loopIterationMap,
+                                     currentLoopIteration + 1);
+      
+      // We already added the statement at the beginning, need to replace it
+      output.pop_back(); // Remove the cloned version
+      output.push_back(std::make_unique<interpreter::ForStmt>(
+        forStmt->getLoopVar(),
+        forStmt->getInit() ? forStmt->getInit()->clone() : nullptr,
+        forStmt->getCondition() ? forStmt->getCondition()->clone() : nullptr,
+        forStmt->getIncrement() ? forStmt->getIncrement()->clone() : nullptr,
+        std::move(processedBody)
+      ));
+    }
+    else if (auto* whileStmt = dynamic_cast<const interpreter::WhileStmt*>(stmt.get())) {
+      // Process body
+      std::vector<std::unique_ptr<interpreter::Statement>> processedBody;
+      processStatementsForBitTracking(whileStmt->getBody(), processedBody, trace,
+                                     nextWaveOpIndex, loopIterationMap,
+                                     currentLoopIteration);
+      
+      // We already added the statement at the beginning, need to replace it
+      output.pop_back(); // Remove the cloned version
+      output.push_back(std::make_unique<interpreter::WhileStmt>(
+        whileStmt->getCondition()->clone(),
+        std::move(processedBody)
+      ));
+    }
+    else if (auto* doWhileStmt = dynamic_cast<const interpreter::DoWhileStmt*>(stmt.get())) {
+      // Process body
+      std::vector<std::unique_ptr<interpreter::Statement>> processedBody;
+      processStatementsForBitTracking(doWhileStmt->getBody(), processedBody, trace,
+                                     nextWaveOpIndex, loopIterationMap,
+                                     currentLoopIteration);
+      
+      // Replace the do-while statement with processed version
+      output.pop_back(); // Remove the cloned version
+      output.push_back(std::make_unique<interpreter::DoWhileStmt>(
+        std::move(processedBody),
+        doWhileStmt->getCondition()->clone()
+      ));
+    }
+    else if (auto* switchStmt = dynamic_cast<const interpreter::SwitchStmt*>(stmt.get())) {
+      // Process switch cases
+      auto newSwitch = std::make_unique<interpreter::SwitchStmt>(
+          switchStmt->getCondition()->clone());
+      
+      for (size_t i = 0; i < switchStmt->getCaseCount(); ++i) {
+        const auto& caseBlock = switchStmt->getCase(i);
+        std::vector<std::unique_ptr<interpreter::Statement>> processedCaseBody;
+        
+        // Process statements in this case
+        processStatementsForBitTracking(caseBlock.statements, processedCaseBody, 
+                                       trace, nextWaveOpIndex, loopIterationMap,
+                                       currentLoopIteration);
+        
+        // Add the processed case to the new switch
+        if (caseBlock.value.has_value()) {
+          newSwitch->addCase(caseBlock.value.value(), std::move(processedCaseBody));
+        } else {
+          newSwitch->addDefault(std::move(processedCaseBody));
+        }
+      }
+      
+      // Replace with the processed switch
+      output.pop_back(); // Remove the cloned version
+      output.push_back(std::move(newSwitch));
+    }
+  }
+  
+  FUZZER_DEBUG_LOG("[WaveParticipantBitTracking] Finished processing\n");
+}
+
+void WaveParticipantBitTrackingMutation::ensureBitTrackingBuffers(
+    interpreter::Program& mutant) const {
+  // Check if buffers already exist
+  bool hasParticipantBit = false;
+  bool hasWaveOpIndex = false;
+  
+  for (const auto& buffer : mutant.globalBuffers) {
+    if (buffer.name == "_participant_bit") hasParticipantBit = true;
+    if (buffer.name == "_wave_op_index") hasWaveOpIndex = true;
+  }
+  
+  // Add missing buffers
+  if (!hasParticipantBit) {
+    interpreter::GlobalBufferDecl participantBit;
+    participantBit.name = "_participant_bit";
+    participantBit.bufferType = "RWStructuredBuffer";
+    participantBit.elementType = interpreter::HLSLType::Uint;
+    participantBit.size = 1024; // Large enough for many recordings
+    participantBit.isReadWrite = true;
+    participantBit.registerIndex = 2;
+    mutant.globalBuffers.push_back(participantBit);
+  }
+  
+  if (!hasWaveOpIndex) {
+    interpreter::GlobalBufferDecl waveOpIndex;
+    waveOpIndex.name = "_wave_op_index";
+    waveOpIndex.bufferType = "RWStructuredBuffer";
+    waveOpIndex.elementType = interpreter::HLSLType::Uint;
+    waveOpIndex.size = 1;
+    waveOpIndex.isReadWrite = true;
+    waveOpIndex.registerIndex = 3;
+    mutant.globalBuffers.push_back(waveOpIndex);
+  }
+}
+
+interpreter::Program WaveParticipantBitTrackingMutation::createBaseMutant(
+    const interpreter::Program& program) const {
+  interpreter::Program mutant;
+  
+  // Copy all fields
+  mutant.numThreadsX = program.numThreadsX;
+  mutant.numThreadsY = program.numThreadsY;
+  mutant.numThreadsZ = program.numThreadsZ;
+  mutant.entryInputs = program.entryInputs;
+  mutant.globalBuffers = program.globalBuffers;
+  mutant.waveSize = program.waveSize;
+  
+  return mutant;
+}
+
+interpreter::Program WaveParticipantBitTrackingMutation::createMutantWithBitTracking(
+    const interpreter::Program& program,
+    const ExecutionTrace& trace,
+    const std::set<size_t>& statementsToMutate) const {
+  
+  
+  // Create base mutant
+  interpreter::Program mutant = createBaseMutant(program);
+  
+  // Ensure participant buffer exists
+  ensureBitTrackingBuffers(mutant);
+  
+  // Initialize trace index for execution-order matching
+  size_t nextTraceIndex = 0;
+  
+  // Process all statements
+  for (size_t i = 0; i < program.statements.size(); ++i) {
+    if (statementsToMutate.find(i) != statementsToMutate.end()) {
+      // This is a new statement from current increment - process it for tracking
+      std::vector<std::unique_ptr<interpreter::Statement>> inputStmts;
+      inputStmts.push_back(program.statements[i]->clone());
+      
+      std::vector<std::unique_ptr<interpreter::Statement>> processedStmts;
+      std::map<const void*, uint32_t> loopIterationMap;
+      uint32_t currentLoopIteration = 0;
+      processStatementsForBitTracking(
+          inputStmts, processedStmts, trace, nextTraceIndex, 
+          loopIterationMap, currentLoopIteration);
+      
+      // Add all processed statements (original + tracking)
+      for (auto& stmt : processedStmts) {
+        mutant.statements.push_back(std::move(stmt));
+      }
+    } else {
+      // This is an old statement - copy it unchanged
+      mutant.statements.push_back(program.statements[i]->clone());
+    }
+  }
+  
+  return mutant;
+
+}
+
+std::vector<uint32_t> WaveParticipantBitTrackingMutation::computeExpectedBitPatterns(
+    const ExecutionTrace& trace) const {
+  std::vector<uint32_t> expected;
+  
+  // Group wave operations by stable ID and iteration
+  std::map<std::pair<uint32_t, uint32_t>, std::vector<const ExecutionTrace::WaveOpRecord*>> 
+    groupedOps;
+  
+  for (const auto& waveOp : trace.waveOperations) {
+    // Extract iteration from block execution record if available
+    uint32_t iteration = 0;
+    auto blockIt = trace.blocks.find(waveOp.blockId);
+    if (blockIt != trace.blocks.end() && blockIt->second.loopIteration.has_value()) {
+      iteration = blockIt->second.loopIteration->iterationValue;
+    }
+    
+    groupedOps[{waveOp.stableId, iteration}].push_back(&waveOp);
+  }
+  
+  // Generate expected data in execution order
+  for (const auto& [key, ops] : groupedOps) {
+    uint32_t stableId = key.first;
+    uint32_t iteration = key.second;
+    uint32_t combinedId = (iteration << 16) | stableId;
+    
+    // Compute participant bitmask
+    uint64_t mask = 0;
+    for (const auto* op : ops) {
+      for (interpreter::LaneId lane : op->arrivedParticipants) {
+        mask |= (1ULL << lane);
+      }
+    }
+    
+    // Store: [combinedId, mask_low, mask_high]
+    expected.push_back(combinedId);
+    expected.push_back(static_cast<uint32_t>(mask & 0xFFFFFFFF));
+    expected.push_back(static_cast<uint32_t>(mask >> 32));
+  }
+  
+  return expected;
+}
+
+std::vector<interpreter::Program> WaveParticipantBitTrackingMutation::applyToProgram(
+    const interpreter::Program& program,
+    const ExecutionTrace& trace,
+    const std::set<size_t>& statementsToMutate) const {
+  
+  std::vector<interpreter::Program> mutants;
+  
+
+  FUZZER_DEBUG_LOG("[WaveParticipantBitTracking] Checking for wave ops in " 
+                   << statementsToMutate.size() << " statements\n");
+  
+  if (!hasWaveOpsInStatements(program, statementsToMutate)) {
+    FUZZER_DEBUG_LOG("[WaveParticipantBitTracking] No wave operations in statements to mutate\n");
+    return mutants;
+  }
+  
+  FUZZER_DEBUG_LOG("[WaveParticipantBitTracking] Found wave operations, proceeding with mutation\n");
+  
+  // Create mutant with bit tracking
+  interpreter::Program mutant = createMutantWithBitTracking(
+    program, trace, statementsToMutate);
+  
+  FUZZER_DEBUG_LOG("[WaveParticipantBitTracking] Created mutant\n");
+  
+  mutants.push_back(std::move(mutant));
+  FUZZER_DEBUG_LOG("[WaveParticipantBitTracking] Returning mutants\n");
+  return mutants;
+}
+
 // ===== ContextAwareParticipantMutation Implementation =====
 
 bool ContextAwareParticipantMutation::canApply(
@@ -2780,8 +3420,10 @@ void BugReporter::logBug(const BugReport& report) {
 
 TraceGuidedFuzzer::TraceGuidedFuzzer() {
   // Initialize mutation strategies
-  mutationStrategies.push_back(std::make_unique<WaveParticipantTrackingMutation>());
+  // Disabled old count-based tracking in favor of new bit-based tracking
+  // mutationStrategies.push_back(std::make_unique<WaveParticipantTrackingMutation>());
   mutationStrategies.push_back(std::make_unique<LanePermutationMutation>());
+  mutationStrategies.push_back(std::make_unique<WaveParticipantBitTrackingMutation>());
   // mutationStrategies.push_back(std::make_unique<WaveParticipantFrequencyMutation>());
   // mutationStrategies.push_back(std::make_unique<ContextAwareParticipantMutation>());
   
@@ -2912,8 +3554,9 @@ interpreter::Program TraceGuidedFuzzer::fuzzProgram(const interpreter::Program& 
       FUZZER_DEBUG_LOG("Failed to save mutant to: " << mutantPath << "\n");
     }
     
-    // Generate test file with YAML pipeline if using WaveParticipantTracking
-    if (mutationResult.getMutationChainString().find("WaveParticipantTracking") != std::string::npos) {
+    // Generate test file with YAML pipeline if using WaveParticipantTracking or WaveParticipantBitTracking
+    if (mutationResult.getMutationChainString().find("WaveParticipantTracking") != std::string::npos ||
+        mutationResult.getMutationChainString().find("WaveParticipantBitTracking") != std::string::npos) {
       try {
         std::string testPath = createMutantOutputPath(currentIncrement, mutationResult.getMutationChainString(), ".test", config.seedId, config.outputDir);
         generateTestFile(finalMutant, goldenTrace, testPath, mutationResult.getMutationChainString());
@@ -3523,6 +4166,11 @@ std::string TraceGuidedFuzzer::MutationResult::getMutationChainString() const {
     result += "WaveParticipantFrequency";
   }
   
+  if ((appliedMutations & AppliedMutations::WaveParticipantBitTracking) != AppliedMutations::None) {
+    if (!result.empty()) result += " + ";
+    result += "WaveParticipantBitTracking";
+  }
+  
   if (result.empty()) {
     result = "None";
   }
@@ -3581,6 +4229,8 @@ TraceGuidedFuzzer::MutationResult TraceGuidedFuzzer::applyAllMutations(
         result.appliedMutations |= AppliedMutations::ContextAwareParticipant;
       } else if (strategy->getName() == "WaveParticipantFrequency") {
         result.appliedMutations |= AppliedMutations::WaveParticipantFrequency;
+      } else if (strategy->getName() == "WaveParticipantBitTracking") {
+        result.appliedMutations |= AppliedMutations::WaveParticipantBitTracking;
       }
       
       FUZZER_DEBUG_LOG("Successfully applied " << strategy->getName() << "\n");

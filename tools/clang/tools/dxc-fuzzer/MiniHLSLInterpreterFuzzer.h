@@ -498,6 +498,79 @@ private:
     const ExecutionTrace& trace) const;
 };
 
+// Mutation strategy: Track wave operation participants using bit masks
+class WaveParticipantBitTrackingMutation : public MutationStrategy {
+public:
+  bool canApply(const interpreter::Statement* stmt,
+                const ExecutionTrace& trace) const override;
+  
+  std::unique_ptr<interpreter::Statement> apply(
+    const interpreter::Statement* stmt,
+    const ExecutionTrace& trace) const override;
+    
+  bool validateSemanticPreservation(
+    const interpreter::Statement* original,
+    const interpreter::Statement* mutated,
+    const ExecutionTrace& trace) const override;
+    
+  std::string getName() const override { return "WaveParticipantBitTracking"; }
+  
+  // Program-level mutation API
+  bool requiresProgramLevelMutation() const override { return true; }
+  
+  std::vector<interpreter::Program> applyToProgram(
+    const interpreter::Program& program,
+    const ExecutionTrace& trace,
+    const std::set<size_t>& statementsToMutate) const override;
+  
+private:
+  // Process statements recursively to inject bit tracking after wave operations
+  void processStatementsForBitTracking(
+      const std::vector<std::unique_ptr<interpreter::Statement>>& input,
+      std::vector<std::unique_ptr<interpreter::Statement>>& output,
+      const ExecutionTrace& trace,
+      size_t& nextWaveOpIndex,
+      std::map<const void*, uint32_t>& loopIterationMap,
+      uint32_t currentLoopIteration) const;
+  
+  // Helper to create bit tracking code
+  std::vector<std::unique_ptr<interpreter::Statement>> 
+  createBitTrackingStatements(const interpreter::WaveActiveOp* waveOp,
+                             const std::string& resultVar,
+                             uint32_t waveOpId,
+                             uint32_t loopIteration) const;
+  
+  // Check if program already has bit tracking buffers
+  bool hasBitTrackingBuffers(const interpreter::Program& program) const;
+  
+  // Helper methods for program-level mutation
+  bool hasWaveOpsInStatements(
+    const interpreter::Program& program,
+    const std::set<size_t>& statementsToMutate) const;
+    
+  interpreter::Program createMutantWithBitTracking(
+    const interpreter::Program& program,
+    const ExecutionTrace& trace,
+    const std::set<size_t>& statementsToMutate) const;
+    
+  void ensureBitTrackingBuffers(interpreter::Program& mutant) const;
+  
+  interpreter::Program createBaseMutant(const interpreter::Program& program) const;
+  
+  // Compute expected bit patterns from trace
+  std::vector<uint32_t> computeExpectedBitPatterns(
+    const ExecutionTrace& trace) const;
+    
+  // Get number of uints needed for wave mask (2 for wave32, 3 for wave64)
+  uint32_t getRecordSize(uint32_t waveSize) const;
+  
+  // Assign stable IDs to wave operations
+  void assignWaveOpIds(
+    const std::vector<std::unique_ptr<interpreter::Statement>>& statements,
+    std::map<const interpreter::WaveActiveOp*, uint32_t>& waveOpToId,
+    uint32_t& nextId) const;
+};
+
 // Mutation strategy: Add participants to specific loop iterations
 class ContextAwareParticipantMutation : public MutationStrategy {
 public:
@@ -729,6 +802,7 @@ private:
     LanePermutation = 1 << 1,
     ContextAwareParticipant = 1 << 2,
     WaveParticipantFrequency = 1 << 3,
+    WaveParticipantBitTracking = 1 << 4,
     // Add more mutations here as needed
   };
   

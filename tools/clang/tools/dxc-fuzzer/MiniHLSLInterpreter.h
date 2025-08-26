@@ -1547,6 +1547,79 @@ public:
   const Expression* getLaneIndex() const { return laneIndex_.get(); }
 };
 
+// InterlockedAdd - Atomic add operation for buffers
+class InterlockedAddExpr : public Expression {
+private:
+  std::unique_ptr<Expression> dest_;      // Destination buffer location
+  std::unique_ptr<Expression> value_;     // Value to add
+  std::unique_ptr<Expression> original_;  // Variable to receive original value
+  
+public:
+  InterlockedAddExpr(std::unique_ptr<Expression> dest,
+                     std::unique_ptr<Expression> value,
+                     std::unique_ptr<Expression> original)
+      : Expression(HLSLType::Uint),  // Return type is uint (the original value)
+        dest_(std::move(dest)), 
+        value_(std::move(value)), 
+        original_(std::move(original)) {}
+  
+  Result<Value, ExecutionError>
+  evaluate_result(LaneContext &lane, WaveContext &wave,
+                  ThreadgroupContext &tg) const override;
+  
+  bool isDeterministic() const override { return false; }
+  
+  std::string toString() const override {
+    return "InterlockedAdd(" + dest_->toString() + ", " + 
+           value_->toString() + ", " + original_->toString() + ")";
+  }
+  
+  std::unique_ptr<Expression> clone() const override {
+    return std::make_unique<InterlockedAddExpr>(
+        dest_ ? dest_->clone() : nullptr,
+        value_ ? value_->clone() : nullptr,
+        original_ ? original_->clone() : nullptr);
+  }
+  
+  const Expression* getDest() const { return dest_.get(); }
+  const Expression* getValue() const { return value_.get(); }
+  const Expression* getOriginal() const { return original_.get(); }
+};
+
+// MemberAccess - Access members of vector types (e.g., ballot.x, ballot.y)
+class MemberAccessExpr : public Expression {
+private:
+  std::unique_ptr<Expression> object_;
+  std::string member_;
+  
+public:
+  MemberAccessExpr(std::unique_ptr<Expression> object, const std::string& member)
+      : Expression(HLSLType::Uint),  // For now, assume uint for .x, .y, etc.
+        object_(std::move(object)),
+        member_(member) {}
+  
+  Result<Value, ExecutionError>
+  evaluate_result(LaneContext &lane, WaveContext &wave,
+                  ThreadgroupContext &tg) const override;
+  
+  bool isDeterministic() const override { 
+    return object_ ? object_->isDeterministic() : true; 
+  }
+  
+  std::string toString() const override {
+    return object_->toString() + "." + member_;
+  }
+  
+  std::unique_ptr<Expression> clone() const override {
+    return std::make_unique<MemberAccessExpr>(
+        object_ ? object_->clone() : nullptr,
+        member_);
+  }
+  
+  const Expression* getObject() const { return object_.get(); }
+  const std::string& getMember() const { return member_; }
+};
+
 // Statement AST nodes
 class Statement {
 protected:
@@ -1586,6 +1659,29 @@ public:
                                   ThreadgroupContext &tg) {}
   virtual void onStatementComplete(LaneContext &lane, WaveContext &wave,
                                    ThreadgroupContext &tg) {}
+  
+  // Metadata system for marking tracking operations
+  void setMetadata(const std::string& key, const Value& value) {
+    metadata_[key] = value;
+  }
+  
+  bool hasMetadata(const std::string& key) const {
+    return metadata_.find(key) != metadata_.end();
+  }
+  
+  const Value& getMetadata(const std::string& key) const {
+    static Value emptyValue;
+    auto it = metadata_.find(key);
+    return it != metadata_.end() ? it->second : emptyValue;
+  }
+  
+  bool isTrackingOperation() const {
+    return hasMetadata("tracking") && 
+           getMetadata("tracking").asInt() == 1;
+  }
+  
+private:
+  std::map<std::string, Value> metadata_;
 };
 
 class VarDeclStmt : public Statement {
@@ -2265,6 +2361,10 @@ public:
   bool isDeterministic() const override { return false; }
   std::string toString() const override;
   
+  // Getter methods
+  const std::string& getBufferName() const { return bufferName_; }
+  const Expression* getIndexExpr() const { return indexExpr_.get(); }
+  
   std::unique_ptr<Expression> clone() const override {
     auto cloned = std::make_unique<BufferAccessExpr>(
         bufferName_,
@@ -2304,6 +2404,10 @@ public:
     cloned->copyStableIdFrom(this);
     return cloned;
   }
+  
+  // Getters for InterlockedAddExpr
+  const std::string& getArrayName() const { return arrayName_; }
+  const Expression* getIndexExpr() const { return indexExpr_.get(); }
 };
 
 // SV_DispatchThreadID expression

@@ -34,9 +34,9 @@ std::atomic<uint32_t> Expression::nextStableId{1};
 // - ENABLE_BLOCK_DEBUG: Shows block creation, merging, and convergence
 
 static constexpr bool ENABLE_INTERPRETER_DEBUG =
-    true; // Set to true to enable detailed execution tracing
+    false; // Set to true to enable detailed execution tracing
 static constexpr bool ENABLE_WAVE_DEBUG =
-    true; // Set to true to enable wave operation tracing
+    false; // Set to true to enable wave operation tracing
 static constexpr bool ENABLE_BLOCK_DEBUG =
     true; // Set to true to enable block lifecycle tracing
 static constexpr bool ENABLE_PARSER_DEBUG =
@@ -1461,9 +1461,121 @@ DispatchThreadIdExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
   }
 }
 
+Result<Value, ExecutionError>
+InterlockedAddExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
+                                   ThreadgroupContext &tg) const {
+  if (!lane.isActive)
+    return Err<Value, ExecutionError>(ExecutionError::InvalidState);
+  
+  // Evaluate the destination (must be a buffer access)
+  std::string bufferName;
+  const Expression* indexExpr = nullptr;
+  
+  // Try ArrayAccessExpr first
+  if (auto arrayAccess = dynamic_cast<const ArrayAccessExpr*>(dest_.get())) {
+    bufferName = arrayAccess->getArrayName();
+    indexExpr = arrayAccess->getIndexExpr();
+  }
+  // Then try BufferAccessExpr
+  else if (auto bufferAccess = dynamic_cast<const BufferAccessExpr*>(dest_.get())) {
+    bufferName = bufferAccess->getBufferName();
+    indexExpr = bufferAccess->getIndexExpr();
+  }
+  else {
+    INTERPRETER_DEBUG_LOG("InterlockedAdd: destination must be a buffer access");
+    return Err<Value, ExecutionError>(ExecutionError::InvalidState);
+  }
+  
+  // Evaluate index
+#ifdef _MSC_VER
+  auto _result = indexExpr->evaluate_result(lane, wave, tg);
+  if (_result.is_err()) return Err<Value, ExecutionError>(_result.unwrap_err());
+  Value indexValue = _result.unwrap();
+#else
+  Value indexValue = TRY_RESULT(indexExpr->evaluate_result(lane, wave, tg),
+                                Value, ExecutionError);
+#endif
+  uint32_t index = indexValue.asInt();
+  
+  // Evaluate the value to add
+#ifdef _MSC_VER
+  auto _result2 = value_->evaluate_result(lane, wave, tg);
+  if (_result2.is_err()) return Err<Value, ExecutionError>(_result2.unwrap_err());
+  Value addValue = _result2.unwrap();
+#else
+  Value addValue = TRY_RESULT(value_->evaluate_result(lane, wave, tg),
+                              Value, ExecutionError);
+#endif
+  
+  // Get the buffer
+  auto bufferIt = tg.globalBuffers.find(bufferName);
+  if (bufferIt == tg.globalBuffers.end()) {
+    INTERPRETER_DEBUG_LOG("InterlockedAdd: buffer not found: " << bufferName);
+    return Err<Value, ExecutionError>(ExecutionError::InvalidState);
+  }
+  
+  // Perform atomic add and get original value
+  Value originalValue = bufferIt->second->atomicAdd(index, addValue);
+  
+  // Store original value in the output variable
+  if (auto varExpr = dynamic_cast<const VariableExpr*>(original_.get())) {
+    lane.variables[varExpr->getName()] = originalValue;
+  }
+  
+  // InterlockedAdd returns void in the expression context
+  return Ok<Value, ExecutionError>(Value(0));
+}
+
+Result<Value, ExecutionError>
+MemberAccessExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
+                                 ThreadgroupContext &tg) const {
+  if (!lane.isActive)
+    return Err<Value, ExecutionError>(ExecutionError::InvalidState);
+  
+  // Evaluate the base object
+#ifdef _MSC_VER
+  auto _result = object_->evaluate_result(lane, wave, tg);
+  if (_result.is_err()) return Err<Value, ExecutionError>(_result.unwrap_err());
+  Value objectValue = _result.unwrap();
+#else
+  Value objectValue = TRY_RESULT(object_->evaluate_result(lane, wave, tg),
+                                 Value, ExecutionError);
+#endif
+  
+  // For WaveActiveBallot results (uint4), we need special handling
+  // For now, we'll handle simple cases where the value is already an integer
+  // representing the ballot mask for the current wave
+  
+  if (member_ == "x") {
+    // Low 32 bits (lanes 0-31)
+    // For Ballot operation, the result is already the bitmask for this wave
+    return Ok<Value, ExecutionError>(objectValue);
+  } else if (member_ == "y") {
+    // High 32 bits (lanes 32-63)
+    // For wave size <= 32, this is always 0
+    // For wave size > 32, we'd need to extract the high bits
+    // For now, return 0 as we typically work with 32-lane waves
+    return Ok<Value, ExecutionError>(Value(0));
+  } else if (member_ == "z" || member_ == "w") {
+    // Always 0 for current wave sizes
+    return Ok<Value, ExecutionError>(Value(0));
+  }
+  
+  // Default: try to access as a variable member (like tid.x)
+  std::string fullName = object_->toString() + "." + member_;
+  auto it = lane.variables.find(fullName);
+  if (it != lane.variables.end()) {
+    return Ok<Value, ExecutionError>(it->second);
+  }
+  
+  INTERPRETER_DEBUG_LOG("MemberAccess: unknown member " << member_);
+  return Err<Value, ExecutionError>(ExecutionError::InvalidState);
+}
+
 // Wave operation implementations
 WaveActiveOp::WaveActiveOp(std::unique_ptr<Expression> expr, OpType op)
-    : Expression(""), expr_(std::move(expr)), op_(op) {}
+    : Expression(op == Ballot ? HLSLType::Uint4 : HLSLType::Uint), 
+      expr_(std::move(expr)), op_(op) {}
 
 Result<Value, ExecutionError>
 WaveActiveOp::evaluate_result(LaneContext &lane, WaveContext &wave,
@@ -5037,6 +5149,16 @@ MiniHLSLInterpreter::convertCallExpression(const clang::CallExpr *callExpr,
     } else if (funcName == "WaveGetLaneCount" && callExpr->getNumArgs() == 0) {
       return std::make_unique<ExprStmt>(
           std::make_unique<WaveGetLaneCountExpr>());
+    } else if (funcName == "InterlockedAdd" && callExpr->getNumArgs() == 3) {
+      auto dest = convertExpression(callExpr->getArg(0), context);
+      auto value = convertExpression(callExpr->getArg(1), context);
+      auto original = convertExpression(callExpr->getArg(2), context);
+      if (dest && value && original) {
+        return std::make_unique<ExprStmt>(
+            std::make_unique<InterlockedAddExpr>(std::move(dest), 
+                                                 std::move(value), 
+                                                 std::move(original)));
+      }
     }
 
     // Handle other function calls as needed
@@ -5566,18 +5688,29 @@ MiniHLSLInterpreter::convertExpression(const clang::Expr *expr,
     }
     return result;
   } else if (auto vecElem = clang::dyn_cast<clang::HLSLVectorElementExpr>(expr)) {
-    // Handle vector element access like tid.x, tid.y, tid.z
+    // Handle vector element access like tid.x, tid.y, tid.z, ballot.x, ballot.y
     auto baseExpr = vecElem->getBase();
+    std::string accessor = vecElem->getAccessor().getName().str();
+    
+    // Special case: built-in variable access like tid.x
     if (auto declRef = clang::dyn_cast<clang::DeclRefExpr>(baseExpr)) {
       std::string varName = declRef->getDecl()->getName().str();
-      std::string accessor = vecElem->getAccessor().getName().str();
       
-      // Create a variable expression for the vector element access
-      std::string fullName = varName + "." + accessor;
-      return std::make_unique<VariableExpr>(fullName, HLSLTypeInfo::fromString(exprType));
+      // Only treat built-in variables (tid, gid, etc.) as special cases
+      if (varName == "tid" || varName == "gid" || varName == "gtid") {
+        // Create a variable expression for the built-in vector element access
+        std::string fullName = varName + "." + accessor;
+        return std::make_unique<VariableExpr>(fullName, HLSLTypeInfo::fromString(exprType));
+      }
     }
-    // For other vector accesses, try to evaluate the base and handle as needed
-    INTERPRETER_DEBUG_LOG("Unsupported vector element access pattern");
+    
+    // General case: convert base expression and wrap in MemberAccessExpr
+    auto base = convertExpression(baseExpr, context);
+    if (base) {
+      return std::make_unique<MemberAccessExpr>(std::move(base), accessor);
+    }
+    
+    INTERPRETER_DEBUG_LOG("Failed to convert vector element base expression");
     return nullptr;
   } else {
     INTERPRETER_DEBUG_LOG("Unsupported expression type: " << expr->getStmtClassName());
@@ -5723,6 +5856,15 @@ MiniHLSLInterpreter::convertCallExpressionToExpression(
                                                 std::move(laneIndex), 
                                                 type);
       }
+    } else if (funcName == "InterlockedAdd" && callExpr->getNumArgs() == 3) {
+      auto dest = convertExpression(callExpr->getArg(0), context);
+      auto value = convertExpression(callExpr->getArg(1), context);
+      auto original = convertExpression(callExpr->getArg(2), context);
+      if (dest && value && original) {
+        return std::make_unique<InterlockedAddExpr>(std::move(dest), 
+                                                     std::move(value), 
+                                                     std::move(original));
+      }
     }
 
     INTERPRETER_DEBUG_LOG("Unsupported function call in expression context: " << funcName);
@@ -5846,6 +5988,11 @@ std::unique_ptr<Expression> MiniHLSLInterpreter::convertOperatorCall(
       // Get the base expression (the array/buffer being accessed)
       auto baseExpr = opCall->getArg(0);
       std::string bufferName;
+
+      // Skip implicit casts to get to the actual DeclRefExpr
+      while (auto implicitCast = clang::dyn_cast<clang::ImplicitCastExpr>(baseExpr)) {
+        baseExpr = implicitCast->getSubExpr();
+      }
 
       // Try to extract buffer name from DeclRefExpr
       if (auto declRef = clang::dyn_cast<clang::DeclRefExpr>(baseExpr)) {

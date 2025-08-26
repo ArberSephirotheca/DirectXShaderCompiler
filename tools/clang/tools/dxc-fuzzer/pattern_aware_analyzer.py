@@ -390,7 +390,7 @@ class PatternAwareAnalyzer:
             }
             
             # Analyze based on mutation type
-            if 'WaveParticipantTracking' in mut_type:
+            if 'WaveParticipantTracking' in mut_type or 'WaveParticipantBitTracking' in mut_type:
                 # These mutations add tracking - failures indicate incorrect participation
                 correlation['likely_impact'] = 'incorrect_wave_participation'
                 

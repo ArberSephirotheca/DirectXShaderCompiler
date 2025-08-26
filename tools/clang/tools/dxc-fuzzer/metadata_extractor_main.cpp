@@ -152,6 +152,9 @@ public:
         if (mutationType == "WaveParticipantTracking") {
             // Apply WaveParticipantTracking mutation
             applyWaveParticipantTrackingMutation(program);
+        } else if (mutationType == "WaveParticipantBitTracking") {
+            // Apply WaveParticipantBitTracking mutation
+            applyWaveParticipantBitTrackingMutation(program);
         } else if (mutationType == "LanePermutation") {
             // Apply LanePermutation mutation
             applyLanePermutationMutation(program);
