@@ -8599,6 +8599,15 @@ void ThreadgroupContext::createOrUpdateWaveSyncPoint(
 
     // Use blockId from compound key
     syncPoint.blockId = blockId;
+    
+    // Capture loop iterations from the first lane's execution stack
+    const auto& lane = *waves[waveId]->lanes[laneId];
+    for (const auto& execState : lane.executionStack) {
+      // Include any execution state that has a loop iteration value
+      if (execState.loopIteration > 0 || execState.loopHeaderBlockId > 0) {
+        syncPoint.loopIterations.push_back(execState.loopIteration);
+      }
+    }
 
     // Get expected participants from the block
     auto blockParticipants = getWaveOperationParticipants(waveId, laneId);

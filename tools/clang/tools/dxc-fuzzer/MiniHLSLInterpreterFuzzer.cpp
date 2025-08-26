@@ -326,36 +326,16 @@ void generateTestFile(const interpreter::Program& program,
     FUZZER_DEBUG_LOG("Generating expected bit patterns from trace\n");
     
     // Process each wave operation separately - don't group by wave
+    FUZZER_DEBUG_LOG("Total wave operations in trace: " << trace.waveOperations.size() << "\n");
     for (const auto& waveOp : trace.waveOperations) {
       // Skip Ballot operations (they're used for tracking)
       if (waveOp.waveOpEnumType == static_cast<int>(interpreter::WaveActiveOp::OpType::Ballot)) {
         continue;
       }
       
-      // Look up the block to get all loop iteration info for nested loops
-      std::vector<uint32_t> loopIndices;
-      auto blockIt = trace.blocks.find(waveOp.blockId);
-      if (blockIt != trace.blocks.end()) {
-        // Walk up the block hierarchy to collect all loop indices
-        uint32_t currentBlockId = waveOp.blockId;
-        std::vector<uint32_t> reversedIndices;  // Collect in reverse order
-        
-        auto currentBlockIt = blockIt;
-        while (currentBlockIt != trace.blocks.end()) {
-          if (currentBlockIt->second.loopIteration.has_value()) {
-            reversedIndices.push_back(currentBlockIt->second.loopIteration->iterationValue);
-          }
-          
-          // Move to parent block
-          if (currentBlockIt->second.parentBlockId == 0 || 
-              currentBlockIt->second.parentBlockId == currentBlockId) break;
-          currentBlockId = currentBlockIt->second.parentBlockId;
-          currentBlockIt = trace.blocks.find(currentBlockId);
-        }
-        
-        // Reverse to get outer-to-inner order
-        loopIndices.insert(loopIndices.end(), reversedIndices.rbegin(), reversedIndices.rend());
-      }
+      FUZZER_DEBUG_LOG("Processing wave op - stable ID: " << waveOp.stableId 
+                      << ", block ID: " << waveOp.blockId 
+                      << ", participants: " << waveOp.arrivedParticipants.size() << "\n");
       
       // Compute combined ID with bitwise encoding (matching the shader)
       // Bits [31-6]: Wave op ID (26 bits)
@@ -364,11 +344,19 @@ void generateTestFile(const interpreter::Program& program,
       // Bits [1-0]: Loop 3 index (innermost)
       uint32_t combinedId = waveOp.stableId << 6;
       
-      // Encode up to 3 nested loop indices
-      for (size_t i = 0; i < loopIndices.size() && i < 3; ++i) {
-        int shift = (2 - i) * 2;  // Loop 0: shift 4, Loop 1: shift 2, Loop 2: shift 0
-        combinedId |= (loopIndices[i] & 0x3) << shift;
+      // Use the loop iterations directly from the wave operation record
+      FUZZER_DEBUG_LOG("  Loop iterations: ");
+      for (auto iter : waveOp.loopIterations) {
+        FUZZER_DEBUG_LOG(iter << " ");
       }
+      FUZZER_DEBUG_LOG("\n");
+      
+      for (size_t i = 0; i < waveOp.loopIterations.size() && i < 3; ++i) {
+        int shift = (2 - i) * 2;  // Loop 0: shift 4, Loop 1: shift 2, Loop 2: shift 0
+        combinedId |= (waveOp.loopIterations[i] & 0x3) << shift;
+      }
+      
+      FUZZER_DEBUG_LOG("  Combined ID: " << combinedId << " (0x" << std::hex << combinedId << std::dec << ")\n");
       
       // Compute participant bitmask for this specific wave execution
       uint64_t mask = 0;

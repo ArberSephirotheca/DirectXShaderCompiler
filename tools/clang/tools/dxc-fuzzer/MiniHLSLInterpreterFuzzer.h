@@ -144,6 +144,9 @@ struct ExecutionTrace {
     
     // Final state from sync point
     interpreter::SyncPointState finalState;
+    
+    // Loop iteration values for this wave operation
+    std::vector<uint32_t> loopIterations;  // Iteration values from outer to inner loops
   };
   std::vector<WaveOpRecord> waveOperations;
   

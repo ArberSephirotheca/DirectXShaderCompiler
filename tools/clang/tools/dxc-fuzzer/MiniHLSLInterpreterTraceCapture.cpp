@@ -215,6 +215,40 @@ void TraceCaptureInterpreter::recordWaveOperation(
   record.opType = opName;
   record.blockId = blockId;
   
+  // NEW: Collect loop iteration values from lane execution stack
+  std::vector<uint32_t> loopIterations;
+  
+  // Get loop iterations from the first participating lane's execution stack
+  // All participating lanes should have the same loop context
+  if (!participants.empty() && !participants.begin()->second.empty()) {
+    auto waveId = participants.begin()->first;
+    auto laneId = *participants.begin()->second.begin();
+    
+    // Access the lane from the current threadgroup context
+    // Note: This requires access to the threadgroup context
+    // We'll need to pass it as a parameter or store it as a member
+  }
+  
+  // Fallback: Try to get loop iterations from block hierarchy (for 0x3000 encoded blocks)
+  uint32_t currentBlockId = blockId;
+  
+  while (currentBlockId != 0) {
+    auto blockIt = trace_.blocks.find(currentBlockId);
+    if (blockIt == trace_.blocks.end()) break;
+    
+    // If this block has loop iteration info, collect the iteration value
+    if (blockIt->second.loopIteration.has_value()) {
+      loopIterations.insert(loopIterations.begin(), 
+                           blockIt->second.loopIteration->iterationValue);
+    }
+    
+    // Move to parent block
+    currentBlockId = blockIt->second.parentBlockId;
+  }
+  
+  record.loopIterations = loopIterations;
+  
+  
   // Convert inputs/outputs to storage format
   for (const auto& [laneId, value] : inputs) {
     record.inputValues[laneId] = value;
@@ -281,14 +315,28 @@ void TraceCaptureInterpreter::onWaveOpExecuted(interpreter::WaveContext &wave,
   record.waveId = wave.waveId;
   record.opType = opName;
   
-  // Record participating lanes
+  // Collect loop iterations from the first active lane's execution stack
+  std::vector<uint32_t> loopIterations;
   for (size_t laneId = 0; laneId < wave.lanes.size(); ++laneId) {
     if (wave.lanes[laneId]->isActive) {
       record.expectedParticipants.insert(laneId);
       record.arrivedParticipants.insert(laneId);
       record.outputValues[laneId] = result;
+      
+      // Get loop iterations from this lane's execution stack (only need to do once)
+      if (loopIterations.empty()) {
+        const auto& lane = *wave.lanes[laneId];
+        for (const auto& execState : lane.executionStack) {
+          // Check if this execution state is for a loop
+          if (execState.loopIteration > 0 || execState.loopHeaderBlockId > 0) {
+            loopIterations.push_back(execState.loopIteration);
+          }
+        }
+      }
     }
   }
+  
+  record.loopIterations = loopIterations;
   
   trace_.waveOperations.push_back(record);
 }
@@ -317,6 +365,10 @@ void TraceCaptureInterpreter::extractWaveOperationsFromContext(
       record.opType = syncPoint.instructionType;
       record.blockId = key.second; // blockId from the key pair
       record.waveOpEnumType = syncPoint.waveOpType; // Store the enum type
+      
+      // Use loop iterations from sync point
+      record.loopIterations = syncPoint.loopIterations;
+      
       
       // Use actual participants from sync point
       record.expectedParticipants = syncPoint.expectedParticipants;

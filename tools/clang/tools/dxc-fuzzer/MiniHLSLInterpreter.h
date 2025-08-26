@@ -426,6 +426,7 @@ struct WaveOperationSyncPoint {
   std::set<LaneId>
       arrivedParticipants; // Lanes that have arrived at THIS instruction
   std::map<LaneId, Value> pendingResults; // Results from arrived lanes
+  std::vector<uint32_t> loopIterations; // Loop iteration values when sync point was created
   SyncPointState state =
       SyncPointState::WaitingForParticipants; // Execution state
 
