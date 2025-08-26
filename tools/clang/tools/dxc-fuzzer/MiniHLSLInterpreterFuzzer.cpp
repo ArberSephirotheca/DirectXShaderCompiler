@@ -325,10 +325,7 @@ void generateTestFile(const interpreter::Program& program,
     
     FUZZER_DEBUG_LOG("Generating expected bit patterns from trace\n");
     
-    // Group wave operations by stable ID and iteration
-    std::map<std::pair<uint32_t, uint32_t>, std::vector<const ExecutionTrace::WaveOpRecord*>> 
-      groupedOps;
-    
+    // Process each wave operation separately - don't group by wave
     for (const auto& waveOp : trace.waveOperations) {
       // Skip Ballot operations (they're used for tracking)
       if (waveOp.waveOpEnumType == static_cast<int>(interpreter::WaveActiveOp::OpType::Ballot)) {
@@ -342,37 +339,25 @@ void generateTestFile(const interpreter::Program& program,
         iteration = blockIt->second.loopIteration->iterationValue;
       }
       
-      groupedOps[{waveOp.stableId, iteration}].push_back(&waveOp);
-    }
-    
-    // Generate expected data in execution order
-    for (const auto& [key, ops] : groupedOps) {
-      uint32_t stableId = key.first;
-      uint32_t iteration = key.second;
-      uint32_t combinedId = (iteration << 16) | stableId;
+      uint32_t combinedId = (iteration << 16) | waveOp.stableId;
       
-      // Compute participant bitmask
+      // Compute participant bitmask for this specific wave execution
       uint64_t mask = 0;
-      for (const auto* op : ops) {
-        for (interpreter::LaneId lane : op->arrivedParticipants) {
-          mask |= (1ULL << lane);
-        }
+      for (interpreter::LaneId lane : waveOp.arrivedParticipants) {
+        mask |= (1ULL << lane);
       }
       
-      // Count number of set bits in mask (number of unique participating lanes)
-      uint32_t participantCount = __builtin_popcountll(mask);
-      
-      // Generate one tuple per participating thread
-      // Each thread writes: [combinedId, mask_low, mask_high]
-      for (uint32_t i = 0; i < participantCount; ++i) {
+      // Generate one tuple per participating thread in this wave
+      for (interpreter::LaneId lane : waveOp.arrivedParticipants) {
         expectedBitPatterns.push_back(combinedId);
         expectedBitPatterns.push_back(static_cast<uint32_t>(mask & 0xFFFFFFFF));
         expectedBitPatterns.push_back(static_cast<uint32_t>(mask >> 32));
       }
       
-      FUZZER_DEBUG_LOG("Wave op " << stableId << " iteration " << iteration 
+      FUZZER_DEBUG_LOG("Wave op " << waveOp.stableId << " iteration " << iteration 
+                      << " wave " << waveOp.waveId
                       << " mask: 0x" << std::hex << mask << std::dec 
-                      << " participants: " << participantCount << "\n");
+                      << " participants: " << waveOp.arrivedParticipants.size() << "\n");
     }
     
     FUZZER_DEBUG_LOG("Total bit pattern records: " << expectedBitPatterns.size() / 3 << "\n");
