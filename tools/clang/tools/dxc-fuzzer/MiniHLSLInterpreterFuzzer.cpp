@@ -2459,7 +2459,7 @@ void WaveParticipantBitTrackingMutation::ensureBitTrackingBuffers(
     participantBit.name = "_participant_bit";
     participantBit.bufferType = "RWStructuredBuffer";
     participantBit.elementType = interpreter::HLSLType::Uint;
-    participantBit.size = 1024; // Large enough for many recordings
+    participantBit.size = 4096; // Large buffer for many recordings
     participantBit.isReadWrite = true;
     participantBit.registerIndex = 2;
     mutant.globalBuffers.push_back(participantBit);
