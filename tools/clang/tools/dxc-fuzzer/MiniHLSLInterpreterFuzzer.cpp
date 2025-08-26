@@ -415,8 +415,15 @@ void generateTestFile(const interpreter::Program& program,
   
   // Add bit tracking buffers if needed
   if (hasBitTracking) {
-    // _participant_bit buffer with expected data
+    // _participant_bit buffer for actual output (initialized to zero)
     testFile << "  - Name: _participant_bit\n";
+    testFile << "    Format: UInt32\n";
+    testFile << "    Stride: 4\n";
+    testFile << "    Fill: 0\n";
+    testFile << "    Size: " << (expectedBitPatterns.empty() ? 1024 : expectedBitPatterns.size()) << "\n";
+    
+    // expected_bit_patterns buffer with expected data
+    testFile << "  - Name: expected_bit_patterns\n";
     testFile << "    Format: UInt32\n";
     testFile << "    Stride: 4\n";
     if (!expectedBitPatterns.empty()) {
@@ -428,7 +435,7 @@ void generateTestFile(const interpreter::Program& program,
       testFile << "]\n";
     } else {
       testFile << "    Fill: 0\n";
-      testFile << "    Size: 1024\n";  // Default size
+      testFile << "    Size: 3\n";  // Default size for one pattern
     }
     
     // _wave_op_index buffer (counter)
@@ -464,9 +471,10 @@ void generateTestFile(const interpreter::Program& program,
   
   if (hasBitTracking) {
     testFile << "  - Result: BitTrackingValidation\n";
-    testFile << "    Rule: BufferPrefix\n";  // Use prefix since buffer size is dynamic
+    testFile << "    Rule: BufferParticipantPattern\n";
+    testFile << "    GroupSize: 3\n";  // Each pattern is 3 uint32 values (combinedId, maskLow, maskHigh)
     testFile << "    Actual: _participant_bit\n";
-    testFile << "    Expected: _participant_bit\n";  // Expected data is already in the buffer
+    testFile << "    Expected: expected_bit_patterns\n";
   }
   
   testFile << "DescriptorSets:\n";
