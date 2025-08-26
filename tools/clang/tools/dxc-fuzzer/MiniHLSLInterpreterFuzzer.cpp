@@ -1306,7 +1306,7 @@ std::unique_ptr<interpreter::Expression> LanePermutationMutation::replaceWaveOpI
   
   // If this is the target wave operation, return the replacement
   if (expr == targetWaveOp) {
-    return std::move(replacement);
+    return replacement;
   }
   
   // Handle different expression types
@@ -1325,7 +1325,7 @@ std::unique_ptr<interpreter::Expression> LanePermutationMutation::replaceWaveOpI
 }
 
 std::string LanePermutationMutation::generatePermVarName() const {
-  static int counter = 0;
+  // static int counter = 0; // Not needed, using stable IDs
   // Use a thread-local counter to avoid issues in multi-threaded fuzzing
   static thread_local int threadCounter = 0;
   return "_perm_val_" + std::to_string(threadCounter++);
@@ -2137,7 +2137,7 @@ WaveParticipantBitTrackingMutation::createBitTrackingStatements(
     const std::string& resultVar,
     uint32_t waveOpId,
     uint32_t loopIteration,
-    const std::string& loopVarName) const {
+    const std::vector<std::string>& loopVarStack) const {
   
   std::vector<std::unique_ptr<interpreter::Statement>> trackingStmts;
   
@@ -2147,37 +2147,54 @@ WaveParticipantBitTrackingMutation::createBitTrackingStatements(
     "temp", interpreter::HLSLType::Uint, nullptr));
   
   // 2. Atomic increment of index and get offset
-  // InterlockedAdd(_wave_op_index[0], 3, temp);
+  // Record size is always 3: combinedId, ballot.x, ballot.y
   auto indexAccess = std::make_unique<interpreter::ArrayAccessExpr>(
     "_wave_op_index",
     std::make_unique<interpreter::LiteralExpr>(0));
   
   auto addExpr = std::make_unique<interpreter::InterlockedAddExpr>(
     std::move(indexAccess),
-    std::make_unique<interpreter::LiteralExpr>(3), // record size
+    std::make_unique<interpreter::LiteralExpr>(3),
     std::make_unique<interpreter::VariableExpr>("temp"));
   
   auto atomicStmt = std::make_unique<interpreter::ExprStmt>(std::move(addExpr));
   trackingStmts.push_back(std::move(atomicStmt));
   
-  // 3. Store combined ID
-  // _participant_bit[temp] = (loopVar << 16) | waveOpId;
+  // 3. Store combined ID with bitwise encoding
+  // Bits [31-6]: Wave op ID (26 bits)
+  // Bits [5-4]: Loop 1 index (outermost)
+  // Bits [3-2]: Loop 2 index (middle)
+  // Bits [1-0]: Loop 3 index (innermost)
   std::unique_ptr<interpreter::Expression> combinedIdExpr;
   
-  if (!loopVarName.empty()) {
-    // Inside a loop: generate (loopVar << 16) | waveOpId
-    auto loopVar = std::make_unique<interpreter::VariableExpr>(loopVarName);
-    auto shiftedLoop = std::make_unique<interpreter::BinaryOpExpr>(
-      std::move(loopVar),
-      std::make_unique<interpreter::LiteralExpr>(16),
-      interpreter::BinaryOpExpr::LeftShift);
-    combinedIdExpr = std::make_unique<interpreter::BinaryOpExpr>(
-      std::move(shiftedLoop),
-      std::make_unique<interpreter::LiteralExpr>(static_cast<int>(waveOpId)),
-      interpreter::BinaryOpExpr::BitwiseOr);
-  } else {
-    // Not in a loop: use (0 << 16) | waveOpId which is just waveOpId
-    combinedIdExpr = std::make_unique<interpreter::LiteralExpr>(static_cast<int>(waveOpId));
+  // Start with wave op ID shifted to upper bits
+  combinedIdExpr = std::make_unique<interpreter::BinaryOpExpr>(
+    std::make_unique<interpreter::LiteralExpr>(static_cast<int>(waveOpId)),
+    std::make_unique<interpreter::LiteralExpr>(6),
+    interpreter::BinaryOpExpr::LeftShift);
+  
+  // Add loop indices using bitwise OR
+  // Support up to 3 nested loops
+  for (size_t i = 0; i < loopVarStack.size() && i < 3; ++i) {
+    int shift = (2 - i) * 2;  // Loop 0: shift 4, Loop 1: shift 2, Loop 2: shift 0
+    
+    auto loopVar = std::make_unique<interpreter::VariableExpr>(loopVarStack[i]);
+    if (shift > 0) {
+      auto shiftedVar = std::make_unique<interpreter::BinaryOpExpr>(
+        std::move(loopVar),
+        std::make_unique<interpreter::LiteralExpr>(shift),
+        interpreter::BinaryOpExpr::LeftShift);
+      combinedIdExpr = std::make_unique<interpreter::BinaryOpExpr>(
+        std::move(combinedIdExpr),
+        std::move(shiftedVar),
+        interpreter::BinaryOpExpr::BitwiseOr);
+    } else {
+      // No shift needed for innermost loop (bits [1-0])
+      combinedIdExpr = std::make_unique<interpreter::BinaryOpExpr>(
+        std::move(combinedIdExpr),
+        std::move(loopVar),
+        interpreter::BinaryOpExpr::BitwiseOr);
+    }
   }
   
   auto tempVar1 = std::make_unique<interpreter::VariableExpr>("temp");
@@ -2196,8 +2213,7 @@ WaveParticipantBitTrackingMutation::createBitTrackingStatements(
   trackingStmts.push_back(std::make_unique<interpreter::VarDeclStmt>(
     "ballot", interpreter::HLSLType::Uint4, std::move(ballotCall)));
   
-  // 5. Store ballot.x
-  // _participant_bit[temp + 1] = ballot.x;
+  // 5. Store ballot.x at temp+1
   auto tempPlus1 = std::make_unique<interpreter::BinaryOpExpr>(
     std::make_unique<interpreter::VariableExpr>("temp"),
     std::make_unique<interpreter::LiteralExpr>(1),
@@ -2209,8 +2225,7 @@ WaveParticipantBitTrackingMutation::createBitTrackingStatements(
       std::make_unique<interpreter::VariableExpr>("ballot"), "x"));
   trackingStmts.push_back(std::move(xStore));
   
-  // 6. Store ballot.y
-  // _participant_bit[temp + 2] = ballot.y;
+  // 6. Store ballot.y at temp+2
   auto tempPlus2 = std::make_unique<interpreter::BinaryOpExpr>(
     std::make_unique<interpreter::VariableExpr>("temp"),
     std::make_unique<interpreter::LiteralExpr>(2),
@@ -2232,7 +2247,7 @@ void WaveParticipantBitTrackingMutation::processStatementsForBitTracking(
     size_t& nextWaveOpIndex,
     std::map<const void*, uint32_t>& loopIterationMap,
     uint32_t currentLoopIteration,
-    const std::string& currentLoopVar) const {
+    const std::vector<std::string>& loopVarStack) const {
   
   FUZZER_DEBUG_LOG("[WaveParticipantBitTracking] Processing statements\n");
   
@@ -2255,13 +2270,13 @@ void WaveParticipantBitTrackingMutation::processStatementsForBitTracking(
       std::vector<std::unique_ptr<interpreter::Statement>> processedThen;
       processStatementsForBitTracking(ifStmt->getThenBlock(), processedThen, trace,
                                      nextWaveOpIndex, loopIterationMap,
-                                     currentLoopIteration, currentLoopVar);
+                                     currentLoopIteration, loopVarStack);
       
       // Process else block
       std::vector<std::unique_ptr<interpreter::Statement>> processedElse;
       processStatementsForBitTracking(ifStmt->getElseBlock(), processedElse, trace,
                                      nextWaveOpIndex, loopIterationMap,
-                                     currentLoopIteration, currentLoopVar);
+                                     currentLoopIteration, loopVarStack);
       
       // Create new if statement with processed blocks
       output.push_back(std::make_unique<interpreter::IfStmt>(
@@ -2300,7 +2315,7 @@ void WaveParticipantBitTrackingMutation::processStatementsForBitTracking(
       if (waveOp->getOpType() != interpreter::WaveActiveOp::OpType::Ballot) {
         uint32_t waveOpId = waveOp->getStableId();
         auto trackingStmts = createBitTrackingStatements(
-          waveOp, resultVar, waveOpId, currentLoopIteration, currentLoopVar);
+          waveOp, resultVar, waveOpId, currentLoopIteration, loopVarStack);
         
         for (auto& trackingStmt : trackingStmts) {
           output.push_back(std::move(trackingStmt));
@@ -2315,9 +2330,12 @@ void WaveParticipantBitTrackingMutation::processStatementsForBitTracking(
     if (auto* forStmt = dynamic_cast<const interpreter::ForStmt*>(stmt.get())) {
       // Process body
       std::vector<std::unique_ptr<interpreter::Statement>> processedBody;
+      // Create new loop variable stack with for loop variable
+      std::vector<std::string> forLoopVarStack = loopVarStack;
+      forLoopVarStack.push_back(forStmt->getLoopVar());
       processStatementsForBitTracking(forStmt->getBody(), processedBody, trace,
                                      nextWaveOpIndex, loopIterationMap,
-                                     currentLoopIteration + 1, forStmt->getLoopVar());
+                                     currentLoopIteration + 1, forLoopVarStack);
       
       // We already added the statement at the beginning, need to replace it
       output.pop_back(); // Remove the cloned version
@@ -2332,9 +2350,42 @@ void WaveParticipantBitTrackingMutation::processStatementsForBitTracking(
     else if (auto* whileStmt = dynamic_cast<const interpreter::WhileStmt*>(stmt.get())) {
       // Process body
       std::vector<std::unique_ptr<interpreter::Statement>> processedBody;
+      
+      // Try to detect counter variable for while loops
+      // Look for a counter variable declaration before the while loop
+      std::vector<std::string> whileLoopVarStack = loopVarStack;
+      
+      // Look for counter pattern in the condition: (counter < N)
+      if (auto* binOp = dynamic_cast<const interpreter::BinaryOpExpr*>(whileStmt->getCondition())) {
+        if (binOp->getOp() == interpreter::BinaryOpExpr::Lt || 
+            binOp->getOp() == interpreter::BinaryOpExpr::Le) {
+          if (auto* varExpr = dynamic_cast<const interpreter::VariableExpr*>(binOp->getLeft())) {
+            // The variable in the condition is likely the counter
+            std::string counterName = varExpr->getName();
+            // Look for the counter increment pattern in the loop body
+            bool hasIncrement = false;
+            if (!whileStmt->getBody().empty()) {
+              if (auto* assignStmt = dynamic_cast<const interpreter::AssignStmt*>(whileStmt->getBody()[0].get())) {
+                if (assignStmt->getName() == counterName) {
+                  if (auto* incExpr = dynamic_cast<const interpreter::BinaryOpExpr*>(assignStmt->getExpression())) {
+                    if (incExpr->getOp() == interpreter::BinaryOpExpr::Add) {
+                      hasIncrement = true;
+                    }
+                  }
+                }
+              }
+            }
+            if (hasIncrement) {
+              whileLoopVarStack.push_back(counterName);
+              FUZZER_DEBUG_LOG("[WaveParticipantBitTracking] Detected while loop counter: " << counterName << "\n");
+            }
+          }
+        }
+      }
+      
       processStatementsForBitTracking(whileStmt->getBody(), processedBody, trace,
                                      nextWaveOpIndex, loopIterationMap,
-                                     currentLoopIteration, currentLoopVar);
+                                     currentLoopIteration, whileLoopVarStack);
       
       // We already added the statement at the beginning, need to replace it
       output.pop_back(); // Remove the cloned version
@@ -2344,11 +2395,11 @@ void WaveParticipantBitTrackingMutation::processStatementsForBitTracking(
       ));
     }
     else if (auto* doWhileStmt = dynamic_cast<const interpreter::DoWhileStmt*>(stmt.get())) {
-      // Process body
+      // Process body - do-while loops don't have a natural counter variable
       std::vector<std::unique_ptr<interpreter::Statement>> processedBody;
       processStatementsForBitTracking(doWhileStmt->getBody(), processedBody, trace,
                                      nextWaveOpIndex, loopIterationMap,
-                                     currentLoopIteration, currentLoopVar);
+                                     currentLoopIteration, loopVarStack);
       
       // Replace the do-while statement with processed version
       output.pop_back(); // Remove the cloned version
@@ -2369,7 +2420,7 @@ void WaveParticipantBitTrackingMutation::processStatementsForBitTracking(
         // Process statements in this case
         processStatementsForBitTracking(caseBlock.statements, processedCaseBody, 
                                        trace, nextWaveOpIndex, loopIterationMap,
-                                       currentLoopIteration, currentLoopVar);
+                                       currentLoopIteration, loopVarStack);
         
         // Add the processed case to the new switch
         if (caseBlock.value.has_value()) {
@@ -2465,7 +2516,7 @@ interpreter::Program WaveParticipantBitTrackingMutation::createMutantWithBitTrac
       uint32_t currentLoopIteration = 0;
       processStatementsForBitTracking(
           inputStmts, processedStmts, trace, nextTraceIndex, 
-          loopIterationMap, currentLoopIteration);
+          loopIterationMap, currentLoopIteration, {});
       
       // Add all processed statements (original + tracking)
       for (auto& stmt : processedStmts) {
@@ -2485,39 +2536,59 @@ std::vector<uint32_t> WaveParticipantBitTrackingMutation::computeExpectedBitPatt
     const ExecutionTrace& trace) const {
   std::vector<uint32_t> expected;
   
-  // Group wave operations by stable ID and iteration
-  std::map<std::pair<uint32_t, uint32_t>, std::vector<const ExecutionTrace::WaveOpRecord*>> 
-    groupedOps;
-  
-  for (const auto& waveOp : trace.waveOperations) {
-    // Extract iteration from block execution record if available
-    uint32_t iteration = 0;
-    auto blockIt = trace.blocks.find(waveOp.blockId);
-    if (blockIt != trace.blocks.end() && blockIt->second.loopIteration.has_value()) {
-      iteration = blockIt->second.loopIteration->iterationValue;
-    }
-    
-    groupedOps[{waveOp.stableId, iteration}].push_back(&waveOp);
-  }
-  
   // Generate expected data in execution order
-  for (const auto& [key, ops] : groupedOps) {
-    uint32_t stableId = key.first;
-    uint32_t iteration = key.second;
-    uint32_t combinedId = (iteration << 16) | stableId;
-    
-    // Compute participant bitmask
-    uint64_t mask = 0;
-    for (const auto* op : ops) {
-      for (interpreter::LaneId lane : op->arrivedParticipants) {
-        mask |= (1ULL << lane);
+  for (const auto& waveOp : trace.waveOperations) {
+    // Look up the block to get all loop iteration info for nested loops
+    std::vector<uint32_t> loopIndices;
+    auto blockIt = trace.blocks.find(waveOp.blockId);
+    if (blockIt != trace.blocks.end()) {
+      // Walk up the block hierarchy to collect all loop indices
+      uint32_t currentBlockId = waveOp.blockId;
+      std::vector<uint32_t> reversedIndices;  // Collect in reverse order
+      
+      while (blockIt != trace.blocks.end()) {
+        if (blockIt->second.loopIteration.has_value()) {
+          reversedIndices.push_back(blockIt->second.loopIteration->iterationValue);
+        }
+        
+        // Move to parent block
+        if (blockIt->second.parentBlockId == 0 || blockIt->second.parentBlockId == currentBlockId) break;
+        currentBlockId = blockIt->second.parentBlockId;
+        blockIt = trace.blocks.find(currentBlockId);
       }
+      
+      // Reverse to get outer-to-inner order
+      loopIndices.insert(loopIndices.end(), reversedIndices.rbegin(), reversedIndices.rend());
     }
     
-    // Store: [combinedId, mask_low, mask_high]
-    expected.push_back(combinedId);
-    expected.push_back(static_cast<uint32_t>(mask & 0xFFFFFFFF));
-    expected.push_back(static_cast<uint32_t>(mask >> 32));
+    // Compute combined ID with bitwise encoding
+    // Bits [31-6]: Wave op ID (26 bits)
+    // Bits [5-4]: Loop 1 index (outermost)
+    // Bits [3-2]: Loop 2 index (middle)
+    // Bits [1-0]: Loop 3 index (innermost)
+    uint32_t combinedId = waveOp.stableId << 6;
+    
+    // Encode up to 3 nested loop indices
+    for (size_t i = 0; i < loopIndices.size() && i < 3; ++i) {
+      int shift = (2 - i) * 2;  // Loop 0: shift 4, Loop 1: shift 2, Loop 2: shift 0
+      combinedId |= (loopIndices[i] & 0x3) << shift;
+    }
+    
+    // Compute participant bitmask for this execution
+    uint64_t mask = 0;
+    for (interpreter::LaneId participantLane : waveOp.arrivedParticipants) {
+      mask |= (1ULL << participantLane);
+    }
+    
+    // For each participating thread, there should be one entry
+    for (interpreter::LaneId lane : waveOp.arrivedParticipants) {
+      // Each thread writes: combinedId, ballot.x, ballot.y
+      expected.push_back(combinedId);
+      
+      // Store ballot.x and ballot.y
+      expected.push_back(static_cast<uint32_t>(mask & 0xFFFFFFFF));  // ballot.x (low 32 bits)
+      expected.push_back(static_cast<uint32_t>(mask >> 32));         // ballot.y (high 32 bits)
+    }
   }
   
   return expected;
@@ -3349,7 +3420,7 @@ void BugReporter::saveBugReport(const BugReport& report) {
   }
 #else
   // POSIX: use mkdir
-  struct stat st = {0};
+  struct stat st = {};
   if (stat(bugDir.c_str(), &st) == -1) {
     mkdir(bugDir.c_str(), 0755);
   }

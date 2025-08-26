@@ -532,7 +532,7 @@ private:
       size_t& nextWaveOpIndex,
       std::map<const void*, uint32_t>& loopIterationMap,
       uint32_t currentLoopIteration,
-      const std::string& currentLoopVar = "") const;
+      const std::vector<std::string>& loopVarStack = {}) const;
   
   // Helper to create bit tracking code
   std::vector<std::unique_ptr<interpreter::Statement>> 
@@ -540,7 +540,7 @@ private:
                              const std::string& resultVar,
                              uint32_t waveOpId,
                              uint32_t loopIteration,
-                             const std::string& loopVarName = "") const;
+                             const std::vector<std::string>& loopVarStack = {}) const;
   
   // Check if program already has bit tracking buffers
   bool hasBitTrackingBuffers(const interpreter::Program& program) const;
