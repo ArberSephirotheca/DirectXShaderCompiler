@@ -1311,7 +1311,7 @@ public:
 
 class BinaryOpExpr : public Expression {
 public:
-  enum OpType { Add, Sub, Mul, Div, Mod, Eq, Ne, Lt, Le, Gt, Ge, And, Or, Xor, BitwiseAnd, BitwiseOr };
+  enum OpType { Add, Sub, Mul, Div, Mod, Eq, Ne, Lt, Le, Gt, Ge, And, Or, Xor, BitwiseAnd, BitwiseOr, BitwiseXor, LeftShift, RightShift };
 
 private:
   std::unique_ptr<Expression> left_;

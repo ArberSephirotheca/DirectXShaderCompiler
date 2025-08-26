@@ -531,14 +531,16 @@ private:
       const ExecutionTrace& trace,
       size_t& nextWaveOpIndex,
       std::map<const void*, uint32_t>& loopIterationMap,
-      uint32_t currentLoopIteration) const;
+      uint32_t currentLoopIteration,
+      const std::string& currentLoopVar = "") const;
   
   // Helper to create bit tracking code
   std::vector<std::unique_ptr<interpreter::Statement>> 
   createBitTrackingStatements(const interpreter::WaveActiveOp* waveOp,
                              const std::string& resultVar,
                              uint32_t waveOpId,
-                             uint32_t loopIteration) const;
+                             uint32_t loopIteration,
+                             const std::string& loopVarName = "") const;
   
   // Check if program already has bit tracking buffers
   bool hasBitTrackingBuffers(const interpreter::Program& program) const;

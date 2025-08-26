@@ -1017,7 +1017,7 @@ bool BinaryOpExpr::isDeterministic() const {
 
 std::string BinaryOpExpr::toString() const {
   static const char *opStrings[] = {
-      "+", "-", "*", "/", "%", "==", "!=", "<", "<=", ">", ">=", "&&", "||", "^", "&", "|"};
+      "+", "-", "*", "/", "%", "==", "!=", "<", "<=", ">", ">=", "&&", "||", "^", "&", "|", "^", "<<", ">>"};
   return "(" + left_->toString() + " " + opStrings[op_] + " " +
          right_->toString() + ")";
 }
@@ -1130,6 +1130,9 @@ BinaryOpExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
   case Xor: opStr = "^"; break;
   case BitwiseAnd: opStr = "&"; break;
   case BitwiseOr: opStr = "|"; break;
+  case BitwiseXor: opStr = "^"; break;
+  case LeftShift: opStr = "<<"; break;
+  case RightShift: opStr = ">>"; break;
   }
   
   // Perform operation
@@ -1183,6 +1186,15 @@ BinaryOpExpr::evaluate_result(LaneContext &lane, WaveContext &wave,
     break;
   case BitwiseOr:
     result = Value(leftVal.asInt() | rightVal.asInt());
+    break;
+  case BitwiseXor:
+    result = Value(leftVal.asInt() ^ rightVal.asInt());
+    break;
+  case LeftShift:
+    result = Value(leftVal.asInt() << rightVal.asInt());
+    break;
+  case RightShift:
+    result = Value(leftVal.asInt() >> rightVal.asInt());
     break;
   default:
     return Err<Value, ExecutionError>(ExecutionError::InvalidState);
