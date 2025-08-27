@@ -2469,7 +2469,7 @@ void WaveParticipantBitTrackingMutation::ensureBitTrackingBuffers(
     participantBit.elementType = interpreter::HLSLType::Uint;
     participantBit.size = 4096; // Large buffer for many recordings
     participantBit.isReadWrite = true;
-    participantBit.registerIndex = 2;
+    participantBit.registerIndex = 0;
     mutant.globalBuffers.push_back(participantBit);
   }
   
@@ -2480,7 +2480,7 @@ void WaveParticipantBitTrackingMutation::ensureBitTrackingBuffers(
     waveOpIndex.elementType = interpreter::HLSLType::Uint;
     waveOpIndex.size = 1;
     waveOpIndex.isReadWrite = true;
-    waveOpIndex.registerIndex = 3;
+    waveOpIndex.registerIndex = 1;
     mutant.globalBuffers.push_back(waveOpIndex);
   }
 }
