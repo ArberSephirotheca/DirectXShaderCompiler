@@ -2948,7 +2948,7 @@ void ForStmt::handleBreakException(LaneContext &lane, WaveContext &wave,
   //   tg.updateWaveOperationsForLeavingBlock(wave.waveId, lane.laneId, ourEntry.loopBodyBlockId);
   // }
   
-  tg.popMergePoint(wave.waveId, lane.laneId);
+  // tg.popMergePoint(wave.waveId, lane.laneId);
 
   // Clean up - remove from blocks this lane will never reach
   tg.removeThreadFromAllSets(headerBlockId, wave.waveId, lane.laneId);
@@ -6546,7 +6546,7 @@ void WhileStmt::handleBreakException(LaneContext &lane, WaveContext &wave,
   //   tg.updateWaveOperationsForLeavingBlock(wave.waveId, lane.laneId, ourEntry.loopBodyBlockId);
   // }
   
-  tg.popMergePoint(wave.waveId, lane.laneId);
+  // tg.popMergePoint(wave.waveId, lane.laneId);
   lane.executionStack[ourStackIndex].phase =
       LaneContext::ControlFlowPhase::Reconverging;
 
@@ -6982,7 +6982,7 @@ void DoWhileStmt::handleBreakException(LaneContext &lane, WaveContext &wave,
   //   tg.updateWaveOperationsForLeavingBlock(wave.waveId, lane.laneId, ourEntry.loopBodyBlockId);
   // }
   
-  tg.popMergePoint(wave.waveId, lane.laneId);
+  // tg.popMergePoint(wave.waveId, lane.laneId);
 
   // Clean up - remove from blocks this lane will never reach
   tg.removeThreadFromAllSets(headerBlockId, wave.waveId, lane.laneId);
