@@ -370,37 +370,59 @@ void TraceCaptureInterpreter::extractWaveOperationsFromContext(
       record.loopIterations = syncPoint.loopIterations;
       
       // Override with actual loop variable values if available
-      // The fuzzer encodes loop variables in a specific order: i0/counter0 in bits [5:4], i1/counter1 in bits [3:2], etc.
+      // The fuzzer generates loops with predictable patterns:
+      // - for(uint VAR = ...; VAR < ...; VAR++)
+      // - while(VAR < ...) { VAR++; ... }
       // 
-      // IMPORTANT: This approach relies on the fuzzer's naming convention:
-      // - For loops use variables named: i0, i1, i2, ...
-      // - While loops use variables named: counter0, counter1, counter2, ...
-      // 
-      // The bit encoding in WaveParticipantBitTracking expects these values in order:
-      // - First loop variable (i0/counter0) goes in bits [5:4]
-      // - Second loop variable (i1/counter1) goes in bits [3:2]  
-      // - Third loop variable (i2/counter2) goes in bits [1:0]
+      // Strategy: Find all loop variables by pattern and sort by their numeric suffix.
+      // This handles cases where the fuzzer generates non-sequential variables like
+      // counter0, counter3, counter5 without hardcoding a specific range.
       //
-      // This is a limitation of the current design - it won't work correctly if:
-      // - Loop variables have different names
-      // - Loops are nested in a different order than their variable names suggest
-      // - More than 3 loops are nested (only 6 bits available for encoding)
+      // LIMITATIONS:
+      // 1. Relies on fuzzer's naming convention (i<N> for for-loops, counter<N> for while-loops)
+      // 2. Assumes the numeric suffix indicates the intended encoding order
+      // 3. Only supports up to 3 loop variables due to bit encoding constraints (6 bits total)
+      // 4. May not correctly handle deeply nested loops vs. sequential loops in different branches
+      //    (e.g., nested loops i0->i1->i2 vs. separate loops i0, i3, i5 in switch cases)
+      // 5. The ordering by numeric suffix may not match the actual nesting order in all cases
+      //
+      // Future improvement: Track loop nesting depth from execution context rather than
+      // relying on variable naming conventions.
       if (!syncPoint.loopVariableValues.empty()) {
         std::vector<uint32_t> actualValues;
         
-        // Try standard loop variable names in order
-        for (int i = 0; i < 3; i++) { // Support up to 3 nested loops
-          std::string varName = "i" + std::to_string(i);
-          auto it = syncPoint.loopVariableValues.find(varName);
-          if (it == syncPoint.loopVariableValues.end()) {
-            // Try while loop counter name
-            varName = "counter" + std::to_string(i);
-            it = syncPoint.loopVariableValues.find(varName);
+        // Collect all loop variables with their numeric suffixes
+        std::map<int, uint32_t> indexToValue; // map sorts by key automatically
+        
+        for (const auto& [varName, value] : syncPoint.loopVariableValues) {
+          int index = -1;
+          
+          // Extract numeric suffix from i<N> pattern
+          if (varName.size() > 1 && varName[0] == 'i') {
+            try {
+              index = std::stoi(varName.substr(1));
+            } catch (const std::exception&) {
+              // Not a valid number, skip
+            }
+          }
+          // Extract numeric suffix from counter<N> pattern  
+          else if (varName.size() > 7 && varName.substr(0, 7) == "counter") {
+            try {
+              index = std::stoi(varName.substr(7));
+            } catch (const std::exception&) {
+              // Not a valid number, skip
+            }
           }
           
-          if (it != syncPoint.loopVariableValues.end()) {
-            actualValues.push_back(it->second);
+          if (index >= 0) {
+            indexToValue[index] = value;
           }
+        }
+        
+        // Take values in ascending order of index (map iteration is ordered)
+        for (const auto& [index, value] : indexToValue) {
+          actualValues.push_back(value);
+          if (actualValues.size() >= 3) break; // Maximum 3 values for bit encoding
         }
         
         if (!actualValues.empty()) {
