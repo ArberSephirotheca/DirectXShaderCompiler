@@ -2925,6 +2925,21 @@ void ForStmt::handleLoopExit(LaneContext &lane, WaveContext &wave,
 
   // Pop merge point and move to merge block
   tg.popMergePoint(wave.waveId, lane.laneId);
+  
+  // Check if we need to pop additional merge points
+  // For loops may have both iteration markers and the main loop merge point
+  // If the top of the merge stack still belongs to this for loop, pop it too
+  auto currentMergeStack = tg.getCurrentMergeStack(wave.waveId, lane.laneId);
+  if (!currentMergeStack.empty()) {
+    const auto& topEntry = currentMergeStack.back();
+    // Check if the top merge point is from this for loop statement
+    if (topEntry.sourceStatement == static_cast<const void*>(this)) {
+      INTERPRETER_DEBUG_LOG("DEBUG: ForStmt - Lane " << lane.laneId 
+                << " popping additional merge point from this for loop");
+      tg.popMergePoint(wave.waveId, lane.laneId);
+    }
+  }
+  
   tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId,
                                           lane.laneId);
 
@@ -6509,6 +6524,21 @@ void WhileStmt::handleLoopExit(LaneContext &lane, WaveContext &wave,
 
   // Pop merge point and move to merge block
   tg.popMergePoint(wave.waveId, lane.laneId);
+  
+  // Check if we need to pop additional merge points
+  // While loops may have both iteration markers and the main loop merge point
+  // If the top of the merge stack still belongs to this while loop, pop it too
+  auto currentMergeStack = tg.getCurrentMergeStack(wave.waveId, lane.laneId);
+  if (!currentMergeStack.empty()) {
+    const auto& topEntry = currentMergeStack.back();
+    // Check if the top merge point is from this while loop statement
+    if (topEntry.sourceStatement == static_cast<const void*>(this)) {
+      INTERPRETER_DEBUG_LOG("DEBUG: WhileStmt - Lane " << lane.laneId 
+                << " popping additional merge point from this while loop");
+      tg.popMergePoint(wave.waveId, lane.laneId);
+    }
+  }
+  
   tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId,
                                           lane.laneId);
 
@@ -6960,6 +6990,21 @@ void DoWhileStmt::handleLoopExit(LaneContext &lane, WaveContext &wave,
 
   // Pop merge point and move to merge block
   tg.popMergePoint(wave.waveId, lane.laneId);
+  
+  // Check if we need to pop additional merge points
+  // Do-while loops may have both iteration markers and the main loop merge point
+  // If the top of the merge stack still belongs to this do-while loop, pop it too
+  auto currentMergeStack = tg.getCurrentMergeStack(wave.waveId, lane.laneId);
+  if (!currentMergeStack.empty()) {
+    const auto& topEntry = currentMergeStack.back();
+    // Check if the top merge point is from this do-while loop statement
+    if (topEntry.sourceStatement == static_cast<const void*>(this)) {
+      INTERPRETER_DEBUG_LOG("DEBUG: DoWhileStmt - Lane " << lane.laneId 
+                << " popping additional merge point from this do-while loop");
+      tg.popMergePoint(wave.waveId, lane.laneId);
+    }
+  }
+  
   // tg.assignLaneToBlock(wave.waveId, lane.laneId, mergeBlockId);
   tg.moveThreadFromUnknownToParticipating(mergeBlockId, wave.waveId,
                                           lane.laneId);
