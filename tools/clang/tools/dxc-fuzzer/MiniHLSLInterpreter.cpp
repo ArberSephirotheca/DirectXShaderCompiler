@@ -34,9 +34,9 @@ std::atomic<uint32_t> Expression::nextStableId{1};
 // - ENABLE_BLOCK_DEBUG: Shows block creation, merging, and convergence
 
 static constexpr bool ENABLE_INTERPRETER_DEBUG =
-    false; // Set to true to enable detailed execution tracing
+    true; // Set to true to enable detailed execution tracing
 static constexpr bool ENABLE_WAVE_DEBUG =
-    false; // Set to true to enable wave operation tracing
+    true; // Set to true to enable wave operation tracing
 static constexpr bool ENABLE_BLOCK_DEBUG =
     true; // Set to true to enable block lifecycle tracing
 static constexpr bool ENABLE_PARSER_DEBUG =
@@ -7398,6 +7398,13 @@ void SwitchStmt::setupSwitchExecution(LaneContext &lane, WaveContext &wave,
                                       int ourStackIndex) {
   // Create blocks for all cases
   uint32_t parentBlockId = tg.getCurrentBlock(wave.waveId, lane.laneId);
+  
+  // Push merge point for switch statement - this ensures proper merge stack balance
+  // when break statements or returns occur within nested control flow
+  std::set<uint32_t> divergentBlocks;
+  tg.pushMergePoint(wave.waveId, lane.laneId, static_cast<const void *>(this),
+                    parentBlockId, divergentBlocks);
+  
   std::vector<MergeStackEntry> currentMergeStack =
       tg.getCurrentMergeStack(wave.waveId, lane.laneId);
 
