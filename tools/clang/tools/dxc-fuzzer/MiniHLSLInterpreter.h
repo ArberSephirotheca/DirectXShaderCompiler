@@ -358,6 +358,7 @@ struct LaneContext {
     uint32_t blockId = 0;      // Current execution block
     bool inThenBranch = false; // For if statements
     size_t loopIteration = 0;  // For loop tracking
+    std::string loopVariableName;  // Name of the loop variable ("i0" for for-loops, "counter0" for while-loops)
     Value switchValue;         // For switch statements
     size_t caseIndex = 0;      // Which case we're executing
 
@@ -427,6 +428,7 @@ struct WaveOperationSyncPoint {
       arrivedParticipants; // Lanes that have arrived at THIS instruction
   std::map<LaneId, Value> pendingResults; // Results from arrived lanes
   std::vector<uint32_t> loopIterations; // Loop iteration values when sync point was created
+  std::map<std::string, uint32_t> loopVariableValues; // Actual values of loop variables
   SyncPointState state =
       SyncPointState::WaitingForParticipants; // Execution state
 

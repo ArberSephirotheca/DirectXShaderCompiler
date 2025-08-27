@@ -3014,6 +3014,7 @@ void ForStmt::setupFreshExecution(LaneContext &lane, WaveContext &wave,
   // Save block IDs in our stack entry
   lane.executionStack[ourStackIndex].loopHeaderBlockId = headerBlockId;
   lane.executionStack[ourStackIndex].loopMergeBlockId = mergeBlockId;
+  lane.executionStack[ourStackIndex].loopVariableName = loopVar_;
 
   // Push merge point for loop divergence
   std::set<uint32_t> divergentBlocks = {headerBlockId};
@@ -6302,6 +6303,28 @@ void WhileStmt::setupFreshExecution(LaneContext &lane, WaveContext &wave,
   newState.loopIteration = 0;
   newState.loopHeaderBlockId = headerBlockId;
   newState.loopMergeBlockId = mergeBlockId;
+  
+  // Extract counter variable name from condition
+  // NOTE: This approach assumes the fuzzer generates while loops with a specific pattern:
+  //   while (counter < N) { counter++; ... }
+  // where the counter variable appears on the left side of a less-than comparison.
+  // 
+  // This works for fuzzer-generated code but may not handle all possible while loop patterns:
+  // - Won't work for: while (counter > 0) { counter--; ... }
+  // - Won't work for: while (someFunction() < limit) { ... }
+  // - Won't work for: while (true) { if (counter >= N) break; counter++; }
+  //
+  // For more general handling, we would need to analyze the loop body to identify
+  // which variables are modified and could be considered loop counters.
+  if (condition_) {
+    if (auto binOp = dynamic_cast<const BinaryOpExpr*>(condition_.get())) {
+      if (binOp->getOp() == BinaryOpExpr::Lt) {
+        if (auto varExpr = dynamic_cast<const VariableExpr*>(binOp->getLeft())) {
+          newState.loopVariableName = varExpr->toString();
+        }
+      }
+    }
+  }
 
   lane.executionStack.push_back(newState);
 
@@ -8606,6 +8629,14 @@ void ThreadgroupContext::createOrUpdateWaveSyncPoint(
       // Include any execution state that has a loop iteration value
       if (execState.loopIteration > 0 || execState.loopHeaderBlockId > 0) {
         syncPoint.loopIterations.push_back(execState.loopIteration);
+        
+        // If this execution state has a loop variable, capture its current value
+        if (!execState.loopVariableName.empty()) {
+          auto varIt = lane.variables.find(execState.loopVariableName);
+          if (varIt != lane.variables.end() && varIt->second.isInt()) {
+            syncPoint.loopVariableValues[execState.loopVariableName] = static_cast<uint32_t>(varIt->second.asInt());
+          }
+        }
       }
     }
 

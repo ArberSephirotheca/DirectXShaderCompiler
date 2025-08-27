@@ -369,6 +369,45 @@ void TraceCaptureInterpreter::extractWaveOperationsFromContext(
       // Use loop iterations from sync point
       record.loopIterations = syncPoint.loopIterations;
       
+      // Override with actual loop variable values if available
+      // The fuzzer encodes loop variables in a specific order: i0/counter0 in bits [5:4], i1/counter1 in bits [3:2], etc.
+      // 
+      // IMPORTANT: This approach relies on the fuzzer's naming convention:
+      // - For loops use variables named: i0, i1, i2, ...
+      // - While loops use variables named: counter0, counter1, counter2, ...
+      // 
+      // The bit encoding in WaveParticipantBitTracking expects these values in order:
+      // - First loop variable (i0/counter0) goes in bits [5:4]
+      // - Second loop variable (i1/counter1) goes in bits [3:2]  
+      // - Third loop variable (i2/counter2) goes in bits [1:0]
+      //
+      // This is a limitation of the current design - it won't work correctly if:
+      // - Loop variables have different names
+      // - Loops are nested in a different order than their variable names suggest
+      // - More than 3 loops are nested (only 6 bits available for encoding)
+      if (!syncPoint.loopVariableValues.empty()) {
+        std::vector<uint32_t> actualValues;
+        
+        // Try standard loop variable names in order
+        for (int i = 0; i < 3; i++) { // Support up to 3 nested loops
+          std::string varName = "i" + std::to_string(i);
+          auto it = syncPoint.loopVariableValues.find(varName);
+          if (it == syncPoint.loopVariableValues.end()) {
+            // Try while loop counter name
+            varName = "counter" + std::to_string(i);
+            it = syncPoint.loopVariableValues.find(varName);
+          }
+          
+          if (it != syncPoint.loopVariableValues.end()) {
+            actualValues.push_back(it->second);
+          }
+        }
+        
+        if (!actualValues.empty()) {
+          record.loopIterations = actualValues;
+        }
+      }
+      
       
       // Use actual participants from sync point
       record.expectedParticipants = syncPoint.expectedParticipants;
