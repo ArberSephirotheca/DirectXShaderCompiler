@@ -617,6 +617,66 @@ private:
     const ExecutionTrace& trace) const;
 };
 
+// Mutation strategy: Replace lane-based predicates with buffer reads
+// This makes control flow opaque to the compiler's static analysis
+class LaneIdBufferMutation : public MutationStrategy {
+public:
+  bool canApply(const interpreter::Statement* stmt,
+                const ExecutionTrace& trace) const override;
+  
+  std::unique_ptr<interpreter::Statement> apply(
+    const interpreter::Statement* stmt,
+    const ExecutionTrace& trace) const override;
+    
+  bool validateSemanticPreservation(
+    const interpreter::Statement* original,
+    const interpreter::Statement* mutated,
+    const ExecutionTrace& trace) const override;
+    
+  std::string getName() const override { return "LaneIdBuffer"; }
+  
+  // Program-level mutation API
+  bool requiresProgramLevelMutation() const override { return true; }
+  
+  std::vector<interpreter::Program> applyToProgram(
+    const interpreter::Program& program,
+    const ExecutionTrace& trace,
+    const std::set<size_t>& statementsToMutate) const override;
+
+private:
+  // Check if expression is lane-based (WaveGetLaneIndex, tid.x, etc)
+  bool isLaneBasedExpression(const interpreter::Expression* expr) const;
+  
+  // Check if expression contains any lane-based sub-expression
+  bool containsLaneBasedExpression(const interpreter::Expression* expr) const;
+  
+  // Replace lane expressions with buffer access
+  std::unique_ptr<interpreter::Expression> replaceLaneExpression(
+      const interpreter::Expression* expr) const;
+  
+  // Check if statement contains wave operations (to decide if we should mutate)
+  bool containsWaveOperations(
+      const std::vector<std::unique_ptr<interpreter::Statement>>& statements) const;
+  
+  // Check if a single statement contains wave operations
+  bool statementContainsWaveOp(const interpreter::Statement* stmt) const;
+  
+  // Process statements recursively to replace lane-based predicates
+  void processStatementsForReplacement(
+      const std::vector<std::unique_ptr<interpreter::Statement>>& input,
+      std::vector<std::unique_ptr<interpreter::Statement>>& output,
+      bool& anyMutationApplied) const;
+  
+  // Check if program already has lane ID buffer
+  bool hasLaneIdBuffer(const interpreter::Program& program) const;
+  
+  // Add lane ID buffer declaration to program
+  void ensureLaneIdBuffer(interpreter::Program& mutant) const;
+  
+  // Check if condition affects wave operations
+  bool conditionAffectsWaveOps(const interpreter::IfStmt* ifStmt) const;
+};
+
 
 // ===== Semantic Validator =====
 
@@ -808,6 +868,7 @@ private:
     ContextAwareParticipant = 1 << 2,
     WaveParticipantFrequency = 1 << 3,
     WaveParticipantBitTracking = 1 << 4,
+    LaneIdBuffer = 1 << 5,
     // Add more mutations here as needed
   };
   

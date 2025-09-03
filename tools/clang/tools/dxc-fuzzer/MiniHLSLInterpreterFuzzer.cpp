@@ -453,8 +453,19 @@ void generateTestFile(const interpreter::Program& program,
       testFile << "  - Name: " << buffer.name << "\n";
       testFile << "    Format: UInt32\n";
       testFile << "    Stride: 4\n";
-      testFile << "    Fill: 0\n";
-      testFile << "    Size: " << bufferSizeInEntries << "\n";
+      
+      // Special handling for _lane_id_buffer - initialize with lane IDs
+      if (buffer.name == "_lane_id_buffer") {
+        testFile << "    Data: [";
+        for (uint32_t i = 0; i < buffer.size; ++i) {
+          if (i > 0) testFile << ", ";
+          testFile << i;
+        }
+        testFile << "]\n";
+      } else {
+        testFile << "    Fill: 0\n";
+        testFile << "    Size: " << bufferSizeInEntries << "\n";
+      }
     }
   }
   
@@ -3011,6 +3022,393 @@ bool ContextAwareParticipantMutation::validateSemanticPreservation(
   return true;
 }
 
+// ===== LaneIdBufferMutation Implementation =====
+
+bool LaneIdBufferMutation::canApply(
+    const interpreter::Statement* stmt,
+    const ExecutionTrace& trace) const {
+  // This mutation applies at the program level, not statement level
+  return false;
+}
+
+std::unique_ptr<interpreter::Statement> LaneIdBufferMutation::apply(
+    const interpreter::Statement* stmt,
+    const ExecutionTrace& trace) const {
+  // This mutation is handled at the program level
+  return stmt->clone();
+}
+
+bool LaneIdBufferMutation::validateSemanticPreservation(
+    const interpreter::Statement* original,
+    const interpreter::Statement* mutated,
+    const ExecutionTrace& trace) const {
+  // The mutation preserves semantics by filling the buffer with actual lane IDs
+  return true;
+}
+
+bool LaneIdBufferMutation::isLaneBasedExpression(const interpreter::Expression* expr) const {
+  if (!expr) return false;
+  
+  // Direct lane index expressions
+  if (dynamic_cast<const interpreter::LaneIndexExpr*>(expr)) {
+    return true;
+  }
+  
+  // tid.x access
+  if (auto* memberAccess = dynamic_cast<const interpreter::MemberAccessExpr*>(expr)) {
+    if (auto* varExpr = dynamic_cast<const interpreter::VariableExpr*>(memberAccess->getObject())) {
+      if (varExpr->getName() == "tid" && memberAccess->getMember() == "x") {
+        return true;
+      }
+    }
+  }
+  
+  // Note: WaveGetLaneIndex() is typically replaced by LaneIndexExpr in the AST
+  // So we don't need to check for CallExpr here
+  
+  return false;
+}
+
+bool LaneIdBufferMutation::containsLaneBasedExpression(const interpreter::Expression* expr) const {
+  if (!expr) return false;
+  
+  // Check if this expression itself is lane-based
+  if (isLaneBasedExpression(expr)) {
+    return true;
+  }
+  
+  // Recursively check sub-expressions
+  if (auto* binOp = dynamic_cast<const interpreter::BinaryOpExpr*>(expr)) {
+    return containsLaneBasedExpression(binOp->getLeft()) ||
+           containsLaneBasedExpression(binOp->getRight());
+  }
+  
+  // Note: UnaryOpExpr and TernaryExpr are not available in the current AST
+  // For now we only handle BinaryOpExpr recursively
+  
+  return false;
+}
+
+std::unique_ptr<interpreter::Expression> LaneIdBufferMutation::replaceLaneExpression(
+    const interpreter::Expression* expr) const {
+  if (!expr) return nullptr;
+  
+  // If this is a lane-based expression, replace it with buffer access
+  if (isLaneBasedExpression(expr)) {
+    // Create _lane_id_buffer[WaveGetLaneIndex()]
+    // This correctly handles multiple waves - each wave reads lanes 0-31
+    auto laneIndex = std::make_unique<interpreter::LaneIndexExpr>();
+    return std::make_unique<interpreter::ArrayAccessExpr>(
+        "_lane_id_buffer", std::move(laneIndex));
+  }
+  
+  // Otherwise, recursively replace in sub-expressions
+  if (auto* binOp = dynamic_cast<const interpreter::BinaryOpExpr*>(expr)) {
+    return std::make_unique<interpreter::BinaryOpExpr>(
+        replaceLaneExpression(binOp->getLeft()),
+        replaceLaneExpression(binOp->getRight()),
+        binOp->getOp());
+  }
+  
+  // Note: UnaryOpExpr and TernaryExpr are not available in the current AST
+  // For now we only handle BinaryOpExpr recursively
+  
+  // For other expression types, just clone
+  return expr->clone();
+}
+
+bool LaneIdBufferMutation::statementContainsWaveOp(const interpreter::Statement* stmt) const {
+  if (!stmt) return false;
+  
+  // Check expression statements
+  if (auto* exprStmt = dynamic_cast<const interpreter::ExprStmt*>(stmt)) {
+    return findWaveOpInExpression(exprStmt->getExpression()) != nullptr;
+  }
+  
+  // Check assignments
+  if (auto* assign = dynamic_cast<const interpreter::AssignStmt*>(stmt)) {
+    return findWaveOpInExpression(assign->getExpression()) != nullptr;
+  }
+  
+  // Check variable declarations
+  if (auto* varDecl = dynamic_cast<const interpreter::VarDeclStmt*>(stmt)) {
+    return varDecl->getInit() && findWaveOpInExpression(varDecl->getInit()) != nullptr;
+  }
+  
+  return false;
+}
+
+bool LaneIdBufferMutation::containsWaveOperations(
+    const std::vector<std::unique_ptr<interpreter::Statement>>& statements) const {
+  
+  for (const auto& stmt : statements) {
+    if (statementContainsWaveOp(stmt.get())) {
+      return true;
+    }
+    
+    // Check nested statements
+    if (auto* ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt.get())) {
+      if (containsWaveOperations(ifStmt->getThenBlock()) ||
+          containsWaveOperations(ifStmt->getElseBlock())) {
+        return true;
+      }
+    }
+    
+    if (auto* forStmt = dynamic_cast<const interpreter::ForStmt*>(stmt.get())) {
+      if (containsWaveOperations(forStmt->getBody())) {
+        return true;
+      }
+    }
+    
+    if (auto* whileStmt = dynamic_cast<const interpreter::WhileStmt*>(stmt.get())) {
+      if (containsWaveOperations(whileStmt->getBody())) {
+        return true;
+      }
+    }
+    
+    if (auto* doWhileStmt = dynamic_cast<const interpreter::DoWhileStmt*>(stmt.get())) {
+      if (containsWaveOperations(doWhileStmt->getBody())) {
+        return true;
+      }
+    }
+    
+    if (auto* switchStmt = dynamic_cast<const interpreter::SwitchStmt*>(stmt.get())) {
+      for (size_t i = 0; i < switchStmt->getCaseCount(); ++i) {
+        const auto& caseBlock = switchStmt->getCase(i);
+        if (containsWaveOperations(caseBlock.statements)) {
+          return true;
+        }
+      }
+    }
+  }
+  
+  return false;
+}
+
+bool LaneIdBufferMutation::conditionAffectsWaveOps(const interpreter::IfStmt* ifStmt) const {
+  if (!ifStmt) return false;
+  
+  // Check if the condition contains lane-based expressions
+  if (!containsLaneBasedExpression(ifStmt->getCondition())) {
+    return false;
+  }
+  
+  // Check if either branch contains wave operations
+  return containsWaveOperations(ifStmt->getThenBlock()) ||
+         containsWaveOperations(ifStmt->getElseBlock());
+}
+
+void LaneIdBufferMutation::processStatementsForReplacement(
+    const std::vector<std::unique_ptr<interpreter::Statement>>& input,
+    std::vector<std::unique_ptr<interpreter::Statement>>& output,
+    bool& anyMutationApplied) const {
+  
+  for (const auto& stmt : input) {
+    if (!stmt) continue;
+    
+    // Skip tracking statements
+    if (isTrackingStatement(stmt.get())) {
+      output.push_back(stmt->clone());
+      continue;
+    }
+    
+    // Handle if statements specially
+    if (auto* ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt.get())) {
+      // Only mutate if condition affects wave operations
+      if (conditionAffectsWaveOps(ifStmt)) {
+        FUZZER_DEBUG_LOG("[LaneIdBuffer] Replacing condition in if statement\n");
+        
+        // Replace the condition
+        auto newCondition = replaceLaneExpression(ifStmt->getCondition());
+        anyMutationApplied = true;
+        
+        // Process then/else blocks recursively
+        std::vector<std::unique_ptr<interpreter::Statement>> processedThen;
+        std::vector<std::unique_ptr<interpreter::Statement>> processedElse;
+        
+        processStatementsForReplacement(ifStmt->getThenBlock(), processedThen, anyMutationApplied);
+        processStatementsForReplacement(ifStmt->getElseBlock(), processedElse, anyMutationApplied);
+        
+        output.push_back(std::make_unique<interpreter::IfStmt>(
+            std::move(newCondition),
+            std::move(processedThen),
+            std::move(processedElse)));
+      } else {
+        // Process blocks recursively without mutating condition
+        std::vector<std::unique_ptr<interpreter::Statement>> processedThen;
+        std::vector<std::unique_ptr<interpreter::Statement>> processedElse;
+        
+        processStatementsForReplacement(ifStmt->getThenBlock(), processedThen, anyMutationApplied);
+        processStatementsForReplacement(ifStmt->getElseBlock(), processedElse, anyMutationApplied);
+        
+        output.push_back(std::make_unique<interpreter::IfStmt>(
+            ifStmt->getCondition()->clone(),
+            std::move(processedThen),
+            std::move(processedElse)));
+      }
+      continue;
+    }
+    
+    // For other control flow, process recursively
+    if (auto* forStmt = dynamic_cast<const interpreter::ForStmt*>(stmt.get())) {
+      std::vector<std::unique_ptr<interpreter::Statement>> processedBody;
+      processStatementsForReplacement(forStmt->getBody(), processedBody, anyMutationApplied);
+      
+      output.push_back(std::make_unique<interpreter::ForStmt>(
+          forStmt->getLoopVar(),
+          forStmt->getInit() ? forStmt->getInit()->clone() : nullptr,
+          forStmt->getCondition() ? forStmt->getCondition()->clone() : nullptr,
+          forStmt->getIncrement() ? forStmt->getIncrement()->clone() : nullptr,
+          std::move(processedBody)));
+      continue;
+    }
+    
+    if (auto* whileStmt = dynamic_cast<const interpreter::WhileStmt*>(stmt.get())) {
+      std::vector<std::unique_ptr<interpreter::Statement>> processedBody;
+      processStatementsForReplacement(whileStmt->getBody(), processedBody, anyMutationApplied);
+      
+      output.push_back(std::make_unique<interpreter::WhileStmt>(
+          whileStmt->getCondition()->clone(),
+          std::move(processedBody)));
+      continue;
+    }
+    
+    if (auto* doWhileStmt = dynamic_cast<const interpreter::DoWhileStmt*>(stmt.get())) {
+      std::vector<std::unique_ptr<interpreter::Statement>> processedBody;
+      processStatementsForReplacement(doWhileStmt->getBody(), processedBody, anyMutationApplied);
+      
+      output.push_back(std::make_unique<interpreter::DoWhileStmt>(
+          std::move(processedBody),
+          doWhileStmt->getCondition()->clone()));
+      continue;
+    }
+    
+    if (auto* switchStmt = dynamic_cast<const interpreter::SwitchStmt*>(stmt.get())) {
+      // Check if switch contains wave operations in any case
+      bool hasWaveOps = false;
+      for (size_t i = 0; i < switchStmt->getCaseCount(); ++i) {
+        const auto& caseBlock = switchStmt->getCase(i);
+        if (containsWaveOperations(caseBlock.statements)) {
+          hasWaveOps = true;
+          break;
+        }
+      }
+      
+      // Replace condition if it contains lane-based expressions and switch affects wave ops
+      auto newCondition = (hasWaveOps && containsLaneBasedExpression(switchStmt->getCondition())) ?
+          replaceLaneExpression(switchStmt->getCondition()) :
+          switchStmt->getCondition()->clone();
+      
+      if (hasWaveOps && containsLaneBasedExpression(switchStmt->getCondition())) {
+        FUZZER_DEBUG_LOG("[LaneIdBuffer] Replacing condition in switch statement\n");
+        anyMutationApplied = true;
+      }
+      
+      auto newSwitch = std::make_unique<interpreter::SwitchStmt>(std::move(newCondition));
+      
+      for (size_t i = 0; i < switchStmt->getCaseCount(); ++i) {
+        const auto& caseBlock = switchStmt->getCase(i);
+        std::vector<std::unique_ptr<interpreter::Statement>> processedCaseBody;
+        
+        processStatementsForReplacement(caseBlock.statements, processedCaseBody, anyMutationApplied);
+        
+        if (caseBlock.value.has_value()) {
+          newSwitch->addCase(caseBlock.value.value(), std::move(processedCaseBody));
+        } else {
+          newSwitch->addDefault(std::move(processedCaseBody));
+        }
+      }
+      
+      output.push_back(std::move(newSwitch));
+      continue;
+    }
+    
+    // For other statements, just clone
+    output.push_back(stmt->clone());
+  }
+}
+
+bool LaneIdBufferMutation::hasLaneIdBuffer(const interpreter::Program& program) const {
+  for (const auto& buffer : program.globalBuffers) {
+    if (buffer.name == "_lane_id_buffer") {
+      return true;
+    }
+  }
+  return false;
+}
+
+void LaneIdBufferMutation::ensureLaneIdBuffer(interpreter::Program& mutant) const {
+  if (!hasLaneIdBuffer(mutant)) {
+    interpreter::GlobalBufferDecl buffer;
+    buffer.name = "_lane_id_buffer";
+    buffer.bufferType = "StructuredBuffer";
+    buffer.elementType = interpreter::HLSLType::Uint;
+    buffer.size = 128;  // Support up to 128 lanes
+    buffer.isReadWrite = false;
+    buffer.registerIndex = 2;  // t2
+    mutant.globalBuffers.push_back(buffer);
+    
+    FUZZER_DEBUG_LOG("[LaneIdBuffer] Added _lane_id_buffer declaration\n");
+  }
+}
+
+std::vector<interpreter::Program> LaneIdBufferMutation::applyToProgram(
+    const interpreter::Program& program,
+    const ExecutionTrace& trace,
+    const std::set<size_t>& statementsToMutate) const {
+  
+  std::vector<interpreter::Program> mutants;
+  
+  FUZZER_DEBUG_LOG("[LaneIdBuffer] Checking if program has lane-based predicates affecting wave ops\n");
+  
+  // Check if there are any lane-based predicates affecting wave operations
+  bool hasRelevantPredicates = false;
+  for (const auto& stmt : program.statements) {
+    if (auto* ifStmt = dynamic_cast<const interpreter::IfStmt*>(stmt.get())) {
+      if (conditionAffectsWaveOps(ifStmt)) {
+        hasRelevantPredicates = true;
+        break;
+      }
+    }
+  }
+  
+  if (!hasRelevantPredicates) {
+    FUZZER_DEBUG_LOG("[LaneIdBuffer] No lane-based predicates affecting wave operations found\n");
+    return mutants;
+  }
+  
+  FUZZER_DEBUG_LOG("[LaneIdBuffer] Found relevant predicates, creating mutant\n");
+  
+  // Create mutant program
+  interpreter::Program mutant;
+  
+  // Copy all fields from original program
+  mutant.numThreadsX = program.numThreadsX;
+  mutant.numThreadsY = program.numThreadsY;
+  mutant.numThreadsZ = program.numThreadsZ;
+  mutant.entryInputs = program.entryInputs;
+  mutant.globalBuffers = program.globalBuffers;
+  mutant.waveSize = program.waveSize;
+  
+  // Ensure buffer exists
+  ensureLaneIdBuffer(mutant);
+  
+  // Process statements
+  std::vector<std::unique_ptr<interpreter::Statement>> processedStatements;
+  bool anyMutationApplied = false;
+  processStatementsForReplacement(program.statements, processedStatements, anyMutationApplied);
+  
+  if (anyMutationApplied) {
+    mutant.statements = std::move(processedStatements);
+    mutants.push_back(std::move(mutant));
+    FUZZER_DEBUG_LOG("[LaneIdBuffer] Created mutant with replaced predicates\n");
+  } else {
+    FUZZER_DEBUG_LOG("[LaneIdBuffer] No mutations were applied\n");
+  }
+  
+  return mutants;
+}
+
 // ===== Semantic Validator Implementation =====
 
 SemanticValidator::ValidationResult SemanticValidator::validate(
@@ -3532,6 +3930,7 @@ TraceGuidedFuzzer::TraceGuidedFuzzer() {
   mutationStrategies.push_back(std::make_unique<WaveParticipantBitTrackingMutation>());
   // mutationStrategies.push_back(std::make_unique<WaveParticipantFrequencyMutation>());
   // mutationStrategies.push_back(std::make_unique<ContextAwareParticipantMutation>());
+  mutationStrategies.push_back(std::make_unique<LaneIdBufferMutation>());
   
   // TODO: Add more semantics-preserving mutations:
   // - AlgebraicIdentityMutation (more complex algebraic identities)
@@ -4277,6 +4676,11 @@ std::string TraceGuidedFuzzer::MutationResult::getMutationChainString() const {
     result += "WaveParticipantBitTracking";
   }
   
+  if ((appliedMutations & AppliedMutations::LaneIdBuffer) != AppliedMutations::None) {
+    if (!result.empty()) result += " + ";
+    result += "LaneIdBuffer";
+  }
+  
   if (result.empty()) {
     result = "None";
   }
@@ -4337,6 +4741,8 @@ TraceGuidedFuzzer::MutationResult TraceGuidedFuzzer::applyAllMutations(
         result.appliedMutations |= AppliedMutations::WaveParticipantFrequency;
       } else if (strategy->getName() == "WaveParticipantBitTracking") {
         result.appliedMutations |= AppliedMutations::WaveParticipantBitTracking;
+      } else if (strategy->getName() == "LaneIdBuffer") {
+        result.appliedMutations |= AppliedMutations::LaneIdBuffer;
       }
       
       FUZZER_DEBUG_LOG("Successfully applied " << strategy->getName() << "\n");
